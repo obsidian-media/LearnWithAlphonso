@@ -242,6 +242,32 @@ describe("GET /api/practice: the hub's rows", () => {
     expect(filters).toContainEqual({ table: "weakness_events", col: "course", val: "es" });
   });
 
+  it("leaves a rehearsal's stars out: clients decode this list as scenarios and scenes only", async () => {
+    reads.practice_stars = [
+      {
+        data: [
+          {
+            kind: "rehearsal",
+            item_key: `${CALL}:conversation`,
+            best_stars: 2,
+            last_played_at: "2026-11-05T10:00:00+00:00",
+          },
+          {
+            kind: "scenario",
+            item_key: "coffee",
+            best_stars: 1,
+            last_played_at: "2026-11-05T11:00:00+00:00",
+          },
+        ],
+        error: null,
+      },
+    ];
+    reads.language_progress = [{ data: null, error: null }];
+    reads.weakness_events = [{ data: [], error: null }];
+    const body = (await (await get("en")).json()) as { stars: { kind: string }[] };
+    expect(body.stars.map((s) => s.kind)).toEqual(["scenario"]);
+  });
+
   it("a failed read is an error, never zero stars", async () => {
     reads.practice_stars = [{ data: null, error: { message: "boom" } }];
     expect((await get("es")).status).toBe(500);

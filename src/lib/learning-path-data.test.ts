@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getCourse } from "@/data/courses";
 import { CAMPAIGNS } from "@/data/campaigns";
-import { buildLearningPath, type PathData } from "./learning-path-data";
+import { buildLearningPath, isPathCallKind, type PathData } from "./learning-path-data";
 
 const NOW = new Date("2026-11-11T10:00:00Z");
 const units = getCourse("en").curriculum;
@@ -182,6 +182,15 @@ describe("buildLearningPath", () => {
 
   it("labels the goal in plain words", () => {
     expect(buildLearningPath(data())!.goalLabel).toBe("A2 by 1 June");
+  });
+});
+
+describe("isPathCallKind", () => {
+  it("accepts scenarios and scenes only: a rehearsal run is never a talk or a campaign scene of the mix", () => {
+    expect(isPathCallKind("scenario")).toBe(true);
+    expect(isPathCallKind("scene")).toBe(true);
+    expect(isPathCallKind("rehearsal")).toBe(false);
+    expect(isPathCallKind("bogus")).toBe(false);
   });
 });
 

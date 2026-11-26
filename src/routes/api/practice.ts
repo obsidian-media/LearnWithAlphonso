@@ -63,12 +63,15 @@ async function hub(admin: Admin, userId: string, course: string): Promise<Respon
   if (stars.error || level.error || weak.error)
     return json({ error: "Could not load Practice." }, 500);
   const body: PracticeHubData = {
-    stars: ((stars.data ?? []) as StoredStar[]).map((r) => ({
-      kind: r.kind as "scenario" | "scene",
-      itemKey: r.item_key,
-      bestStars: r.best_stars,
-      lastPlayedAt: iso(r.last_played_at),
-    })),
+    // A rehearsal's stars are not Practice stars: clients decode this list as scenarios and scenes only.
+    stars: ((stars.data ?? []) as StoredStar[])
+      .filter((r) => r.kind === "scenario" || r.kind === "scene")
+      .map((r) => ({
+        kind: r.kind as "scenario" | "scene",
+        itemKey: r.item_key,
+        bestStars: r.best_stars,
+        lastPlayedAt: iso(r.last_played_at),
+      })),
     cefrLevel: level.data?.cefr_level ?? null,
     weaknessEvents: (weak.data ?? []).map((r) => ({
       category: r.category,

@@ -43,6 +43,10 @@ export const USER_ID_EXPORT_TABLES = [
   // Practice stars and each call's server-held tally (20261107032021); own-row SELECT.
   "practice_calls",
   "practice_stars",
+  // Rehearsals (20261129100000): the learner's own plan, what each run taught the tutor, and the one-free-rehearsal marker.
+  "rehearsals",
+  "rehearsal_runs",
+  "rehearsal_free_used",
   "review_items",
   "review_grade_attempts",
   "season_cohort_members",
@@ -223,6 +227,9 @@ export const exportMyData = createServerFn({ method: "POST" })
                   | "speech_days"
                   | "practice_calls"
                   | "practice_stars"
+                  | "rehearsals"
+                  | "rehearsal_runs"
+                  | "rehearsal_free_used"
                   | "tutor_memory"
                   | "learner_time_zones"
                   | "learning_days"

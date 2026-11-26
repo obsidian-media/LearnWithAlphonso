@@ -10,7 +10,8 @@ import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { llmChatCompletion } from "@/lib/llm-chat.server";
 import { boundTranscript } from "@/lib/chat-transcript-limits";
 import { splitReplyVerdict, withVerdictInstruction } from "@/lib/chat-verdict";
-import { recordPracticeReply } from "@/lib/practice-calls.server";
+import { recordPracticeReply, recordRehearsalReply } from "@/lib/practice-calls.server";
+import { rehearsalsEnabled } from "@/lib/rehearsals-flag";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -78,12 +79,129 @@ function withDifficultyHint(
   return `${systemPrompt}\n\n${hint(language)}`;
 }
 
+/** True when the body is a JSON object with an object-valued `rehearsal`. Reads a clone, so the request stays unread. */
+async function peekRehearsal(request: Request): Promise<boolean> {
+  // Only a request that carries a bearer token is worth parsing here; an anonymous body is never read before auth.
+  if (!/^Bearer\s+\S/i.test(request.headers.get("Authorization") ?? "")) return false;
+  try {
+    const peek = (await request.clone().json()) as { rehearsal?: unknown } | null;
+    return typeof peek?.rehearsal === "object" && peek.rehearsal !== null;
+  } catch {
+    return false;
+  }
+}
+
+type AuthorizedChat = Extract<
+  Awaited<ReturnType<typeof import("@/lib/ai-consent.server").authorizeAiRequest>>,
+  { ok: true }
+>;
+
+/**
+ * A rehearsal stage's reply. The rehearsal is checked first (404 / 409 / 402 before any quota or model call), then
+ * the quota is charged, then the prompt that rehearsal-chat.server.ts built from the stored brief and the memory of
+ * earlier runs is sent. The course is the rehearsal's own. Alphonso's everyday memory is not mixed in: a rehearsal
+ * carries its own.
+ */
+async function handleRehearsalChat(
+  request: Request,
+  timer: StageTimer,
+  access: AuthorizedChat,
+  body: { messages?: ChatMessage[]; cefrLevel?: string; callId?: string; rehearsal?: unknown },
+  key: string,
+): Promise<Response> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const admin = supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient;
+  const { resolveRehearsalChat } = await import("@/lib/rehearsal-chat.server");
+  const resolved = await timer.time("rehearsal", () =>
+    resolveRehearsalChat(admin, {
+      userId: access.userId,
+      rehearsal: body.rehearsal,
+      callId: body.callId,
+      cefrLevel: body.cefrLevel,
+    }),
+  );
+  if (!resolved.ok) return resolved.response;
+  const messages: ChatMessage[] = boundTranscript(body.messages);
+  if (messages.length === 0) return noStoreJson({ error: "messages required" }, { status: 400 });
+  const refused = await access.chargeQuota?.();
+  if (refused) return refused;
+
+  const finalMessages: ChatMessage[] = [
+    { role: "system", content: withVerdictInstruction(resolved.prompt) },
+    ...messages,
+  ];
+  const model = resolveLlmChatModel();
+  const llm = await timer.time("llm", () =>
+    callModel(request, key, model, finalMessages, access.userId),
+  );
+  if (!llm.ok) return llm.failure;
+  const { text: replyText, verdict } = splitReplyVerdict(llm.content);
+  if (!replyText) {
+    console.warn(JSON.stringify({ event: "chat_empty_reply", model }));
+    return noStoreJson({ error: "empty-reply" }, { status: 502 });
+  }
+  const safe = await filterModelOutput(replyText, {
+    check: makeBlockedTermCheck(supabaseAdmin),
+    course: resolved.course,
+    route: "chat",
+  });
+  const replyVerdict = safe.blocked ? "none" : verdict;
+  const last = messages[messages.length - 1];
+  if (last?.role === "user") {
+    await recordRehearsalReply(supabaseAdmin, {
+      userId: access.userId,
+      callId: body.callId,
+      rehearsalId: resolved.rehearsalId,
+      stage: resolved.stage,
+      course: resolved.course,
+      learnerText: last.content,
+      verdict: replyVerdict,
+    });
+  }
+  return noStoreJson({ content: safe.text, verdict: replyVerdict });
+}
+
+/** The one model call of a chat reply, for the rehearsal path. A timeout or an unreachable provider is retryable. */
+async function callModel(
+  request: Request,
+  key: string,
+  model: string,
+  messages: ChatMessage[],
+  userId: string,
+): Promise<{ ok: true; content: string } | { ok: false; failure: Response }> {
+  let resp: Response;
+  try {
+    resp = await llmChatCompletion({
+      apiKey: key,
+      signal: AbortSignal.any([request.signal, AbortSignal.timeout(CHAT_TIMEOUT_MS)]),
+      body: { model, messages, max_tokens: CHAT_MAX_TOKENS },
+      track: { userId, kind: "chat" },
+    });
+  } catch {
+    return { ok: false, failure: noStoreJson({ error: "reply-unavailable" }, { status: 504 }) };
+  }
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    return { ok: false, failure: upstreamErrorResponse("OpenRouter", resp.status, text) };
+  }
+  const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
+  return { ok: true, content: data.choices?.[0]?.message?.content ?? "" };
+}
+
 async function handleChat(request: Request, timer: StageTimer): Promise<Response> {
   const key = resolveLlmApiKey();
   if (!key) return noStoreJson({ error: "Chat is not configured" }, { status: 500 });
+  // A rehearsal request is recognised before auth only to choose WHEN the quota is spent: it is charged after the
+  // rehearsal has been checked (a request for a rehearsal that is not the caller's must cost nothing). Nothing from
+  // this early read is trusted.
+  const rehearsalMode = await peekRehearsal(request);
+  if (rehearsalMode && !rehearsalsEnabled())
+    return noStoreJson({ error: "not_enabled" }, { status: 404 });
   const access = await timer.time("auth", async () => {
     const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
-    return authorizeAiRequest(request, "chat", { route: "chat" });
+    return rehearsalMode
+      ? authorizeAiRequest(request, "chat", { route: "chat", deferQuota: true })
+      : authorizeAiRequest(request, "chat", { route: "chat" });
   });
   if (!access.ok) return access.response;
   let body: {
@@ -93,12 +211,15 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     course?: string;
     /** Practice stars: the call this reply belongs to (a uuid the client made when the call started). Optional. */
     callId?: string;
+    /** Rehearsal mode: the rehearsal and stage to talk in. Replaces systemPrompt; no prompt text is ever sent. */
+    rehearsal?: { id?: unknown; stage?: unknown };
   };
   try {
     body = await request.json();
   } catch {
     return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
   }
+  if (rehearsalMode) return handleRehearsalChat(request, timer, access, body, key);
   // A known persona is required, not merely allowed. With no system prompt the model would answer anything, which
   // is exactly the general-purpose proxy VALID_SYSTEM_PROMPTS exists to prevent.
   // A prompt an earlier build shipped is accepted too and replaced by its current text, so every lookup below
@@ -145,34 +266,9 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   // Lovable Gateway. See llm-chat-model.server.ts for why the
   // model id lives there instead of being hardcoded here.
   const model = resolveLlmChatModel();
-  const llm = await timer.time("llm", async () => {
-    let resp: Response;
-    try {
-      resp = await llmChatCompletion({
-        apiKey: key,
-        signal: AbortSignal.any([request.signal, AbortSignal.timeout(CHAT_TIMEOUT_MS)]),
-        body: { model, messages: finalMessages, max_tokens: CHAT_MAX_TOKENS },
-        track: { userId: access.userId, kind: "chat" },
-      });
-    } catch {
-      // Timed out, or the learner went away: retryable, and never an unhandled 500.
-      return {
-        ok: false as const,
-        failure: noStoreJson({ error: "reply-unavailable" }, { status: 504 }),
-      };
-    }
-    if (!resp.ok) {
-      const text = await resp.text().catch(() => "");
-      return {
-        ok: false as const,
-        failure: upstreamErrorResponse("OpenRouter", resp.status, text),
-      };
-    }
-    const data = (await resp.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    return { ok: true as const, content: data.choices?.[0]?.message?.content ?? "" };
-  });
+  const llm = await timer.time("llm", () =>
+    callModel(request, key, model, finalMessages, access.userId),
+  );
   if (!llm.ok) return llm.failure;
   // An empty completion is an upstream failure, not a reply. It used to return 200 with "" and the clients
   // rendered an ellipsis as the partner's turn. 502 lets each client retry once.

@@ -1,8 +1,10 @@
 import { CAMPAIGNS } from "../data/campaigns";
+import type { Course } from "../data/course-meta";
 import type { ReplyVerdict } from "./chat-verdict";
 import { practiceItemForPrompt } from "./practice-catalog";
 import { recordSkillResults } from "./profile-data.server";
 import { STAR_RULE, measureReply, starsForCall } from "./practice-stars";
+import { STAGES, type Stage } from "./rehearsal-rules";
 
 /**
  * The server half of Practice stars (migration 20261107032021_practice_stars.sql). Both writes run as the service
@@ -38,15 +40,70 @@ export async function recordPracticeReply(
   if (!isCallId(params.callId)) return false;
   const item = practiceItemForPrompt(params.systemPrompt);
   if (!item) return false;
-  const m = measureReply(params.learnerText, item.course);
+  return recordReply(client, {
+    userId: params.userId,
+    callId: params.callId,
+    course: item.course,
+    kind: item.kind,
+    itemKey: item.key,
+    learnerText: params.learnerText,
+    verdict: params.verdict,
+  });
+}
+
+/** A rehearsal run is recorded under '<rehearsal id>:<stage>'. */
+export const rehearsalItemKey = (rehearsalId: string, stage: Stage) => `${rehearsalId}:${stage}`;
+
+/**
+ * Records one judged learner reply of a rehearsal run: a practice_calls row with kind 'rehearsal'. The rehearsal, its
+ * stage and its course were checked by /api/chat against the learner's own rehearsal row, so nothing here comes from
+ * a prompt lookup. Same guarantees as recordPracticeReply: false when nothing was recorded, never throws.
+ */
+export async function recordRehearsalReply(
+  client: object,
+  params: {
+    userId: string;
+    callId: unknown;
+    rehearsalId: string;
+    stage: Stage;
+    course: Course;
+    learnerText: string;
+    verdict: ReplyVerdict;
+  },
+): Promise<boolean> {
+  return recordReply(client, {
+    userId: params.userId,
+    callId: params.callId,
+    course: params.course,
+    kind: "rehearsal",
+    itemKey: rehearsalItemKey(params.rehearsalId, params.stage),
+    learnerText: params.learnerText,
+    verdict: params.verdict,
+  });
+}
+
+async function recordReply(
+  client: object,
+  params: {
+    userId: string;
+    callId: unknown;
+    course: Course;
+    kind: CallRow["kind"];
+    itemKey: string;
+    learnerText: string;
+    verdict: ReplyVerdict;
+  },
+): Promise<boolean> {
+  if (!isCallId(params.callId)) return false;
+  const m = measureReply(params.learnerText, params.course);
   const admin = client as Rpc;
   try {
     const { error } = await admin.rpc("record_practice_reply", {
       _user_id: params.userId,
       _call_id: params.callId,
-      _course: item.course,
-      _kind: item.kind,
-      _item_key: item.key,
+      _course: params.course,
+      _kind: params.kind,
+      _item_key: params.itemKey,
       _right: params.verdict === "correct",
       _short: m.short,
       _english: m.english,
@@ -73,7 +130,7 @@ export type CallRow = {
   id: string;
   user_id: string;
   course: string;
-  kind: "scenario" | "scene";
+  kind: "scenario" | "scene" | "rehearsal";
   item_key: string;
   replies: number;
   right_replies: number;
@@ -84,9 +141,19 @@ export type CallRow = {
   finished_at: string | null;
 };
 
+/**
+ * Learner replies that finish a rehearsal run. Distinct from a scenario's three and from the recap's own floor
+ * (RECAP_MIN_LEARNER_TURNS): a rehearsal is a full conversation, so a run under this many replies earns no stars and
+ * counts for nothing.
+ */
+export const REHEARSAL_FINISH_MIN_REPLIES = 4;
+const REHEARSAL_KEY = new RegExp(`^${UUID.source.slice(1, -1)}:(${STAGES.join("|")})$`, "i");
+
 /** Replies that finish a stored call: the scenario rule, or the scene's own minTurns; null for an unknown item. */
 export function finishMinReplies(kind: string, itemKey: string): number | null {
   if (kind === "scenario") return STAR_RULE.scenarioFinishMinReplies;
+  if (kind === "rehearsal")
+    return REHEARSAL_KEY.test(itemKey) ? REHEARSAL_FINISH_MIN_REPLIES : null;
   const [campaignId, sceneId] = itemKey.split("/");
   const scene = CAMPAIGNS.find((c) => c.id === campaignId)?.scenes.find((s) => s.id === sceneId);
   return scene ? scene.minTurns : null;

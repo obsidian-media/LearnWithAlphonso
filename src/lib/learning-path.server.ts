@@ -11,7 +11,7 @@ import {
 import { LEVEL_ORDER } from "@/lib/learning-goal";
 import { localDay } from "@/lib/local-day";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
-import type { PathData } from "@/lib/learning-path-data";
+import { isPathCallKind, type PathData } from "@/lib/learning-path-data";
 
 type Admin = typeof supabaseAdmin;
 type VideoPathRow = {
@@ -214,20 +214,25 @@ export async function loadPathData(
     videoWatches: ((watches.data ?? []) as { video_id: string; completed_at: string | null }[]).map(
       (w) => ({ videoId: w.video_id, completedAt: w.completed_at }),
     ),
-    calls: (calls.data ?? []).map((c) => ({
-      kind: c.kind as "scenario" | "scene",
-      itemKey: c.item_key,
-      startedAt: c.started_at,
-      lastReplyAt: c.last_reply_at,
-      finishedAt: c.finished_at as string,
-      stars: c.stars ?? 0,
-    })),
-    stars: (stars.data ?? []).map((s) => ({
-      kind: s.kind as "scenario" | "scene",
-      itemKey: s.item_key,
-      bestStars: s.best_stars,
-      lastPlayedAt: s.last_played_at,
-    })),
+    // A rehearsal's runs (kind 'rehearsal') are not scenarios or scenes: the weekly mix never counts them.
+    calls: (calls.data ?? [])
+      .filter((c) => isPathCallKind(c.kind))
+      .map((c) => ({
+        kind: c.kind as "scenario" | "scene",
+        itemKey: c.item_key,
+        startedAt: c.started_at,
+        lastReplyAt: c.last_reply_at,
+        finishedAt: c.finished_at as string,
+        stars: c.stars ?? 0,
+      })),
+    stars: (stars.data ?? [])
+      .filter((s) => isPathCallKind(s.kind))
+      .map((s) => ({
+        kind: s.kind as "scenario" | "scene",
+        itemKey: s.item_key,
+        bestStars: s.best_stars,
+        lastPlayedAt: s.last_played_at,
+      })),
     profile: parseLearnerProfile(meta[LEARNER_PROFILE_KEY]),
   };
 }

@@ -45,6 +45,10 @@ import { skillScores, type SkillDayRow } from "./profile-data";
 import { MIN_SKILL_ANSWERS } from "./skills-radar";
 import { localDay } from "./local-day";
 
+/** The call kinds the weekly mix understands. A rehearsal run (kind rehearsal) is its own thing and never counts. */
+export const isPathCallKind = (kind: string): kind is "scenario" | "scene" =>
+  kind === "scenario" || kind === "scene";
+
 /**
  * Everything the learning path needs, as plain rows (loaded by learning-path.server.ts), turned into the engine's input.
  * Pure: the database reads live elsewhere, so every rule here is tested without one.
@@ -83,7 +87,7 @@ export type PathData = {
   }[];
   /** This learner's watches (video_watches). */
   videoWatches: { videoId: string; completedAt: string | null }[];
-  /** Finished practice calls. */
+  /** Finished practice calls (scenarios and campaign scenes; a rehearsal's runs are not part of the weekly mix). */
   calls: {
     kind: "scenario" | "scene";
     itemKey: string;

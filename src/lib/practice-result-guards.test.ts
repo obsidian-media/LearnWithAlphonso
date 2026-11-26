@@ -87,9 +87,7 @@ describe("Next scene on the result screen carries what Continue did", () => {
     expect(code(`${ANDROID}/PracticeScreens.kt`)).toContain(
       "context = PracticeResultContext.Scenario",
     );
-    expect(code("src/routes/_authenticated/converse_.$scenarioId.tsx")).toContain(
-      "campaign={null}",
-    );
+    expect(code("src/components/practice/ConverseCall.tsx")).toContain("campaign={null}");
   });
 });
 
@@ -177,7 +175,7 @@ describe("a call with no score (offline) keeps the learner on the scene", () => 
     const src = code(WEB_CAMPAIGN);
     expect(src).toMatch(/if \(userTurnsInScene > 0\) setUnscored\(true\);\s*else void navigate/);
     expect(src).toContain("<PracticeUnscored");
-    const scenario = code("src/routes/_authenticated/converse_.$scenarioId.tsx");
+    const scenario = code("src/components/practice/ConverseCall.tsx");
     expect(scenario).toMatch(/if \(!scored\) \{[^}]*setUnscored\(true\);[^}]*return;/);
   });
 
