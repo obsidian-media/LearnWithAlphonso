@@ -9,12 +9,12 @@
 import type { Course } from "@/data/courses";
 
 type Lines = {
-  /** A1, A2 or an unknown level. */
-  simple: (hi: string) => string;
+  /** A1, A2 or an unknown level. Variant 0 is the line iOS and Android say; the rest are web-only until they catch up. */
+  simple: ((hi: string) => string)[];
   /** B1 and up. */
-  warm: (hi: string) => string;
-  simpleTopic: (hi: string, topic: string) => string;
-  warmTopic: (hi: string, topic: string) => string;
+  warm: ((hi: string) => string)[];
+  simpleTopic: ((hi: string, topic: string) => string)[];
+  warmTopic: ((hi: string, topic: string) => string)[];
   hi: (name: string | null) => string;
 };
 
@@ -24,31 +24,90 @@ const NB = " ";
 const LINES: Record<Course, Lines> = {
   en: {
     hi: (name) => (name ? `Hi ${name}!` : "Hi!"),
-    simple: (hi) => `${hi} I'm Hector. What do you want to talk about today?`,
-    warm: (hi) => `${hi} Good to see you. What's been happening lately? Tell me about it.`,
-    simpleTopic: (hi, t) =>
-      `${hi} Last time you had trouble with ${t}. Let's practice together. Ready?`,
-    warmTopic: (hi, t) =>
-      `${hi} Last time ${t} tripped you up. Want to practice that in conversation?`,
+    simple: [
+      (hi) => `${hi} I'm Hector. What do you want to talk about today?`,
+      (hi) => `${hi} Hector here. Tell me one thing you did today.`,
+      (hi) => `${hi} Nice to talk again. How are you feeling today?`,
+    ],
+    warm: [
+      (hi) => `${hi} Good to see you. What's been happening lately? Tell me about it.`,
+      (hi) => `${hi} Welcome back. What's one thing on your mind today?`,
+      (hi) => `${hi} Let's talk. What did you get up to this week?`,
+    ],
+    simpleTopic: [
+      (hi, t) => `${hi} Last time you had trouble with ${t}. Let's practice together. Ready?`,
+      (hi, t) => `${hi} Last time we worked on ${t}. Let's try it again. Ready?`,
+      (hi, t) => `${hi} Today let's practice ${t}, a little at a time. Ready?`,
+    ],
+    warmTopic: [
+      (hi, t) => `${hi} Last time ${t} tripped you up. Want to practice that in conversation?`,
+      (hi, t) => `${hi} Last time we worked on ${t}. Shall we pick it up where we left off?`,
+      (hi, t) => `${hi} I remember ${t} was tricky. Let's use it in a real chat today.`,
+    ],
   },
   fr: {
     hi: (name) => (name ? `Salut ${name}${NB}!` : `Salut${NB}!`),
-    simple: (hi) => `${hi} Moi, c'est Hector. De quoi tu veux parler aujourd'hui${NB}?`,
-    warm: (hi) => `${hi} Content de te voir. Raconte-moi, quoi de neuf${NB}?`,
-    simpleTopic: (hi, t) =>
-      `${hi} La dernière fois, tu as eu du mal avec ${t}. On s'entraîne ensemble${NB}?`,
-    warmTopic: (hi, t) =>
-      `${hi} La dernière fois, tu as eu du mal avec ${t}. Tu veux t'entraîner en conversation${NB}?`,
+    simple: [
+      (hi) => `${hi} Moi, c'est Hector. De quoi tu veux parler aujourd'hui${NB}?`,
+      (hi) => `${hi} C'est Hector. Dis-moi une chose que tu as faite aujourd'hui.`,
+      (hi) => `${hi} Content de reparler avec toi. Comment tu te sens aujourd'hui${NB}?`,
+    ],
+    warm: [
+      (hi) => `${hi} Content de te voir. Raconte-moi, quoi de neuf${NB}?`,
+      (hi) => `${hi} Bon retour. Qu'est-ce qui te passe par la tête aujourd'hui${NB}?`,
+      (hi) => `${hi} On discute${NB}? Qu'est-ce que tu as fait cette semaine${NB}?`,
+    ],
+    simpleTopic: [
+      (hi, t) => `${hi} La dernière fois, tu as eu du mal avec ${t}. On s'entraîne ensemble${NB}?`,
+      (hi, t) => `${hi} La dernière fois, on a travaillé ${t}. On reprend${NB}?`,
+      (hi, t) => `${hi} Aujourd'hui, on s'entraîne sur ${t}, petit à petit. Prêt${NB}?`,
+    ],
+    warmTopic: [
+      (hi, t) =>
+        `${hi} La dernière fois, tu as eu du mal avec ${t}. Tu veux t'entraîner en conversation${NB}?`,
+      (hi, t) =>
+        `${hi} La dernière fois, on a travaillé ${t}. On reprend là où on s'était arrêtés${NB}?`,
+      (hi, t) =>
+        `${hi} Je me souviens que ${t} était difficile. Essayons-le dans une vraie discussion.`,
+    ],
   },
   es: {
     hi: (name) => (name ? `¡Hola, ${name}!` : "¡Hola!"),
-    simple: (hi) => `${hi} Soy Hector. ¿De qué quieres hablar hoy?`,
-    warm: (hi) => `${hi} Qué gusto verte. Cuéntame, ¿qué hay de nuevo?`,
-    simpleTopic: (hi, t) => `${hi} La última vez tuviste problemas con ${t}. ¿Practicamos juntos?`,
-    warmTopic: (hi, t) =>
-      `${hi} La última vez tuviste dificultades con ${t}. ¿Te animas a practicar conversando?`,
+    simple: [
+      (hi) => `${hi} Soy Hector. ¿De qué quieres hablar hoy?`,
+      (hi) => `${hi} Aquí Hector. Cuéntame una cosa que hiciste hoy.`,
+      (hi) => `${hi} Qué bueno hablar otra vez. ¿Cómo te sientes hoy?`,
+    ],
+    warm: [
+      (hi) => `${hi} Qué gusto verte. Cuéntame, ¿qué hay de nuevo?`,
+      (hi) => `${hi} Bienvenido de nuevo. ¿Qué tienes en la cabeza hoy?`,
+      (hi) => `${hi} Vamos a conversar. ¿Qué hiciste esta semana?`,
+    ],
+    simpleTopic: [
+      (hi, t) => `${hi} La última vez tuviste problemas con ${t}. ¿Practicamos juntos?`,
+      (hi, t) => `${hi} La última vez trabajamos ${t}. ¿Lo retomamos?`,
+      (hi, t) => `${hi} Hoy practicamos ${t}, poco a poco. ¿Listo?`,
+    ],
+    warmTopic: [
+      (hi, t) =>
+        `${hi} La última vez tuviste dificultades con ${t}. ¿Te animas a practicar conversando?`,
+      (hi, t) => `${hi} La última vez trabajamos ${t}. ¿Seguimos donde lo dejamos?`,
+      (hi, t) => `${hi} Recuerdo que ${t} fue difícil. Usémoslo hoy en una conversación de verdad.`,
+    ],
   },
 };
+
+/** How many greetings each kind has: the same in every course and level. */
+export const GREETING_VARIANTS = LINES.en.simple.length;
+
+/**
+ * Which variant to say. Never the one said last (when known), so two calls in a row never open with the same words;
+ * `random` is a number in [0, 1).
+ */
+export function pickGreetingVariant(last: number | null | undefined, random: number): number {
+  const pool = Array.from({ length: GREETING_VARIANTS }, (_, i) => i).filter((i) => i !== last);
+  return pool[Math.min(pool.length - 1, Math.floor(random * pool.length))] ?? 0;
+}
 
 /**
  * Our own words for each weakness category (src/lib/weakness-detection.server.ts WEAKNESS_TAXONOMY), per course.
@@ -87,6 +146,10 @@ const TOPICS: Record<Course, Readonly<Record<string, string>>> = {
     negation: "la négation",
     "vocabulary-choice": "le choix des mots",
     spelling: "l'orthographe",
+    "gender-agreement": "le genre et l'accord",
+    "verb-conjugation": "la conjugaison",
+    "partitive-articles": "les articles partitifs",
+    "tense-choice": "le choix du temps",
   },
   es: {
     "past-tense": "el pasado",
@@ -103,6 +166,12 @@ const TOPICS: Record<Course, Readonly<Record<string, string>>> = {
     negation: "la negación",
     "vocabulary-choice": "la elección de palabras",
     spelling: "la ortografía",
+    "ser-estar": "ser y estar",
+    "gender-agreement": "el género y la concordancia",
+    "verb-conjugation": "la conjugación",
+    "por-para": "por y para",
+    "small-words": "las palabras pequeñas como con, de, a",
+    "tense-choice": "la elección del tiempo",
   },
 };
 
@@ -139,14 +208,18 @@ export function buildHectorGreeting(input: {
   cefr: string | null | undefined;
   name: unknown;
   weakSpot: unknown;
+  /** Which of the GREETING_VARIANTS to say (0 when omitted, the line native clients say). */
+  variant?: number;
 }): string {
   const lines = LINES[input.course];
   const hi = lines.hi(safeLearnerName(input.name));
   const level = (input.cefr ?? "").trim().toUpperCase();
   const simple = !level || SIMPLE_LEVELS.has(level);
   const topic = hectorTopicLabel(input.course, input.weakSpot);
-  if (topic) return simple ? lines.simpleTopic(hi, topic) : lines.warmTopic(hi, topic);
-  return simple ? lines.simple(hi) : lines.warm(hi);
+  const v = Number.isInteger(input.variant) ? Math.abs(input.variant as number) : 0;
+  const pick = <T>(list: T[]): T => list[v % list.length]!;
+  if (topic) return simple ? pick(lines.simpleTopic)(hi, topic) : pick(lines.warmTopic)(hi, topic);
+  return simple ? pick(lines.simple)(hi) : pick(lines.warm)(hi);
 }
 
 export type WeakSpotEntry = { category: string; openCount: number; lastEventAt: string };
@@ -173,9 +246,11 @@ export function namelessHectorGreetings(): string[] {
   const out = new Set<string>();
   for (const course of Object.keys(LINES) as Course[]) {
     for (const cefr of ["A1", "B1"]) {
-      out.add(buildHectorGreeting({ course, cefr, name: null, weakSpot: null }));
-      for (const category of Object.keys(TOPICS[course])) {
-        out.add(buildHectorGreeting({ course, cefr, name: null, weakSpot: category }));
+      for (let variant = 0; variant < GREETING_VARIANTS; variant++) {
+        out.add(buildHectorGreeting({ course, cefr, name: null, weakSpot: null, variant }));
+        for (const category of Object.keys(TOPICS[course])) {
+          out.add(buildHectorGreeting({ course, cefr, name: null, weakSpot: category, variant }));
+        }
       }
     }
   }
