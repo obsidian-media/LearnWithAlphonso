@@ -11,8 +11,19 @@ import Foundation
 ///
 /// `course` defaults to `.english` so every pre-existing call site keeps its
 /// exact prior behaviour without changes -- only `.speak` branches on it.
-public func isAnswerCorrect(_ question: Question, picked: String?, course: Course = .english) -> Bool {
+public func isAnswerCorrect(
+    _ question: Question, picked: String?, course: Course = .english, variantGoal: String? = nil
+) -> Bool {
     guard let picked else { return false }
+    if isAnswerCorrectForVersion(question, picked: picked, course: course) { return true }
+    // Goal-flavoured variants (GoalVariants.swift): the client names the goal of the version it showed, and an answer
+    // is right against the base OR that one version, never another goal's. Kept in step with srs.ts and the Deno copy.
+    guard let shown = question.shownVersion(variantGoal) else { return false }
+    return isAnswerCorrectForVersion(shown, picked: picked, course: course)
+}
+
+/// One version of a question (the base, or a variant laid over it) against an answer.
+private func isAnswerCorrectForVersion(_ question: Question, picked: String, course: Course) -> Bool {
     switch question {
     case .multipleChoice(let q):
         return q.choices.indices.contains(q.answer) && q.choices[q.answer] == picked

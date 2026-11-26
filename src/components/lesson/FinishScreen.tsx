@@ -32,6 +32,7 @@ import { useProgress } from "../../lib/progress";
 import { ACHIEVEMENTS_BY_ID, type LeagueTier } from "../../data/achievements";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
+import { useLearnerGoal } from "../../lib/use-learner-goal";
 
 /** The end of a lesson whose completion did not reach the server: nothing is celebrated until it is saved. */
 export function NotSavedScreen({
@@ -323,6 +324,7 @@ type GeneratedPracticeQuestion = {
  * scheduling, same posture as in-lesson reinforcement above.
  */
 function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; course: string }) {
+  const goal = useLearnerGoal();
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "empty" | "error">("idle");
   const [questions, setQuestions] = useState<GeneratedPracticeQuestion[]>([]);
   const [idx, setIdx] = useState(0);
@@ -337,7 +339,7 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
       const resp = await fetch("/api/generate-practice", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-        body: JSON.stringify({ lessonId, course }),
+        body: JSON.stringify({ lessonId, course, ...(goal ? { goal } : {}) }),
       });
       if (resp.status === 429) {
         setErrorText((await readApiError(resp)) || null);

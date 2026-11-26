@@ -19,6 +19,24 @@ final class GradingParityTests: XCTestCase {
         let acceptable: [String]?
         let expected: Bool
         let runtimes: [String]?
+        let variants: [Variant]?
+        /// Which variant the learner was shown (nil: the base question). Another variant's answer is not right.
+        let variantIndex: Int?
+    }
+
+    /// A goal-flavoured version of the case's question; the input is right when it is right for the case OR for any.
+    private struct Variant: Decodable {
+        let choices: [String]?
+        let answerIndex: Int?
+        let answer: String?
+        let bank: [String]?
+        let acceptable: [String]?
+
+        var goalVariant: GoalVariant {
+            GoalVariant(
+                prompt: "v", choices: choices, answerIndex: answerIndex, answerText: answer, bank: bank,
+                acceptableAnswers: acceptable, explanation: "e")
+        }
     }
 
     private struct Fixture: Decodable {
@@ -41,26 +59,38 @@ final class GradingParityTests: XCTestCase {
         }
     }
 
+    private func goalVariants(_ c: Case) -> [String: GoalVariant]? {
+        guard let variants = c.variants else { return nil }
+        var out: [String: GoalVariant] = [:]
+        for (i, v) in variants.enumerated() { out["g\(i)"] = v.goalVariant }
+        return out
+    }
+
     private func question(_ c: Case) throws -> Question {
+        let gv = goalVariants(c)
         switch c.kind {
         case "mc":
             return .multipleChoice(Question.MultipleChoice(
                 id: "q", prompt: "p", choices: try XCTUnwrap(c.choices), answer: try XCTUnwrap(c.answerIndex),
-                explanation: "e"))
+                explanation: "e", goalVariants: gv))
         case "fill":
             return .fillInBlank(Question.FillInBlank(
-                id: "q", prompt: "p", bank: [], answer: try XCTUnwrap(c.answer), explanation: "e"))
+                id: "q", prompt: "p", bank: [try XCTUnwrap(c.answer)], answer: try XCTUnwrap(c.answer),
+                explanation: "e", goalVariants: gv))
         case "reorder":
             return .reorder(Question.Reorder(
                 id: "q", prompt: "p", tokens: [], answer: try XCTUnwrap(c.answer), explanation: "e"))
         case "listening":
             return .listening(Question.Listening(
-                id: "q", prompt: "p", audioText: "a", choices: [], answer: try XCTUnwrap(c.answer), explanation: "e"))
+                id: "q", prompt: "p", audioText: "a", choices: [], answer: try XCTUnwrap(c.answer), explanation: "e",
+                goalVariants: gv))
         case "speak":
-            return .speak(Question.Speak(id: "q", prompt: "p", answer: try XCTUnwrap(c.answer), explanation: "e"))
+            return .speak(Question.Speak(
+                id: "q", prompt: "p", answer: try XCTUnwrap(c.answer), explanation: "e", goalVariants: gv))
         case "translate":
             return .translate(Question.Translate(
-                id: "q", prompt: "p", acceptableAnswers: try XCTUnwrap(c.acceptable), explanation: "e"))
+                id: "q", prompt: "p", acceptableAnswers: try XCTUnwrap(c.acceptable), explanation: "e",
+                goalVariants: gv))
         default:
             throw XCTSkip("unknown kind \(c.kind)")
         }
@@ -76,7 +106,8 @@ final class GradingParityTests: XCTestCase {
         XCTAssertGreaterThan(applicable.count, 0)
         var ran = 0
         for c in applicable {
-            let got = isAnswerCorrect(try question(c), picked: c.input, course: course(c))
+            let got = isAnswerCorrect(
+                try question(c), picked: c.input, course: course(c), variantGoal: c.variantIndex.map { "g\($0)" })
             XCTAssertEqual(got, c.expected, c.id)
             ran += 1
         }

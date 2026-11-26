@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
+import com.obsidianmedia.learnwithalphonso.core.content.hasVariantForGoal
 import com.obsidianmedia.learnwithalphonso.core.logic.StreakDisplay
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
@@ -288,7 +289,17 @@ fun LearnScreen(
             if (forYouOpen.isNotEmpty()) {
                 item(key = "for-you-detail") {
                     when (forYouOpen) {
-                        "path" -> com.obsidianmedia.learnwithalphonso.ui.path.PathCard(pathVm, onOpenRoad = onOpenPath, onBuild = onBuildPath, onOpenRef = onOpenPathRef)
+                        "path" -> {
+                            // A lesson on the Today row says so when it has questions written for the learner's goal.
+                            val learnerGoal by com.obsidianmedia.learnwithalphonso.ui.components.rememberLearnerGoal(container)
+                            com.obsidianmedia.learnwithalphonso.ui.path.PathCard(pathVm, onOpenRoad = onOpenPath, onBuild = onBuildPath, onOpenRef = onOpenPathRef, goalTagFor = { item ->
+                                val ref = item.ref
+                                learnerGoal?.takeIf { g ->
+                                    ref != null && ref.kind == "lesson" &&
+                                        container.content.findLesson(ref.id, state.course)?.second?.questions?.any { it.hasVariantForGoal(g) } == true
+                                }
+                            })
+                        }
                         "team" -> teamMission?.let { TeamMissionCard(it) }
                         "weekly" -> Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                             if (state.weeklyLoadFailed) WeeklyLoadFailedCard(onRetry = vm::refresh)

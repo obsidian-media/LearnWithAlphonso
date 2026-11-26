@@ -620,7 +620,7 @@ data class LessonStartStep(val icon: Int, val label: String, val detail: String)
 
 /** Lesson start, set in the unit's room: unit and title over it, the honest estimate, the steps and the gold Start. */
 @Composable
-fun LessonStart(roomId: String, unitLine: String, title: String, meta: String, steps: List<LessonStartStep>, hearts: Int?, onClose: () -> Unit, onStart: () -> Unit, waiting: Boolean = false) {
+fun LessonStart(roomId: String, unitLine: String, title: String, meta: String, steps: List<LessonStartStep>, hearts: Int?, onClose: () -> Unit, onStart: () -> Unit, waiting: Boolean = false, goalTag: String? = null) {
     val ds = LocalAlphonsoTokens.current
     Column(Modifier.fillMaxSize().background(ds.surface)) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
@@ -634,6 +634,7 @@ fun LessonStart(roomId: String, unitLine: String, title: String, meta: String, s
                     }
                 }
             }
+            if (goalTag != null) Box(Modifier.padding(start = 18.dp, end = 18.dp, top = AlphonsoTokens.Space.s3)) { com.obsidianmedia.learnwithalphonso.ui.components.GoalTagPill(goalTag) }
             Text(meta, style = FootnoteType, color = ds.inkSoft, modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = AlphonsoTokens.Space.s3))
             Column(Modifier.padding(start = AlphonsoTokens.Space.s4, end = AlphonsoTokens.Space.s4, top = AlphonsoTokens.Space.s3), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                 steps.forEach { step ->

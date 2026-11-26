@@ -83,6 +83,12 @@ const completeLessonSchema = z.object({
       z.object({
         questionId: z.string().regex(/^[a-z0-9]+$/),
         answer: z.string().max(2000),
+        // The goal of the goal-flavoured version the learner was shown (goal-variants.ts); absent or null for the base
+        // question, which is all an older build shows. Grading accepts the base and this one version only.
+        variantGoal: z
+          .string()
+          .regex(/^[a-z]{1,16}$/)
+          .nullish(),
       }),
     )
     .max(50),
@@ -340,7 +346,7 @@ async function findLesson(
   const { data, error } = await admin
     .from("lessons")
     .select(
-      "id, units!inner(course, level_id), questions(id, type, prompt, choices, bank, answer_index, answer_text)",
+      "id, units!inner(course, level_id), questions(id, type, prompt, choices, bank, answer_index, answer_text, goal_variants)",
     )
     .eq("id", lessonId)
     .eq("units.course", course)
@@ -553,11 +559,11 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const missedQuestionIds: string[] = [];
   const graded: { type: string; correct: boolean }[] = [];
   try {
-    for (const { questionId, answer } of answers) {
+    for (const { questionId, answer, variantGoal } of answers) {
       // Safe: resolveLessonSubmission already proved questionId is a
       // real id in this lesson.
       const question = questionById.get(questionId)!;
-      const isCorrect = await deriveAnswerCorrectness(question, answer, course, ai);
+      const isCorrect = await deriveAnswerCorrectness(question, answer, course, ai, variantGoal);
       if (!isCorrect) missedQuestionIds.push(questionId);
       graded.push({ type: question.type, correct: isCorrect });
     }

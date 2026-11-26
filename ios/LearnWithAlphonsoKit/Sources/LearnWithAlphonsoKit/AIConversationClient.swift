@@ -213,14 +213,17 @@ public final class AIConversationClient: Sendable {
     /// thrown error except to treat it as a wrong answer -- and being offline
     /// is not evidence about the learner's English.
     public func gradeTranslation(
-        lessonId: String, questionId: String, submission: String, course: String
+        lessonId: String, questionId: String, submission: String, course: String, variantGoal: String? = nil
     ) async -> TranslationVerdict? {
-        await postGradeTranslation([
+        var body: [String: Any] = [
             "lessonId": lessonId,
             "questionId": questionId,
             "submission": submission,
             "course": course,
-        ])
+        ]
+        // The goal of the goal-flavoured version on screen (GoalVariants.swift): the server asks about that version.
+        if let variantGoal { body["variantGoal"] = variantGoal }
+        return await postGradeTranslation(body)
     }
 
     /// Same endpoint and same "never throws, nil means no second opinion"

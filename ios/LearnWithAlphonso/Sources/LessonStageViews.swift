@@ -763,6 +763,8 @@ struct LessonStartView: View {
     let topInset: CGFloat
     /// Start was tapped and the lesson is still being opened: the button shows it and ignores more taps.
     var waiting = false
+    /// The learner's goal when this lesson has questions written for it: shows the "For your goal" pill.
+    var goalTag: String?
     let onClose: () -> Void
     let onStart: () -> Void
 
@@ -796,6 +798,11 @@ struct LessonStartView: View {
                         .padding(.horizontal, 18)
                         .padding(.bottom, AlphonsoDS.Space.s4)
                     }
+                }
+                if let goalTag {
+                    GoalTagView(goal: goalTag)
+                        .padding(.horizontal, 18)
+                        .padding(.top, AlphonsoDS.Space.s3)
                 }
                 Text(meta)
                     .dsText(.footnote)

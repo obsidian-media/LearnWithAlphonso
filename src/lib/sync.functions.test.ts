@@ -15,6 +15,11 @@ vi.mock("@/data/lesson-extras", () => ({
   LESSON_EXTRAS: { en: {}, fr: {}, es: {} },
   applyLessonExtras: <T>(units: T) => units,
 }));
+// Likewise the goal-flavoured variants (src/data/goal-variants), which name those appended questions.
+vi.mock("@/data/goal-variants", () => ({
+  GOAL_VARIANTS: { en: {}, fr: {}, es: {} },
+  applyGoalVariants: <T>(units: T) => units,
+}));
 vi.mock("@tanstack/react-start", () => ({
   createServerFn: () => {
     let validator: ((d: unknown) => unknown) | undefined;

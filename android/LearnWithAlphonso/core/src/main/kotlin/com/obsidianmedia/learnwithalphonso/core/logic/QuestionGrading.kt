@@ -2,6 +2,7 @@ package com.obsidianmedia.learnwithalphonso.core.logic
 
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Question
+import com.obsidianmedia.learnwithalphonso.core.content.shownVersion
 import com.obsidianmedia.learnwithalphonso.core.net.ReviewItem
 
 /**
@@ -13,8 +14,17 @@ import com.obsidianmedia.learnwithalphonso.core.net.ReviewItem
  * For speak, `picked` is a speech-to-text transcript and the course selects
  * which tolerant normaliser applies.
  */
-fun isAnswerCorrect(question: Question, picked: String?, course: Course = Course.ENGLISH): Boolean {
+fun isAnswerCorrect(question: Question, picked: String?, course: Course = Course.ENGLISH, variantGoal: String? = null): Boolean {
     if (picked == null) return false
+    if (isAnswerCorrectForVersion(question, picked, course)) return true
+    // Goal-flavoured variants (GoalVariant.kt): the client names the goal of the version it showed, and an answer is
+    // right against the base OR that one version, never another goal's. Kept in step with srs.ts and the Swift and Deno copies.
+    val shown = question.shownVersion(variantGoal) ?: return false
+    return isAnswerCorrectForVersion(shown, picked, course)
+}
+
+/** One version of a question (the base, or a variant laid over it) against an answer. */
+private fun isAnswerCorrectForVersion(question: Question, picked: String, course: Course): Boolean {
     return when (question) {
         is Question.MultipleChoice ->
             question.answer in question.choices.indices && question.choices[question.answer] == picked

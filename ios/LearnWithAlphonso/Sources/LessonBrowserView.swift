@@ -482,7 +482,7 @@ struct LessonBrowserView: View {
                 // The opened card's full detail, in place under the rail. One card identity per course: a save or
                 // remove still in flight for the course the learner just left must not land in the new course's card.
                 if forYouDetail == .path {
-                    PathCardSection(session: session, course: course) { showingPathBuild = true }
+                    PathCardSection(session: session, course: course, contentStore: contentStore) { showingPathBuild = true }
                         .id("\(course.translationCourseCode)-\(pathReloadToken)")
                 }
                 if forYouDetail == .team {

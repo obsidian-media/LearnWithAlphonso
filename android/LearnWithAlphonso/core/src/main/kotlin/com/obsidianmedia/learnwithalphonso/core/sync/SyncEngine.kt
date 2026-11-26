@@ -30,7 +30,7 @@ data class SyncRetryPolicy(val baseDelayMillis: Long, val maxDelayMillis: Long) 
  * The seam SyncEngine drains through: the live client in the app, a script in tests.
  */
 interface SyncApi : LessonCompletionApi {
-    suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String?, expectedDueOn: String?, expectedLastReviewedAt: String?)
+    suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String?, expectedDueOn: String?, expectedLastReviewedAt: String?, variantGoal: String?)
 }
 
 /**
@@ -107,7 +107,7 @@ object SyncEngine {
             if (grade.nextAttemptAt?.let { it > nowMillis } == true) break
             if (!isCurrentAccount()) break
             try {
-                client.gradeReview(grade.itemKey, grade.answer, grade.course, grade.queueIdentity, grade.expectedDueOn, grade.expectedLastReviewedAt)
+                client.gradeReview(grade.itemKey, grade.answer, grade.course, grade.queueIdentity, grade.expectedDueOn, grade.expectedLastReviewedAt, grade.variantGoal)
                 syncedGrades.add(grade)
             } catch (e: CancellationException) {
                 throw e
@@ -149,8 +149,8 @@ suspend fun SyncEngine.sync(
 
 /** An adapter from the real client to [SyncApi]. */
 class ProgressSyncApi(private val client: ProgressSyncClient) : SyncApi, LessonCompletionApi by client {
-    override suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String?, expectedDueOn: String?, expectedLastReviewedAt: String?) {
-        client.gradeReview(itemKey, answer, course, attemptId, expectedDueOn, expectedLastReviewedAt)
+    override suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String?, expectedDueOn: String?, expectedLastReviewedAt: String?, variantGoal: String?) {
+        client.gradeReview(itemKey, answer, course, attemptId, expectedDueOn, expectedLastReviewedAt, variantGoal)
     }
 }
 

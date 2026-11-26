@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { allAcceptableAnswers, shownVariant } from "./goal-variants";
 import { publicError } from "./public-error";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
@@ -209,6 +210,7 @@ export const gradeReview = createServerFn({ method: "POST" })
     (d: {
       itemKey: string;
       answer: string;
+      variantGoal?: string | null;
       course?: string;
       expectedDueOn?: string;
       expectedLastReviewedAt?: string | null;
@@ -223,6 +225,12 @@ export const gradeReview = createServerFn({ method: "POST" })
             .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
           // The same ceiling as a lesson answer (completeLessonRemote): a long written translation is not refused here.
           answer: z.string().max(2000),
+          // The goal of the goal-flavoured version the learner was shown (goal-variants.ts); absent or null for the
+          // base question. Grading accepts the base and this one version only.
+          variantGoal: z
+            .string()
+            .regex(/^[a-z]{1,16}$/)
+            .nullish(),
           course: courseSchema,
           // The due date and last-graded time the learner was shown. A second tab or device that already graded the
           // item has moved them, so this answer is superseded and must not grade the item a second time (a wrong
@@ -296,7 +304,7 @@ export const gradeReview = createServerFn({ method: "POST" })
     } else {
       const ref = getCourse(course).questionIndex[data.itemKey];
       if (!ref) throw new Error("Unknown review item");
-      correct = deriveAnswerCorrectness(ref.question, data.answer, course);
+      correct = deriveAnswerCorrectness(ref.question, data.answer, course, data.variantGoal);
       // A written translation gets the same second opinion the lesson player
       // asks for. This is the web review path -- the grade-review Edge
       // Function is iOS's -- and without it a phrasing the player accepted
@@ -327,8 +335,8 @@ export const gradeReview = createServerFn({ method: "POST" })
               import("./llm-chat-model.server"),
             ]);
             const verdict = await gradeTranslationWithAi({
-              prompt: ref.question.prompt,
-              acceptableAnswers: ref.question.acceptableAnswers,
+              prompt: shownVariant(ref.question, data.variantGoal)?.prompt ?? ref.question.prompt,
+              acceptableAnswers: allAcceptableAnswers(ref.question, data.variantGoal),
               submission: data.answer,
               apiKey,
               model: resolveLlmChatModel(),

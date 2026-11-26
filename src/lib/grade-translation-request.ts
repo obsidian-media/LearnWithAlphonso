@@ -20,7 +20,14 @@ import type { TranslationVerdict } from "../routes/api/grade-translation";
  */
 export async function requestTranslationVerdict(
   args:
-    | { lessonId: string; questionId: string; submission: string; course: string }
+    | {
+        lessonId: string;
+        questionId: string;
+        submission: string;
+        course: string;
+        /** The goal of the goal-flavoured version on screen (goal-variants.ts); omitted for the base question. */
+        variantGoal?: string;
+      }
     | { placementId: string; submission: string; course: string },
   /** Called when the server says the learner has not allowed AI (consent withdrawn elsewhere). */
   onConsentRequired?: () => void,

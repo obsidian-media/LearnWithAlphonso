@@ -1,4 +1,6 @@
 import { noStoreJson } from "@/lib/api-json";
+import { allAcceptableAnswers, shownVariant } from "@/lib/goal-variants";
+import type { Question } from "@/data/curriculum";
 import { createFileRoute } from "@tanstack/react-router";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { getCourse, isCourse, type Course } from "@/data/courses";
@@ -61,6 +63,8 @@ export const Route = createFileRoute("/api/grade-translation")({
         let body: {
           lessonId?: string;
           questionId?: string;
+          /** The goal of the goal-flavoured version the learner was shown (goal-variants.ts); absent for the base. */
+          variantGoal?: string;
           /** Alternative to lessonId+questionId: a question from the placement
            *  pool, which lives outside the curriculum's question index. */
           placementId?: string;
@@ -108,7 +112,16 @@ export const Route = createFileRoute("/api/grade-translation")({
         }
 
         // Free, offline-capable, and final when it says yes.
-        if (matchesAcceptableAnswer(submission, question.acceptableAnswers)) {
+        // A lesson question may have been shown in its goal version (goal-variants.ts): the base wordings and that one
+        // version's, and the AI is asked about the version on screen. Placement questions have no variants.
+        const variantGoal = typeof body.variantGoal === "string" ? body.variantGoal : null;
+        const acceptable = placementId
+          ? question.acceptableAnswers
+          : allAcceptableAnswers(question as Question, variantGoal);
+        const shownPrompt = placementId
+          ? question.prompt
+          : (shownVariant(question as Question, variantGoal)?.prompt ?? question.prompt);
+        if (matchesAcceptableAnswer(submission, acceptable)) {
           return noStoreJson({
             correct: true,
             reason: null,
@@ -130,8 +143,8 @@ export const Route = createFileRoute("/api/grade-translation")({
         if (!quota.ok) return noStoreJson(localVerdict);
 
         const verdict = await gradeTranslationWithAi({
-          prompt: question.prompt,
-          acceptableAnswers: question.acceptableAnswers,
+          prompt: shownPrompt,
+          acceptableAnswers: acceptable,
           submission,
           apiKey: key,
           model: resolveLlmChatModel(),

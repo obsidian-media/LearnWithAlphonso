@@ -103,7 +103,7 @@ class ProgressSyncClient(
             put("lessonId", lessonId)
             put("total", total)
             putJsonArray("answers") {
-                answers.forEach { add(buildJsonObject { put("questionId", it.questionId); put("answer", it.answer) }) }
+                answers.forEach { add(buildJsonObject { put("questionId", it.questionId); put("answer", it.answer); if (it.variantGoal != null) put("variantGoal", it.variantGoal) }) }
             }
             put("course", course)
             put("sessionToken", sessionToken)
@@ -163,10 +163,12 @@ class ProgressSyncClient(
      * `attemptId` is the submission's stable identity: the server stores it with the graded result, so a grade whose
      * response was lost is replayed instead of being graded a second time.
      */
-    suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String? = null, expectedDueOn: String? = null, expectedLastReviewedAt: String? = null): ReviewGradeOutcome {
+    suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String? = null, expectedDueOn: String? = null, expectedLastReviewedAt: String? = null, variantGoal: String? = null): ReviewGradeOutcome {
         val obj = objectOf(http.function("grade-review", buildJsonObject {
             put("itemKey", itemKey); put("answer", answer); put("course", course)
             if (attemptId != null) put("attemptId", attemptId)
+            // The goal of the goal-flavoured version the learner was shown; the server grades the base and that one.
+            if (variantGoal != null) put("variantGoal", variantGoal)
             if (expectedDueOn != null) {
                 put("expectedDueOn", expectedDueOn)
                 put("expectedLastReviewedAt", expectedLastReviewedAt?.let { kotlinx.serialization.json.JsonPrimitive(it) } ?: JsonNull)

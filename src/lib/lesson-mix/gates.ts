@@ -129,7 +129,7 @@ function quotes(explanation: string, answer: string): boolean {
   return explanation.includes(`"${answer}"`) || explanation.includes(`“${answer}”`);
 }
 
-function explanationProblems(ex: unknown, answer: string): string[] {
+export function explanationProblems(ex: unknown, answer: string): string[] {
   if (!isStr(ex)) return ["the explanation is empty"];
   const out: string[] = [];
   if (!quotes(ex, answer.trim()))

@@ -22,10 +22,45 @@ type Case = {
   acceptable?: string[];
   submission?: string;
   reply?: Record<string, unknown>;
+  /** Goal-flavoured versions of the question: the input is right when it is right for the case OR for any of these. */
+  variants?: Variant[];
+  /** Which variant the learner was shown (absent: the base question). Another variant's answer is not right. */
+  variantIndex?: number;
   expected: boolean;
   runtimes?: Runtime[];
   note?: string;
 };
+type Variant = {
+  choices?: string[];
+  answerIndex?: number;
+  answer?: string;
+  bank?: string[];
+  acceptable?: string[];
+};
+const GOAL_NAMES = ["travel", "work", "school", "family", "exam", "fun"] as const;
+
+/** The goal of the version shown, as the client would send it with its answer. */
+function variantGoalOf(c: Case): string | null {
+  return c.variantIndex === undefined ? null : GOAL_NAMES[c.variantIndex]!;
+}
+
+/** The fixture's variants as the Question.goalVariants a curriculum would carry (one goal each, in order). */
+function goalVariantsOf(c: Case): Question["goalVariants"] {
+  if (!c.variants) return undefined;
+  const out: NonNullable<Question["goalVariants"]> = {};
+  c.variants.forEach((v, i) => {
+    out[GOAL_NAMES[i]!] = {
+      prompt: "v",
+      explanation: "e",
+      ...(v.choices ? { choices: v.choices } : {}),
+      ...(v.answerIndex !== undefined ? { answer: v.answerIndex } : {}),
+      ...(v.answer !== undefined ? { answer: v.answer } : {}),
+      ...(v.bank ? { bank: v.bank } : {}),
+      ...(v.acceptable ? { acceptableAnswers: v.acceptable } : {}),
+    };
+  });
+  return out;
+}
 
 const RUNTIME: Runtime = "web";
 const fixture = JSON.parse(readFileSync("tests/fixtures/grading-parity.json", "utf8")) as {
@@ -52,9 +87,11 @@ function grade(c: Case): boolean {
           choices: c.choices!,
           answer: c.answerIndex!,
           explanation: "e",
+          goalVariants: goalVariantsOf(c),
         } as Question,
         c.input!,
         course,
+        variantGoalOf(c),
       );
     case "translate":
       return deriveAnswerCorrectness(
@@ -64,9 +101,11 @@ function grade(c: Case): boolean {
           prompt: "p",
           acceptableAnswers: c.acceptable!,
           explanation: "e",
+          goalVariants: goalVariantsOf(c),
         } as Question,
         c.input!,
         course,
+        variantGoalOf(c),
       );
     default:
       return deriveAnswerCorrectness(
@@ -76,9 +115,13 @@ function grade(c: Case): boolean {
           prompt: "p",
           answer: c.answer!,
           explanation: "e",
+          // A fill question carries its bank; the base bank is not graded, so a stand-in is enough.
+          ...(c.kind === "fill" ? { bank: [c.answer!] } : {}),
+          goalVariants: goalVariantsOf(c),
         } as unknown as Question,
         c.input!,
         course,
+        variantGoalOf(c),
       );
   }
 }

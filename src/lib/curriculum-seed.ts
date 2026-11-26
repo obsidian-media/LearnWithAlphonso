@@ -3,6 +3,7 @@ import { LEVELS } from "@/data/levels";
 import { scenariosFor } from "@/data/scenarios";
 import { VOCAB_IMAGES } from "@/data/vocab-images";
 import type { Question } from "@/data/curriculum";
+import { applyVariantBody } from "@/lib/goal-variants";
 
 /**
  * Builds the row sets for the curriculum-data tables added in
@@ -58,6 +59,22 @@ export type QuestionRow = {
    */
   explanation: string;
   sort_order: number;
+  /**
+   * Goal-flavoured versions of the question (src/lib/goal-variants.ts), one entry per goal, each only the
+   * answer-bearing columns of its type; null when the question has none. The Edge Functions that grade a completion
+   * read this, so an answer written for a goal is accepted there.
+   */
+  goal_variants: GoalVariantRow[] | null;
+};
+
+export type GoalVariantRow = {
+  goal: string;
+  /** The version's own prompt: the AI translation grader is asked about the version on screen. */
+  prompt?: string;
+  choices?: string[] | null;
+  bank?: string[] | null;
+  answer_index?: number | null;
+  answer_text?: string | null;
 };
 
 export type VocabImageRow = { term: string; url: string; alt: string; credit: string };
@@ -120,6 +137,26 @@ export function buildLessonRows(course: Course): LessonRow[] {
 }
 
 function questionRow(lessonId: string, q: Question, sortOrder: number): QuestionRow {
+  const row = questionRowOf(lessonId, q, sortOrder);
+  const variants = Object.entries(q.goalVariants ?? {}).flatMap(([goal, body]) => {
+    if (!body) return [];
+    const v = questionRowOf(lessonId, applyVariantBody(q, body), sortOrder);
+    // Only the columns this type fills, so the Edge Function lays them over the base row without surprises.
+    const out: GoalVariantRow = { goal, prompt: v.prompt };
+    if (v.choices !== null) out.choices = v.choices;
+    if (v.bank !== null) out.bank = v.bank;
+    if (v.answer_index !== null) out.answer_index = v.answer_index;
+    if (v.answer_text !== null) out.answer_text = v.answer_text;
+    return [out];
+  });
+  return { ...row, goal_variants: variants.length ? variants : null };
+}
+
+function questionRowOf(
+  lessonId: string,
+  q: Question,
+  sortOrder: number,
+): Omit<QuestionRow, "goal_variants"> {
   const base = {
     lesson_id: lessonId,
     id: q.id,

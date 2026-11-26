@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.review
 
+import com.obsidianmedia.learnwithalphonso.core.content.hasVariantForGoal
+import com.obsidianmedia.learnwithalphonso.core.content.resolveForGoal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
@@ -27,6 +29,8 @@ import java.time.Instant
 import java.time.ZoneOffset
 
 data class ReviewUiState(
+    /** The learner's goal (null until read, or when skipped): a due question is shown in its goal version. */
+    val goal: String? = null,
     val isLoading: Boolean = true,
     val queue: List<ReviewItem> = emptyList(),
     val idx: Int = 0,
@@ -69,7 +73,9 @@ class ReviewViewModel(
         if (item.isSelfContained) return questionFromWeaknessItem(item)
         val found = content.findLesson(item.lessonId, course) ?: return null
         val questionId = item.itemKey.substringAfterLast(':')
-        return found.second.questions.firstOrNull { it.id == questionId }
+        // The goal version is shown (GoalVariant.kt); the review key and the server's grading are the base question's,
+        // and grading accepts any version.
+        return found.second.questions.firstOrNull { it.id == questionId }?.resolveForGoal(_state.value.goal)
     }
 
     /**
@@ -85,6 +91,8 @@ class ReviewViewModel(
         return PendingReviewGrade(
             item.itemKey, answer, course.code, now(), ownerUserId(), expectedDueOn = item.snapshotDueOn(),
             expectedLastReviewedAt = item.snapshotLastReviewedAt(),
+            // The goal of the goal-flavoured version on screen, so the server grades the base and that one version.
+            variantGoal = _state.value.goal?.takeIf { g -> !item.isSelfContained && questionFor(item)?.hasVariantForGoal(g) == true },
         ).also { gradeAttempt = it }
     }
 
@@ -97,6 +105,7 @@ class ReviewViewModel(
         if (!outcome.isStillDue(utcDateString(now()))) syncStore.removeCachedDueReview(itemKey)
     }
 
+    fun setGoal(goal: String?) = _state.update { it.copy(goal = goal) }
     fun pick(value: String?) = _state.update { if (it.checked) it else it.copy(picked = value) }
 
     fun isCurrentCorrect(): Boolean {
@@ -135,7 +144,7 @@ class ReviewViewModel(
                     return@launch
                 }
                 if (isConnected()) {
-                    val outcome = runCatching { client.gradeReview(item.itemKey, picked, course.code, attempt(item, picked).queueIdentity, item.snapshotDueOn(), item.snapshotLastReviewedAt()) }.getOrNull()
+                    val outcome = runCatching { client.gradeReview(item.itemKey, picked, course.code, attempt(item, picked).queueIdentity, item.snapshotDueOn(), item.snapshotLastReviewedAt(), attempt(item, picked).variantGoal) }.getOrNull()
                     if (outcome != null) {
                         // Before advance(): the current item moves on with idx.
                         dropFromDueCacheIfNoLongerDue(outcome, item.itemKey)
@@ -175,7 +184,7 @@ class ReviewViewModel(
         val submission = (picked ?: "").trim()
         val local = TranslationVerdict(TranslationAnswer.matches(submission, q.acceptableAnswers), null)
         if (!isConnected()) return local to false
-        val outcome = runCatching { client.gradeReview(item.itemKey, submission, course.code, attempt(item, submission).queueIdentity, item.snapshotDueOn(), item.snapshotLastReviewedAt()) }.getOrNull() ?: return local to false
+        val outcome = runCatching { client.gradeReview(item.itemKey, submission, course.code, attempt(item, submission).queueIdentity, item.snapshotDueOn(), item.snapshotLastReviewedAt(), attempt(item, submission).variantGoal) }.getOrNull() ?: return local to false
         dropFromDueCacheIfNoLongerDue(outcome, item.itemKey)
         val correct = outcome.correct ?: return local to false
         return TranslationVerdict(correct, null) to true

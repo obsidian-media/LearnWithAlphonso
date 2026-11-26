@@ -23,6 +23,10 @@ struct ReviewQueueView: View {
     @State private var savingWord: SaveWordRequest?
     /// Only items the bundled content can render (ReviewQueueResolution), so the screen is never blank.
     @State private var queue: [ResolvedReviewItem] = []
+    /// The learner's goal from their first-run answers (nil until read, or when they skipped it). A due question is
+    /// shown in the version written for it (GoalVariants.swift); the review key and the server's grading are the
+    /// base question's, and the server accepts the base and the version named by variantGoal.
+    @State private var goal: String?
     @State private var total = 0
     @State private var idx = 0
     @State private var picked: String?
@@ -106,6 +110,7 @@ struct ReviewQueueView: View {
         }
         .tint(ds.choice)
         .task(id: course) { await loadQueue() }
+        .task { goal = (try? await learnerProfileClient(session)?.fetch())?.answers.goal }
         // No whole-screen consent wall. Each item decides (AIConsentPolicy): a
         // translate item is graded by grade-review, which skips the AI grader
         // without account consent, and shows "Turn on AI grading"; a speak
@@ -138,7 +143,9 @@ struct ReviewQueueView: View {
     }
 
     /// Non-nil for any index inside the queue: loadQueue keeps only items ReviewQueueResolution resolved.
-    private var currentQuestion: Question? { idx < queue.count ? queue[idx].question : nil }
+    private var currentQuestion: Question? {
+        idx < queue.count ? queue[idx].question.resolved(forGoal: goal) : nil
+    }
 
     /// Alphonso at his book over the library scene: the picture the due count sits above.
     private var banner: some View {
@@ -175,6 +182,9 @@ struct ReviewQueueView: View {
                             DSPill(text: "\(idx + 1)/\(queue.count) due", tone: .gold)
                         }
                         banner
+                        if let goal, question.hasVariant(forGoal: goal) {
+                            GoalTagView(goal: goal)
+                        }
                         // .id() forces a fresh QuestionCard (and its reorder @State) per item -- same reasoning as
                         // LessonPlayerView's identical pattern.
                         QuestionCard(
@@ -488,7 +498,9 @@ struct ReviewQueueView: View {
             itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(),
             expectedDueOn: item.hasReviewSnapshot ? item.dueOn : nil,
             expectedLastReviewedAt: item.hasReviewSnapshot ? item.lastReviewedAt : nil,
-            ownerUserID: reviewOwnerUserID ?? session.userID)
+            ownerUserID: reviewOwnerUserID ?? session.userID,
+            // The goal of the goal-flavoured version on screen, so the server grades the base and that one version.
+            variantGoal: currentQuestion?.hasVariant(forGoal: goal) == true ? goal : nil)
         gradeAttempt = started
         return started
     }

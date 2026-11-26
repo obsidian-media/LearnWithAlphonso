@@ -34,7 +34,8 @@ final class PendingLessonCompletionRecord {
         lessonID = pending.lessonID
         total = pending.total
         answerQuestionIDs = pending.answers.map(\.questionId)
-        answerTexts = pending.answers.map(\.answer)
+        // The goal of a goal-flavoured version rides inside the stored text (VariantGoalTag): no schema change.
+        answerTexts = pending.answers.map { VariantGoalTag.encode($0.answer, goal: $0.variantGoal) }
         course = pending.course
         queuedAt = pending.queuedAt
         optimisticXpEstimate = pending.optimisticXpEstimate
@@ -48,7 +49,10 @@ final class PendingLessonCompletionRecord {
         PendingLessonCompletion(
             lessonID: lessonID,
             total: total,
-            answers: zip(answerQuestionIDs, answerTexts).map { LessonAnswer(questionId: $0, answer: $1) },
+            answers: zip(answerQuestionIDs, answerTexts).map { id, stored in
+                let decoded = VariantGoalTag.decode(stored)
+                return LessonAnswer(questionId: id, answer: decoded.text, variantGoal: decoded.goal)
+            },
             course: course,
             queuedAt: queuedAt,
             optimisticXpEstimate: optimisticXpEstimate,
@@ -84,7 +88,7 @@ final class PendingReviewGradeRecord {
 
     init(_ pending: PendingReviewGrade) {
         itemKey = pending.itemKey
-        answer = pending.answer
+        answer = VariantGoalTag.encode(pending.answer, goal: pending.variantGoal)
         course = pending.course
         queuedAt = pending.queuedAt
         expectedDueOn = pending.expectedDueOn
@@ -95,10 +99,12 @@ final class PendingReviewGradeRecord {
     }
 
     var asPending: PendingReviewGrade {
-        PendingReviewGrade(
-            itemKey: itemKey, answer: answer, course: course, queuedAt: queuedAt,
+        let decoded = VariantGoalTag.decode(answer)
+        return PendingReviewGrade(
+            itemKey: itemKey, answer: decoded.text, course: course, queuedAt: queuedAt,
             expectedDueOn: expectedDueOn, expectedLastReviewedAt: expectedLastReviewedAt,
-            ownerUserID: ownerUserID, attemptCount: attemptCount ?? 0, nextAttemptAt: nextAttemptAt)
+            ownerUserID: ownerUserID, attemptCount: attemptCount ?? 0, nextAttemptAt: nextAttemptAt,
+            variantGoal: decoded.goal)
     }
 
     var queueIdentity: String { "\(itemKey)|\(course)|\(queuedAt.timeIntervalSince1970)" }

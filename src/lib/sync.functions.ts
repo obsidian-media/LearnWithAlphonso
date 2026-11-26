@@ -309,6 +309,12 @@ const completeLessonSchema = z.object({
       z.object({
         questionId: z.string().regex(/^[a-z0-9]+$/),
         answer: z.string().max(2000),
+        // The goal of the goal-flavoured version the learner was shown (goal-variants.ts); absent or null for the base
+        // question, which is all an older build shows. Grading accepts the base and this one version only.
+        variantGoal: z
+          .string()
+          .regex(/^[a-z]{1,16}$/)
+          .nullish(),
       }),
     )
     .max(50),
@@ -522,14 +528,17 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const questionById = new Map(found.lesson.questions.map((q) => [q.id, q]));
     const missedQuestionIds: string[] = [];
     const graded: { type: string; correct: boolean }[] = [];
-    for (const { questionId, answer } of answers) {
+    for (const { questionId, answer, variantGoal } of answers) {
       // Safe: resolveLessonSubmission already proved questionId is a
       // real id in this lesson.
       const question = questionById.get(questionId)!;
-      const isCorrect = await gradeLessonAnswer(question, answer, course, {
-        allowed: aiAllowed,
-        checkQuota,
-      });
+      const isCorrect = await gradeLessonAnswer(
+        question,
+        answer,
+        course,
+        { allowed: aiAllowed, checkQuota },
+        variantGoal,
+      );
       if (!isCorrect) missedQuestionIds.push(questionId);
       graded.push({ type: question.type, correct: isCorrect });
     }

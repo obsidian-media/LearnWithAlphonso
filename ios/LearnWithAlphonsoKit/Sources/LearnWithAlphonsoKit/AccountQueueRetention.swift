@@ -192,6 +192,6 @@ extension PendingReviewGrade {
         PendingReviewGrade(
             itemKey: itemKey, answer: answer, course: course, queuedAt: queuedAt,
             expectedDueOn: expectedDueOn, expectedLastReviewedAt: expectedLastReviewedAt, ownerUserID: owner,
-            attemptCount: attemptCount, nextAttemptAt: nextAttemptAt)
+            attemptCount: attemptCount, nextAttemptAt: nextAttemptAt, variantGoal: variantGoal)
     }
 }
