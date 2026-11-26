@@ -72,7 +72,7 @@ export function TodayCard({ path }: { path: LearningPath }) {
       <div className="flex items-baseline justify-between">
         <h2 className="font-display text-lg font-extrabold text-ds-ink">Today</h2>
         <span className="text-xs text-ds-ink-soft">
-          {done} of {items.length} · {path.today.targetMinutes} min
+          {done} of {items.length} · {items.reduce((sum, i) => sum + i.minutes, 0)} min
         </span>
       </div>
       <ul className="grid gap-2">

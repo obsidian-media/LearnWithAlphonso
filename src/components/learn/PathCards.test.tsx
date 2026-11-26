@@ -85,6 +85,9 @@ describe("Learn's path cards", () => {
     const today = screen.getByRole("region", { name: "Today" });
     expect(today).toHaveTextContent("Free Time");
     expect(today).not.toHaveTextContent("items due in Review");
+    // The header sums the rows shown, not the daily target.
+    const minutes = fx.weakSpots.today.items.reduce((sum, i) => sum + i.minutes, 0);
+    expect(today).toHaveTextContent(`0 of ${fx.weakSpots.today.items.length} · ${minutes} min`);
   });
 
   it("the Fix card gathers both items under one 'Fix them now' that opens the first (Review)", () => {

@@ -64,7 +64,7 @@ struct LearnPathCards: View {
             HStack {
                 Text("Today").dsText(.headline).foregroundStyle(ds.ink)
                 Spacer()
-                Text("\(done) of \(path.today.items.count) \u{00B7} \(path.today.targetMinutes) min")
+                Text("\(done) of \(path.today.items.count) \u{00B7} \(path.today.items.reduce(0) { $0 + $1.minutes }) min")
                     .dsText(.caption).foregroundStyle(ds.inkSoft)
             }
             ForEach(Array(path.today.items.enumerated()), id: \.offset) { _, item in
@@ -76,8 +76,18 @@ struct LearnPathCards: View {
 
     private func fixCard(_ fix: PathFixCard) -> some View {
         card {
-            Text(fix.overline).dsText(.overline).foregroundStyle(ds.heartText)
-            Text(fix.title).dsText(.headline).foregroundStyle(ds.ink)
+            HStack(alignment: .top, spacing: AlphonsoDS.Space.s2) {
+                // Alphonso's face: his waving art, cropped to the head in a circle.
+                Image("Alphonso-waving").resizable().scaledToFill()
+                    .frame(width: 48, height: 48, alignment: .top)
+                    .clipShape(Circle())
+                    .background(Circle().fill(ds.sunk))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(fix.overline).dsText(.overline).foregroundStyle(ds.heartText)
+                    Text(fix.title).dsText(.headline).foregroundStyle(ds.ink)
+                }
+            }
             ForEach(Array(fix.items.enumerated()), id: \.offset) { _, item in
                 row(item)
             }

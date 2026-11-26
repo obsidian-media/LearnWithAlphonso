@@ -132,8 +132,12 @@ export type WeakInput = {
   /** Recent call mistakes that are not already one of those Review items. */
   callMistakes: number;
   categories: WeakCategory[];
-  /** The latest day an earlier lesson was replayed (a refresher done), or null. */
-  lastRefresherDay: string | null;
+  /**
+   * The refresher last offered for this course (lesson and the learner's day), or null. A replay of a lesson leaves no
+   * trace in the database, so the cooldown counts from the offer: the same lesson all that day, then none until
+   * REFRESHER_COOLDOWN_DAYS have passed.
+   */
+  offered: { lessonId: string; offeredOn: string } | null;
 };
 
 export type PathInput = {
@@ -517,7 +521,12 @@ type RefresherPick = { item: PlannedItem; category: WeakCategory; reason: string
 function refresherPick(input: PathInput, today: string): RefresherPick | null {
   const w = input.weak;
   if (!w) return null;
-  if (w.lastRefresherDay && dayNum(today) - dayNum(w.lastRefresherDay) < REFRESHER_COOLDOWN_DAYS)
+  const offered = w.offered;
+  if (
+    offered &&
+    offered.offeredOn !== today &&
+    dayNum(today) - dayNum(offered.offeredOn) < REFRESHER_COOLDOWN_DAYS
+  )
     return null;
   const skillWeak = (skill: Skill) => {
     const pct = input.skillPct[skill];
@@ -530,6 +539,8 @@ function refresherPick(input: PathInput, today: string): RefresherPick | null {
         (c.count >= REFRESHER_MIN_EVENTS ||
           (c.count >= REFRESHER_MIN_EVENTS_WEAK_SKILL && skillWeak(categorySkill(c.category)))),
     )
+    // On the day it was offered the SAME refresher stays; the learner is not handed another one mid-day.
+    .filter((c) => !(offered && offered.offeredOn === today) || c.lesson?.id === offered.lessonId)
     .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category))[0];
   if (!best?.lesson) return null;
   const topic = lowerFirst(best.label);

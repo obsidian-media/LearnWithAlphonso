@@ -1,6 +1,15 @@
 package com.obsidianmedia.learnwithalphonso.ui.path
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import com.obsidianmedia.learnwithalphonso.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -90,7 +99,7 @@ fun LearnPathCards(
             DsCard(padding = AlphonsoTokens.Space.s3) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("Today", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
-                    Text("$done of ${path.today.items.size} · ${path.today.targetMinutes} min", style = CaptionType, color = ds.inkSoft)
+                    Text("$done of ${path.today.items.size} · ${path.today.items.sumOf { it.minutes }} min", style = CaptionType, color = ds.inkSoft)
                 }
                 path.today.items.forEach { item -> PathItemRow(item, onClick = item.ref?.let { { open(item) } }) }
             }
@@ -103,8 +112,18 @@ fun LearnPathCards(
 private fun FixCard(fix: PathFixCard, open: (PathItem) -> Unit) {
     val ds = LocalAlphonsoTokens.current
     DsCard(padding = AlphonsoTokens.Space.s3) {
-        Text(fix.overline.uppercase(), style = OverlineType, color = ds.heartText)
-        Text(fix.title, style = HeadlineType, color = ds.ink)
+        Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.Top) {
+            // Alphonso's face: his mascot art, cropped to the head in a circle.
+            Image(
+                painterResource(R.drawable.mascot_alphonso), contentDescription = null,
+                modifier = Modifier.size(48.dp).clip(CircleShape).background(ds.sunk),
+                contentScale = ContentScale.Crop, alignment = Alignment.TopCenter,
+            )
+            Column {
+                Text(fix.overline.uppercase(), style = OverlineType, color = ds.heartText)
+                Text(fix.title, style = HeadlineType, color = ds.ink)
+            }
+        }
         fix.items.forEach { item -> PathItemRow(item, onClick = item.ref?.let { { open(item) } }) }
         AlphonsoPrimaryButton("Fix them now", onClick = { open(fix.items.first()) })
     }

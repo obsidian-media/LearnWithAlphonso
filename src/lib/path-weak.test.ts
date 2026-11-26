@@ -9,7 +9,8 @@ import { REFRESHER_UNIT_PATTERNS } from "@/data/refresher-topics";
 import { LEVEL_ORDER, planGoal, MAX_GOAL_DAYS } from "./learning-goal";
 import { suggestGoal } from "./suggest-goal";
 import { lessonsByLevel } from "./learning-goal.server";
-import { buildLearningPath, type PathData } from "./learning-path-data";
+import { buildLearningPath, refresherOfferToSave, type PathData } from "./learning-path-data";
+import { learnerProfilePatchSchema, parseLearnerProfile } from "./learner-profile";
 import { RECAP_TOPICS } from "./call-recap";
 import {
   planPath,
@@ -41,7 +42,7 @@ const weak = (over: Partial<WeakInput> = {}): WeakInput => ({
   reviewDue: 0,
   callMistakes: 0,
   categories: [],
-  lastRefresherDay: null,
+  offered: null,
   ...over,
 });
 
@@ -205,19 +206,6 @@ describe("buildLearningPath with no saved goal (path v2, A)", () => {
     const path = buildLearningPath(baseData({ goal: null, currentLevel: "B1" }))!;
     expect(path.progress.targetLevel).toBe("B2");
   });
-
-  it("a replayed lesson is practice, not goal progress (the first completion counts)", () => {
-    const id = allLessons[0].id;
-    const replay = buildLearningPath(
-      baseData({
-        completions: [
-          { lessonId: id, completedAt: "2026-09-01T08:00:00.000Z" },
-          { lessonId: id, completedAt: "2026-11-10T08:00:00.000Z" },
-        ],
-      }),
-    )!;
-    expect(replay.progress.doneLast7Days).toBe(0);
-  });
 });
 
 describe("Fix your weak spots (path v2, B)", () => {
@@ -310,21 +298,36 @@ describe("the refresher (path v2, B)", () => {
     expect(refresherOf(p)).toBeUndefined();
   });
 
-  it("rests for the cooldown after one was done, then comes back", () => {
-    const after = (lastRefresherDay: string, now: string) =>
+  it("the same refresher stays all day it was offered, then rests for the cooldown, then comes back", () => {
+    const at = (offeredOn: string, now: string, lessonId = "a1p1l1") =>
       refresherOf(
         planPath(
           engineInput({
             now: new Date(now),
-            weak: weak({ categories: [cat(3)], lastRefresherDay }),
+            weak: weak({ categories: [cat(3)], offered: { lessonId, offeredOn } }),
           }),
         ),
       );
-    expect(after("2026-11-11", "2026-11-11T10:00:00Z")).toBeUndefined();
-    expect(after("2026-11-10", "2026-11-11T10:00:00Z")).toBeUndefined();
-    expect(after("2026-11-09", "2026-11-11T10:00:00Z")).toBeUndefined();
     expect(REFRESHER_COOLDOWN_DAYS).toBe(3);
-    expect(after("2026-11-08", "2026-11-11T10:00:00Z")).toBeDefined();
+    expect(at("2026-11-11", "2026-11-11T10:00:00Z")).toBeDefined();
+    expect(at("2026-11-10", "2026-11-11T10:00:00Z")).toBeUndefined();
+    expect(at("2026-11-09", "2026-11-11T10:00:00Z")).toBeUndefined();
+    expect(at("2026-11-08", "2026-11-11T10:00:00Z")).toBeDefined();
+  });
+
+  it("on the day of the offer, only the offered lesson is offered, not another one", () => {
+    const p = planPath(
+      engineInput({
+        weak: weak({
+          categories: [
+            { ...cat(5), category: "articles", label: "Articles", lesson: plurals("other") },
+            cat(3),
+          ],
+          offered: { lessonId: "a1p1l1", offeredOn: "2026-11-11" },
+        }),
+      }),
+    );
+    expect(refresherOf(p)?.id).toBe("a1p1l1");
   });
 
   it("is only one item, for the category that repeats most", () => {
@@ -482,26 +485,40 @@ describe("the category to lesson mapping (path v2, B)", () => {
     expect((path.fix?.items ?? []).some((i) => i.title.startsWith("Refresher"))).toBe(false);
   });
 
-  it("a replay of an earlier lesson starts the cooldown", () => {
-    const id = "a1p1l1";
-    const path = buildLearningPath(
-      baseData({
-        completions: [
-          ...completedAll("en"),
-          { lessonId: id, completedAt: "2026-11-10T08:00:00.000Z" },
-        ],
-        weak: {
-          reviewDue: [],
-          weaknessEvents: [1, 2, 3].map((d) => ({
-            category: "plurals",
-            eventType: "detected",
-            createdAt: `2026-11-0${d}T09:00:00.000Z`,
-          })),
-          mistakes: [],
-        },
-      }),
-    )!;
-    expect((path.fix?.items ?? []).some((i) => i.title.startsWith("Refresher"))).toBe(false);
+  it("the recorded offer (profile metadata) drives the cooldown, with production-shaped data", () => {
+    const events = [1, 2, 3].map((d) => ({
+      category: "plurals",
+      eventType: "detected",
+      createdAt: `2026-11-0${d}T09:00:00.000Z`,
+    }));
+    const build = (offeredOn: string | null) =>
+      buildLearningPath(
+        baseData({
+          completions: completedAll("en"),
+          weak: { reviewDue: [], weaknessEvents: events, mistakes: [] },
+          profile: {
+            showFlag: false,
+            dailyMinutes: 10,
+            ...(offeredOn ? { pathRefresher: { en: { lessonId: "a1p1l1", offeredOn } } } : {}),
+          },
+        }),
+      )!;
+    const has = (p: ReturnType<typeof build>) =>
+      (p.fix?.items ?? []).some((i) => i.title.startsWith("Refresher"));
+    expect(has(build(null))).toBe(true);
+    expect(has(build("2026-11-10"))).toBe(false);
+    expect(has(build("2026-11-08"))).toBe(true);
+    // Another course's offer does not rest this course's refresher.
+    const other = baseData({
+      completions: completedAll("en"),
+      weak: { reviewDue: [], weaknessEvents: events, mistakes: [] },
+      profile: {
+        showFlag: false,
+        dailyMinutes: 10,
+        pathRefresher: { fr: { lessonId: "x", offeredOn: "2026-11-10" } },
+      },
+    });
+    expect(has(buildLearningPath(other)!)).toBe(true);
   });
 
   it("a call mistake that is already a due Review item is counted once, not twice", () => {
@@ -602,5 +619,70 @@ describe("Why this mix explains weak spots and the refresher (path v2, B)", () =
   it("says nothing about either when neither is on today's list", () => {
     const p = planPath(engineInput({ weak: weak({ reviewDue: 1 }) }));
     expect(p.why.some((x) => x.source === "weak")).toBe(false);
+  });
+});
+
+describe("recording the refresher offer (path v2)", () => {
+  const events = [1, 2, 3].map((d) => ({
+    category: "plurals",
+    eventType: "detected",
+    createdAt: `2026-11-0${d}T09:00:00.000Z`,
+  }));
+  const base = (profile: PathData["profile"] = { showFlag: false, dailyMinutes: 10 }) =>
+    baseData({
+      completions: [{ lessonId: "a1p1l1", completedAt: "2026-10-20T08:00:00.000Z" }],
+      weak: { reviewDue: [], weaknessEvents: events, mistakes: [] },
+      profile,
+    });
+
+  it("a new refresher is recorded for today, keeping the other courses' offers", () => {
+    const data = base({
+      showFlag: false,
+      dailyMinutes: 10,
+      pathRefresher: { fr: { lessonId: "x", offeredOn: "2026-10-01" } },
+    });
+    expect(refresherOfferToSave(buildLearningPath(data), data.profile, "en")).toEqual({
+      fr: { lessonId: "x", offeredOn: "2026-10-01" },
+      en: { lessonId: "a1p1l1", offeredOn: "2026-11-11" },
+    });
+  });
+
+  it("an offer already recorded for today is not saved again; no refresher saves nothing", () => {
+    const data = base({
+      showFlag: false,
+      dailyMinutes: 10,
+      pathRefresher: { en: { lessonId: "a1p1l1", offeredOn: "2026-11-11" } },
+    });
+    expect(refresherOfferToSave(buildLearningPath(data), data.profile, "en")).toBeNull();
+    const none = baseData();
+    expect(refresherOfferToSave(buildLearningPath(none), none.profile, "en")).toBeNull();
+  });
+
+  it("the same lesson offered again after the cooldown is a new offer, recorded with today's day", () => {
+    const data = base({
+      showFlag: false,
+      dailyMinutes: 10,
+      pathRefresher: { en: { lessonId: "a1p1l1", offeredOn: "2026-11-01" } },
+    });
+    expect(refresherOfferToSave(buildLearningPath(data), data.profile, "en")).toEqual({
+      en: { lessonId: "a1p1l1", offeredOn: "2026-11-11" },
+    });
+  });
+
+  it("the profile schema accepts the record and rejects junk", () => {
+    expect(
+      learnerProfilePatchSchema.safeParse({
+        pathRefresher: { en: { lessonId: "a1p1l1", offeredOn: "2026-11-11" } },
+      }).success,
+    ).toBe(true);
+    expect(
+      learnerProfilePatchSchema.safeParse({
+        pathRefresher: { en: { lessonId: "", offeredOn: "x" } },
+      }).success,
+    ).toBe(false);
+    expect(
+      parseLearnerProfile({ pathRefresher: { en: { lessonId: "a1p1l1", offeredOn: "nope" } } })
+        .pathRefresher,
+    ).toBeUndefined();
   });
 });

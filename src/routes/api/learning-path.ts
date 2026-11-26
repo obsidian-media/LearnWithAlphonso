@@ -4,7 +4,7 @@ import { isCourse } from "@/data/courses";
 import { TRIM_DAYS } from "@/data/path-config";
 import { saveLearnerProfileFor } from "@/lib/learner-profile.server";
 import { learnerProfilePatchSchema } from "@/lib/learner-profile";
-import { buildLearningPath } from "@/lib/learning-path-data";
+import { buildLearningPath, refresherOfferToSave } from "@/lib/learning-path-data";
 import { loadPathData } from "@/lib/learning-path.server";
 
 /**
@@ -74,7 +74,17 @@ async function handle(request: Request, method: "GET" | "PUT"): Promise<Response
     }
     const data = await loadPathData(admin, userId, course, new Date());
     // `null` only when the planner cannot plan (a target below the level); no saved goal now gets a suggested one.
-    return json({ path: buildLearningPath({ ...data, startableOnly: true }) });
+    const path = buildLearningPath({ ...data, startableOnly: true });
+    // A refresher on the path is recorded, so its 3-day cooldown has something to count from. Best effort.
+    const offer = refresherOfferToSave(path, data.profile, course);
+    if (offer) {
+      await saveLearnerProfileFor(admin, userId, { patch: { pathRefresher: offer } }, async () => ({
+        error: null,
+      })).catch((error: Error) =>
+        console.error(`[learning-path] refresher offer not saved: ${error.message}`),
+      );
+    }
+    return json({ path });
   } catch (error) {
     console.error(`[learning-path] ${method} failed: ${(error as Error).message}`);
     return json({ error: "Could not load your path." }, 500);

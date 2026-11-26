@@ -172,12 +172,11 @@ function refresherLesson(
   return best;
 }
 
-/** Turns the weakness rows into the engine's input: counts per category in the window, the lesson for each, the cooldown. */
+/** Turns the weakness rows into the engine's input: counts per category in the window, the lesson for each, the last offer. */
 function weakInput(
   data: PathData,
   completedAt: Record<string, string>,
   units: UnitList,
-  dayOf: (iso: string) => string,
 ): WeakInput {
   const w = data.weak!;
   const course = data.course;
@@ -215,34 +214,39 @@ function weakInput(
     }))
     .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
 
-  // A refresher is an earlier lesson played again: the latest day of any replay (a second completion row of a lesson).
-  const byLesson = new Map<string, string[]>();
-  for (const c of data.completions)
-    byLesson.set(c.lessonId, [...(byLesson.get(c.lessonId) ?? []), c.completedAt]);
-  let lastRefresherDay: string | null = null;
-  for (const times of byLesson.values()) {
-    for (const t of [...times].sort().slice(1)) {
-      const day = dayOf(t);
-      if (!lastRefresherDay || day > lastRefresherDay) lastRefresherDay = day;
-    }
-  }
-
   return {
     reviewDue: w.reviewDue.length,
     callMistakes: mistakes.filter((m) => !dueTopics.has(m.topic)).length,
     categories,
-    lastRefresherDay,
+    offered: data.profile.pathRefresher?.[course] ?? null,
+  };
+}
+
+/**
+ * The `pathRefresher` value to save after a path was built, or null when nothing needs saving. A refresher in the path
+ * is a NEW offer unless it was already recorded for today: the record is what the 3-day cooldown counts from, because
+ * replaying a lesson leaves no trace in lesson_completions. The record keeps the other courses' offers.
+ */
+export function refresherOfferToSave(
+  path: LearningPath | null,
+  profile: LearnerProfile,
+  course: Course,
+): NonNullable<LearnerProfile["pathRefresher"]> | null {
+  const refresher = path?.fix?.items.find((i) => i.ref?.kind === "lesson");
+  if (!path || !refresher) return null;
+  const stored = profile.pathRefresher?.[course];
+  if (stored && stored.offeredOn === path.today.day && stored.lessonId === refresher.id)
+    return null;
+  return {
+    ...profile.pathRefresher,
+    [course]: { lessonId: refresher.id, offeredOn: path.today.day },
   };
 }
 
 export function buildLearningPath(data: PathData): LearningPath | null {
   const { course, now } = data;
   const completedAt: Record<string, string> = {};
-  // The FIRST completion of a lesson (planGoal's rule): a replay, such as a refresher, is practice, not progress.
-  for (const c of data.completions) {
-    const seen = completedAt[c.lessonId];
-    if (seen === undefined || c.completedAt < seen) completedAt[c.lessonId] = c.completedAt;
-  }
+  for (const c of data.completions) completedAt[c.lessonId] = c.completedAt;
 
   const units = getCourse(course).curriculum;
   const dailyMinutes = data.profile.dailyMinutes ?? DEFAULT_DAILY_MINUTES;
@@ -511,7 +515,7 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     goalPlan: plan,
     goalLabel: goalLabel(goal.targetLevel, goal.targetDate),
     goalSuggested: !data.goal,
-    weak: data.weak ? weakInput(data, completedAt, units, dayOf) : undefined,
+    weak: data.weak ? weakInput(data, completedAt, units) : undefined,
     profile: {
       goal: data.profile.goal,
       interests: data.profile.interests ?? [],
