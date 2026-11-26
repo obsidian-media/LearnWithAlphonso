@@ -1071,6 +1071,9 @@ public final class ProgressSyncClient: Sendable {
     /// paying out its reward, see that RPC's own comment for why it
     /// doesn't take metric/target/reward as caller-supplied parameters.
     public func claimWeeklyQuest(questID: String, course: String, weekStart: String) async throws -> (ok: Bool, reason: String?, xp: Int?) {
+        // Only weekly_quests ids. A weekly challenge template id is a different id space and the server answers
+        // `unknown-quest` for it, which callers used to flatten into a connection error.
+        guard WeeklyQuests.isQuestID(questID) else { throw ProgressSyncError.invalidPayload }
         var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/claim_weekly_quest"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

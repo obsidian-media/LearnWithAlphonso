@@ -26,20 +26,25 @@ import org.junit.Test
 class LearnViewModelTest {
     @get:Rule val main = MainDispatcherRule()
 
-    private fun server(level: String? = "B1", completed: List<String> = listOf("u1l2", "u1l1"), placementTaken: Boolean = true) =
-        FakeServer(routes(level, completed, placementTaken))
+    private fun server(level: String? = "B1", completed: List<String> = listOf("u1l2", "u1l1"), placementTaken: Boolean = true, claim: String = """[{"ok":true,"xp":930}]""") =
+        FakeServer(routes(level, completed, placementTaken, claim))
 
     private fun routes(
         level: String? = "B1",
         completed: List<String> = listOf("u1l2", "u1l1"),
         placementTaken: Boolean = true,
+        claim: String = """[{"ok":true,"xp":930}]""",
     ): suspend MockRequestHandleScope.(SeenRequest) -> HttpResponseData = { req ->
         when {
             req.query["select"] == "cefr_level" -> json(if (level == null) "[]" else """[{"cefr_level":"$level"}]""")
             req.query["select"] == "lesson_id" -> json(completed.joinToString(",", "[", "]") { """{"lesson_id":"$it"}""" })
             req.query["select"] == "placement_taken_at" -> json(if (placementTaken) """[{"placement_taken_at":"2026-01-01T00:00:00+00:00"}]""" else """[{"placement_taken_at":null}]""")
             req.path.endsWith("get_weekly_challenges") -> json("""[{"template_id":"t1","title":"Finish 5 lessons","description":"d","progress":5,"threshold":5,"completed":false}]""")
-            req.path.endsWith("claim_weekly_quest") -> json("""[{"ok":true,"xp":100}]""")
+            // 100 + 60 XP this week, 2 lessons, nothing claimed yet.
+            req.path.endsWith("activity_days") -> json("""[{"xp_earned":100},{"xp_earned":60}]""")
+            req.path.endsWith("lesson_completions") && req.query["select"] == "id" -> json("""[{"id":"a"},{"id":"b"}]""")
+            req.path.endsWith("user_weekly_quest_claims") -> json("[]")
+            req.path.endsWith("claim_weekly_quest") -> json(claim)
             req.path.endsWith("buy_streak_freeze_with_xp") -> json("""[{"ok":false,"streak_freezes":1}]""")
             req.path.contains("language_progress") -> json("""[{"xp":900,"league_tier":"silver"}]""")
             req.path.contains("user_progress") -> json("""[{"streak":2,"longest_streak":2,"last_active_date":"2026-09-29","hearts":5,"hearts_refill_at":null,"streak_freezes":1}]""")
@@ -98,16 +103,44 @@ class LearnViewModelTest {
     }
 
     @Test
-    fun `challenges load and a claim posts this week's monday then refreshes progress`() = runBlocking {
+    fun `weekly quests load with this week's progress, separate from the challenges`() = runBlocking {
+        val v = LearnViewModel(testContent, server().progressClient, MemorySyncStore()) { 1_790_726_400_000L } // Wed 2026-09-30
+        v.initialLoad.join()
+        assertEquals(listOf("t1"), v.state.value.challenges.map { it.templateId })
+        assertEquals(listOf("weekly_xp_150", "weekly_xp_500", "weekly_lessons_5"), v.state.value.quests.map { it.id })
+        assertEquals(listOf(160, 160, 2), v.state.value.quests.map { it.progress })
+        assertEquals(listOf(true, false, false), v.state.value.quests.map { it.claimable })
+    }
+
+    @Test
+    fun `a quest claim sends a weekly_quests id and this week's monday, shows the reward and refreshes progress`() = runBlocking {
         val s = server()
         val store = MemorySyncStore()
         val v = LearnViewModel(testContent, s.progressClient, store) { 1_790_726_400_000L } // Wed 2026-09-30
         v.initialLoad.join()
-        v.claimChallenge(v.state.value.challenges.single()).join()
-        assertEquals("+100 XP claimed!", v.state.value.notice)
-        assertEquals("""{"_quest_id":"t1","_course":"en","_week_start":"2026-09-28"}""", s.seen.first { it.path.endsWith("claim_weekly_quest") }.body)
-        assertTrue(v.state.value.claimedChallengeIds.contains("t1"))
+        v.claimQuest(v.state.value.quests.first { it.claimable }).join()
+        assertEquals("+30 XP claimed!", v.state.value.notice)
+        // The id is the weekly_quests id, never a weekly challenge template id such as "t1" or "lessons_5".
+        assertEquals("""{"_quest_id":"weekly_xp_150","_course":"en","_week_start":"2026-09-28"}""", s.seen.first { it.path.endsWith("claim_weekly_quest") }.body)
+        assertTrue(v.state.value.quests.first { it.id == "weekly_xp_150" }.claimed)
         assertEquals(900, store.progress.value?.xp)
+    }
+
+    @Test
+    fun `a refused claim says why instead of a connection error, and a second claim is not offered`() = runBlocking {
+        val s = server(claim = """[{"ok":false,"reason":"already-claimed"}]""")
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore()) { 1_790_726_400_000L }
+        v.initialLoad.join()
+        v.claimQuest(v.state.value.quests.first { it.claimable }).join()
+        assertEquals("You already claimed this one.", v.state.value.notice)
+    }
+
+    @Test
+    fun `an unreachable server is the only thing that reads as a connection problem`() = runBlocking {
+        val v = LearnViewModel(testContent, server(claim = "not json").progressClient, MemorySyncStore()) { 1_790_726_400_000L }
+        v.initialLoad.join()
+        v.claimQuest(v.state.value.quests.first { it.claimable }).join()
+        assertEquals("Check your connection and try again.", v.state.value.notice)
     }
 
     @Test
@@ -259,5 +292,49 @@ class LearnViewModelTest {
         v.initialLoad.join()
         awaitTrue("dead letters") { v.deadLetters.value.isNotEmpty() }
         assertEquals(listOf("u1l1|en|1"), v.deadLetters.value.map { it.identity })
+    }
+
+    @Test
+    fun `a failed weekly read keeps the last good quests, raises the retry, and a good read clears it`() = runBlocking {
+        var failing = false
+        val s = FakeServer { req ->
+            when {
+                failing && (req.path.endsWith("activity_days") || req.path.endsWith("get_weekly_challenges")) -> json("""{"message":"boom"}""", HttpStatusCode.InternalServerError)
+                req.path.endsWith("activity_days") -> json("""[{"xp_earned":160}]""")
+                req.path.endsWith("lesson_completions") && req.query["select"] == "id" -> json("[]")
+                req.path.endsWith("user_weekly_quest_claims") -> json("[]")
+                req.path.endsWith("get_weekly_challenges") -> json("""[{"template_id":"t1","title":"Finish 5 lessons","description":"d","progress":1,"threshold":5,"completed":false}]""")
+                req.query["select"] == "lesson_id" -> json("[]")
+                req.query["select"] == "cefr_level" -> json("""[{"cefr_level":"A1"}]""")
+                req.query["select"] == "placement_taken_at" -> json("""[{"placement_taken_at":"2026-01-01T00:00:00+00:00"}]""")
+                else -> json("")
+            }
+        }
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore()) { 1_790_726_400_000L }
+        v.initialLoad.join()
+        assertEquals(false, v.state.value.weeklyLoadFailed)
+        assertEquals(3, v.state.value.quests.size)
+        failing = true
+        v.refresh().join()
+        // Not "nothing this week": the earlier lists stay and the card offers Try again.
+        assertEquals(true, v.state.value.weeklyLoadFailed)
+        assertEquals(3, v.state.value.quests.size)
+        assertEquals(listOf("t1"), v.state.value.challenges.map { it.templateId })
+        failing = false
+        v.refresh().join()
+        assertEquals(false, v.state.value.weeklyLoadFailed)
+    }
+
+    @Test
+    fun `a double tap on Claim sends one RPC`() = runBlocking {
+        val s = server()
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore()) { 1_790_726_400_000L }
+        v.initialLoad.join()
+        val quest = v.state.value.quests.first { it.claimable }
+        val first = v.claimQuest(quest)
+        val second = v.claimQuest(quest) // the same stale quest, tapped again before the screen updated
+        first.join()
+        second.join()
+        assertEquals(1, s.seen.count { it.path.endsWith("claim_weekly_quest") })
     }
 }

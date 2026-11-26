@@ -9,13 +9,16 @@ import com.obsidianmedia.learnwithalphonso.core.content.Unit
 import com.obsidianmedia.learnwithalphonso.core.logic.LevelSave
 import com.obsidianmedia.learnwithalphonso.core.logic.ReviewBadge
 import com.obsidianmedia.learnwithalphonso.core.logic.mondayDateString
+import com.obsidianmedia.learnwithalphonso.core.logic.weeklyQuestClaimMessage
 import com.obsidianmedia.learnwithalphonso.core.net.BuyStreakFreezeResult
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.WeeklyChallenge
+import com.obsidianmedia.learnwithalphonso.core.net.WeeklyQuest
 import com.obsidianmedia.learnwithalphonso.core.net.buyStreakFreezeWithXp
 import com.obsidianmedia.learnwithalphonso.core.net.claimWeeklyQuest
 import com.obsidianmedia.learnwithalphonso.core.net.getWeeklyChallenges
+import com.obsidianmedia.learnwithalphonso.core.net.getWeeklyQuests
 import com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
 import kotlinx.coroutines.Job
@@ -41,7 +44,10 @@ data class LearnUiState(
     val mostRecentlyCompletedLessonId: String? = null,
     val placementTaken: Boolean? = null,
     val challenges: List<WeeklyChallenge> = emptyList(),
-    val claimedChallengeIds: Set<String> = emptySet(),
+    /** This week's weekly_quests (claimable XP rewards), separate from [challenges], which award themselves. */
+    val quests: List<WeeklyQuest> = emptyList(),
+    /** The last read of the weekly challenges or quests failed: the card says so with Try again, and keeps what it had. */
+    val weeklyLoadFailed: Boolean = false,
     val notice: String? = null,
 ) {
     fun unitsForLevel(content: ContentStore): List<Unit> = content.bundle(course).units.filter { it.level == selectedLevel }
@@ -136,20 +142,49 @@ class LearnViewModel(
 
     fun refresh(): Job = load()
 
-    /** Claims a completed challenge for this week's Monday; the reward shows as a notice. */
-    fun claimChallenge(challenge: WeeklyChallenge): Job {
+    /**
+     * Claims a finished weekly quest for this week's Monday; the reward shows as a notice. Weekly challenges have no
+     * claim (get_weekly_challenges pays them when read), so only a [WeeklyQuest] id ever goes to claim_weekly_quest.
+     */
+    fun claimQuest(quest: WeeklyQuest): Job {
         val course = _state.value.course
+        // A second tap while the first claim is out, or on a quest already claimed, sends nothing.
+        if (_state.value.quests.firstOrNull { it.id == quest.id }?.claimed == true) return COMPLETED
+        if (!claimingQuestIds.add(quest.id)) return COMPLETED
         return viewModelScope.launch {
-            val r = runCatching { client.claimWeeklyQuest(challenge.templateId, course.code, mondayDateString(0, nowMillis())) }.getOrNull()
-            when {
-                r == null -> _state.update { it.copy(notice = "Check your connection and try again.") }
-                r.ok -> {
-                    _state.update { it.copy(claimedChallengeIds = it.claimedChallengeIds + challenge.templateId, notice = "+${r.xp ?: 0} XP claimed!") }
-                    runCatching { client.fetchProgress() }.getOrNull()?.let { syncStore.updateLastKnownProgress(it) }
-                }
-                else -> _state.update { it.copy(notice = r.reason ?: "Couldn't claim that reward.") }
+            try {
+                claimQuestNow(quest, course)
+            } finally {
+                claimingQuestIds.remove(quest.id)
             }
         }
+    }
+
+    /** Quest ids with a claim in flight (main thread only). */
+    private val claimingQuestIds = mutableSetOf<String>()
+
+    private suspend fun claimQuestNow(quest: WeeklyQuest, course: Course) {
+        run {
+            val outcome = runCatching { client.claimWeeklyQuest(quest.id, course.code, mondayDateString(0, nowMillis())) }.getOrNull()
+            when {
+                // Only a real failure to reach the server; a refusal from it (below) is never this message.
+                outcome == null -> _state.update { it.copy(notice = "Check your connection and try again.") }
+                outcome.ok -> {
+                    _state.update { it.copy(quests = it.quests.map { q -> if (q.id == quest.id) q.copy(claimed = true) else q }, notice = "+${quest.xpReward} XP claimed!") }
+                    runCatching { client.fetchProgress() }.getOrNull()?.let { syncStore.updateLastKnownProgress(it) }
+                }
+                else -> {
+                    _state.update { it.copy(notice = weeklyQuestClaimMessage(outcome.reason)) }
+                    // Already claimed elsewhere, or the week turned over: the list on screen is stale.
+                    if (outcome.reason == "already-claimed" || outcome.reason == "invalid-week") reloadQuests(course)
+                }
+            }
+        }
+    }
+
+    private suspend fun reloadQuests(course: Course) {
+        val quests = runCatching { client.getWeeklyQuests(course.code, mondayDateString(0, nowMillis())) }.getOrNull() ?: return
+        if (_state.value.course == course) _state.update { it.copy(quests = quests) }
     }
 
     /** Spends [STREAK_FREEZE_XP_COST] XP on a streak freeze, same RPC the web app calls. */
@@ -178,7 +213,8 @@ class LearnViewModel(
             val level = runCatching { client.fetchCefrLevel(course.code) }.getOrNull()?.takeIf { it.isNotEmpty() && LEVELS.any { l -> l.first == it } }
             val ids = runCatching { client.fetchCompletedLessonIds(course.code) }.getOrDefault(emptyList())
             val placed = runCatching { client.fetchPlacementTakenAt(course.code) }
-            val challenges = runCatching { client.getWeeklyChallenges() }.getOrDefault(emptyList())
+            val challengesRead = runCatching { client.getWeeklyChallenges() }
+            val questsRead = runCatching { client.getWeeklyQuests(course.code, mondayDateString(0, nowMillis())) }
             if (_state.value.course != course) return@launch
             // A pick made while this read was out, or still saving, outranks the level it read.
             val saving = levelSave?.let { (c, job) -> c == course && job.isActive } == true
@@ -190,7 +226,10 @@ class LearnViewModel(
                     completedLessonIds = ids.toSet(),
                     mostRecentlyCompletedLessonId = ids.firstOrNull(),
                     placementTaken = placed.getOrNull()?.let { true } ?: if (placed.isSuccess) false else null,
-                    challenges = challenges,
+                    // A failed read keeps the last good list (never "nothing this week") and raises the retry.
+                    challenges = challengesRead.getOrNull() ?: it.challenges,
+                    quests = questsRead.getOrNull() ?: it.quests,
+                    weeklyLoadFailed = challengesRead.isFailure || questsRead.isFailure,
                 )
             }
         }.also { loadJob = it }

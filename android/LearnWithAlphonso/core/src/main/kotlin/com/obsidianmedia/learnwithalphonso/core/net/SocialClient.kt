@@ -5,6 +5,8 @@ import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGiftLogic
 import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGiftState
 import com.obsidianmedia.learnwithalphonso.core.logic.GiftFreezeOutcome
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorAllowance
+import com.obsidianmedia.learnwithalphonso.core.logic.buildWeeklyQuests
+import com.obsidianmedia.learnwithalphonso.core.logic.isWeeklyQuestId
 import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -257,7 +259,23 @@ suspend fun ProgressSyncClient.getWeeklyChallenges(): List<WeeklyChallenge> =
         )
     }
 
+/**
+ * This week's quests with progress for one course, from the same durable rows the RPC checks (activity_days XP,
+ * lesson_completions count) and the claim ledger. A failed read throws: it must not read as zero progress.
+ */
+suspend fun ProgressSyncClient.getWeeklyQuests(course: String, weekStart: String): List<WeeklyQuest> {
+    val weekEnd = java.time.LocalDate.parse(weekStart).plusDays(7).toString()
+    val xp = rowsOf(http.rest(HttpMethod.Get, "activity_days", mapOf("select" to "xp_earned", "and" to "(day.gte.$weekStart,day.lt.$weekEnd)")))
+        .sumOf { it.int("xp_earned") ?: 0 }
+    val lessons = rowsOf(http.rest(HttpMethod.Get, "lesson_completions", mapOf("select" to "id", "language" to "eq.$course", "and" to "(completed_at.gte.$weekStart,completed_at.lt.$weekEnd)"))).size
+    val claimed = rowsOf(http.rest(HttpMethod.Get, "user_weekly_quest_claims", mapOf("select" to "quest_id", "week_start" to "eq.$weekStart")))
+        .mapNotNull { it.string("quest_id") }.toSet()
+    return buildWeeklyQuests(xp, lessons, claimed)
+}
+
+/** [questId] must be a weekly_quests id ([isWeeklyQuestId]); a challenge template id is refused here, not by the server. */
 suspend fun ProgressSyncClient.claimWeeklyQuest(questId: String, course: String, weekStart: String): QuestClaimOutcome {
+    require(isWeeklyQuestId(questId)) { "not a weekly_quests id: $questId" }
     val row = firstRow(http.rpc("claim_weekly_quest", buildJsonObject { put("_quest_id", questId); put("_course", course); put("_week_start", weekStart) }))
     return QuestClaimOutcome(row.bool("ok") ?: throw ProgressSyncError.InvalidPayload(), row.string("reason"), row.int("xp"))
 }
