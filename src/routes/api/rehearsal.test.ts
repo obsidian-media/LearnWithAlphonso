@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { OUTCOME_MEMORY_LINES } from "@/lib/rehearsal-rules";
 import { fallbackBrief, type RehearsalBrief } from "@/lib/rehearsal-brief";
 
 const ID = "00000000-0000-4000-8000-0000000000d1";
@@ -17,6 +18,8 @@ const h = vi.hoisted(() => ({
   /** What each table read returns. */
   active: null as unknown,
   history: [] as unknown[],
+  runs: [] as unknown[],
+  zone: null as string | null,
   freeUsed: false,
   freeReadError: false,
   deleted: [] as unknown[],
@@ -49,6 +52,9 @@ vi.mock("@/integrations/supabase/client.server", () => {
           data: h.freeUsed ? { user_id: "u1" } : null,
           error: h.freeReadError ? { message: "down" } : null,
         };
+      if (table === "rehearsal_runs") return { data: h.runs, error: null };
+      if (table === "learner_time_zones")
+        return { data: h.zone ? { time_zone: h.zone } : null, error: null };
       if (ops.some((o) => o.m === "maybeSingle")) return { data: h.active, error: null };
       return { data: h.history, error: null };
     };
@@ -137,6 +143,8 @@ beforeEach(() => {
   h.rpcResult = null;
   h.active = null;
   h.history = [];
+  h.runs = [];
+  h.zone = null;
   h.freeUsed = false;
   h.freeReadError = false;
   h.deleted = [];
@@ -398,6 +406,103 @@ describe("the REHEARSALS_ENABLED flag", () => {
   });
 });
 
+describe("outcome (How did it go?)", () => {
+  const outcome = (body: Record<string, unknown>) => post({ action: "outcome", id: ID, ...body });
+  const rpcOf = (fn: string) => h.rpcs.find((r) => r.fn === fn);
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-12-01T12:00:00Z"));
+    h.active = rowFor({});
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it.each(["well", "ok", "hard"])(
+    "%s closes it with the fixed memory line and no learner text",
+    async (choice) => {
+      h.rpcResult = {
+        data: { ...rowFor({}), status: "done", closed_at: "2026-12-01T12:00:00Z" },
+        error: null,
+      };
+      const res = await outcome({ choice });
+      expect(res.status).toBe(200);
+      expect(((await res.json()) as { rehearsal: { status: string } }).rehearsal.status).toBe(
+        "done",
+      );
+      expect(rpcOf("close_rehearsal")!.args).toEqual({
+        _user_id: "u1",
+        _id: ID,
+        _outcome: { choice },
+        _memory_text: OUTCOME_MEMORY_LINES.interview[choice as "well" | "ok" | "hard"],
+      });
+    },
+  );
+
+  it("moved with a future date moves it and keeps it active", async () => {
+    const res = await outcome({ choice: "moved", newDate: "2026-12-20" });
+    expect(res.status).toBe(200);
+    expect(rpcOf("move_rehearsal")!.args).toEqual({
+      _user_id: "u1",
+      _id: ID,
+      _event_date: "2026-12-20",
+    });
+    expect(rpcOf("close_rehearsal")).toBeUndefined();
+  });
+
+  it("moved needs a date after the learner's LOCAL today, not the UTC one", async () => {
+    // 12:00 UTC on 2026-12-01 is already 2026-12-02 at +14: a date of 2026-12-02 is not in the future there.
+    h.zone = "Pacific/Kiritimati";
+    expect((await outcome({ choice: "moved", newDate: "2026-12-02" })).status).toBe(400);
+    expect((await outcome({ choice: "moved", newDate: "2026-12-03" })).status).toBe(200);
+    // And in UTC the same 2026-12-02 is tomorrow, so it is fine.
+    h.zone = null;
+    h.rpcs = [];
+    expect((await outcome({ choice: "moved", newDate: "2026-12-02" })).status).toBe(200);
+  });
+
+  it.each([
+    ["no date", undefined],
+    ["today", "2026-12-01"],
+    ["the past", "2026-11-20"],
+    ["not a date", "soon"],
+  ])("moved with %s is 400 and writes nothing", async (_n, newDate) => {
+    const res = await outcome({ choice: "moved", newDate });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid_date" });
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("a second outcome on a closed rehearsal is 409 and writes nothing", async () => {
+    h.active = { ...rowFor({}), status: "done", closed_at: "2026-12-01T10:00:00Z" };
+    const res = await outcome({ choice: "well" });
+    expect(res.status).toBe(409);
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("a lost race (the database says it is closed) is 409 too", async () => {
+    h.rpcResult = { data: null, error: { code: "P0001", message: "rehearsal_closed" } };
+    expect((await outcome({ choice: "ok" })).status).toBe(409);
+  });
+
+  it("someone else's or an unknown rehearsal is 404", async () => {
+    h.active = null;
+    expect((await outcome({ choice: "well" })).status).toBe(404);
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("an unknown choice or a bad id is 400", async () => {
+    expect((await outcome({ choice: "great" })).status).toBe(400);
+    expect((await outcome({ choice: "well", id: "nope" })).status).toBe(400);
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("is not an AI call: no consent or quota, only a session", async () => {
+    await outcome({ choice: "well" });
+    expect(h.authorize).not.toHaveBeenCalled();
+    expect(h.verify).toHaveBeenCalled();
+  });
+});
+
 describe("GET /api/rehearsal?course=", () => {
   it("returns the active rehearsal, the history and whether the free one is still available", async () => {
     h.active = rowFor({ _free: true });
@@ -420,6 +525,45 @@ describe("GET /api/rehearsal?course=", () => {
   it("no rehearsal and no free marker: active null, the free one available", async () => {
     const res = await get("?course=fr");
     expect(await res.json()).toMatchObject({ active: null, history: [], freeAvailable: true });
+  });
+
+  const runRow = (stage: string, finished_at: string, corrections: string[] = []) => ({
+    stage,
+    finished_at,
+    moments_shown: [],
+    went_well: [],
+    corrections,
+  });
+
+  it("returns the stage progress and the next stage of the active rehearsal", async () => {
+    h.active = rowFor({});
+    h.runs = [runRow("warmup", "2026-11-27T10:00:00Z")];
+    const body = (await (await get("?course=en")).json()) as {
+      progress: Record<string, string>;
+      nextStage: string;
+    };
+    expect(body.progress).toEqual({ warmup: "done", conversation: "todo", hard_moments: "todo" });
+    expect(body.nextStage).toBe("conversation");
+  });
+
+  it("with every stage done the next stage is the weakest one", async () => {
+    h.active = rowFor({});
+    h.runs = [
+      runRow("warmup", "2026-11-27T10:00:00Z", ["a"]),
+      runRow("conversation", "2026-11-27T11:00:00Z", ["a", "b", "c"]),
+      runRow("hard_moments", "2026-11-27T12:00:00Z", ["a", "b"]),
+    ];
+    expect(((await (await get("?course=en")).json()) as { nextStage: string }).nextStage).toBe(
+      "conversation",
+    );
+  });
+
+  it("no active rehearsal: no progress and no next stage", async () => {
+    expect(await (await get("?course=en")).json()).toMatchObject({
+      active: null,
+      progress: null,
+      nextStage: null,
+    });
   });
 
   it("a bad course is 400; no session is the verifier's status", async () => {

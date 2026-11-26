@@ -1,7 +1,7 @@
 import type { Course } from "@/data/course-meta";
 import { authHeaders } from "./auth-headers";
 import type { RehearsalBrief } from "./rehearsal-brief";
-import type { EventKind } from "./rehearsal-rules";
+import type { EventKind, OutcomeChoice, Stage, StageProgress } from "./rehearsal-rules";
 
 /**
  * The browser side of /api/rehearsal (src/routes/api/rehearsal.ts). The shapes here are what the server returns, so
@@ -38,6 +38,9 @@ export type RehearsalSummary = Pick<
 
 export type RehearsalState = {
   active: Rehearsal | null;
+  /** Which of the three stages have a finished run, and which to offer next; null with no active rehearsal. */
+  progress: StageProgress | null;
+  nextStage: Stage | null;
   history: RehearsalSummary[];
   /** True while the account's one free rehearsal has not been used. */
   freeAvailable: boolean;
@@ -58,6 +61,7 @@ export type RehearsalError =
   | "retry"
   | "blocked_text"
   | "active_exists"
+  | "closed"
   | "not_found"
   | "not_enabled"
   | "invalid"
@@ -69,7 +73,7 @@ export type Result<T> = { ok: true; value: T } | { ok: false; error: RehearsalEr
 function errorOf(status: number, code: unknown): RehearsalError {
   if (status === 402) return "paywall";
   if (status === 503) return "retry";
-  if (status === 409) return "active_exists";
+  if (status === 409) return code === "closed" ? "closed" : "active_exists";
   if (status === 404) return code === "not_enabled" ? "not_enabled" : "not_found";
   if (status === 403) return "consent";
   if (status === 400) return code === "blocked_text" ? "blocked_text" : "invalid";
@@ -110,5 +114,9 @@ export const adjustRehearsal = (id: string, intake: RehearsalIntake) =>
 
 export const cancelRehearsal = (id: string) =>
   post<{ rehearsal: Rehearsal }>({ action: "cancel", id });
+
+/** "How did it go?": taps only. `moved` carries the new date (YYYY-MM-DD), the others close the rehearsal. */
+export const rehearsalOutcome = (id: string, choice: OutcomeChoice, newDate?: string) =>
+  post<{ rehearsal: Rehearsal }>({ action: "outcome", id, choice, newDate });
 
 export const deleteRehearsal = (id: string) => post<{ ok: true }>({ action: "delete", id });
