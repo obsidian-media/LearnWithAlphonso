@@ -55,9 +55,8 @@ class HectorAndBillingTest {
     fun `hector follows the active course, in speech, level and the tutor's language`() = runBlocking {
         val s = server()
         val v = HectorViewModel(InstantRecorder(), { true }, tutor(s), ai(s), s.progressClient, ReplyPlayer { true }, sessionId = "sess-fr", course = Course.FRENCH)
-        awaitTrue("memory") { v.historyForTutor().isNotEmpty() }
+        awaitTrue("context") { v.contextLoaded() }
         assertTrue("the level is the French course's", s.seen.any { it.query["select"] == "cefr_level" && it.query["language"] == "eq.fr" })
-        assertTrue("the priming turn names no particular language", !v.historyForTutor().single().content.contains("English"))
         v.pressBegan(); v.pressEnded()
         awaitTrue("turn") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == 2 }
         val body = Json.parseToJsonElement(s.seen.first { it.path.endsWith("/api/hector-respond") }.body).jsonObject
@@ -68,28 +67,23 @@ class HectorAndBillingTest {
     }
 
     @Test
-    fun `hector primes the tutor once with level and weak spots and keeps it at the head across turns`() = runBlocking {
-        // Plan 3 Review Focus 4.
+    fun `the current learner turn goes only in text, never also in history, and there is no client priming turn`() = runBlocking {
         val s = server()
         val played = ArrayList<Int>()
         val v = HectorViewModel(InstantRecorder(), { true }, tutor(s), ai(s), s.progressClient, ReplyPlayer { b -> played.add(b.size); true }, sessionId = "sess-1")
-        awaitTrue("memory") { v.historyForTutor().isNotEmpty() }
-        val priming = v.historyForTutor().single()
-        assertEquals("user", priming.role)
-        assertTrue(priming.content.contains("their current level is B2"))
-        assertTrue(priming.content.contains("past tense"))
+        awaitTrue("context") { v.contextLoaded() }
+        assertTrue("the server builds the memory: nothing is primed", v.historyForTutor().isEmpty())
         repeat(2) { i -> v.pressBegan(); v.pressEnded(); awaitTrue("turn $i") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == 2 * (i + 1) } }
         val bodies = s.seen.filter { it.path.endsWith("/api/hector-respond") }.map { Json.parseToJsonElement(it.body).jsonObject }
         assertEquals(2, bodies.size)
         bodies.forEach { b ->
             assertEquals("sess-1", b["session_id"]!!.jsonPrimitive.content)
             val history = b["history"]!!.jsonArray
-            assertEquals(1, history.count { it.jsonObject["content"]!!.jsonPrimitive.content.startsWith("[Background for you") })
-            assertTrue(history[0].jsonObject["content"]!!.jsonPrimitive.content.startsWith("[Background for you"))
+            assertEquals(0, history.count { it.jsonObject["content"]!!.jsonPrimitive.content.startsWith("[Background for you") })
         }
-        // priming + first user turn = 2 entries; priming + 3 turns = 4 on the second call
-        assertEquals(2, bodies[0]["history"]!!.jsonArray.size)
-        assertEquals(4, bodies[1]["history"]!!.jsonArray.size)
+        // The first call has nothing before the learner's turn; the second has the first exchange (user + reply).
+        assertEquals(0, bodies[0]["history"]!!.jsonArray.size)
+        assertEquals(2, bodies[1]["history"]!!.jsonArray.size)
         assertEquals(listOf(3, 3), played)
         assertEquals("dev-1", s.seen.first { it.path.endsWith("/api/hector-respond") }.headers["X-Alphonso-Device-Id"])
     }

@@ -88,7 +88,10 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
-import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryContext
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorCall
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorCallTracker
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorGreetingVariants
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorOpening
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorAllowance
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorGreeting
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorChip
@@ -148,7 +151,7 @@ class HectorViewModel(
     private val ai: AiConversationClient,
     private val progress: ProgressSyncClient,
     private val player: ReplyPlayer,
-    private val sessionId: String = UUID.randomUUID().toString(),
+    sessionId: String = UUID.randomUUID().toString(),
     /** The learner's active course: the tutor speaks it, and speech is transcribed and spoken in it. */
     val course: Course = Course.ENGLISH,
     /** Hector's own chosen voice for a course (Settings > Voices), never Alphonso's; null lets the server decide. */
@@ -159,6 +162,12 @@ class HectorViewModel(
     private val hectorLimit: suspend () -> Int? = { null },
     /** A tapped recording is stopped and sent after this long (a held button was bounded by the finger). */
     private val recordingCapMs: Long = HectorRecordingCap.MILLIS,
+    /** The last greeting variant used per course (sent back to /api/hector-greeting so the next one differs). */
+    private val greetingVariants: HectorGreetingVariants = HectorGreetingVariants({ null }, { _, _ -> }),
+    /** Outlives this view model: the call-end and the weakness analysis must finish after the screen is gone. */
+    private val workScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    /** Where a failed or unsaved background request is recorded, with its reason (logcat in the app). */
+    private val log: (String, Throwable?) -> Unit = { message, error -> runCatching { android.util.Log.w("Hector", message, error) } },
 ) : ViewModel(), CallConversation {
     // Hector's endpoint returns no verdict on the learner's turn, so verdictSerial never changes and he does not react.
     private val _state = MutableStateFlow(ConversationUiState(openerIndices = emptySet()))
@@ -175,9 +184,12 @@ class HectorViewModel(
     /** The learner refused the microphone: "Try again" then puts the cursor in the composer instead. */
     @Volatile var micDenied: Boolean = false
         private set
-    private var memoryContext: ChatMessage? = null
     private var cefrLevel: String? = null
-    private var analysed = false
+    /** This call's identity (call id, tutor session) and what has already been sent for it. "Call again" replaces it. */
+    private val call = HectorCallTracker(HectorCall.Ids(HectorCall.Ids.fresh().callId, sessionId))
+    /** Hector kept this call in what he remembers: the "Call ended" screen says so. */
+    private val _savedToMemory = MutableStateFlow(false)
+    val savedToMemory: StateFlow<Boolean> = _savedToMemory.asStateFlow()
     /** Hector speaks first (BACKLOG 0.0-bp): his greeting, built locally once the learner context has loaded. */
     private val greeting = CompletableDeferred<String>()
     /** Today's Hector allowance is used up (BACKLOG 0.0-bq #5): no greeting, no speech, the out-for-today message. */
@@ -197,11 +209,9 @@ class HectorViewModel(
         viewModelScope.launch {
             val level = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()
             val trend = runCatching { progress.fetchWeaknessTrend(course.code) }.getOrDefault(emptyList())
-            val open = trend.filter { it.openCount > 0 }.map { it.category }
             // A name the learner chose; an unconfirmed one is a generated handle.
             val name = runCatching { progress.fetchNameStatus() }.getOrNull()?.takeIf { it.nameConfirmed }?.displayName
             cefrLevel = level
-            memoryContext = TutorMemoryContext.buildPrimingMessage(level, open)
             allowanceUsedUp = progress.fetchHectorAllowanceUsedUp(hectorLimit())
             val weakSpot = HectorGreeting.recentWeakSpot(trend)
             _chips.value = HectorChips.build(course, weakSpot, 0)
@@ -250,10 +260,16 @@ class HectorViewModel(
      */
     fun greet() {
         viewModelScope.launch {
-            val text = greeting.await()
+            val local = greeting.await()
             if (allowanceUsedUp) {
                 _state.update { it.copy(error = HectorAllowance.OUT_FOR_TODAY) }
                 return@launch
+            }
+            // The server's memory-aware line for a call with no turns yet; the local template when it fails or is offline.
+            val text = if (_state.value.turns.isNotEmpty()) local else {
+                val opening = HectorOpening.resolve(course.code, greetingVariants, local) { last -> ai.hectorGreeting(course.code, cefrLevel, last) }
+                opening.fallbackReason?.let { log("hector-greeting fell back to the local greeting: reason=$it", null) }
+                opening.text
             }
             _state.update { if (it.turns.isEmpty()) it.copy(turns = listOf(ChatMessage("assistant", text)), openerIndices = setOf(0)) else it }
             opener.speak({ pendingGreeting }, { hectorVoice(course.code) })
@@ -309,16 +325,25 @@ class HectorViewModel(
         if (micDenied) focusComposer() else tapMicBegan()
     }
 
-    /** Exposed for tests: the history the tutor receives for the next turn. */
-    fun historyForTutor(): List<ChatMessage> = listOfNotNull(memoryContext) + _state.value.turns
+    /** Exposed for tests: the learner's level, weak spot and name have loaded (the greeting is ready). */
+    fun contextLoaded(): Boolean = greeting.isCompleted
+
+    /**
+     * The history the tutor receives for the turn in flight: every turn before the learner's current one, which goes in
+     * `text` (the server appends it itself). No client priming turn: the server builds Hector's memory of the learner.
+     */
+    fun historyForTutor(): List<ChatMessage> = HectorCall.priorTurns(_state.value.turns)
 
     private suspend fun sendTurn(text: String) {
-        val call = callGeneration
+        val generation = callGeneration
+        val ids = call.ids
         _state.update { it.copy(turns = it.turns + ChatMessage("user", text), phase = ConversationPhase.THINKING) }
         try {
-            val reply = tutor.respond(sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel, voice = hectorVoice(course.code))
+            val reply = tutor.respond(ids.sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel, voice = hectorVoice(course.code))
+            // A reply to a call that has since been replaced by "Call again" belongs to the old call.
+            if (ids != call.ids) return
             // A reply that comes back after the learner hung up joins the transcript but is never spoken.
-            val live = call == callGeneration
+            val live = generation == callGeneration
             // The server already took the block out; parsing the reply here too means a tag can never be shown.
             val parsed = HectorCorrections.extract(reply.reply)
             val shown = parsed.text.ifEmpty { "…" }
@@ -334,8 +359,11 @@ class HectorViewModel(
         }
     }
 
-    /** The composable left (rotation, tab switch): cancel any recording; the view model survives. */
-    fun onLeave() { handsFree.disable(); capJob?.cancel(); opener.stop(); engine.cancel() }
+    /**
+     * The composable left (rotation, tab switch, the screen closing): cancel any recording; the view model survives.
+     * With the call still open, Hector remembers it and the weakness analysis runs now (each once per call).
+     */
+    fun onLeave(configChange: Boolean = false) { handsFree.disable(); capJob?.cancel(); opener.stop(); engine.cancel(); if (!configChange) finishCall() }
 
     /** Bumped on hang-up: a turn that started before it may still get its reply, but never plays the audio. */
     @Volatile private var callGeneration = 0
@@ -347,6 +375,56 @@ class HectorViewModel(
         handsFree.disable()
         opener.stop()
         engine.cancel()
+        finishCall()
+    }
+
+    /** "Call again": a true new call. An empty thread, a new call id and tutor session, and a new greeting. */
+    fun startNewCall() {
+        capJob?.cancel()
+        callGeneration++
+        opener.stop()
+        engine.cancel()
+        call.startNewCall()
+        _state.value = ConversationUiState(openerIndices = emptySet())
+        _corrections.value = emptyMap()
+        _savedToMemory.value = false
+        greet()
+    }
+
+    /** The call is over (or the screen is closing): keep it in Hector's memory, and analyse it once. */
+    private fun finishCall() {
+        val turns = _state.value.turns
+        sendCallEnd(turns)
+        sendAnalysis(turns)
+    }
+
+    /** /api/hector-call-end, once per call id and only for a call of at least three learner turns. */
+    private fun sendCallEnd(turns: List<ChatMessage>) {
+        if (!call.claimCallEnd(turns)) return
+        val callId = call.ids.callId
+        val level = cefrLevel
+        workScope.launch {
+            try {
+                val result = ai.hectorCallEnd(callId, course.code, level, turns)
+                if (result.saved) { if (callId == call.ids.callId) _savedToMemory.value = true }
+                else log("hector-call-end not saved: reason=${result.reason ?: "unknown"}", null)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log("hector-call-end failed: reason=${HectorCall.failureReason(e)}", e)
+            }
+        }
+    }
+
+    /** /api/analyze-weaknesses, once per stretch of conversation, on a scope that outlives the screen. */
+    private fun sendAnalysis(turns: List<ChatMessage>) {
+        // Hector sends no recap, so no recap has analysed this call.
+        if (!call.claimAnalysis(turns.size)) return
+        workScope.launch {
+            try { ai.analyzeWeaknesses(turns, course.code) }
+            catch (e: kotlinx.coroutines.CancellationException) { throw e }
+            catch (e: Exception) { log("analyze-weaknesses failed: reason=${HectorCall.failureReason(e)}", e) }
+        }
     }
 
     companion object {
@@ -362,10 +440,8 @@ class HectorViewModel(
     public override fun onCleared() {
         handsFree.disable()
         engine.tearDown()
-        if (analysed || _state.value.turns.size < 4) return
-        analysed = true
-        val transcript = _state.value.turns
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript, course.code) } }
+        // Normally the call was already handled at hang-up or on leaving; this is the safety net, and it is once-only.
+        finishCall()
     }
 }
 
@@ -451,10 +527,11 @@ private fun HectorConversation(container: AppContainer, onOpenPlacement: (Course
     // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
     val course by container.activeCourse.course.collectAsState()
     val vm: HectorViewModel = viewModel(key = "hector-${course.code}") {
-        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course, hectorVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Hector, c) }, hectorLimit = { container.hectorDailyLimit() })
+        HectorViewModel(container.newRecorder(), { container.micPermission.request() }, container.tutorClient, container.aiClient, container.progressClient, { playback.play(it) }, course = course, hectorVoice = { c -> container.voicePrefs.voice(VoiceCharacter.Hector, c) }, hectorLimit = { container.hectorDailyLimit() }, greetingVariants = HectorGreetingVariants({ k -> container.prefs.getInt(k, -1).takeIf { it >= 0 } }, { k, v -> container.prefs.edit().putInt(k, v).apply() }))
     }
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()
+    val saved by vm.savedToMemory.collectAsState()
     val context = LocalContext.current
     // "Show Alphonso while practicing" (Settings, on by default) covers Hector's call too: one switch decides.
     val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
@@ -469,7 +546,7 @@ private fun HectorConversation(container: AppContainer, onOpenPlacement: (Course
         firstRunLevel = runCatching { container.learnerProfileClient.fetch().answers.level }.getOrNull()
         placementTaken = runCatching { container.progressClient.fetchPlacementTakenAt(course.code) }.fold(onSuccess = { it != null }, onFailure = { true })
     }
-    DisposableEffect(Unit) { onDispose { Speech.get(context).stop(); vm.onLeave() } }
+    DisposableEffect(Unit) { onDispose { Speech.get(context).stop(); vm.onLeave(configChange = generateSequence(context) { (it as? android.content.ContextWrapper)?.baseContext }.filterIsInstance<Activity>().firstOrNull()?.isChangingConfigurations == true) } }
 
     AiConsentGate(container) {
       // Hector speaks first: his greeting, inside the gate so nothing is fetched before consent; again on each
@@ -495,7 +572,8 @@ private fun HectorConversation(container: AppContainer, onOpenPlacement: (Course
             if (callEnded) {
                 Column(Modifier.fillMaxSize().background(ds.surface), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text("Call ended", style = TitleType, color = ds.ink)
-                    AlphonsoPrimaryButton("Call again", onClick = { callEnded = false; vm.greet() })
+                    if (saved) Text("Saved to what Hector remembers", style = FootnoteType, color = ds.inkSoft, modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
+                    AlphonsoPrimaryButton("Call again", onClick = { callEnded = false; vm.startNewCall() })
                     PlacementOfferCard(
                         PlacementOffer.style(firstRunLevel, placementTaken, offerDismissed, PlacementOffer.Surface.HECTOR_END),
                         onStart = { onOpenPlacement(course) },

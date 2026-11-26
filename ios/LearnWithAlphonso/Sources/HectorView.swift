@@ -1,4 +1,5 @@
 import SwiftUI
+import OSLog
 import LearnWithAlphonsoKit
 
 /// Pro-only "Hector": an AI voice tutor persona alongside the free
@@ -90,9 +91,6 @@ private struct HectorConversationView: View {
     @State private var recordingCap: Task<Void, Never>?
     @State private var notice: String?
     @State private var cefrLevel: String?
-    /// V3 package 3b "tutor persona memory": open weaknesses, prepended to
-    /// every respond() history but never shown as a bubble.
-    @State private var memoryContext: TutorConversationMessage?
     /// The word the learner tapped in one of Hector's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
     @State private var showPaywall = false
@@ -108,9 +106,16 @@ private struct HectorConversationView: View {
     @State private var placementTaken = true
     @State private var offerDismissed = false
     @State private var showingPlacement = false
-    /// @State, not `let`: a View struct is re-created on every render, and a
-    /// `let UUID()` minted a new session id each time.
-    @State private var sessionID = UUID().uuidString
+    /// This call's identity (call id, tutor session id) and whether its call-end was sent. @State, not `let`: a View
+    /// struct is re-created on every render, and a `let UUID()` minted new ids each time. "Call again" replaces both.
+    @State private var tracker = HectorCall.Tracker()
+    private var ids: HectorCall.Ids { tracker.ids }
+    /// The local greeting template for this learner: the fallback when /api/hector-greeting fails or is offline.
+    /// nil when today's allowance is used up (no greeting then).
+    @State private var localGreeting: String?
+    /// Hector kept this call in what he remembers: the "Call ended" screen says so.
+    @State private var savedToMemory = false
+    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "LearnWithAlphonso", category: "hector")
 
     private var key: ConversationKey { .hector(course: course) }
 
@@ -147,6 +152,9 @@ private struct HectorConversationView: View {
             recordingCap?.cancel()
             voice.disappeared()
             voice.onCapture = nil
+            // Leaving with the call still open (a tab switch, a closed sheet): have Hector remember it and analyse
+            // what was said. Each once, so a call already handled at hang-up is not sent again.
+            sendCallEnd()
             analyzeWeaknessesIfNew()
         }
     }
@@ -406,6 +414,9 @@ private struct HectorConversationView: View {
     private func endCall() {
         voice.setHandsFree(false)
         voice.disappeared()
+        // The call is over: have Hector remember it and analyse it now, not whenever the tab is left.
+        sendCallEnd()
+        analyzeWeaknessesIfNew()
         // As a sheet the call hid its Done button, so hanging up closes it; on the tab it shows "Call ended".
         if let onClose { onClose() } else { callEnded = true }
     }
@@ -415,16 +426,77 @@ private struct HectorConversationView: View {
             level: firstRunLevel, placementTaken: placementTaken, dismissed: offerDismissed, surface: .hectorEnd) == .prominent
     }
 
+    /// "Call again" is a true new call: an empty thread, a new call id and tutor session, and a new greeting. The
+    /// ended call was already sent (call-end) and analysed at hang-up.
+    private func startNewCall() {
+        conversation = tracker.startNewCall(store: conversationStore, course: course)
+        corrections = [:]
+        savedToMemory = false
+        callEnded = false
+        voice.appeared()
+        Task { await openCall() }
+    }
+
+    /// Hector's greeting for a call with no turns yet: the server's memory-aware line, else the local template.
+    /// Nothing when today's allowance is used up (the notice stays).
+    private func openCall() async {
+        guard let local = localGreeting else { return }
+        notice = nil
+        let level = cefrLevel
+        let courseCode = course.wireCode
+        let opening: HectorOpening
+        if let accessToken = session.accessToken {
+            let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            opening = await HectorOpening.resolve(
+                course: course, variants: .userDefaults(), localFallback: local
+            ) { last in try await client.hectorGreeting(course: courseCode, cefrLevel: level, lastVariant: last) }
+        } else {
+            opening = HectorOpening(text: local, fromServer: false, fallbackReason: "auth")
+        }
+        if let reason = opening.fallbackReason {
+            Self.log.error("hector-greeting fell back to the local greeting: reason=\(reason, privacy: .public)")
+        }
+        conversation = conversationStore.openWithGreeting(key, greeting: opening.text)
+        openerCue += 1
+    }
+
+    /// Sends the finished call to /api/hector-call-end, once per call id and only for a call of at least three
+    /// learner turns. Everything it needs is captured and it is a plain Task, so leaving the screen never cancels it.
+    /// A failure or a `saved: false` is logged with its reason; "Saved" shows on the ended screen only when kept.
+    private func sendCallEnd() {
+        let snapshot = conversationStore.snapshot(for: key) ?? conversation
+        guard tracker.claimCallEnd(turns: snapshot.turns) else { return }
+        guard let accessToken = session.accessToken else {
+            Self.log.error("hector-call-end skipped: reason=auth (signed out)")
+            return
+        }
+        let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+        let callId = ids.callId
+        let courseCode = course.wireCode
+        let level = cefrLevel
+        let messages = snapshot.turns
+        // A plain Task: unlike `.task`, it is not cancelled when the view goes away.
+        Task {
+            do {
+                let result = try await client.hectorCallEnd(callId: callId, course: courseCode, cefrLevel: level, messages: messages)
+                if result.saved {
+                    if callId == ids.callId { savedToMemory = true }
+                } else {
+                    Self.log.notice("hector-call-end not saved: reason=\(result.reason ?? "unknown", privacy: .public)")
+                }
+            } catch {
+                Self.log.error("hector-call-end failed: reason=\(HectorCall.failureReason(error), privacy: .public)")
+            }
+        }
+    }
+
     private var callEndedView: some View {
         VStack(spacing: AlphonsoDS.Space.s4) {
             DSEmptyState(
                 art: "Hector-happy", title: "Call ended",
+                message: savedToMemory ? "Saved to what Hector remembers" : nil,
                 actionTitle: "Call again",
-                action: {
-                    callEnded = false
-                    voice.appeared()
-                    openerCue += 1
-                })
+                action: { startNewCall() })
             if offersPlacement {
                 PlacementOfferCard(
                     onStart: { showingPlacement = true },
@@ -495,9 +567,7 @@ private struct HectorConversationView: View {
         let trend = (try? await client.fetchWeaknessTrend(course: course.wireCode)) ?? []
         // A name the learner chose; an unconfirmed one is a generated handle.
         let nameStatus = (try? await client.fetchNameStatus()) ?? nil
-        let openCategories = trend.filter { $0.openCount > 0 }.map(\.category)
         cefrLevel = level
-        memoryContext = TutorMemoryContext.buildPrimingMessage(cefrLevel: level, openWeaknessCategories: openCategories)
         // Today's allowance is used up (BACKLOG 0.0-bq #5): the "out for today" message and no greeting, so no speech.
         // The limit is the server's to say (GET /api/app-config); with none known Hector greets and the server still guards.
         let limit = await HectorAllowance.fetchLimit(baseURL: AppConfig.apiBaseURL)
@@ -507,11 +577,13 @@ private struct HectorConversationView: View {
         }
         // Hector speaks first: a conversation with no turns yet opens with his greeting (built locally, no LLM call).
         weakSpot = HectorGreeting.recentWeakSpot(trend)
-        conversation = conversationStore.openWithGreeting(key, greeting: HectorGreeting.build(
+        localGreeting = HectorGreeting.build(
             course: course, cefrLevel: level,
             name: nameStatus?.nameConfirmed == true ? nameStatus?.displayName : nil,
-            weakSpot: HectorGreeting.recentWeakSpot(trend)))
-        openerCue += 1
+            weakSpot: HectorGreeting.recentWeakSpot(trend))
+        // The server's memory-aware line when it answers, else the local template. A conversation already underway
+        // (a tab return) keeps its thread: openWithGreeting only opens an empty one.
+        if conversationStore.snapshot(for: key)?.turns.isEmpty ?? true { await openCall() } else { openerCue += 1 }
     }
 
     // MARK: - Bubbles
@@ -646,6 +718,7 @@ private struct HectorConversationView: View {
     private func respond(to text: String, generation: Int) async {
         let key = self.key
         let courseCode = course.wireCode
+        let callIds = ids
         guard let accessToken = await session.freshAccessToken() else {
             voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
             return
@@ -658,16 +731,19 @@ private struct HectorConversationView: View {
 
             // The current utterance goes only in `text`; the
             // history is every turn BEFORE it. The server appends `text` itself.
-            let priorTurns = snapshot.recentTurns.dropLast().map { TutorConversationMessage(role: $0.role, content: $0.content) }
+            let priorTurns = HectorCall.priorTurns(snapshot.recentTurns)
             let reply = try await tutorClient.respond(
-                sessionID: sessionID,
+                sessionID: callIds.sessionID,
                 text: text,
                 course: courseCode,
                 cefrLevel: cefrLevel,
-                history: (memoryContext.map { [$0] } ?? []) + priorTurns,
+                // No client priming turn: the server builds Hector's memory of this learner itself.
+                history: priorTurns,
                 // Hector's own voice for this course (Settings > Voices), never Alphonso's.
                 voice: VoicePrefsCache().voice(.hector, course: courseCode)
             )
+            // A reply to a call that has since ended and been replaced by "Call again" belongs to the old call.
+            guard callIds == ids else { return }
             // The server already took the block out; parsing the reply here too means a tag can never be shown.
             let parsed = HectorCorrections.extract(reply.reply)
             snapshot = conversationStore.append(
@@ -694,13 +770,24 @@ private struct HectorConversationView: View {
 
     private func analyzeWeaknessesIfNew() {
         let snapshot = conversationStore.snapshot(for: key) ?? conversation
-        guard snapshot.turns.count >= 4, snapshot.turns.count > snapshot.analyzedTurnCount,
-              let accessToken = session.accessToken else { return }
+        // Hector sends no recap yet, so no recap has analysed this call.
+        guard HectorCall.shouldAnalyse(
+            turnCount: snapshot.turns.count, analysedTurnCount: snapshot.analyzedTurnCount, recapAttempted: false)
+        else { return }
+        guard let accessToken = session.accessToken else {
+            Self.log.error("analyze-weaknesses skipped: reason=auth (signed out)")
+            return
+        }
         conversationStore.update(key) { $0.analyzedTurnCount = snapshot.turns.count }
         let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
         let transcript = snapshot.recentTurns
         let courseCode = course.wireCode
-        Task { _ = try? await client.analyzeWeaknesses(transcript: transcript, course: courseCode) }
+        // Detached, with everything it needs captured: it is not tied to this view, so leaving the screen never
+        // cancels it. A failure is logged with its reason, never swallowed.
+        Task.detached {
+            do { _ = try await client.analyzeWeaknesses(transcript: transcript, course: courseCode) }
+            catch { Self.log.error("analyze-weaknesses failed: reason=\(HectorCall.failureReason(error), privacy: .public)") }
+        }
     }
 }
 
