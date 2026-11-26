@@ -3,7 +3,11 @@ package com.obsidianmedia.learnwithalphonso.ui.path
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -113,12 +117,14 @@ private fun FixCard(fix: PathFixCard, open: (PathItem) -> Unit) {
     val ds = LocalAlphonsoTokens.current
     DsCard(padding = AlphonsoTokens.Space.s3) {
         Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.Top) {
-            // Alphonso's face: his mascot art, cropped to the head in a circle.
-            Image(
-                painterResource(R.drawable.mascot_alphonso), contentDescription = null,
-                modifier = Modifier.size(48.dp).clip(CircleShape).background(ds.sunk),
-                contentScale = ContentScale.Crop, alignment = Alignment.TopCenter,
-            )
+            // Alphonso's face: the mascot zoomed to about 190% on the head (50% across, 12% down), filling the circle.
+            Box(Modifier.size(48.dp).clip(CircleShape).background(ds.sunk)) {
+                Image(
+                    painterResource(R.drawable.mascot_alphonso), contentDescription = null,
+                    modifier = Modifier.fillMaxSize().graphicsLayer(scaleX = 1.9f, scaleY = 1.9f, transformOrigin = TransformOrigin(0.5f, 0.12f)),
+                    contentScale = ContentScale.Crop, alignment = Alignment.TopCenter,
+                )
+            }
             Column {
                 Text(fix.overline.uppercase(), style = OverlineType, color = ds.heartText)
                 Text(fix.title, style = HeadlineType, color = ds.ink)

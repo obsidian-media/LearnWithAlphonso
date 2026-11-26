@@ -77,9 +77,9 @@ struct LearnPathCards: View {
     private func fixCard(_ fix: PathFixCard) -> some View {
         card {
             HStack(alignment: .top, spacing: AlphonsoDS.Space.s2) {
-                // Alphonso's face: his waving art, cropped to the head in a circle.
-                Image("Alphonso-waving").resizable().scaledToFill()
-                    .frame(width: 48, height: 48, alignment: .top)
+                // Alphonso's face: his head art filling the circle.
+                Image("Alphonso-help-head").resizable().scaledToFill()
+                    .frame(width: 48, height: 48)
                     .clipShape(Circle())
                     .background(Circle().fill(ds.sunk))
                     .accessibilityHidden(true)
