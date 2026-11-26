@@ -35,3 +35,7 @@ is first graded.
   would count as a real word. Raise `MIN_COUNT` if one turns up.
 - Words under 5 letters are not listed; the typo allow-list never considers them as slips anyway.
 - Subtitle text is unaccented sometimes (`tambien`), so an unaccented form can be in the list.
+
+## National spelling variants
+
+A listed word is treated as a different word, with one exception: when it is the other national spelling of an accepted word it is accepted (colour/color, organise/organize, travelled/traveled, catalogue/catalog, centre/center, defence/defense). This is `spellingVariantKey` in `src/lib/translation-grader.server.ts` (and its Deno copy): a stem table plus guarded rules for our/or, ise/ize, yse/yze, el|al|ol|il + l(ed|ing|er...) and ogue/og. A rule needs a long enough stem so lookalikes stay different words (four/for, mourning/morning, filled/filed, prise/prize, forth/fourth).

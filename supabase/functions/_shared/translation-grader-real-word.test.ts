@@ -72,3 +72,53 @@ Deno.test(
     assertEquals(decideVerdict(reply(o), ["Los cavos."], "Los cabos.", "en")?.correct, true);
   },
 );
+
+// Review follow-up: the other national spelling is the same word, so the real-word rule must not reject it.
+const variants: [string, string, string, string][] = [
+  ["color", "colour", "My favourite colour is blue.", "My favourite color is blue."],
+  ["colour", "color", "My favorite color is blue.", "My favorite colour is blue."],
+  ["favorite", "favourite", "This is my favourite song.", "This is my favorite song."],
+  ["favourite", "favorite", "This is my favorite song.", "This is my favourite song."],
+  ["theatre", "theater", "We went to the theater.", "We went to the theatre."],
+  ["theater", "theatre", "We went to the theatre.", "We went to the theater."],
+  ["traveled", "travelled", "She travelled to Spain.", "She traveled to Spain."],
+  ["travelled", "traveled", "She traveled to Spain.", "She travelled to Spain."],
+  ["organize", "organise", "We will organise it.", "We will organize it."],
+  ["analyse", "analyze", "Please analyze the data.", "Please analyse the data."],
+  ["catalogue", "catalog", "Open the catalog now.", "Open the catalogue now."],
+  ["centre", "center", "Go to the center now.", "Go to the centre now."],
+  ["defense", "defence", "The defence was strong.", "The defense was strong."],
+  ["jewelry", "jewellery", "She wore jewellery.", "She wore jewelry."],
+  ["neighbors", "neighbours", "My neighbours are kind.", "My neighbors are kind."],
+];
+
+for (const [w, i, acceptable, sub] of variants) {
+  Deno.test(`en: ${w} for ${i} is the same word in every reply shape`, () => {
+    for (const o of shapes(w, i)) {
+      assertEquals(
+        decideVerdict(reply(o), [acceptable], sub, "en")?.correct,
+        true,
+        JSON.stringify(o),
+      );
+    }
+  });
+}
+
+const lookalikes: [string, string, string, string][] = [
+  ["forth", "fourth", "This is the fourth door.", "This is the forth door."],
+  ["morning", "mourning", "They are mourning now.", "They are morning now."],
+  ["filed", "filled", "She filled the cup.", "She filed the cup."],
+  ["prize", "prise", "Prise the lid open.", "Prize the lid open."],
+];
+
+for (const [w, i, acceptable, sub] of lookalikes) {
+  Deno.test(`en: ${w} for ${i} is still a different word in every reply shape`, () => {
+    for (const o of shapes(w, i)) {
+      assertEquals(
+        decideVerdict(reply(o), [acceptable], sub, "en")?.correct,
+        false,
+        JSON.stringify(o),
+      );
+    }
+  });
+}

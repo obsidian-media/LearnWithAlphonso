@@ -104,3 +104,43 @@ describe("a real word is a different word, never a spelling slip", () => {
     expect((await gradeTranslationWithAi({ ...args, course: "en" }))?.correct).toBe(true);
   });
 });
+
+// Review follow-up: the other national spelling is the same word, so a real-word rule must not reject it.
+describe("national spelling variants are the same word", () => {
+  it.each([
+    ["color", "colour", "My favourite colour is blue.", "My favourite color is blue."],
+    ["colour", "color", "My favorite color is blue.", "My favorite colour is blue."],
+    ["favorite", "favourite", "This is my favourite song.", "This is my favorite song."],
+    ["favourite", "favorite", "This is my favorite song.", "This is my favourite song."],
+    ["theatre", "theater", "We went to the theater.", "We went to the theatre."],
+    ["theater", "theatre", "We went to the theatre.", "We went to the theater."],
+    ["traveled", "travelled", "She travelled to Spain.", "She traveled to Spain."],
+    ["travelled", "traveled", "She traveled to Spain.", "She travelled to Spain."],
+    ["organize", "organise", "We will organise it.", "We will organize it."],
+    ["analyse", "analyze", "Please analyze the data.", "Please analyse the data."],
+    ["catalogue", "catalog", "Open the catalog now.", "Open the catalogue now."],
+    ["centre", "center", "Go to the center now.", "Go to the centre now."],
+    ["defense", "defence", "The defence was strong.", "The defense was strong."],
+    ["jewelry", "jewellery", "She wore jewellery.", "She wore jewelry."],
+    ["neighbors", "neighbours", "My neighbours are kind.", "My neighbors are kind."],
+  ])("accepts %s for %s in every reply shape", (w, i, acceptable, sub) => {
+    for (const o of shapes(w, i)) {
+      expect(decideVerdict(reply(o), [acceptable], sub, "en")?.correct, JSON.stringify(o)).toBe(
+        true,
+      );
+    }
+  });
+
+  it.each([
+    ["forth", "fourth", "This is the fourth door.", "This is the forth door."],
+    ["morning", "mourning", "They are mourning now.", "They are morning now."],
+    ["filed", "filled", "She filled the cup.", "She filed the cup."],
+    ["prize", "prise", "Prise the lid open.", "Prize the lid open."],
+  ])("still rejects the different word %s for %s", (w, i, acceptable, sub) => {
+    for (const o of shapes(w, i)) {
+      expect(decideVerdict(reply(o), [acceptable], sub, "en")?.correct, JSON.stringify(o)).toBe(
+        false,
+      );
+    }
+  });
+});

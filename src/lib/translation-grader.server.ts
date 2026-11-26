@@ -295,6 +295,111 @@ function allowedEdits(word: string, intended: string, twice: boolean): boolean {
 }
 
 /**
+ * British/American spelling pairs whose two spellings are both real words, so the real-word rule must not call one a
+ * wrong word for the other: stem pairs (the suffixes below are free), plus the rules in `spellingVariantKey`.
+ */
+const VARIANT_STEMS: [string, string][] = [
+  ["centre", "center"],
+  ["theatre", "theater"],
+  ["metre", "meter"],
+  ["kilometre", "kilometer"],
+  ["centimetre", "centimeter"],
+  ["millimetre", "millimeter"],
+  ["litre", "liter"],
+  ["lustre", "luster"],
+  ["spectre", "specter"],
+  ["sceptre", "scepter"],
+  ["mitre", "miter"],
+  ["fibre", "fiber"],
+  ["sabre", "saber"],
+  ["calibre", "caliber"],
+  ["sombre", "somber"],
+  ["meagre", "meager"],
+  ["manoeuvre", "maneuver"],
+  ["defence", "defense"],
+  ["offence", "offense"],
+  ["pretence", "pretense"],
+  ["licence", "license"],
+  ["practise", "practice"],
+  ["plough", "plow"],
+  ["mould", "mold"],
+  ["moult", "molt"],
+  ["smoulder", "smolder"],
+  ["aluminium", "aluminum"],
+  ["pyjama", "pajama"],
+  ["programme", "program"],
+  ["sceptic", "skeptic"],
+  ["jewellery", "jewelry"],
+  ["woollen", "woolen"],
+  ["ageing", "aging"],
+  ["judgement", "judgment"],
+  ["acknowledgement", "acknowledgment"],
+  ["anaemia", "anemia"],
+  ["anaemic", "anemic"],
+  ["paediatric", "pediatric"],
+  ["encyclopaedia", "encyclopedia"],
+  ["oestrogen", "estrogen"],
+  ["foetus", "fetus"],
+  ["fulfil", "fulfill"],
+  ["enrol", "enroll"],
+  ["instil", "instill"],
+  ["skilful", "skillful"],
+  ["wilful", "willful"],
+  ["instalment", "installment"],
+  ["appal", "appall"],
+  ["cosy", "cozy"],
+  ["draught", "draft"],
+  ["grey", "gray"],
+  ["tyre", "tire"],
+  ["kerb", "curb"],
+];
+const VARIANT_SUFFIXES = new Set([
+  "",
+  "s",
+  "es",
+  "ed",
+  "d",
+  "ing",
+  "er",
+  "ers",
+  "ist",
+  "ists",
+  "ly",
+  "al",
+]);
+
+/**
+ * A key two spellings of one word share: "colour" and "color", "organise" and "organize", "travelled" and "traveled",
+ * "catalogue" and "catalog", "centre" and "center" all map to one string. A rule only fires on a long enough stem, so
+ * a different word that merely looks alike keeps its own key (four/for, mourning/morning, filled/filed, prise/prize).
+ */
+function spellingVariantKey(word: string): string {
+  const w = word.toLowerCase();
+  for (const [uk, us] of VARIANT_STEMS) {
+    if (w.startsWith(uk) && VARIANT_SUFFIXES.has(w.slice(uk.length)))
+      return us + w.slice(uk.length);
+  }
+  return w
+    .replace(
+      /^(\p{L}{3,})our(s|ed|ing|ite|able|ful|less|y|ier|iest|ly|hood|er|ers)?$/u,
+      (_m, stem: string, rest = "") => `${stem}or${rest}`,
+    )
+    .replace(
+      /^(\p{L}{4,})is(e|ed|es|ing|ation|ations|er|ers)$/u,
+      (_m, stem: string, rest: string) => `${stem}iz${rest}`,
+    )
+    .replace(
+      /^(\p{L}{3,})ys(e|ed|es|ing)$/u,
+      (_m, stem: string, rest: string) => `${stem}yz${rest}`,
+    )
+    .replace(
+      /^(\p{L}{2,}[^aeiou\s])(el|al|ol|il)l(ed|ing|er|ers|or|ors|ery|ist|ists|ous)$/u,
+      (_m, stem: string, v: string, rest: string) => `${stem}${v}${rest}`,
+    )
+    .replace(/^(\p{L}{3,})ogue(s?)$/u, (_m, stem: string, s: string) => `${stem}og${s}`);
+}
+
+/**
  * The known word a plain typo was meant to be, or null. A word is a typo candidate only when it has at least 5
  * letters, is not itself a known word, a confusable real word or a name, no known word is another form of it (see
  * `isInflectionPair`), and a known word is reachable from it by allowed slips only: one inserted or deleted letter
@@ -303,7 +408,8 @@ function allowedEdits(word: string, intended: string, twice: boolean): boolean {
  * substitution is never a typo: it is another word (wrote/write, drank/drink, estoy/estay), as is any other
  * substitution (taken/token, wanted/wasted, lived/liked, comes/comen). A word that is itself a real word of the
  * course's language (`isRealWord`: world for word, though for through) is a different word, never a slip, whatever
- * the model labelled it.
+ * the model labelled it, except when it is the other national spelling of a known word (colour for color, organize for
+ * organise: `spellingVariantKey`), which is the same word and is accepted.
  */
 function narrowTypoOf(
   word: string,
@@ -311,14 +417,13 @@ function narrowTypoOf(
   names: Set<string> = new Set(),
   course: GraderCourse = "en",
 ): string | null {
-  if (
-    word.length < 5 ||
-    known.has(word) ||
-    CONFUSABLE_SET.has(word) ||
-    names.has(word) ||
-    isRealWord(word, course)
-  )
+  if (word.length < 5 || known.has(word) || CONFUSABLE_SET.has(word) || names.has(word))
     return null;
+  if (isRealWord(word, course)) {
+    const key = spellingVariantKey(word);
+    for (const k of known) if (spellingVariantKey(k) === key) return k;
+    return null;
+  }
   let found: string | null = null;
   for (const k of known) {
     if (Math.abs(k.length - word.length) > 2) continue;
