@@ -64,61 +64,85 @@ export const Route = createFileRoute("/api/hector-call-end")({
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const admin = supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient;
-          // One write per call: a retry, a second tab or a pagehide plus an unmount must not count it twice.
-          const { data: done, error: doneError } = await admin
-            .from("tutor_memory")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("call_id", callId)
-            .limit(1);
-          if (doneError) log("hector_call_end_failed", { stage: "dedup" });
-          if (done && done.length > 0) return NOT_SAVED("already_saved");
+          // One write per call, claimed atomically BEFORE any spend: two concurrent requests, a retry, a second tab
+          // or a pagehide plus an unmount must not charge, ask the model or write twice. A conflict on the primary key
+          // means the call was already taken. Any other error fails CLOSED (nothing is charged, the client may retry).
+          const claim = await admin
+            .from("hector_call_ends")
+            .insert({ user_id: userId, call_id: callId });
+          if (claim.error) {
+            if (claim.error.code === "23505") return NOT_SAVED("already_saved");
+            log("hector_call_end_failed", { stage: "claim", code: claim.error.code ?? null });
+            return noStoreJson({ error: "claim_failed" }, { status: 503 });
+          }
+          // Give the claim back only when the call failed before anything was written and a retry is safe.
+          const release = async () => {
+            const { error } = await admin
+              .from("hector_call_ends")
+              .delete()
+              .eq("user_id", userId)
+              .eq("call_id", callId);
+            if (error)
+              log("hector_call_end_failed", { stage: "release", code: error.code ?? null });
+          };
 
-          const blocked = await access.chargeQuota?.();
-          if (blocked) return blocked;
+          try {
+            const blocked = await access.chargeQuota?.();
+            if (blocked) {
+              await release();
+              return blocked;
+            }
 
-          const cefr = typeof body.cefrLevel === "string" ? body.cefrLevel.slice(0, 4) : undefined;
-          const recap = await timer.time("llm", () =>
-            generateCallRecap({
-              apiKey: key,
-              model: resolveLlmChatModel(),
-              userId,
+            const cefr =
+              typeof body.cefrLevel === "string" ? body.cefrLevel.slice(0, 4) : undefined;
+            const recap = await timer.time("llm", () =>
+              generateCallRecap({
+                apiKey: key,
+                model: resolveLlmChatModel(),
+                userId,
+                course,
+                cefrLevel: cefr,
+                scene: "Open conversation with the tutor Hector",
+                turns,
+                signal: AbortSignal.any([request.signal, AbortSignal.timeout(12_000)]),
+              }),
+            );
+            if (!recap) {
+              log("hector_call_end_failed", { stage: "recap" });
+              await release();
+              return NOT_SAVED("no_recap");
+            }
+            const verdicts = await filterModelOutputs(recapStrings(recap), {
+              check: makeBlockedTermCheck(supabaseAdmin),
               course,
-              cefrLevel: cefr,
-              scene: "Open conversation with the tutor Hector",
-              turns,
-              signal: AbortSignal.any([request.signal, AbortSignal.timeout(12_000)]),
-            }),
-          );
-          if (!recap) {
-            log("hector_call_end_failed", { stage: "recap" });
-            return NOT_SAVED("no_recap");
-          }
-          const verdicts = await filterModelOutputs(recapStrings(recap), {
-            check: makeBlockedTermCheck(supabaseAdmin),
-            course,
-            route: "hector-call-end",
-          });
-          const kept = recap.corrections.filter((_, i) => !verdicts[i]);
-          if (kept.length === 0) return NOT_SAVED("nothing_to_keep");
+              route: "hector-call-end",
+            });
+            const kept = recap.corrections.filter((_, i) => !verdicts[i]);
+            if (kept.length === 0) return NOT_SAVED("nothing_to_keep");
 
-          const memo = await timer.time("memory", async () =>
-            admin.rpc("remember_call_recap", {
-              _user_id: userId,
-              _course: course,
-              _call_id: callId,
-              _topics: [...new Set(kept.map((c) => c.topic))],
-              // Only the corrected form: never the learner's own words (they can hold names or details).
-              _mistakes: kept.map((c) => ({ topic: c.topic, text: c.fixed })),
-              _save: true,
-            }),
-          );
-          if (memo.error) {
-            log("hector_call_end_failed", { stage: "write", code: memo.error.code ?? null });
-            return NOT_SAVED("write_failed");
+            const memo = await timer.time("memory", async () =>
+              admin.rpc("remember_call_recap", {
+                _user_id: userId,
+                _course: course,
+                _call_id: callId,
+                _topics: [...new Set(kept.map((c) => c.topic))],
+                // Only the corrected form: never the learner's own words (they can hold names or details).
+                _mistakes: kept.map((c) => ({ topic: c.topic, text: c.fixed })),
+                _save: true,
+              }),
+            );
+            if (memo.error) {
+              log("hector_call_end_failed", { stage: "write", code: memo.error.code ?? null });
+              await release();
+              return NOT_SAVED("write_failed");
+            }
+            log("hector_call_end_saved", { lines: kept.length });
+            return noStoreJson({ saved: true, lines: kept.length });
+          } catch (e) {
+            // The model call or the filter threw before anything was written: a retry is safe.
+            await release();
+            throw e;
           }
-          log("hector_call_end_saved", { lines: kept.length });
-          return noStoreJson({ saved: true, lines: kept.length });
         }),
     },
   },

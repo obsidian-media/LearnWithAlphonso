@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 import { AI_OUTPUT_FALLBACK, SAFETY_PREAMBLE } from "@/lib/ai-safety";
 import { buildHectorSystemPrompt } from "@/lib/hector-conversation";
@@ -86,6 +86,18 @@ function req(body: unknown = { text: "hola", language: "en" }, authorization = "
 
 const realFetch = globalThis.fetch;
 
+// The route loads its server modules with dynamic imports; the first request in a cold, loaded run pays for the whole
+// chain and could outlast the default test timeout. Load it once here, with its own generous hook timeout.
+beforeAll(async () => {
+  await Promise.all([
+    import("@/lib/account-ban.server"),
+    import("@/lib/hector-memory.server"),
+    import("@/lib/hector-turn-token.server"),
+    import("@/lib/ai-cost-log.server"),
+    import("@/lib/ai-cost"),
+  ]);
+}, 60_000);
+
 beforeEach(() => {
   getUser.mockReset();
   banResult.mockReset();
@@ -159,7 +171,7 @@ describe("POST /api/hector-respond", () => {
     await handler({ request: req() });
     expect(consumeQuota).toHaveBeenCalledTimes(1);
     expect(consumeQuota.mock.calls[0][1]).toBe("hector");
-  });
+  }, 30_000);
 
   it("spends quota for the user it already verified, with one token check and one ban check", async () => {
     globalThis.fetch = vi.fn(async () => {
