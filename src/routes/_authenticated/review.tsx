@@ -222,6 +222,14 @@ function ReviewPage() {
    * Sends this answer to the server, which re-grades it and moves the item's schedule. For a translation the
    * server's verdict is the one shown; for every other type the local verdict already is, and agrees by design.
    */
+  /** One id per answer, kept across Try again so a retry after a lost reply is the same attempt (not a second grade). */
+  const attemptRef = useRef<{ key: string; id: string } | null>(null);
+  function attemptIdFor(c: Card, answer: string): string {
+    const key = [c.itemKey, c.dueOn, c.lastReviewedAt, answer].join("|");
+    if (attemptRef.current?.key !== key) attemptRef.current = { key, id: crypto.randomUUID() };
+    return attemptRef.current.id;
+  }
+
   function sendGrade(
     c: Card,
     answer: string,
@@ -237,6 +245,7 @@ function ReviewPage() {
         course,
         expectedDueOn: c.dueOn,
         expectedLastReviewedAt: c.lastReviewedAt,
+        attemptId: attemptIdFor(c, answer),
       },
     })
       .then((r) => {

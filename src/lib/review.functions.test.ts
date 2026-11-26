@@ -323,6 +323,74 @@ describe("gradeReview", () => {
     );
   });
 
+  describe("an attempt id", () => {
+    const ATTEMPT = "6f1c2c1e-0f6e-4d0a-9d54-3c2f0f5d9a11";
+
+    it("is passed to apply_review_grade, so the database stores the receipt that makes a retry idempotent", async () => {
+      await gradeWithTransition({ status: "applied", retired: false, dueOn: "2099-01-01" });
+      expect(supabaseAdminRpc.mock.calls[0]?.[1]).toMatchObject({ _attempt_id: null });
+      supabaseAdminRpc.mockClear();
+      const supabase = createSupabaseMock();
+      supabase.from.mockReturnValueOnce(chainable({ data: { ...rowBase } }));
+      await gradeReview({
+        context: ctx(supabase),
+        data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en", attemptId: ATTEMPT },
+      });
+      expect(supabaseAdminRpc).toHaveBeenCalledWith(
+        "apply_review_grade",
+        expect.objectContaining({ _attempt_id: ATTEMPT }),
+      );
+    });
+
+    it("a retry of an answer that already landed replays the stored result and grades nothing", async () => {
+      supabaseAdminFrom.mockReturnValue(
+        chainable({
+          data: {
+            item_key: "u1l1:q1",
+            language: "en",
+            result: { status: "applied", retired: true, dueOn: "2099-01-01", correct: true },
+          },
+          error: null,
+        }),
+      );
+      const supabase = createSupabaseMock();
+      // The item is gone or moved on (the first try graded it): the replay must not call it superseded.
+      supabase.from.mockReturnValueOnce(
+        chainable({ data: { ...rowBase, last_reviewed_at: "2026-01-02T03:04:05+00:00" } }),
+      );
+      const r = await gradeReview({
+        context: ctx(supabase),
+        data: {
+          itemKey: "u1l1:q1",
+          answer: "Good morning.",
+          course: "en",
+          attemptId: ATTEMPT,
+          expectedDueOn: rowBase.due_on,
+          expectedLastReviewedAt: null,
+        },
+      });
+      expect(r).toEqual({ retired: true, dueOn: "2099-01-01", correct: true });
+      expect(supabaseAdminRpc).not.toHaveBeenCalled();
+    });
+
+    it("refuses an id already used for a different item", async () => {
+      supabaseAdminFrom.mockReturnValue(
+        chainable({
+          data: { item_key: "u1l1:q2", language: "en", result: { retired: false, dueOn: "x" } },
+          error: null,
+        }),
+      );
+      const supabase = createSupabaseMock();
+      supabase.from.mockReturnValueOnce(chainable({ data: { ...rowBase } }));
+      await expect(
+        gradeReview({
+          context: ctx(supabase),
+          data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en", attemptId: ATTEMPT },
+        }),
+      ).rejects.toThrow("identity collision");
+    });
+  });
+
   describe("a second tab or device grading the same item", () => {
     const LAST = "2026-01-02T03:04:05.678901+00:00";
     function gradeShown(shown: { expectedDueOn?: string; expectedLastReviewedAt?: string | null }) {
