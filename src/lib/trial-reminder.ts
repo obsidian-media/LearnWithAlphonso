@@ -9,12 +9,19 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const REMINDER_WINDOW_DAYS = 3;
 /** Only accounts seen this recently are looked up, so a scan costs a bounded number of RevenueCat reads. */
 export const CANDIDATE_ACTIVE_DAYS = 9;
-/** The sweep runs every 15 minutes; the scan itself runs at most this often (about once a day). */
-export const SCAN_EVERY_MS = 20 * 60 * 60 * 1000;
+/** Each learner is read from RevenueCat at most this often (the sweep itself runs every 15 minutes). */
+export const RECHECK_AFTER_MS = 20 * 60 * 60 * 1000;
+/** One sweep stops reading after this long: the pg_net call to the route times out at 30 seconds. */
+export const SWEEP_BUDGET_MS = 18_000;
+/** A pause between RevenueCat reads, to stay well inside its rate limit. */
+export const GAP_BETWEEN_READS_MS = 150;
+/** Consecutive RevenueCat server errors (5xx) after which the sweep stops. */
+export const MAX_CONSECUTIVE_5XX = 3;
 
-/** The setting that turns the whole feature on. Anything but the word "true" leaves it off. */
+/** The setting that turns the whole feature on: exactly `true` (surrounding spaces ignored). Anything else, including
+ * `TRUE` or `1`, leaves it off. */
 export function reminderEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env.TRIAL_REMINDER_ENABLED?.trim().toLowerCase() === "true";
+  return env.TRIAL_REMINDER_ENABLED?.trim() === "true";
 }
 
 /** What RevenueCat says about one learner's trial (see getTrialSubscription). */
@@ -57,7 +64,27 @@ export type PlanDetails = {
   period: "month" | "year" | null;
   /** The price already formatted for display, as RevenueCat reports it. */
   price: string | null;
+  /** The country RevenueCat's indicative price is for (e.g. "US"); null when it did not say. */
+  priceCountry?: string | null;
 };
+
+/**
+ * The price may be shown only when it is certainly the learner's: the trial was bought on the web (an app-store price
+ * is set by the store, per country, and RevenueCat's figure is for one country only) AND the offering's price country
+ * is the learner's own. Otherwise the number is left out and the email points to the subscription page.
+ */
+export function priceToShow(
+  trial: Pick<TrialSubscription, "store">,
+  plan: PlanDetails,
+  learnerCountry: string | null,
+): PlanDetails {
+  const same =
+    !!plan.price &&
+    !!plan.priceCountry &&
+    !!learnerCountry &&
+    plan.priceCountry.toUpperCase() === learnerCountry.toUpperCase();
+  return trial.store === "web" && same ? plan : { ...plan, price: null };
+}
 
 export type ReminderEmail = { subject: string; text: string };
 
@@ -87,19 +114,17 @@ export function buildTrialReminderEmail(
         : "the paid plan";
   const unit =
     plan.period === "year" ? "year" : plan.period === "month" ? "month" : "billing period";
-  const cost = plan.price
-    ? `${plan.price} per ${unit}`
-    : "the price shown on your subscription page";
+  const cost = plan.price ? `${plan.price} per ${unit}` : "your plan's regular price";
   const exact = plan.price
-    ? "The exact amount, in your own currency and with any tax, is on your subscription page."
-    : null;
+    ? "The exact amount, with any tax, is on your subscription page."
+    : "The exact amount is on your subscription page.";
   const text = [
     "Hi,",
     "",
     `This is a quick heads-up: your free trial of Alphonso Pro ends on ${when} (UTC).`,
     "",
     `If you do nothing, your subscription carries on as ${planName} at ${cost}, and you will be charged when the trial ends.`,
-    ...(exact ? [exact] : []),
+    exact,
     "If you would rather not continue, you can cancel any time before then and you will not be charged.",
     "",
     `Manage or cancel your subscription: ${manageUrl}`,

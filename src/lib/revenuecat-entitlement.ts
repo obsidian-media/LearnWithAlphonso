@@ -236,6 +236,13 @@ export async function getSubscriberSummary(
   }
 }
 
+/** A RevenueCat answer that was not a success, with its HTTP status (429 and 5xx stop the trial reminder's scan). */
+export class RevenueCatHttpError extends Error {
+  constructor(readonly status: number) {
+    super(`RevenueCat subscriber read failed (HTTP ${status})`);
+  }
+}
+
 /** One learner's running Pro trial, read from RevenueCat's v1 subscriber (the trial reminder). */
 export type TrialRead = {
   productId: string;
@@ -265,7 +272,7 @@ export async function getTrialSubscription(
     },
   );
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`RevenueCat subscriber read failed (HTTP ${res.status})`);
+  if (!res.ok) throw new RevenueCatHttpError(res.status);
   const body = (await res.json()) as {
     subscriber?: {
       subscriptions?: Record<

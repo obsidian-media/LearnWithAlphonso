@@ -483,7 +483,7 @@ describe("handleMaintenance", () => {
       enabled: true,
       now: () => new Date("2026-11-26T10:00:00Z"),
       store: {
-        claimScan: async () => true,
+        markChecked: async () => {},
         candidates: async () => [],
         claim: async () => true,
         release: async () => {},
@@ -491,6 +491,8 @@ describe("handleMaintenance", () => {
       readTrial: async () => null,
       planFor: async () => ({ period: null, price: null }),
       emailOf: async () => null,
+      countryOf: async () => null,
+      sleep: async () => {},
       sendEmail: async () => {},
       from: "Alphonso <a@example.com>",
       ...over,
@@ -501,7 +503,7 @@ describe("handleMaintenance", () => {
       const { deps } = makeDeps({}, { trialReminders: reminder() });
       const res = await handleMaintenance(req(SECRET), async () => deps);
       expect((await res.json()).trialReminders).toEqual({
-        status: "scanned",
+        status: "done",
         checked: 0,
         sent: 0,
         failed: 0,
@@ -515,10 +517,10 @@ describe("handleMaintenance", () => {
         {
           trialReminders: reminder({
             store: {
-              claimScan: async () => {
+              candidates: async () => {
                 throw new Error("db down");
               },
-              candidates: async () => [],
+              markChecked: async () => {},
               claim: async () => true,
               release: async () => {},
             },

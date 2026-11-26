@@ -31,9 +31,9 @@ import {
  *   5. Retries "a person replied" notices that did not go out and tells the owner about new support tickets.
  *   6. The AI cost log: rolls raw rows older than 90 days into the daily summary, and once a day emails the owner when
  *      yesterday's estimated spend crossed a threshold (src/lib/ai-cost-sweep.server.ts).
- *   8. Trial-ending reminder emails, OFF unless TRIAL_REMINDER_ENABLED=true (src/lib/trial-reminder.server.ts).
  *   7. Operational events: emails the owner when a server-side failure event crosses its hourly threshold, once per
  *      event per 24 hours (src/lib/ops-alert-sweep.server.ts).
+ *   8. Trial-ending reminder emails, OFF unless TRIAL_REMINDER_ENABLED=true (src/lib/trial-reminder.server.ts).
  * (The support chat retention, 12 months after a chat was solved, runs inside run_maintenance_sweep in the database.)
  */
 type Admin = SupabaseClient<Database>;
