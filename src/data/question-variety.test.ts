@@ -23,7 +23,11 @@ describe("mixed question formats for A1/A2", () => {
     );
     for (const { lesson } of lessonsOf(curriculum)) {
       const old = before.get(lesson.id)!;
-      expect(lesson.questions.slice(0, old.length), lesson.id).toEqual(old);
+      // Goal variants (src/data/goal-variants) are laid over afterwards and are not what this test is about.
+      const now = lesson.questions
+        .slice(0, old.length)
+        .map(({ goalVariants: _variants, ...rest }) => rest);
+      expect(now, lesson.id).toEqual(old);
     }
   });
 

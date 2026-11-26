@@ -21,7 +21,7 @@ struct GoalTagView: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: symbol).font(.system(size: 11, weight: .bold)).accessibilityHidden(true)
+            Image(systemName: symbol).imageScale(.small).fontWeight(.bold).accessibilityHidden(true)
             Text("For your \(goal) goal").dsText(.caption).fontWeight(.bold)
         }
         .foregroundStyle(ds.inkSoft)
