@@ -3465,6 +3465,7 @@ export type Database = {
       _resolve_buddy_pair: { Args: { _pair: string }; Returns: undefined };
       _resolve_team_mission: { Args: { _team: string; _wk: string }; Returns: undefined };
       _safe_random_team_name: { Args: Record<PropertyKey, never>; Returns: string };
+      _settle_challenge_week: { Args: { _cap: number; _week: string }; Returns: number };
       _team_mission_count: {
         Args: { _team: string; _user?: string; _wk: string };
         Returns: number;
@@ -4065,6 +4066,8 @@ export type Database = {
         Args: { _budget: number; _seconds: number; _user_id: string };
         Returns: string;
       };
+      resolve_closed_season_cohorts: { Args: Record<PropertyKey, never>; Returns: number };
+      resolve_season_cohort: { Args: { _cohort_id: string }; Returns: boolean };
       respond_buddy_request: {
         Args: { _accept: boolean; _request: string };
         Returns: {
@@ -4078,8 +4081,6 @@ export type Database = {
           reason: string;
         }[];
       };
-      resolve_closed_season_cohorts: { Args: Record<PropertyKey, never>; Returns: number };
-      resolve_season_cohort: { Args: { _cohort_id: string }; Returns: boolean };
       restore_hearts_if_due: {
         Args: Record<PropertyKey, never>;
         Returns: {
