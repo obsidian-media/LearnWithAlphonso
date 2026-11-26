@@ -102,10 +102,14 @@ object ReferralLink {
         return code.takeIf { isValid(it) }
     }
 
-    /** The code in a web link `https://learnwithalphonso.com/?ref=<code>`; null for any other URL. */
+    /**
+     * The code in a web link: the share link `https://learnwithalphonso.com/r/<code>` (an App Link) or the older
+     * `https://learnwithalphonso.com/?ref=<code>`; null for any other URL.
+     */
     fun codeFromUrl(url: String): String? {
         val uri = runCatching { URI(url) }.getOrNull() ?: return null
         if (uri.scheme != "https" || uri.host?.lowercase() !in ACCEPTED_HOSTS) return null
+        codeFromSharePath(uri.rawPath)?.let { return it }
         val query = uri.rawQuery ?: return null
         val value = query.split('&').firstNotNullOfOrNull { pair ->
             val i = pair.indexOf('=')
@@ -113,6 +117,17 @@ object ReferralLink {
         } ?: return null
         // Query decoding turns "+" into a space; codeFromParam puts it back, so "%2B" and "+" both read as "+".
         return codeFromParam(runCatching { URLDecoder.decode(value, "UTF-8") }.getOrNull())
+    }
+
+    /**
+     * The code in the path `/r/<code>` (a trailing slash is fine), or null for any other path. The path is read still
+     * percent-encoded so an encoded "/" in a code is not taken for a separator, and a literal "+" stays a "+".
+     */
+    fun codeFromSharePath(rawPath: String?): String? {
+        val segments = (rawPath ?: return null).split('/').filter { it.isNotEmpty() }
+        if (segments.size != 2 || segments[0] != "r") return null
+        val decoded = runCatching { URLDecoder.decode(segments[1].replace("+", "%2B"), "UTF-8") }.getOrNull()
+        return codeFromParam(decoded)
     }
 
     /** What a learner typed or pasted in the invite-code field: a bare code, or the whole referral link. */
@@ -123,10 +138,10 @@ object ReferralLink {
         return if (t.contains("://")) codeFromUrl(t) else codeFromParam(t)
     }
 
-    /** The shareable link for a code: the site's origin plus `/?ref=`. Same as the web's `referralLink`. */
+    /** The shareable link for a code: the site's origin plus `/r/<code>`. Same as the web's `referralLink`. */
     fun link(base: String, code: String): String {
         val encoded = URLEncoder.encode(code, "UTF-8").replace("+", "%20")
-        return "${base.trimEnd('/')}/?ref=$encoded"
+        return "${base.trimEnd('/')}/r/$encoded"
     }
 
     /** What a native share carries: the invitation line, then the link (the same words the web's share sheet sends). */

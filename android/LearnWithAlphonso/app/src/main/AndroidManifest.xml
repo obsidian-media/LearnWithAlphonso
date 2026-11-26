@@ -54,6 +54,14 @@
                 <!-- The previous host keeps working for links already shared. -->
                 <data android:scheme="https" android:host="learn.alphonsoecosystem.app" android:pathPrefix="/invite/" />
             </intent-filter>
+            <!-- Referral share links (/r/<code>), verified the same way. The root path is NOT an app link. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="learnwithalphonso.com" android:pathPrefix="/r/" />
+                <data android:scheme="https" android:host="learn.alphonsoecosystem.app" android:pathPrefix="/r/" />
+            </intent-filter>
         </activity>
 
         <service

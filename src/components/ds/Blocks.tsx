@@ -24,7 +24,9 @@ export function BackPill({
   trailing?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-11 items-center justify-between gap-2">
+    // Wraps: a trailing group wider than what the pill leaves (League's Teams / Season / Recap at 320px) drops to its own
+    // line instead of pushing the page sideways.
+    <div className="flex min-h-11 flex-wrap items-center justify-between gap-2">
       <Link
         to={to}
         aria-label={label}

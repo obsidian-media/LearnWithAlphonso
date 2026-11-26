@@ -143,7 +143,7 @@ function LeaguePage() {
         to="/profile"
         label="Back to profile"
         trailing={
-          <span className="flex items-center gap-2">
+          <span className="flex max-w-full flex-wrap items-center gap-2">
             <DsLinkButton to="/teams">Teams</DsLinkButton>
             <DsLinkButton to="/season">Season</DsLinkButton>
             <DsButton small variant="secondary" onClick={() => void openRecap()}>
