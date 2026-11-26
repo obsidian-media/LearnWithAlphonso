@@ -44,7 +44,13 @@ struct LessonBrowserView: View {
     @State private var challenges: [WeeklyChallenge] = []
     /// This week's weekly_quests (claimable XP rewards); not the challenges above, which pay themselves.
     @State private var quests: [WeeklyQuest] = []
+    /// The last read of the weekly challenges or quests failed: the card says so with Try again and keeps what it had.
+    @State private var challengesReadFailed = false
+    @State private var questsReadFailed = false
+    private var weeklyReadFailed: Bool { challengesReadFailed || questsReadFailed }
     @State private var questNotice: String?
+    /// The course `quests` belongs to, so a refresh of the same course keeps its list and a switch clears it.
+    @State private var questsCourse: String?
     @State private var claimingQuestID: String?
     @State private var isCheckingPlacement = true
     @State private var placementTaken = false
@@ -365,11 +371,10 @@ struct LessonBrowserView: View {
                 expanded: forYouDetail == .team,
                 action: { toggleForYou(.team) }))
         }
-        if !challenges.isEmpty || !quests.isEmpty {
-            // With no challenges this week the card still opens for the quests, so it counts those instead.
-            let value = challenges.isEmpty
-                ? "\(quests.count) quests"
-                : "\(challenges.filter(\.completed).count) of \(challenges.count) done"
+        if !challenges.isEmpty || !quests.isEmpty || weeklyReadFailed {
+            let value = WeeklyQuests.railValue(
+                challengesDone: challenges.filter(\.completed).count, challengesTotal: challenges.count,
+                questCount: quests.count, failed: weeklyReadFailed)
             // A finished quest that is not yet claimed is a reward waiting to be claimed (challenges pay themselves).
             let claimReady = quests.contains(where: \.claimable)
             items.append(LearnForYouRail.Item(
@@ -455,6 +460,14 @@ struct LessonBrowserView: View {
                     TeamMissionSection(mission: missionModel.mission, plainInsets: true)
                 }
                 if forYouDetail == .weekly {
+                    if weeklyReadFailed {
+                        WeeklyLoadFailedSection {
+                            Task {
+                                await loadChallenges()
+                                await loadQuests()
+                            }
+                        }
+                    }
                     WeeklyChallengesSection(challenges: challenges)
                     WeeklyQuestsSection(quests: quests, notice: questNotice, claimingID: claimingQuestID) { quest in
                         Task { await claimQuest(quest) }
@@ -733,25 +746,48 @@ struct LessonBrowserView: View {
         selectedLevel = level
     }
 
-    /// Best-effort, shows nothing on failure. A cancelled load leaves the section as it was.
+    /// A failed read keeps the last good list (never "nothing this week") and raises the retry. A cancelled load
+    /// leaves the section as it was.
     private func loadChallenges() async {
-        guard let accessToken = await session.freshAccessToken() else { return }
+        guard let accessToken = await session.freshAccessToken() else {
+            challengesReadFailed = true
+            return
+        }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        let result = (try? await client.getWeeklyChallenges()) ?? []
-        guard !Task.isCancelled else { return }
-        challenges = result
+        do {
+            let result = try await client.getWeeklyChallenges()
+            guard !Task.isCancelled else { return }
+            challenges = result
+            challengesReadFailed = false
+        } catch {
+            guard !Task.isCancelled else { return }
+            challengesReadFailed = true
+        }
     }
 
-    /// Quests are per course (the lessons quest counts this course's lessons). Best-effort, shows nothing on failure.
+    /// Quests are per course (the lessons quest counts this course's lessons). A failed read keeps this course's last
+    /// good list and raises the retry; switching course starts from an empty list.
     private func loadQuests() async {
         let loadingCourse = course.code
-        quests = []
+        if questsCourse != loadingCourse {
+            quests = []
+            questsCourse = loadingCourse
+        }
         questNotice = nil
-        guard let accessToken = await session.freshAccessToken() else { return }
+        guard let accessToken = await session.freshAccessToken() else {
+            questsReadFailed = true
+            return
+        }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        let result = (try? await client.getWeeklyQuests(course: loadingCourse, weekStart: WeeklyQuests.weekStart())) ?? []
-        guard !Task.isCancelled, course.code == loadingCourse else { return }
-        quests = result
+        do {
+            let result = try await client.getWeeklyQuests(course: loadingCourse, weekStart: WeeklyQuests.weekStart())
+            guard !Task.isCancelled, course.code == loadingCourse else { return }
+            quests = result
+            questsReadFailed = false
+        } catch {
+            guard !Task.isCancelled, course.code == loadingCourse else { return }
+            questsReadFailed = true
+        }
     }
 
     /// Claims a finished quest with its weekly_quests id (never a challenge template id). The server enforces one
@@ -908,6 +944,26 @@ private struct WeeklyChallengesSection: View {
             }
             .listRowBackground(ds.choiceTint)
         }
+    }
+}
+
+/// A read of the weekly card failed: say so and offer Try again, as the web does; what loaded before stays below it.
+private struct WeeklyLoadFailedSection: View {
+    @Environment(\.alphonsoDS) private var ds
+    let onRetry: () -> Void
+
+    var body: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Couldn't load this week's challenges and quests.")
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.inkSoft)
+                Button("Try again", action: onRetry)
+                    .buttonStyle(.borderedProminent)
+            }
+            .padding(.vertical, 2)
+        }
+        .listRowBackground(ds.choiceTint)
     }
 }
 

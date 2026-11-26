@@ -45,6 +45,14 @@ public enum WeeklyQuests {
         }
     }
 
+    /// The rail's Weekly card value: the challenges' progress, the quest count when there are no challenges, and
+    /// "Couldn't load" only when a read failed and there is nothing from an earlier read to show.
+    public static func railValue(challengesDone: Int, challengesTotal: Int, questCount: Int, failed: Bool) -> String {
+        if failed && challengesTotal == 0 && questCount == 0 { return "Couldn't load" }
+        if challengesTotal == 0 && questCount > 0 { return "\(questCount) quests" }
+        return "\(challengesDone) of \(challengesTotal) done"
+    }
+
     /// What a refusal from `claim_weekly_quest` means to the learner; anything unknown gets the generic line.
     public static func claimMessage(reason: String?) -> String {
         switch reason {

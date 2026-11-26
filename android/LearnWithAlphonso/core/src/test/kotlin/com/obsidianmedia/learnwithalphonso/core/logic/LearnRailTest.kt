@@ -31,6 +31,8 @@ class LearnRailTest {
     fun `weekly card counts quests when there are no challenges`() {
         assertEquals("3 quests", LearnRail.weeklyValue(emptyList(), 3))
         assertEquals("1 of 1 done", LearnRail.weeklyValue(listOf(challenge(true)), 3))
+        assertEquals("Couldn't load", LearnRail.weeklyValue(emptyList(), 0, failed = true))
+        assertEquals("1 of 1 done", LearnRail.weeklyValue(listOf(challenge(true)), 0, failed = true))
     }
 
     private fun mission(status: TeamMissionStatus, percent: Int) =

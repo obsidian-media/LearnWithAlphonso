@@ -257,7 +257,7 @@ fun LearnScreen(
                         if (hasNoGoal) onBuildPath() else toggleForYou("path")
                     })
                     teamMission?.let { m -> LearnRail.teamValue(m).let { v -> add(RailItem("team", R.drawable.ds_friends, "Team mission", v, "Team mission, $v", expanded = forYouOpen == "team") { toggleForYou("team") }) } }
-                    if (state.challenges.isNotEmpty() || state.quests.isNotEmpty()) LearnRail.weeklyValue(state.challenges, state.quests.size).let { v -> add(RailItem("weekly", R.drawable.ds_star_solid, "Weekly", v, "Weekly challenges, $v${if (claimReady) ", reward ready to claim" else ""}", showsDot = claimReady, expanded = forYouOpen == "weekly") { toggleForYou("weekly") }) }
+                    if (state.challenges.isNotEmpty() || state.quests.isNotEmpty() || state.weeklyLoadFailed) LearnRail.weeklyValue(state.challenges, state.quests.size, state.weeklyLoadFailed).let { v -> add(RailItem("weekly", R.drawable.ds_star_solid, "Weekly", v, "Weekly challenges, $v${if (claimReady) ", reward ready to claim" else ""}", showsDot = claimReady, expanded = forYouOpen == "weekly") { toggleForYou("weekly") }) }
                 }
                 ForYouRail(cards)
             }
@@ -268,6 +268,7 @@ fun LearnScreen(
                         "path" -> com.obsidianmedia.learnwithalphonso.ui.path.PathCard(pathVm, onOpenRoad = onOpenPath, onBuild = onBuildPath, onOpenRef = onOpenPathRef)
                         "team" -> teamMission?.let { TeamMissionCard(it) }
                         "weekly" -> Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                            if (state.weeklyLoadFailed) WeeklyLoadFailedCard(onRetry = vm::refresh)
                             if (state.challenges.isNotEmpty()) ChallengesCard(state.challenges)
                             if (state.quests.isNotEmpty()) QuestsCard(state.quests, onClaim = vm::claimQuest)
                         }
@@ -413,6 +414,16 @@ internal fun ForYouRail(items: List<RailItem>) {
                 }
             }
         }
+    }
+}
+
+/** A read of the weekly card failed: say so and offer Try again, as the web does; what loaded before stays below it. */
+@Composable
+private fun WeeklyLoadFailedCard(onRetry: () -> kotlin.Unit) {
+    val ds = LocalAlphonsoTokens.current
+    DsCard(spacing = AlphonsoTokens.Space.s2) {
+        Text("Couldn't load this week's challenges and quests.", style = FootnoteType, color = ds.inkSoft)
+        DsCompactButton("Try again", onRetry, primary = true)
     }
 }
 

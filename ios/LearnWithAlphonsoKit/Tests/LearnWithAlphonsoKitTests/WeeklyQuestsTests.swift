@@ -98,4 +98,12 @@ final class WeeklyQuestsTests: XCTestCase {
         XCTAssertEqual(seeded.count, 3)
         XCTAssertEqual(seeded, mirrored)
     }
+
+    func testTheWeeklyCardSaysCouldntLoadOnlyWhenAReadFailedAndNothingEarlierIsShown() {
+        XCTAssertEqual(WeeklyQuests.railValue(challengesDone: 0, challengesTotal: 0, questCount: 0, failed: true), "Couldn't load")
+        // A failed refresh keeps what the card already had.
+        XCTAssertEqual(WeeklyQuests.railValue(challengesDone: 1, challengesTotal: 3, questCount: 3, failed: true), "1 of 3 done")
+        XCTAssertEqual(WeeklyQuests.railValue(challengesDone: 0, challengesTotal: 0, questCount: 3, failed: true), "3 quests")
+        XCTAssertEqual(WeeklyQuests.railValue(challengesDone: 2, challengesTotal: 3, questCount: 0, failed: false), "2 of 3 done")
+    }
 }

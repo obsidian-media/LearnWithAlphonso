@@ -46,6 +46,8 @@ data class LearnUiState(
     val challenges: List<WeeklyChallenge> = emptyList(),
     /** This week's weekly_quests (claimable XP rewards), separate from [challenges], which award themselves. */
     val quests: List<WeeklyQuest> = emptyList(),
+    /** The last read of the weekly challenges or quests failed: the card says so with Try again, and keeps what it had. */
+    val weeklyLoadFailed: Boolean = false,
     val notice: String? = null,
 ) {
     fun unitsForLevel(content: ContentStore): List<Unit> = content.bundle(course).units.filter { it.level == selectedLevel }
@@ -195,8 +197,8 @@ class LearnViewModel(
             val level = runCatching { client.fetchCefrLevel(course.code) }.getOrNull()?.takeIf { it.isNotEmpty() && LEVELS.any { l -> l.first == it } }
             val ids = runCatching { client.fetchCompletedLessonIds(course.code) }.getOrDefault(emptyList())
             val placed = runCatching { client.fetchPlacementTakenAt(course.code) }
-            val challenges = runCatching { client.getWeeklyChallenges() }.getOrDefault(emptyList())
-            val quests = runCatching { client.getWeeklyQuests(course.code, mondayDateString(0, nowMillis())) }.getOrDefault(emptyList())
+            val challengesRead = runCatching { client.getWeeklyChallenges() }
+            val questsRead = runCatching { client.getWeeklyQuests(course.code, mondayDateString(0, nowMillis())) }
             if (_state.value.course != course) return@launch
             // A pick made while this read was out, or still saving, outranks the level it read.
             val saving = levelSave?.let { (c, job) -> c == course && job.isActive } == true
@@ -208,8 +210,10 @@ class LearnViewModel(
                     completedLessonIds = ids.toSet(),
                     mostRecentlyCompletedLessonId = ids.firstOrNull(),
                     placementTaken = placed.getOrNull()?.let { true } ?: if (placed.isSuccess) false else null,
-                    challenges = challenges,
-                    quests = quests,
+                    // A failed read keeps the last good list (never "nothing this week") and raises the retry.
+                    challenges = challengesRead.getOrNull() ?: it.challenges,
+                    quests = questsRead.getOrNull() ?: it.quests,
+                    weeklyLoadFailed = challengesRead.isFailure || questsRead.isFailure,
                 )
             }
         }.also { loadJob = it }

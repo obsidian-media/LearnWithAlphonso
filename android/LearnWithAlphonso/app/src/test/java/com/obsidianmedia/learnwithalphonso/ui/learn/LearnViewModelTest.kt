@@ -293,4 +293,35 @@ class LearnViewModelTest {
         awaitTrue("dead letters") { v.deadLetters.value.isNotEmpty() }
         assertEquals(listOf("u1l1|en|1"), v.deadLetters.value.map { it.identity })
     }
+
+    @Test
+    fun `a failed weekly read keeps the last good quests, raises the retry, and a good read clears it`() = runBlocking {
+        var failing = false
+        val s = FakeServer { req ->
+            when {
+                failing && (req.path.endsWith("activity_days") || req.path.endsWith("get_weekly_challenges")) -> json("""{"message":"boom"}""", HttpStatusCode.InternalServerError)
+                req.path.endsWith("activity_days") -> json("""[{"xp_earned":160}]""")
+                req.path.endsWith("lesson_completions") && req.query["select"] == "id" -> json("[]")
+                req.path.endsWith("user_weekly_quest_claims") -> json("[]")
+                req.path.endsWith("get_weekly_challenges") -> json("""[{"template_id":"t1","title":"Finish 5 lessons","description":"d","progress":1,"threshold":5,"completed":false}]""")
+                req.query["select"] == "lesson_id" -> json("[]")
+                req.query["select"] == "cefr_level" -> json("""[{"cefr_level":"A1"}]""")
+                req.query["select"] == "placement_taken_at" -> json("""[{"placement_taken_at":"2026-01-01T00:00:00+00:00"}]""")
+                else -> json("")
+            }
+        }
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore()) { 1_790_726_400_000L }
+        v.initialLoad.join()
+        assertEquals(false, v.state.value.weeklyLoadFailed)
+        assertEquals(3, v.state.value.quests.size)
+        failing = true
+        v.refresh().join()
+        // Not "nothing this week": the earlier lists stay and the card offers Try again.
+        assertEquals(true, v.state.value.weeklyLoadFailed)
+        assertEquals(3, v.state.value.quests.size)
+        assertEquals(listOf("t1"), v.state.value.challenges.map { it.templateId })
+        failing = false
+        v.refresh().join()
+        assertEquals(false, v.state.value.weeklyLoadFailed)
+    }
 }
