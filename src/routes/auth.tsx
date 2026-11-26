@@ -7,6 +7,7 @@ import {
   MIN_NEW_PASSWORD_LENGTH,
   TOO_SHORT_MESSAGE,
 } from "@/lib/password-policy";
+import { authTitle, fieldProblems } from "@/lib/auth-form";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { TextField } from "../components/TextField";
@@ -58,24 +59,28 @@ export const Route = createFileRoute("/auth")({
     // The first run's "Continue with email" opens straight on Create your account.
     ...(s.mode === "signup" ? { mode: "signup" as const } : {}),
   }),
-  head: () => ({
-    links: [canonicalLink("/auth")],
-    meta: [
-      ...shareMeta("/auth"),
-      { title: "Sign in — Alphonso" },
-      {
-        name: "description",
-        content: "Sign in to sync your English learning progress across devices.",
-      },
-      { property: "og:title", content: "Sign in — Alphonso" },
-      {
-        property: "og:description",
-        content: "Save your streak, XP, and league rank to your account.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  // `ctx` can be absent: tests call head() bare.
+  head: (ctx?: { match?: { search?: { mode?: string } } }) => {
+    const title = authTitle(ctx?.match?.search?.mode === "signup" ? "signup" : "signin");
+    return {
+      links: [canonicalLink("/auth")],
+      meta: [
+        ...shareMeta("/auth"),
+        { title },
+        {
+          name: "description",
+          content: "Sign in to sync your English learning progress across devices.",
+        },
+        { property: "og:title", content: title },
+        {
+          property: "og:description",
+          content: "Save your streak, XP, and league rank to your account.",
+        },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary" },
+      ],
+    };
+  },
 });
 
 function AuthPage() {
@@ -124,6 +129,19 @@ function AuthPage() {
   const [captchaReset, setCaptchaReset] = useState(0);
   const needsCaptcha = Boolean(captchaSiteKey) && mode !== "verify";
   const [error, setError] = useState<string | null>(null);
+  // An inline message shows once the field has been left, or after a submit attempt: never while typing.
+  const [touched, setTouched] = useState({ email: false, password: false });
+  const [attempted, setAttempted] = useState(false);
+  const problems = fieldProblems(mode, email, password);
+  const showEmailProblem = (touched.email || attempted) && problems.email;
+  const showPasswordProblem = (touched.password || attempted) && problems.password;
+  const blur = (field: "email" | "password") => setTouched((t) => ({ ...t, [field]: true }));
+  // The tab title follows the form when the learner switches between Sign in and Create account on this page.
+  useEffect(() => {
+    document.title = authTitle(mode);
+    setTouched({ email: false, password: false });
+    setAttempted(false);
+  }, [mode]);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -169,6 +187,12 @@ function AuthPage() {
     e.preventDefault();
     setError(null);
     setNotice(null);
+    if (problems.email || problems.password) {
+      // Show why, and put the cursor on the first field to fix. Nothing is sent.
+      setAttempted(true);
+      document.getElementById(problems.email ? "auth-email" : "auth-password")?.focus();
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "verify") {
@@ -356,7 +380,7 @@ function AuthPage() {
             </>
           )}
 
-          <form onSubmit={submit} className="space-y-3">
+          <form onSubmit={submit} noValidate className="space-y-3">
             {mode === "signup" && (
               <div>
                 <label htmlFor="auth-display-name" className="sr-only">
@@ -402,8 +426,16 @@ function AuthPage() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => blur("email")}
+                  aria-invalid={showEmailProblem ? true : undefined}
+                  aria-describedby={showEmailProblem ? "auth-email-error" : undefined}
                   placeholder="Email"
                 />
+                {showEmailProblem ? (
+                  <p id="auth-email-error" className="mt-1.5 px-1 text-xs text-ds-wrong-ink">
+                    {problems.email}
+                  </p>
+                ) : null}
               </div>
             )}
             {mode !== "forgot" && mode !== "verify" && (
@@ -419,8 +451,16 @@ function AuthPage() {
                   autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => blur("password")}
+                  aria-invalid={showPasswordProblem ? true : undefined}
+                  aria-describedby={showPasswordProblem ? "auth-password-error" : undefined}
                   placeholder="Password"
                 />
+                {showPasswordProblem ? (
+                  <p id="auth-password-error" className="mt-1.5 px-1 text-xs text-ds-wrong-ink">
+                    {problems.password}
+                  </p>
+                ) : null}
               </div>
             )}
             {error && (
