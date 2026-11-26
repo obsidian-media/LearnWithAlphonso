@@ -102,3 +102,207 @@ ALTER TABLE public.practice_calls
 ALTER TABLE public.practice_stars DROP CONSTRAINT practice_stars_kind_check;
 ALTER TABLE public.practice_stars
   ADD CONSTRAINT practice_stars_kind_check CHECK (kind IN ('scenario', 'scene', 'rehearsal'));
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- The writes. Service role only: the server checks Pro, the free rule and the blocked-term filter first.
+-- ---------------------------------------------------------------------------------------------------------------
+
+-- Creates a rehearsal. With _free the one-free-rehearsal marker is taken in the same transaction, so two requests
+-- cannot both win it (the loser raises rehearsal_free_used) and a failed insert gives the marker back. A second
+-- active rehearsal in the same course violates rehearsals_one_active_idx (23505).
+CREATE FUNCTION public.create_rehearsal(
+  _user_id uuid,
+  _course text,
+  _event_kind text,
+  _event_date date,
+  _counterpart text,
+  _worries text,
+  _brief jsonb,
+  _free boolean
+)
+RETURNS public.rehearsals
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  made public.rehearsals;
+  taken integer;
+BEGIN
+  IF _user_id IS NULL OR _free IS NULL THEN
+    RAISE EXCEPTION 'create_rehearsal: missing argument' USING ERRCODE = '22023';
+  END IF;
+  IF _free THEN
+    INSERT INTO public.rehearsal_free_used (user_id) VALUES (_user_id) ON CONFLICT (user_id) DO NOTHING;
+    GET DIAGNOSTICS taken = ROW_COUNT;
+    IF taken = 0 THEN
+      RAISE EXCEPTION 'rehearsal_free_used' USING ERRCODE = 'P0001';
+    END IF;
+  END IF;
+  INSERT INTO public.rehearsals (user_id, course, event_kind, event_date, counterpart, worries, brief, free)
+  VALUES (_user_id, _course, _event_kind, _event_date, _counterpart, _worries, _brief, _free)
+  RETURNING * INTO made;
+  RETURN made;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.create_rehearsal(uuid, text, text, date, text, text, jsonb, boolean)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_rehearsal(uuid, text, text, date, text, text, jsonb, boolean)
+  TO service_role;
+
+-- Re-answers the intake of the learner's ACTIVE rehearsal (new brief included). Course and `free` never change.
+CREATE FUNCTION public.adjust_rehearsal(
+  _user_id uuid,
+  _id uuid,
+  _event_kind text,
+  _event_date date,
+  _counterpart text,
+  _worries text,
+  _brief jsonb
+)
+RETURNS public.rehearsals
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  changed public.rehearsals;
+BEGIN
+  UPDATE public.rehearsals AS r
+    SET event_kind = _event_kind, event_date = _event_date, counterpart = _counterpart,
+        worries = _worries, brief = _brief
+    WHERE r.id = _id AND r.user_id = _user_id AND r.status = 'active'
+    RETURNING r.* INTO changed;
+  IF changed.id IS NULL THEN
+    RAISE EXCEPTION 'rehearsal_not_found' USING ERRCODE = 'P0002';
+  END IF;
+  RETURN changed;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.adjust_rehearsal(uuid, uuid, text, date, text, text, jsonb)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.adjust_rehearsal(uuid, uuid, text, date, text, text, jsonb) TO service_role;
+
+-- Cancels the learner's ACTIVE rehearsal. The plan and its runs stay readable; the free marker is untouched.
+CREATE FUNCTION public.cancel_rehearsal(_user_id uuid, _id uuid)
+RETURNS public.rehearsals
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  changed public.rehearsals;
+BEGIN
+  UPDATE public.rehearsals AS r
+    SET status = 'cancelled', closed_at = now()
+    WHERE r.id = _id AND r.user_id = _user_id AND r.status = 'active'
+    RETURNING r.* INTO changed;
+  IF changed.id IS NULL THEN
+    RAISE EXCEPTION 'rehearsal_not_found' USING ERRCODE = 'P0002';
+  END IF;
+  RETURN changed;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.cancel_rehearsal(uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.cancel_rehearsal(uuid, uuid) TO service_role;
+
+-- The brief call's own AI quota kind: 5 a day and 5 a minute. These two definitions are 20261119100000's, plus it.
+CREATE OR REPLACE FUNCTION public.consume_ai_quota(_kind text)
+RETURNS TABLE(allowed boolean, used integer, quota integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  me uuid := auth.uid();
+  new_count integer;
+  daily_limit integer;
+BEGIN
+  daily_limit := CASE _kind
+    WHEN 'chat' THEN 60
+    WHEN 'stt' THEN 120
+    WHEN 'tts' THEN 80
+    WHEN 'translate' THEN 60
+    WHEN 'define' THEN 40
+    WHEN 'hector' THEN 150
+    WHEN 'explain' THEN 40
+    WHEN 'support' THEN 30
+    WHEN 'recap' THEN 30
+    WHEN 'rehearsal_brief' THEN 5
+    ELSE NULL
+  END;
+
+  IF me IS NULL OR daily_limit IS NULL THEN
+    RETURN QUERY SELECT false, 0, COALESCE(daily_limit, 0);
+    RETURN;
+  END IF;
+
+  INSERT INTO public.ai_usage (user_id, day, kind, count)
+  VALUES (me, current_date, _kind, 1)
+  ON CONFLICT (user_id, day, kind) DO UPDATE
+    SET count = public.ai_usage.count + 1, updated_at = now()
+  RETURNING public.ai_usage.count INTO new_count;
+
+  IF new_count > daily_limit THEN
+    RETURN QUERY SELECT false, new_count, daily_limit;
+  ELSE
+    RETURN QUERY SELECT true, new_count, daily_limit;
+  END IF;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.consume_ai_quota(text) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.consume_ai_quota(text) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.consume_ai_rate_limit(_kind text)
+RETURNS TABLE(allowed boolean, count integer, per_minute_limit integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  me uuid := auth.uid();
+  bucket timestamptz := date_trunc('minute', now());
+  new_count integer;
+  minute_limit integer;
+BEGIN
+  minute_limit := CASE _kind
+    WHEN 'chat' THEN 10
+    WHEN 'stt' THEN 10
+    WHEN 'tts' THEN 15
+    WHEN 'translate' THEN 10
+    WHEN 'define' THEN 10
+    WHEN 'hector' THEN 10
+    WHEN 'explain' THEN 10
+    WHEN 'support' THEN 5
+    WHEN 'recap' THEN 5
+    WHEN 'rehearsal_brief' THEN 5
+    ELSE NULL
+  END;
+
+  IF me IS NULL OR minute_limit IS NULL THEN
+    RETURN QUERY SELECT false, 0, COALESCE(minute_limit, 0);
+    RETURN;
+  END IF;
+
+  -- Opportunistically drop this user's stale buckets so the table stays
+  -- small; indexed by (user_id, kind, minute_bucket) so this is cheap.
+  DELETE FROM public.ai_rate_limits
+    WHERE user_id = me AND minute_bucket < bucket - interval '5 minutes';
+
+  INSERT INTO public.ai_rate_limits (user_id, kind, minute_bucket, count)
+  VALUES (me, _kind, bucket, 1)
+  ON CONFLICT (user_id, kind, minute_bucket) DO UPDATE
+    SET count = public.ai_rate_limits.count + 1, updated_at = now()
+  RETURNING public.ai_rate_limits.count INTO new_count;
+
+  IF new_count > minute_limit THEN
+    RETURN QUERY SELECT false, new_count, minute_limit;
+  ELSE
+    RETURN QUERY SELECT true, new_count, minute_limit;
+  END IF;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.consume_ai_rate_limit(text) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.consume_ai_rate_limit(text) TO authenticated, service_role;

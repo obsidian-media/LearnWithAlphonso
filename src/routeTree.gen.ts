@@ -61,6 +61,7 @@ import { Route as ApiLearningPathRouteImport } from './routes/api/learning-path'
 import { Route as ApiPracticeRouteImport } from './routes/api/practice'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
+import { Route as ApiRehearsalRouteImport } from './routes/api/rehearsal'
 import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
@@ -349,6 +350,11 @@ const ApiProStatusRoute = ApiProStatusRouteImport.update({
   path: '/api/pro-status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRehearsalRoute = ApiRehearsalRouteImport.update({
+  id: '/api/rehearsal',
+  path: '/api/rehearsal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiReviewDemoCodeRoute = ApiReviewDemoCodeRouteImport.update({
   id: '/api/review-demo-code',
   path: '/api/review-demo-code',
@@ -542,6 +548,7 @@ export interface FileRoutesByFullPath {
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
+  '/api/rehearsal': typeof ApiRehearsalRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -621,6 +628,7 @@ export interface FileRoutesByTo {
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
+  '/api/rehearsal': typeof ApiRehearsalRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -702,6 +710,7 @@ export interface FileRoutesById {
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
+  '/api/rehearsal': typeof ApiRehearsalRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -783,6 +792,7 @@ export interface FileRouteTypes {
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
+    | '/api/rehearsal'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -862,6 +872,7 @@ export interface FileRouteTypes {
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
+    | '/api/rehearsal'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -942,6 +953,7 @@ export interface FileRouteTypes {
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
+    | '/api/rehearsal'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -1007,6 +1019,7 @@ export interface RootRouteChildren {
   ApiPracticeRoute: typeof ApiPracticeRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
+  ApiRehearsalRoute: typeof ApiRehearsalRoute
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
@@ -1387,6 +1400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/rehearsal': {
+      id: '/api/rehearsal'
+      path: '/api/rehearsal'
+      fullPath: '/api/rehearsal'
+      preLoaderRoute: typeof ApiRehearsalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/review-demo-code': {
       id: '/api/review-demo-code'
       path: '/api/review-demo-code'
@@ -1688,6 +1708,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPracticeRoute: ApiPracticeRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
   ApiProStatusRoute: ApiProStatusRoute,
+  ApiRehearsalRoute: ApiRehearsalRoute,
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
   ApiSttRoute: ApiSttRoute,
   ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,

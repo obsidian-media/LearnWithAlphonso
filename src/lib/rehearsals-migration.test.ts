@@ -230,3 +230,86 @@ describe("constraints", () => {
     }
   });
 });
+
+describe("the rehearsal RPCs", () => {
+  const U = "00000000-0000-4000-8000-0000000000e1";
+  const V = "00000000-0000-4000-8000-0000000000e2";
+  const W = "00000000-0000-4000-8000-0000000000e3";
+  beforeAll(async () => {
+    await db.exec(`INSERT INTO auth.users(id) VALUES ('${U}'), ('${V}'), ('${W}')`);
+  });
+  const create = (user: string, free: boolean, course = "en") =>
+    server(() =>
+      db.query<{ id: string }>(
+        `SELECT * FROM public.create_rehearsal('${user}', '${course}', 'interview', NULL, 'a manager', NULL, '${brief}'::jsonb, ${free})`,
+      ),
+    );
+  const marker = (user: string) =>
+    n(`SELECT count(*)::text n FROM public.rehearsal_free_used WHERE user_id = '${user}'`);
+
+  it("a free create takes the marker; a Pro create does not", async () => {
+    await create(V, false);
+    expect(await marker(V)).toBe(0);
+    await create(U, true);
+    expect(await marker(U)).toBe(1);
+  });
+
+  it("deleting the free rehearsal, then creating a free one again, is refused (Review focus 3)", async () => {
+    await asUser(U, () => db.query(`DELETE FROM public.rehearsals WHERE user_id = '${U}'`));
+    expect(await n(`SELECT count(*)::text n FROM public.rehearsals WHERE user_id = '${U}'`)).toBe(
+      0,
+    );
+    await expect(create(U, true)).rejects.toThrow(/rehearsal_free_used/);
+    expect(await n(`SELECT count(*)::text n FROM public.rehearsals WHERE user_id = '${U}'`)).toBe(
+      0,
+    );
+  });
+
+  it("a create that fails (a second active rehearsal) gives the free marker back", async () => {
+    await create(W, false); // active, Pro
+    await expect(create(W, true)).rejects.toThrow(/duplicate key|unique/);
+    expect(await marker(W)).toBe(0);
+  });
+
+  it("adjust and cancel only touch the owner's active rehearsal", async () => {
+    const id = (
+      await db.query<{ id: string }>(
+        `SELECT id FROM public.rehearsals WHERE user_id = '${V}' AND status = 'active'`,
+      )
+    ).rows[0]!.id;
+    const adjust = (user: string) =>
+      server(() =>
+        db.query(
+          `SELECT * FROM public.adjust_rehearsal('${user}', '${id}', 'meeting', '2026-12-04', 'a colleague', 'speed', '${brief}'::jsonb)`,
+        ),
+      );
+    await expect(adjust(U)).rejects.toThrow(/rehearsal_not_found/); // someone else's
+    await adjust(V);
+    const row = (
+      await db.query<{ event_kind: string; course: string; free: boolean }>(
+        `SELECT event_kind, course, free FROM public.rehearsals WHERE id = '${id}'`,
+      )
+    ).rows[0]!;
+    expect(row).toEqual({ event_kind: "meeting", course: "en", free: false });
+    await expect(
+      server(() => db.query(`SELECT * FROM public.cancel_rehearsal('${U}', '${id}')`)),
+    ).rejects.toThrow(/rehearsal_not_found/);
+    await server(() => db.query(`SELECT * FROM public.cancel_rehearsal('${V}', '${id}')`));
+    await expect(adjust(V)).rejects.toThrow(/rehearsal_not_found/); // closed
+    expect(
+      await n(
+        `SELECT count(*)::text n FROM public.rehearsals WHERE id = '${id}' AND status = 'cancelled' AND closed_at IS NOT NULL`,
+      ),
+    ).toBe(1);
+  });
+
+  it("no client may run the writes", async () => {
+    await expect(
+      asUser(V, () =>
+        db.query(
+          `SELECT * FROM public.create_rehearsal('${V}', 'en', 'interview', NULL, 'x', NULL, '${brief}'::jsonb, false)`,
+        ),
+      ),
+    ).rejects.toThrow(/permission denied/);
+  });
+});

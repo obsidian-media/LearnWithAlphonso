@@ -8,7 +8,16 @@ import { EXPLAIN_DAILY_LIMIT } from "./explain";
 export const USAGE_UNVERIFIED_MESSAGE = "Could not verify your usage. Try again shortly.";
 
 export type QuotaKind =
-  "chat" | "stt" | "tts" | "translate" | "define" | "hector" | "explain" | "support" | "recap";
+  | "chat"
+  | "stt"
+  | "tts"
+  | "translate"
+  | "define"
+  | "hector"
+  | "explain"
+  | "support"
+  | "recap"
+  | "rehearsal_brief";
 
 /**
  * Per-user daily caps on AI usage, for display only — the real cap is
@@ -45,6 +54,9 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   // The after-call recap (/api/call-recap): one short AI call per finished call, its own budget so it never spends the
   // conversation turns (chat) a learner practises with. 5 a minute. 20261119100000_call_recap_memory.sql.
   recap: 30,
+  // The one short call that writes a rehearsal's brief (/api/rehearsal create and adjust): 5 a day and 5 a minute, its
+  // own budget so it never spends conversation turns. 20261128220000_rehearsals.sql.
+  rehearsal_brief: 5,
 };
 
 export type QuotaResult =
