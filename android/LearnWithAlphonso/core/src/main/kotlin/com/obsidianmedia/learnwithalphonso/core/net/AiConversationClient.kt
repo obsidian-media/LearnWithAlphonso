@@ -2,6 +2,8 @@ package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorCorrection
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorCorrections
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorCallEndResult
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorGreetingReply
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
@@ -122,6 +124,33 @@ class AiConversationClient(private val http: ApiHttp) {
         }
         val obj = objectOf(http.post("api/analyze-weaknesses", body))
         return obj["weaknessesDetected"]?.jsonPrimitive?.intOrNull ?: throw AiConversationError.InvalidPayload()
+    }
+
+    // ---- Hector's memory ------------------------------------------------------------------------------------------
+
+    /**
+     * POST /api/hector-call-end: keeps what a finished Hector call showed (Pro, checked on the server). Throws an
+     * [AiConversationError] (401, 403 consent, 429 quota, 503) so the caller can log why; a 200 with `saved: false`
+     * is a result, not an error.
+     */
+    suspend fun hectorCallEnd(callId: String, course: String, cefrLevel: String?, messages: List<ChatMessage>): HectorCallEndResult {
+        val body = buildJsonObject {
+            put("callId", callId)
+            put("course", course)
+            if (cefrLevel != null) put("cefrLevel", cefrLevel)
+            putJsonArray("messages") { messages.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
+        }
+        return HectorCallEndResult.parse(requireSuccess(http.post("api/hector-call-end", body))) ?: throw AiConversationError.InvalidPayload()
+    }
+
+    /** POST /api/hector-greeting: Hector's memory-aware opening line (Pro; the server makes no AI call for it). */
+    suspend fun hectorGreeting(course: String, cefrLevel: String?, lastVariant: Int?): HectorGreetingReply {
+        val body = buildJsonObject {
+            put("course", course)
+            if (cefrLevel != null) put("cefrLevel", cefrLevel)
+            if (lastVariant != null) put("lastVariant", lastVariant)
+        }
+        return HectorGreetingReply.parse(requireSuccess(http.post("api/hector-greeting", body))) ?: throw AiConversationError.InvalidPayload()
     }
 
     // ---- Call recap and What Alphonso remembers -------------------------------------------------------------------

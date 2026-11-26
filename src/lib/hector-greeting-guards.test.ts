@@ -37,11 +37,17 @@ describe("iOS: Hector greets the learner", () => {
   it("opens an empty conversation with the greeting once the learner context has loaded", () => {
     const fn = src.slice(src.indexOf("private func loadLearnerContext"));
     const body = fn.slice(0, fn.indexOf("\n    }\n"));
-    expect(body).toMatch(
-      /conversationStore\.openWithGreeting\(key, greeting: HectorGreeting\.build\(/,
-    );
+    // The local template is built from the learner context and kept as the fallback for the call.
+    expect(body).toMatch(/localGreeting = HectorGreeting\.build\(/);
     expect(body).toContain("weakSpot: HectorGreeting.recentWeakSpot(trend)");
-    expect(body).toMatch(/openWithGreeting[\s\S]*openerCue \+= 1/);
+    // An empty conversation is opened through openCall; one already underway is not re-opened.
+    expect(body).toMatch(/turns\.isEmpty \?\? true \{ await openCall\(\) \}/);
+    const open = src.slice(src.indexOf("private func openCall"));
+    const openBody = open.slice(0, open.indexOf("\n    }\n"));
+    expect(openBody).toContain("localFallback: local");
+    expect(openBody).toMatch(
+      /conversationStore\.openWithGreeting\(key, greeting: opening\.text\)[\s\S]*openerCue \+= 1/,
+    );
   });
 
   it("the greeting is not reportable: it is our own text", () => {

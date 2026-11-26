@@ -284,6 +284,31 @@ public final class AIConversationClient: Sendable {
         return count
     }
 
+    // MARK: Hector's memory
+
+    /// POST /api/hector-call-end -- keeps what a finished Hector call showed (Pro, server-checked). Throws a
+    /// TutorError (auth, consent, quota, server) so the caller can log why; a 200 with `saved: false` is a result.
+    public func hectorCallEnd(callId: String, course: String, cefrLevel: String?, messages: [ChatMessage]) async throws -> HectorCallEndResult {
+        var payload: [String: Any] = [
+            "callId": callId, "course": course,
+            "messages": messages.map { ["role": $0.role, "content": $0.content] },
+        ]
+        if let cefrLevel { payload["cefrLevel"] = cefrLevel }
+        let data = try await performConversationCall(try recapRequest("api/hector-call-end", method: "POST", body: payload))
+        guard let result = HectorCallEndResult.parse(data) else { throw TutorError.server(message: nil) }
+        return result
+    }
+
+    /// POST /api/hector-greeting -- Hector's memory-aware opening line (Pro; no AI call on the server).
+    public func hectorGreeting(course: String, cefrLevel: String?, lastVariant: Int?) async throws -> HectorGreetingReply {
+        var payload: [String: Any] = ["course": course]
+        if let cefrLevel { payload["cefrLevel"] = cefrLevel }
+        if let lastVariant { payload["lastVariant"] = lastVariant }
+        let data = try await performConversationCall(try recapRequest("api/hector-greeting", method: "POST", body: payload))
+        guard let reply = HectorGreetingReply.parse(data) else { throw TutorError.server(message: nil) }
+        return reply
+    }
+
     // MARK: Call recap and What Alphonso remembers
 
     private func recapRequest(_ path: String, method: String, body: [String: Any]?) throws -> URLRequest {
