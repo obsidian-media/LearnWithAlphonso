@@ -421,14 +421,19 @@ with nothing downloaded" is a distinct state from "no episodes", because
 telling someone who downloaded three episodes that there are none would
 be a lie about their own device.
 
-**Podcast audio storage.** Episodes live in a **public-read** Supabase
-Storage bucket, `podcast-audio`, with no client write policy — only
-`scripts/podcast-tool.ts` (service role) uploads. Consequence worth
-knowing before anyone builds on it: `podcast_episodes.published` hides
-the **row**, not the **file**, so an unpublished episode's audio is
-still fetchable by anyone with the URL. That is acceptable only while
-this content is free for everyone. **A public bucket cannot enforce a
-Pro entitlement** — if podcasts are ever gated, the move to a private
+**Podcast audio storage.** **Published** episodes live in a **public-read** Supabase
+Storage bucket, `podcast-audio`, with no client write policy, so client
+URLs never change. Audio that is **not published** (new uploads, staged
+admin uploads, unpublished episodes) lives at the same path in the
+**private** bucket `podcast-audio-drafts` (`20261128120000`, no storage
+policy, service role only; owner decision "make it private please", item
+29a). Publishing copies the file into the public bucket before the row
+flips; unpublishing copies it back and then removes the public file
+(`src/lib/podcast-audio-buckets.ts`, used by `scripts/podcast-tool.ts` and
+the admin console). Existing unpublished audio is moved once by
+`scripts/podcast-audio-privatise.ts`. The `stories/` narration in
+`podcast-audio` stays public by design. Still true: **a public bucket
+cannot enforce a Pro entitlement** — if podcasts are ever gated, the move to a private
 bucket with signed URLs must happen first, and it is the expensive,
 hard-to-reverse part of the design. Audio egress is also far heavier
 than this app's existing text-and-thumbnail traffic and Supabase
