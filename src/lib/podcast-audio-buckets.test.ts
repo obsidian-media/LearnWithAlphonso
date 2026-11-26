@@ -148,13 +148,69 @@ describe("moveAudioForPublishState", () => {
 });
 
 describe("objectsToMakePrivate", () => {
-  it("lists unpublished and orphan audio, never a published path or the stories narration", () => {
+  it("lists unpublished and orphan podcast audio, never a published path", () => {
+    expect(objectsToMakePrivate(["en/a.mp3", "fr/x/b.mp3", "es/orphan.mp3"], ["en/a.mp3"])).toEqual(
+      ["fr/x/b.mp3", "es/orphan.mp3"],
+    );
+  });
+
+  it("is an allowlist: stories, instagram reels and unknown prefixes are never selected", () => {
     expect(
       objectsToMakePrivate(
-        ["en/a.mp3", "en/b.mp3", "en/orphan.mp3", "stories/s1/x.mp3"],
-        ["en/a.mp3"],
+        [
+          "stories/s1/x.mp3",
+          "instagram-reels/r1.mp4",
+          "instagram-reels/r1.mp3",
+          "misc/y.mp3",
+          "de/z.mp3",
+          "en/notes.txt",
+        ],
+        [],
       ),
-    ).toEqual(["en/b.mp3", "en/orphan.mp3"]);
+    ).toEqual([]);
+  });
+});
+
+describe("moveAudioForPublishState with a shared audio_path", () => {
+  it("unpublish keeps the public file while another published episode uses it", async () => {
+    const { storage, buckets } = fakeStorage({ [PUBLIC_AUDIO_BUCKET]: [PATH] });
+    await moveAudioForPublishState({
+      storage,
+      path: PATH,
+      publish: false,
+      sharedWith: { published: true, unpublished: false },
+      flip: async () => {},
+    });
+    expect(buckets[PUBLIC_AUDIO_BUCKET].has(PATH)).toBe(true);
+  });
+
+  it("publish keeps the private copy while another unpublished episode uses it", async () => {
+    const { storage, buckets } = fakeStorage({ [DRAFT_AUDIO_BUCKET]: [PATH] });
+    await moveAudioForPublishState({
+      storage,
+      path: PATH,
+      publish: true,
+      sharedWith: { published: false, unpublished: true },
+      flip: async () => {},
+    });
+    expect(buckets[DRAFT_AUDIO_BUCKET].has(PATH)).toBe(true);
+    expect(buckets[PUBLIC_AUDIO_BUCKET].has(PATH)).toBe(true);
+  });
+
+  it("a failed publish does not remove a public file another published episode already used", async () => {
+    const { storage, buckets } = fakeStorage({ [DRAFT_AUDIO_BUCKET]: [PATH] });
+    await expect(
+      moveAudioForPublishState({
+        storage,
+        path: PATH,
+        publish: true,
+        sharedWith: { published: true, unpublished: false },
+        flip: async () => {
+          throw new Error("db down");
+        },
+      }),
+    ).rejects.toThrow("db down");
+    expect(buckets[PUBLIC_AUDIO_BUCKET].has(PATH)).toBe(true);
   });
 });
 
@@ -164,8 +220,7 @@ describe("wiring of the writers", () => {
   it("podcast-tool uploads new audio to the private bucket and publishes through the mover", () => {
     const tool = read("../../scripts/podcast-tool.ts");
     expect(tool).toContain("const BUCKET = DRAFT_AUDIO_BUCKET;");
-    expect(tool).toMatch(/publish: true,/);
-    expect(tool).toMatch(/publish: false,/);
+    expect(tool).toContain("moveAudioForPublishState");
   });
 
   it("the admin console never uploads new or staged audio to the public bucket", () => {

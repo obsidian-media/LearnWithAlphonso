@@ -70,8 +70,18 @@ export async function moveAudioForPublishState(args: {
   path: string;
   publish: boolean;
   flip: () => Promise<void>;
+  /**
+   * Other episodes point at this same audio_path. `published`: one of them is published (so the public file must stay
+   * on an unpublish, and must not be removed if a publish fails). `unpublished`: one of them is not (so the private
+   * file must stay on a publish).
+   */
+  sharedWith?: { published: boolean; unpublished: boolean };
 }): Promise<void> {
   const { storage, path, publish, flip } = args;
+  const shared = args.sharedWith ?? { published: false, unpublished: false };
+  // The copy we leave behind in the source bucket: the public file while another published episode uses it, the
+  // private one while another unpublished episode uses it.
+  const keepSource = publish ? shared.unpublished : shared.published;
   const source = publish ? DRAFT_AUDIO_BUCKET : PUBLIC_AUDIO_BUCKET;
   const target = publish ? PUBLIC_AUDIO_BUCKET : DRAFT_AUDIO_BUCKET;
 
@@ -84,11 +94,12 @@ export async function moveAudioForPublishState(args: {
     await flip();
   } catch (e) {
     // Undo what we added: a public copy of audio that did not get published must not stay.
-    if (copied && publish) await storage.from(target).remove([path]);
+    if (copied && publish && !shared.published) await storage.from(target).remove([path]);
     throw e;
   }
 
   // Row flipped. Remove the old copy. For an unpublish a failure leaves the audio public, so it is reported.
+  if (keepSource) return;
   const { error } = await storage.from(source).remove([path]);
   if (error && !publish) {
     throw new Error(
@@ -98,13 +109,17 @@ export async function moveAudioForPublishState(args: {
 }
 
 /**
- * For the one-off move of existing data: which objects of the public bucket must go private. Every object that no
- * PUBLISHED episode points at, except the `stories/` narration, which is public by design.
+ * For the one-off move of existing data: which objects of the public bucket must go private. Only podcast audio paths
+ * (see PODCAST_AUDIO_PATH) that no PUBLISHED episode points at; `stories/` narration, `instagram-reels/` and anything
+ * unknown stay public.
  */
 export function objectsToMakePrivate(
   objectNames: string[],
   publishedAudioPaths: string[],
 ): string[] {
   const published = new Set(publishedAudioPaths);
-  return objectNames.filter((name) => !name.startsWith("stories/") && !published.has(name));
+  return objectNames.filter((name) => PODCAST_AUDIO_PATH.test(name) && !published.has(name));
 }
+
+/** An ALLOWLIST: episode audio is `<en|fr|es>/<folders>/<slug>.mp3`. Anything else in the bucket (stories/, instagram-reels/, ...) is not ours to move. */
+export const PODCAST_AUDIO_PATH = /^(en|fr|es)\/.+\.mp3$/;

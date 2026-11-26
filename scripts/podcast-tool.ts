@@ -592,7 +592,7 @@ async function cmdPublish(flags: CliFlags) {
 
   const { data: candidate, error: readError } = await db
     .from("podcast_episodes")
-    .select("voice_provider, audio_path")
+    .select("id, voice_provider, audio_path")
     .eq("folder_id", folder.id)
     .eq("slug", slug)
     .maybeSingle();
@@ -614,12 +614,25 @@ async function cmdPublish(flags: CliFlags) {
     return;
   }
 
+  // Another episode row may share this audio file: keep the private copy while one of them is unpublished.
+  const { data: others, error: othersError } = await db
+    .from("podcast_episodes")
+    .select("published")
+    .eq("audio_path", audioPath)
+    .neq("id", (candidate as { id: string }).id);
+  if (othersError) fail(`could not read the other episodes: ${othersError.message}`);
+  const sharers = Array.isArray(others) ? (others as { published: boolean }[]) : [];
+
   // The audio goes into the public bucket first, then the row flips; a failed flip removes the public copy again.
   try {
     await moveAudioForPublishState({
       storage: db.storage,
       path: audioPath,
       publish: true,
+      sharedWith: {
+        published: sharers.some((row) => row.published),
+        unpublished: sharers.some((row) => !row.published),
+      },
       flip: async () => {
         const { data, error } = await db
           .from("podcast_episodes")

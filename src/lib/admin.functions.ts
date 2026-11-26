@@ -510,10 +510,23 @@ export const adminSetPublished = createServerFn({ method: "POST" })
       }
     }
     const audioPath = await audioPathForEpisode(context.supabaseAdmin, data.id);
+    // Another episode row may share this audio file: the public copy stays while one is published, the private one
+    // while one is not.
+    const { data: others, error: othersError } = await context.supabaseAdmin
+      .from("podcast_episodes")
+      .select("published")
+      .eq("audio_path", audioPath)
+      .neq("id", data.id);
+    if (othersError) throw new Error(othersError.message);
+    const sharers = Array.isArray(others) ? (others as { published: boolean }[]) : [];
     await moveAudioForPublishState({
       storage: context.supabaseAdmin.storage,
       path: audioPath,
       publish: data.published,
+      sharedWith: {
+        published: sharers.some((row) => row.published),
+        unpublished: sharers.some((row) => !row.published),
+      },
       flip: async () => {
         const { data: changed, error } = await podcastWrite(
           context,

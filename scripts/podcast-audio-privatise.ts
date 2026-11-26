@@ -71,6 +71,25 @@ if (!confirm) {
 
 let moved = 0;
 for (const path of toMove) {
+  // Re-read just before moving: an episode published since the list was made must keep its public file.
+  const { data: rows, error: rowError } = await db
+    .from("podcast_episodes")
+    .select("published")
+    .eq("audio_path", path);
+  if (rowError) {
+    console.error(`Skipped ${path}: could not re-check its episode (${rowError.message}).`);
+    continue;
+  }
+  if ((rows ?? []).some((row) => row.published)) {
+    console.error(`Skipped ${path}: an episode that uses it is published now. Left public.`);
+    continue;
+  }
+  // Never overwrite a draft that is already there.
+  const existing = await db.storage.from(DRAFT_AUDIO_BUCKET).download(path);
+  if (existing.data) {
+    console.error(`Skipped ${path}: a private copy already exists. Left as it is; check by hand.`);
+    continue;
+  }
   const { data: blob, error: downloadError } = await db.storage
     .from(PUBLIC_AUDIO_BUCKET)
     .download(path);
@@ -80,7 +99,7 @@ for (const path of toMove) {
   }
   const { error: uploadError } = await db.storage
     .from(DRAFT_AUDIO_BUCKET)
-    .upload(path, blob, { contentType: blob.type || "audio/mpeg", upsert: true });
+    .upload(path, blob, { contentType: blob.type || "audio/mpeg", upsert: false });
   if (uploadError) {
     console.error(
       `Skipped ${path}: copy failed (${uploadError.message}). The public file is untouched.`,
