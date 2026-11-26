@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { acquireInert } from "@/lib/inert-stack";
 
 export const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -13,12 +14,15 @@ export function Modal({
   labelledBy,
   describedBy,
   onEscape,
+  onBackdrop,
   className,
   children,
 }: {
   labelledBy: string;
   describedBy?: string;
   onEscape?: () => void;
+  /** A tap on the dimmed area outside the dialog. Optional: most dialogs are explicit choices and ignore it. */
+  onBackdrop?: () => void;
   className?: string;
   children: ReactNode;
 }) {
@@ -37,17 +41,10 @@ export function Modal({
     const dialog: HTMLDivElement = found;
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
-    // Everything else in <body> becomes inert (and hidden from screen readers) until this closes.
+    // Everything else in <body> becomes inert (and hidden from screen readers) until this closes. Ref-counted
+    // (inert-stack), because a phone cover may be hiding some of the same elements and closes in any order.
     const others = Array.from(document.body.children).filter((el) => el !== portal);
-    const saved = others.map((el) => ({
-      el,
-      inert: el.hasAttribute("inert"),
-      ariaHidden: el.getAttribute("aria-hidden"),
-    }));
-    for (const { el } of saved) {
-      el.setAttribute("inert", "");
-      el.setAttribute("aria-hidden", "true");
-    }
+    const releaseInert = acquireInert(others);
 
     const focusables = () => Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE));
     (focusables()[0] ?? dialog).focus();
@@ -80,11 +77,7 @@ export function Modal({
 
     return () => {
       portal.removeEventListener("keydown", onKeyDown);
-      for (const { el, inert, ariaHidden } of saved) {
-        if (!inert) el.removeAttribute("inert");
-        if (ariaHidden === null) el.removeAttribute("aria-hidden");
-        else el.setAttribute("aria-hidden", ariaHidden);
-      }
+      releaseInert();
       previouslyFocused?.focus?.();
     };
   }, []);
@@ -92,9 +85,15 @@ export function Modal({
   return createPortal(
     <div
       ref={portalRef}
+      data-modal-portal=""
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
     >
-      <div role="presentation" className="absolute inset-0 bg-ds-ink/40" />
+      <div
+        role="presentation"
+        data-modal-backdrop=""
+        className="absolute inset-0 bg-ds-ink/40"
+        onClick={onBackdrop}
+      />
       <div
         ref={dialogRef}
         role="dialog"

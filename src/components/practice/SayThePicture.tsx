@@ -6,6 +6,7 @@ import { PracticeStars } from "./PracticeStars";
 import { SayItRight } from "./SayItRight";
 import { AI_CONSENT_COPY } from "@/lib/ai-consent-copy";
 import { useOptionalAiConsent } from "@/lib/ai-consent-context";
+import { usePhoneCover } from "@/lib/use-phone-cover";
 import { useSpeechCapture } from "@/lib/use-speech-capture";
 import { useModelSpeech } from "@/lib/use-model-speech";
 import {
@@ -76,6 +77,9 @@ export function SayThePicture({
   const [heard, setHeard] = useState<string | null>(null);
   const [drill, setDrill] = useState<PictureWord[] | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ kind: "idle" });
+  // The round's full-screen cover on a phone: body scroll locked, the app shell behind it inert (usePhoneCover).
+  const [cover, setCover] = useState<HTMLDivElement | null>(null);
+  usePhoneCover(cover);
   const word = rounds[index];
   const firstTry = results.filter((r) => r === "first").length;
 
@@ -418,10 +422,11 @@ export function SayThePicture({
 
   return (
     <div
+      ref={setCover}
       data-say-the-picture="round"
       data-phase={phase}
       data-pose={pose}
-      className="relative flex min-h-dvh flex-col overflow-x-clip bg-ds-brand font-[family-name:var(--ds-font-body)] text-white max-md:fixed max-md:inset-0 max-md:z-40 max-md:overflow-y-auto"
+      className="relative flex min-h-dvh flex-col overflow-x-clip bg-ds-brand font-[family-name:var(--ds-font-body)] text-white max-md:fixed max-md:inset-0 max-md:z-40 max-md:overflow-y-auto max-md:overscroll-contain"
     >
       {/* On a phone the round is a full-screen cover over the app's top bar and tab bar. Left in the page it was
           110px taller than the screen, so tapping a button near the bottom scrolled the page and the sticky top bar

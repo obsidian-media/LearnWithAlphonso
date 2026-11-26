@@ -543,4 +543,29 @@ describe("say-the-picture derived state", () => {
     expect(saveSentence({ term: "he", example: "The dog runs." })).toBe("he");
     expect(saveSentence({ term: "dog", example: "" })).toBe("dog");
   });
+
+  it("on a phone the round locks body scroll and makes the app behind it inert, until it closes", () => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: true,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    const bar = document.createElement("nav");
+    bar.innerHTML = "<button>tab bar</button>";
+    document.body.appendChild(bar);
+    try {
+      const { unmount } = view();
+      expect(document.body.style.overflow).toBe("hidden");
+      expect(bar).toHaveAttribute("inert");
+      expect(
+        screen.getByRole("button", { name: "Record your answer" }).closest("[inert]"),
+      ).toBeNull();
+      unmount();
+      expect(document.body.style.overflow).toBe("");
+      expect(bar).not.toHaveAttribute("inert");
+    } finally {
+      bar.remove();
+      vi.unstubAllGlobals();
+    }
+  });
 });
