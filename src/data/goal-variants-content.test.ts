@@ -163,28 +163,38 @@ for (const course of ["en", "fr", "es"] as const) {
   });
 }
 
-describe("the English A1 pilot", () => {
-  const pilot = questions("en").filter((x) => x.q.goalVariants);
+// The course-levels that ship variants. Each carries about 60 sentence-type questions, all three goals (exam and fun
+// keep serving the base question). Add a level here in the PR that adds its content.
+const SHIPPED: Record<"en" | "fr" | "es", string[]> = { en: ["A1", "A2"], fr: [], es: [] };
 
-  it("covers about 60 sentence-type questions, all A1, for travel, work and school", () => {
-    expect(pilot.length).toBeGreaterThanOrEqual(55);
-    expect(pilot.length).toBeLessThanOrEqual(65);
-    for (const { level, q } of pilot) {
-      expect(level).toBe("A1");
-      expect(Object.keys(q.goalVariants!).sort()).toEqual(["school", "travel", "work"]);
-    }
-  });
+describe("which course-levels ship goal variants", () => {
+  for (const course of ["en", "fr", "es"] as const) {
+    const withVariants = questions(course).filter((x) => x.q.goalVariants);
 
-  it("never touches a lesson's questions: same ids, same count, same order as without the side file", () => {
-    const base = (units: Unit[]) =>
-      units.map((u) => u.lessons.map((l) => `${l.id}:${l.questions.map((x) => x.id).join(",")}`));
-    const stripped = curriculum.map((u) => ({
-      ...u,
-      lessons: u.lessons.map((l) => ({
-        ...l,
-        questions: l.questions.map(({ goalVariants: _g, ...rest }) => rest as Question),
-      })),
-    }));
-    expect(base(curriculum)).toEqual(base(stripped));
-  });
+    it(`${course}: only the shipped levels have variants, each with about 60 questions for travel, work and school`, () => {
+      expect([...new Set(withVariants.map((x) => x.level))].sort()).toEqual(
+        [...SHIPPED[course]].sort(),
+      );
+      for (const level of SHIPPED[course]) {
+        const atLevel = withVariants.filter((x) => x.level === level);
+        expect(atLevel.length, `${course} ${level}`).toBeGreaterThanOrEqual(55);
+        expect(atLevel.length, `${course} ${level}`).toBeLessThanOrEqual(65);
+        for (const { q } of atLevel)
+          expect(Object.keys(q.goalVariants!).sort()).toEqual(["school", "travel", "work"]);
+      }
+    });
+
+    it(`${course}: never touches a lesson's questions (same ids, same count, same order as without the side file)`, () => {
+      const base = (units: Unit[]) =>
+        units.map((u) => u.lessons.map((l) => `${l.id}:${l.questions.map((x) => x.id).join(",")}`));
+      const stripped = UNITS[course].map((u) => ({
+        ...u,
+        lessons: u.lessons.map((l) => ({
+          ...l,
+          questions: l.questions.map(({ goalVariants: _g, ...rest }) => rest as Question),
+        })),
+      }));
+      expect(base(UNITS[course])).toEqual(base(stripped));
+    });
+  }
 });

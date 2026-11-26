@@ -20924,14 +20924,63 @@
                 "I bought a new phone a week ago.",
                 "A week ago I bought a new phone."
               ],
-              "explanation": "One way to say it: \"I bought a new phone last week.\""
+              "explanation": "One way to say it: \"I bought a new phone last week.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you bought a new suitcase before the trip.",
+                  "acceptableAnswers": [
+                    "I bought a new suitcase before the trip.",
+                    "Before the trip, I bought a new suitcase.",
+                    "I purchased a new suitcase before the trip.",
+                    "I got a new suitcase before the trip."
+                  ],
+                  "explanation": "You can say \"I bought a new suitcase before the trip.\" We use the past simple of \"buy\", which is \"bought\", for something finished."
+                },
+                "work": {
+                  "prompt": "Say that you bought a new laptop for work last week.",
+                  "acceptableAnswers": [
+                    "I bought a new laptop for work last week.",
+                    "Last week, I bought a new laptop for work.",
+                    "I purchased a new laptop for work last week.",
+                    "I got a new laptop for work last week."
+                  ],
+                  "explanation": "You can say \"I bought a new laptop for work last week.\" We use the past simple of \"buy\", which is \"bought\", for something finished."
+                },
+                "school": {
+                  "prompt": "Say that you bought a new notebook for school last week.",
+                  "acceptableAnswers": [
+                    "I bought a new notebook for school last week.",
+                    "Last week, I bought a new notebook for school.",
+                    "I purchased a new notebook for school last week.",
+                    "I got a new notebook for school last week."
+                  ],
+                  "explanation": "You can say \"I bought a new notebook for school last week.\" We use the past simple of \"buy\", which is \"bought\", for something finished."
+                }
+              }
             },
             {
               "id": "sx1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I bought a new coat yesterday",
-              "explanation": "\"I bought a new coat yesterday\" uses \"bought\", the irregular past simple of \"buy\", for a finished action in the past."
+              "explanation": "\"I bought a new coat yesterday\" uses \"bought\", the irregular past simple of \"buy\", for a finished action in the past.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I bought a new camera yesterday",
+                  "explanation": "You say \"I bought a new camera yesterday\" We use the past simple of \"buy\", which is \"bought\", for something finished."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I bought a new printer yesterday",
+                  "explanation": "You say \"I bought a new printer yesterday\" We use the past simple of \"buy\", which is \"bought\", for something finished."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I bought a new backpack yesterday",
+                  "explanation": "You say \"I bought a new backpack yesterday\" We use the past simple of \"buy\", which is \"bought\", for something finished."
+                }
+              }
             }
           ]
         },
@@ -21176,7 +21225,36 @@
                 "I wrote a long e-mail yesterday.",
                 "Yesterday I wrote a long e-mail."
               ],
-              "explanation": "One way to say it: \"I wrote a long email yesterday.\""
+              "explanation": "One way to say it: \"I wrote a long email yesterday.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you wrote a long email to the hotel yesterday.",
+                  "acceptableAnswers": [
+                    "I wrote a long email to the hotel yesterday.",
+                    "Yesterday, I wrote a long email to the hotel.",
+                    "I wrote the hotel a long email yesterday."
+                  ],
+                  "explanation": "You can say \"I wrote a long email to the hotel yesterday.\" The past simple of \"write\" is \"wrote\", and \"yesterday\" shows the time is finished."
+                },
+                "work": {
+                  "prompt": "Say that you wrote a long report yesterday.",
+                  "acceptableAnswers": [
+                    "I wrote a long report yesterday.",
+                    "Yesterday, I wrote a long report.",
+                    "I wrote a really long report yesterday."
+                  ],
+                  "explanation": "You can say \"I wrote a long report yesterday.\" The past simple of \"write\" is \"wrote\", and \"yesterday\" shows the time is finished."
+                },
+                "school": {
+                  "prompt": "Say that you wrote a long essay yesterday.",
+                  "acceptableAnswers": [
+                    "I wrote a long essay yesterday.",
+                    "Yesterday, I wrote a long essay.",
+                    "I wrote a really long essay yesterday."
+                  ],
+                  "explanation": "You can say \"I wrote a long essay yesterday.\" The past simple of \"write\" is \"wrote\", and \"yesterday\" shows the time is finished."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -21428,7 +21506,36 @@
                 "I had nine hours of sleep.",
                 "I got nine hours of sleep."
               ],
-              "explanation": "One way to say it: \"I slept for nine hours.\""
+              "explanation": "One way to say it: \"I slept for nine hours.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you slept for nine hours at the hotel.",
+                  "acceptableAnswers": [
+                    "I slept for nine hours at the hotel.",
+                    "I slept nine hours at the hotel.",
+                    "At the hotel, I slept for nine hours."
+                  ],
+                  "explanation": "You can say \"I slept for nine hours at the hotel.\" The past simple of \"sleep\" is \"slept\", and \"for\" goes with how long."
+                },
+                "work": {
+                  "prompt": "Say that you slept for only five hours before the meeting.",
+                  "acceptableAnswers": [
+                    "I slept for only five hours before the meeting.",
+                    "I slept only five hours before the meeting.",
+                    "I only slept for five hours before the meeting."
+                  ],
+                  "explanation": "You can say \"I slept for only five hours before the meeting.\" The past simple of \"sleep\" is \"slept\", and \"for\" goes with how long."
+                },
+                "school": {
+                  "prompt": "Say that you slept for only six hours before school.",
+                  "acceptableAnswers": [
+                    "I slept for only six hours before school.",
+                    "I slept only six hours before school.",
+                    "I only slept for six hours before school."
+                  ],
+                  "explanation": "You can say \"I slept for only six hours before school.\" The past simple of \"sleep\" is \"slept\", and \"for\" goes with how long."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -21465,7 +21572,42 @@
               ],
               "answer": "went",
               "explanation": "\"went\" fits here. Rule to remember: Past simple for finished events; past continuous for background action.",
-              "meaning": "the past of \"go\""
+              "meaning": "the past of \"go\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "I ___ to the airport by taxi yesterday.",
+                  "bank": [
+                    "go",
+                    "goes",
+                    "went",
+                    "goed"
+                  ],
+                  "answer": "went",
+                  "explanation": "The past simple of \"go\" is \"went\". I went to the airport by taxi yesterday."
+                },
+                "work": {
+                  "prompt": "I ___ to the client's office yesterday.",
+                  "bank": [
+                    "go",
+                    "goes",
+                    "went",
+                    "goed"
+                  ],
+                  "answer": "went",
+                  "explanation": "The past simple of \"go\" is \"went\". I went to the client's office yesterday."
+                },
+                "school": {
+                  "prompt": "I ___ to the library after class yesterday.",
+                  "bank": [
+                    "go",
+                    "goes",
+                    "went",
+                    "goed"
+                  ],
+                  "answer": "went",
+                  "explanation": "The past simple of \"go\" is \"went\". I went to the library after class yesterday."
+                }
+              }
             },
             {
               "id": "a2p2q1",
@@ -21521,7 +21663,42 @@
               ],
               "answer": "lost",
               "explanation": "\"lost\" is right because \"last night\" marks a finished time in the past, so we need the past simple. \"Lose\" is irregular: its past form is \"lost\", not \"losed\".",
-              "meaning": "no longer had something"
+              "meaning": "no longer had something",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "He ___ his passport at the airport.",
+                  "bank": [
+                    "lose",
+                    "loses",
+                    "losed",
+                    "lost"
+                  ],
+                  "answer": "lost",
+                  "explanation": "The past simple of \"lose\" is \"lost\". He lost his passport at the airport."
+                },
+                "work": {
+                  "prompt": "He ___ his laptop on the train yesterday.",
+                  "bank": [
+                    "lose",
+                    "loses",
+                    "losed",
+                    "lost"
+                  ],
+                  "answer": "lost",
+                  "explanation": "The past simple of \"lose\" is \"lost\". He lost his laptop on the train yesterday."
+                },
+                "school": {
+                  "prompt": "He ___ his homework on the bus.",
+                  "bank": [
+                    "lose",
+                    "loses",
+                    "losed",
+                    "lost"
+                  ],
+                  "answer": "lost",
+                  "explanation": "The past simple of \"lose\" is \"lost\". He lost his homework on the bus."
+                }
+              }
             },
             {
               "id": "a2p2q25",
@@ -21548,7 +21725,45 @@
                 "I went to the cinema yesterday."
               ],
               "answer": "I went to the cinema yesterday.",
-              "explanation": "The audio says \"I went to the cinema yesterday.\""
+              "explanation": "The audio says \"I went to the cinema yesterday.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "I went to the museum yesterday.",
+                  "choices": [
+                    "I went to the market yesterday.",
+                    "I went to the museum yesterday.",
+                    "I walked to the museum yesterday.",
+                    "We went to the museum yesterday."
+                  ],
+                  "answer": "I went to the museum yesterday.",
+                  "explanation": "You heard \"I went to the museum yesterday.\" The other choices change one word."
+                },
+                "work": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "I went to the office yesterday.",
+                  "choices": [
+                    "I went to the store yesterday.",
+                    "I walked to the office yesterday.",
+                    "I went to the office yesterday.",
+                    "We went to the office yesterday."
+                  ],
+                  "answer": "I went to the office yesterday.",
+                  "explanation": "You heard \"I went to the office yesterday.\" The other choices change one word."
+                },
+                "school": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "I went to the library yesterday.",
+                  "choices": [
+                    "I went to the library yesterday.",
+                    "I went to the gym yesterday.",
+                    "I walked to the library yesterday.",
+                    "We went to the library yesterday."
+                  ],
+                  "answer": "I went to the library yesterday.",
+                  "explanation": "You heard \"I went to the library yesterday.\" The other choices change one word."
+                }
+              }
             },
             {
               "id": "a2p2q27",
@@ -21560,7 +21775,36 @@
                 "Yesterday I was at the park.",
                 "Yesterday I was in the park."
               ],
-              "explanation": "One way to say it: \"I was at the park yesterday.\""
+              "explanation": "One way to say it: \"I was at the park yesterday.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you were at the airport yesterday.",
+                  "acceptableAnswers": [
+                    "I was at the airport yesterday.",
+                    "Yesterday I was at the airport.",
+                    "I was in the airport yesterday."
+                  ],
+                  "explanation": "You can say \"I was at the airport yesterday.\" \"was\" is the past of \"be\" with \"I\", and \"yesterday\" shows the time is finished."
+                },
+                "work": {
+                  "prompt": "Say that you were at the office yesterday.",
+                  "acceptableAnswers": [
+                    "I was at the office yesterday.",
+                    "Yesterday I was at the office.",
+                    "I was in the office yesterday."
+                  ],
+                  "explanation": "You can say \"I was at the office yesterday.\" \"was\" is the past of \"be\" with \"I\", and \"yesterday\" shows the time is finished."
+                },
+                "school": {
+                  "prompt": "Say that you were at school yesterday.",
+                  "acceptableAnswers": [
+                    "I was at school yesterday.",
+                    "Yesterday I was at school.",
+                    "I was in school yesterday."
+                  ],
+                  "explanation": "You can say \"I was at school yesterday.\" \"was\" is the past of \"be\" with \"I\", and \"yesterday\" shows the time is finished."
+                }
+              }
             }
           ]
         },
@@ -21595,7 +21839,42 @@
               ],
               "answer": "were",
               "explanation": "\"were\" is right because \"then\" points to the past and \"we\" takes \"were\" with \"living\" in the past continuous. \"Was\" is for I/he/she/it.",
-              "meaning": "the past of \"are\", used with we"
+              "meaning": "the past of \"are\", used with we",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "We ___ staying at a hotel in Rome then.",
+                  "bank": [
+                    "was",
+                    "were",
+                    "are",
+                    "did"
+                  ],
+                  "answer": "were",
+                  "explanation": "With \"We\", the past of \"be\" is \"were\". We were staying at a hotel in Rome then."
+                },
+                "work": {
+                  "prompt": "We ___ working in Rome then.",
+                  "bank": [
+                    "was",
+                    "were",
+                    "are",
+                    "did"
+                  ],
+                  "answer": "were",
+                  "explanation": "With \"We\", the past of \"be\" is \"were\". We were working in Rome then."
+                },
+                "school": {
+                  "prompt": "We ___ studying in Rome then.",
+                  "bank": [
+                    "was",
+                    "were",
+                    "are",
+                    "did"
+                  ],
+                  "answer": "were",
+                  "explanation": "With \"We\", the past of \"be\" is \"were\". We were studying in Rome then."
+                }
+              }
             },
             {
               "id": "a2p2q7",
@@ -21623,7 +21902,42 @@
               ],
               "answer": "was",
               "explanation": "\"was\" is right because \"yesterday\" and \"left\" show past time, and \"I\" takes \"was\" in the past. \"Am\" and \"is\" are present forms.",
-              "meaning": "past form of am and is"
+              "meaning": "past form of am and is",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "After the long flight I ___ tired, so I slept.",
+                  "bank": [
+                    "was",
+                    "were",
+                    "am",
+                    "is"
+                  ],
+                  "answer": "was",
+                  "explanation": "With \"I\", the past of \"be\" is \"was\". After the long flight I was tired, so I slept."
+                },
+                "work": {
+                  "prompt": "After the long meeting I ___ tired, so I left.",
+                  "bank": [
+                    "was",
+                    "were",
+                    "am",
+                    "is"
+                  ],
+                  "answer": "was",
+                  "explanation": "With \"I\", the past of \"be\" is \"was\". After the long meeting I was tired, so I left."
+                },
+                "school": {
+                  "prompt": "After the long class I ___ tired, so I went home.",
+                  "bank": [
+                    "was",
+                    "were",
+                    "am",
+                    "is"
+                  ],
+                  "answer": "was",
+                  "explanation": "With \"I\", the past of \"be\" is \"was\". After the long class I was tired, so I went home."
+                }
+              }
             },
             {
               "id": "a2p2q9",
@@ -21677,7 +21991,36 @@
                 "Last week I didn't see him.",
                 "I didn't meet him last week."
               ],
-              "explanation": "One way to say it: \"I didn't see him last week.\""
+              "explanation": "One way to say it: \"I didn't see him last week.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you did not see the guide last week.",
+                  "acceptableAnswers": [
+                    "I didn't see the guide last week.",
+                    "Last week I didn't see the guide.",
+                    "I didn't see the guide at all last week."
+                  ],
+                  "explanation": "You can say \"I didn't see the guide last week.\" A negative past simple uses \"did not\" or \"didn't\" with the base verb: \"see\", not \"saw\"."
+                },
+                "work": {
+                  "prompt": "Say that you did not see your boss last week.",
+                  "acceptableAnswers": [
+                    "I didn't see my boss last week.",
+                    "Last week I didn't see my boss.",
+                    "I didn't see my boss at all last week."
+                  ],
+                  "explanation": "You can say \"I didn't see my boss last week.\" A negative past simple uses \"did not\" or \"didn't\" with the base verb: \"see\", not \"saw\"."
+                },
+                "school": {
+                  "prompt": "Say that you did not see your teacher last week.",
+                  "acceptableAnswers": [
+                    "I didn't see my teacher last week.",
+                    "Last week I didn't see my teacher.",
+                    "I didn't see my teacher at all last week."
+                  ],
+                  "explanation": "You can say \"I didn't see my teacher last week.\" A negative past simple uses \"did not\" or \"didn't\" with the base verb: \"see\", not \"saw\"."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -21705,7 +22048,42 @@
               ],
               "answer": 2,
               "explanation": "\"was\" is right because \"it\" takes \"was\" in the past continuous, and \"yesterday\" shows past time. \"Were\" is for you/we/they.",
-              "meaning": "the past of \"is\", used with it"
+              "meaning": "the past of \"is\", used with it",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "It ___ raining all day on our trip.",
+                  "choices": [
+                    "were",
+                    "is",
+                    "was",
+                    "are"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"It\", the past continuous uses \"was\" plus the -ing verb. It was raining all day on our trip."
+                },
+                "work": {
+                  "prompt": "It ___ raining all morning, so the client was late.",
+                  "choices": [
+                    "were",
+                    "is",
+                    "was",
+                    "are"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"It\", the past continuous uses \"was\" plus the -ing verb. It was raining all morning, so the client was late."
+                },
+                "school": {
+                  "prompt": "It ___ raining all morning, so we stayed inside at school.",
+                  "choices": [
+                    "were",
+                    "is",
+                    "was",
+                    "are"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"It\", the past continuous uses \"was\" plus the -ing verb. It was raining all morning, so we stayed inside at school."
+                }
+              }
             },
             {
               "id": "a2p2q11",
@@ -21805,7 +22183,36 @@
                 "When he came, I was eating.",
                 "While I was eating, he arrived."
               ],
-              "explanation": "One way to say it: \"I was eating when he arrived.\""
+              "explanation": "One way to say it: \"I was eating when he arrived.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you were eating breakfast when the bus arrived.",
+                  "acceptableAnswers": [
+                    "I was eating breakfast when the bus arrived.",
+                    "When the bus arrived, I was eating breakfast.",
+                    "I was having breakfast when the bus arrived."
+                  ],
+                  "explanation": "You can say \"I was eating breakfast when the bus arrived.\" We use the past continuous \"was eating\" for the longer action, and \"when\" for the short action that interrupted it."
+                },
+                "work": {
+                  "prompt": "Say that you were eating lunch when the client arrived.",
+                  "acceptableAnswers": [
+                    "I was eating lunch when the client arrived.",
+                    "When the client arrived, I was eating lunch.",
+                    "I was having lunch when the client arrived."
+                  ],
+                  "explanation": "You can say \"I was eating lunch when the client arrived.\" We use the past continuous \"was eating\" for the longer action, and \"when\" for the short action that interrupted it."
+                },
+                "school": {
+                  "prompt": "Say that you were eating lunch when the bell rang.",
+                  "acceptableAnswers": [
+                    "I was eating lunch when the bell rang.",
+                    "When the bell rang, I was eating lunch.",
+                    "I was having lunch when the bell rang."
+                  ],
+                  "explanation": "You can say \"I was eating lunch when the bell rang.\" We use the past continuous \"was eating\" for the longer action, and \"when\" for the short action that interrupted it."
+                }
+              }
             }
           ]
         },
@@ -21840,7 +22247,42 @@
               ],
               "answer": 0,
               "explanation": "\"closed\" is the past simple form needed because \"last night\" shows the action is finished; \"close\" or \"closes\" are present forms.",
-              "meaning": "the past of \"close\"; shut"
+              "meaning": "the past of \"close\"; shut",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "She ___ the hotel door quietly last night.",
+                  "choices": [
+                    "closed",
+                    "close",
+                    "closes",
+                    "closing"
+                  ],
+                  "answer": 0,
+                  "explanation": "A regular verb adds -ed in the past simple: \"closed\". She closed the hotel door quietly last night."
+                },
+                "work": {
+                  "prompt": "She ___ the office door quietly last night.",
+                  "choices": [
+                    "closed",
+                    "close",
+                    "closes",
+                    "closing"
+                  ],
+                  "answer": 0,
+                  "explanation": "A regular verb adds -ed in the past simple: \"closed\". She closed the office door quietly last night."
+                },
+                "school": {
+                  "prompt": "She ___ the classroom door quietly this morning.",
+                  "choices": [
+                    "closed",
+                    "close",
+                    "closes",
+                    "closing"
+                  ],
+                  "answer": 0,
+                  "explanation": "A regular verb adds -ed in the past simple: \"closed\". She closed the classroom door quietly this morning."
+                }
+              }
             },
             {
               "id": "a2p2q17",
@@ -21868,7 +22310,42 @@
               ],
               "answer": 2,
               "explanation": "\"arrived\" is the past simple form needed because \"yesterday\" shows the arrival is finished; \"arrives\" and \"arrive\" are present forms.",
-              "meaning": "reached a place"
+              "meaning": "reached a place",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "The flight ___ on time yesterday.",
+                  "choices": [
+                    "arrive",
+                    "arrives",
+                    "arrived",
+                    "arriving"
+                  ],
+                  "answer": 2,
+                  "explanation": "A regular verb adds -ed in the past simple: \"arrived\". The flight arrived on time yesterday."
+                },
+                "work": {
+                  "prompt": "The delivery ___ on time yesterday.",
+                  "choices": [
+                    "arrive",
+                    "arrives",
+                    "arrived",
+                    "arriving"
+                  ],
+                  "answer": 2,
+                  "explanation": "A regular verb adds -ed in the past simple: \"arrived\". The delivery arrived on time yesterday."
+                },
+                "school": {
+                  "prompt": "The school bus ___ on time yesterday.",
+                  "choices": [
+                    "arrive",
+                    "arrives",
+                    "arrived",
+                    "arriving"
+                  ],
+                  "answer": 2,
+                  "explanation": "A regular verb adds -ed in the past simple: \"arrived\". The school bus arrived on time yesterday."
+                }
+              }
             },
             {
               "id": "a2p2q19",
@@ -21961,7 +22438,42 @@
               ],
               "answer": "knew",
               "explanation": "\"knew\" is the irregular past of \"know\", needed because \"last night\" places the event in the past; \"knowed\" is not a real word.",
-              "meaning": "the past of \"know\""
+              "meaning": "the past of \"know\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Nobody ___ the way to the hotel last night.",
+                  "bank": [
+                    "knew",
+                    "know",
+                    "knows",
+                    "knowed"
+                  ],
+                  "answer": "knew",
+                  "explanation": "The past simple of \"know\" is \"knew\". Nobody knew the way to the hotel last night."
+                },
+                "work": {
+                  "prompt": "Nobody ___ the answer in the meeting yesterday.",
+                  "bank": [
+                    "knew",
+                    "know",
+                    "knows",
+                    "knowed"
+                  ],
+                  "answer": "knew",
+                  "explanation": "The past simple of \"know\" is \"knew\". Nobody knew the answer in the meeting yesterday."
+                },
+                "school": {
+                  "prompt": "Nobody ___ the answer in class yesterday.",
+                  "bank": [
+                    "knew",
+                    "know",
+                    "knows",
+                    "knowed"
+                  ],
+                  "answer": "knew",
+                  "explanation": "The past simple of \"know\" is \"knew\". Nobody knew the answer in class yesterday."
+                }
+              }
             },
             {
               "id": "a2p2q21",
@@ -21989,7 +22501,42 @@
               ],
               "answer": "had",
               "explanation": "\"had\" is the past of \"have\", needed because \"last summer\" is a finished time; \"have a great time\" is a common phrase.",
-              "meaning": "the past of \"have\""
+              "meaning": "the past of \"have\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "They ___ a great time on their trip to Spain.",
+                  "bank": [
+                    "have",
+                    "had",
+                    "has",
+                    "having"
+                  ],
+                  "answer": "had",
+                  "explanation": "The past simple of \"have\" is \"had\". They had a great time on their trip to Spain."
+                },
+                "work": {
+                  "prompt": "They ___ a great time at the team dinner last summer.",
+                  "bank": [
+                    "have",
+                    "had",
+                    "has",
+                    "having"
+                  ],
+                  "answer": "had",
+                  "explanation": "The past simple of \"have\" is \"had\". They had a great time at the team dinner last summer."
+                },
+                "school": {
+                  "prompt": "They ___ a great time on the school trip last summer.",
+                  "bank": [
+                    "have",
+                    "had",
+                    "has",
+                    "having"
+                  ],
+                  "answer": "had",
+                  "explanation": "The past simple of \"have\" is \"had\". They had a great time on the school trip last summer."
+                }
+              }
             },
             {
               "id": "a2p2q23",
@@ -22187,7 +22734,36 @@
                 "My brother is taller than I.",
                 "My older brother is taller than me."
               ],
-              "explanation": "One way to say it: \"My brother is taller than me.\""
+              "explanation": "One way to say it: \"My brother is taller than me.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Compare two hotels: say that the new one is bigger than the old one.",
+                  "acceptableAnswers": [
+                    "The new hotel is bigger than the old one.",
+                    "The new hotel is larger than the old one.",
+                    "The old hotel is smaller than the new one."
+                  ],
+                  "explanation": "You can say \"The new hotel is bigger than the old one.\" A short adjective adds -er and \"than\" for a comparison: \"bigger than\"."
+                },
+                "work": {
+                  "prompt": "Compare two offices: say that the new one is bigger than the old one.",
+                  "acceptableAnswers": [
+                    "The new office is bigger than the old one.",
+                    "The new office is larger than the old one.",
+                    "The old office is smaller than the new one."
+                  ],
+                  "explanation": "You can say \"The new office is bigger than the old one.\" A short adjective adds -er and \"than\" for a comparison: \"bigger than\"."
+                },
+                "school": {
+                  "prompt": "Compare two schools: say that the new one is bigger than the old one.",
+                  "acceptableAnswers": [
+                    "The new school is bigger than the old one.",
+                    "The new school is larger than the old one.",
+                    "The old school is smaller than the new one."
+                  ],
+                  "explanation": "You can say \"The new school is bigger than the old one.\" A short adjective adds -er and \"than\" for a comparison: \"bigger than\"."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -22448,7 +23024,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "This road is safer than that road",
-              "explanation": "Short adjectives like \"safe\" add -er to compare, and \"than\" links the two things: \"This road is safer than that road\"."
+              "explanation": "Short adjectives like \"safe\" add -er to compare, and \"than\" links the two things: \"This road is safer than that road\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "This route is shorter than that route",
+                  "explanation": "You say \"This route is shorter than that route\" A short adjective adds -er, and \"than\" starts the second part of the comparison."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "This report is shorter than that report",
+                  "explanation": "You say \"This report is shorter than that report\" A short adjective adds -er, and \"than\" starts the second part of the comparison."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "This test is shorter than that test",
+                  "explanation": "You say \"This test is shorter than that test\" A short adjective adds -er, and \"than\" starts the second part of the comparison."
+                }
+              }
             }
           ]
         },
@@ -22573,7 +23166,36 @@
                 "A train is faster than a bus.",
                 "The train goes faster than the bus."
               ],
-              "explanation": "One way to say it: \"The train is faster than the bus.\""
+              "explanation": "One way to say it: \"The train is faster than the bus.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that flying is faster than going by train.",
+                  "acceptableAnswers": [
+                    "The plane is faster than the train.",
+                    "The train is slower than the plane.",
+                    "A plane is faster than a train."
+                  ],
+                  "explanation": "You can say \"The plane is faster than the train.\" A short adjective adds -er and \"than\": \"faster than\"."
+                },
+                "work": {
+                  "prompt": "Say that an email gets there faster than a letter.",
+                  "acceptableAnswers": [
+                    "Email is faster than a letter.",
+                    "A letter is slower than an email.",
+                    "Sending an email is faster than sending a letter."
+                  ],
+                  "explanation": "You can say \"Email is faster than a letter.\" A short adjective adds -er and \"than\": \"faster than\"."
+                },
+                "school": {
+                  "prompt": "Say that going by bus is quicker than going on foot.",
+                  "acceptableAnswers": [
+                    "The bus is faster than walking.",
+                    "Walking is slower than the bus.",
+                    "The bus is quicker than walking."
+                  ],
+                  "explanation": "You can say \"The bus is faster than walking.\" A short adjective adds -er and \"than\": \"faster than\"."
+                }
+              }
             }
           ]
         },
@@ -22980,7 +23602,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I would like a window seat on the train",
-              "explanation": "You say \"I would like a window seat on the train\" to politely ask for the seat you want. \"I would like\" is a polite way to ask for something when you travel or shop."
+              "explanation": "You say \"I would like a window seat on the train\" to politely ask for the seat you want. \"I would like\" is a polite way to ask for something when you travel or shop.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I would like an aisle seat on the plane",
+                  "explanation": "You say \"I would like an aisle seat on the plane\" \"I would like\" is a polite way to ask for something, and the place tells where the seat is."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I would like a seat near the window in the office",
+                  "explanation": "You say \"I would like a seat near the window in the office\" \"I would like\" is a polite way to ask for something, and the place tells where the seat is."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I would like a seat near the front of the class",
+                  "explanation": "You say \"I would like a seat near the front of the class\" \"I would like\" is a polite way to ask for something, and the place tells where the seat is."
+                }
+              }
             }
           ]
         },
@@ -23114,7 +23753,36 @@
                 "What does a ticket cost, please?",
                 "What is the price of the ticket, please?"
               ],
-              "explanation": "One way to say it: \"How much is a ticket?\""
+              "explanation": "One way to say it: \"How much is a ticket?\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Ask how much a ticket to Boston costs.",
+                  "acceptableAnswers": [
+                    "How much is a ticket to Boston?",
+                    "How much does a ticket to Boston cost?",
+                    "What is the price of a ticket to Boston?"
+                  ],
+                  "explanation": "You can say \"How much is a ticket to Boston?\" \"How much is\" asks the price, and the verb agrees with the thing: \"is a ticket\"."
+                },
+                "work": {
+                  "prompt": "Ask how much the training course costs.",
+                  "acceptableAnswers": [
+                    "How much is the training course?",
+                    "How much does the training course cost?",
+                    "What is the price of the training course?"
+                  ],
+                  "explanation": "You can say \"How much is the training course?\" \"How much is\" asks the price, and the verb agrees with the thing: \"is a ticket\"."
+                },
+                "school": {
+                  "prompt": "Ask how much the school trip costs.",
+                  "acceptableAnswers": [
+                    "How much is the school trip?",
+                    "How much does the school trip cost?",
+                    "What is the price of the school trip?"
+                  ],
+                  "explanation": "You can say \"How much is the school trip?\" \"How much is\" asks the price, and the verb agrees with the thing: \"is a ticket\"."
+                }
+              }
             }
           ]
         },
@@ -23416,7 +24084,39 @@
               ],
               "answer": 2,
               "explanation": "\"much\" fits here. Rule to remember: Countable nouns take many/few; uncountable nouns take much/little.",
-              "meaning": "used to ask about an uncountable amount"
+              "meaning": "used to ask about an uncountable amount",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "How ___ luggage do you have?",
+                  "choices": [
+                    "plenty",
+                    "many",
+                    "much"
+                  ],
+                  "answer": 2,
+                  "explanation": "In a question about a noun you cannot count, use \"much\". How much luggage do you have?"
+                },
+                "work": {
+                  "prompt": "How ___ time do you need for the report?",
+                  "choices": [
+                    "plenty",
+                    "many",
+                    "much"
+                  ],
+                  "answer": 2,
+                  "explanation": "In a question about a noun you cannot count, use \"much\". How much time do you need for the report?"
+                },
+                "school": {
+                  "prompt": "How ___ homework do you have tonight?",
+                  "choices": [
+                    "plenty",
+                    "many",
+                    "much"
+                  ],
+                  "answer": 2,
+                  "explanation": "In a question about a noun you cannot count, use \"much\". How much homework do you have tonight?"
+                }
+              }
             },
             {
               "id": "a2p5q1",
@@ -23443,7 +24143,42 @@
                 "of"
               ],
               "answer": 2,
-              "explanation": "\"much\" fits here. Rule to remember: Countable nouns take many/few; uncountable nouns take much/little."
+              "explanation": "\"much\" fits here. Rule to remember: Countable nouns take many/few; uncountable nouns take much/little.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "There isn't ___ time left before the flight.",
+                  "choices": [
+                    "several",
+                    "some",
+                    "much",
+                    "of"
+                  ],
+                  "answer": 2,
+                  "explanation": "After \"isn't\", a noun you cannot count takes \"much\". There isn't much time left before the flight."
+                },
+                "work": {
+                  "prompt": "There isn't ___ time left before the meeting.",
+                  "choices": [
+                    "several",
+                    "some",
+                    "much",
+                    "of"
+                  ],
+                  "answer": 2,
+                  "explanation": "After \"isn't\", a noun you cannot count takes \"much\". There isn't much time left before the meeting."
+                },
+                "school": {
+                  "prompt": "There isn't ___ time left before class.",
+                  "choices": [
+                    "several",
+                    "some",
+                    "much",
+                    "of"
+                  ],
+                  "answer": 2,
+                  "explanation": "After \"isn't\", a noun you cannot count takes \"much\". There isn't much time left before class."
+                }
+              }
             },
             {
               "id": "a2p5q3",
@@ -23471,7 +24206,42 @@
               ],
               "answer": 0,
               "explanation": "\"Money\" is uncountable, so we use \"little\" (not few or many), and \"little\" is more natural than \"much\" in a positive sentence.",
-              "meaning": "not much"
+              "meaning": "not much",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "She has ___ money left for the trip.",
+                  "choices": [
+                    "little",
+                    "few",
+                    "many",
+                    "much"
+                  ],
+                  "answer": 0,
+                  "explanation": "With a noun you cannot count, \"little\" means not much. She has little money left for the trip."
+                },
+                "work": {
+                  "prompt": "She has ___ experience in this job.",
+                  "choices": [
+                    "little",
+                    "few",
+                    "many",
+                    "much"
+                  ],
+                  "answer": 0,
+                  "explanation": "With a noun you cannot count, \"little\" means not much. She has little experience in this job."
+                },
+                "school": {
+                  "prompt": "She has ___ time for homework.",
+                  "choices": [
+                    "little",
+                    "few",
+                    "many",
+                    "much"
+                  ],
+                  "answer": 0,
+                  "explanation": "With a noun you cannot count, \"little\" means not much. She has little time for homework."
+                }
+              }
             },
             {
               "id": "a2p5q25",
@@ -23498,7 +24268,45 @@
                 "There isn't of milk left."
               ],
               "answer": "There isn't much milk left.",
-              "explanation": "The audio says \"There isn't much milk left.\""
+              "explanation": "The audio says \"There isn't much milk left.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "There isn't much time left.",
+                  "choices": [
+                    "There isn't much time left.",
+                    "There isn't much water left.",
+                    "There wasn't much time left.",
+                    "There isn't much space left."
+                  ],
+                  "answer": "There isn't much time left.",
+                  "explanation": "You heard \"There isn't much time left.\" The other choices change one word."
+                },
+                "work": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "There isn't much budget left.",
+                  "choices": [
+                    "There isn't much paper left.",
+                    "There isn't much budget left.",
+                    "There wasn't much budget left.",
+                    "There isn't much space left."
+                  ],
+                  "answer": "There isn't much budget left.",
+                  "explanation": "You heard \"There isn't much budget left.\" The other choices change one word."
+                },
+                "school": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "There isn't much homework left.",
+                  "choices": [
+                    "There isn't much paper left.",
+                    "There wasn't much homework left.",
+                    "There isn't much space left.",
+                    "There isn't much homework left."
+                  ],
+                  "answer": "There isn't much homework left.",
+                  "explanation": "You heard \"There isn't much homework left.\" The other choices change one word."
+                }
+              }
             },
             {
               "id": "a2p5q27",
@@ -23562,7 +24370,42 @@
               ],
               "answer": 2,
               "explanation": "\"some\" fits here. Rule to remember: Countable nouns take many/few; uncountable nouns take much/little.",
-              "meaning": "an amount or number, not exact"
+              "meaning": "an amount or number, not exact",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "We need ___ more tickets.",
+                  "choices": [
+                    "any",
+                    "no",
+                    "some",
+                    "several"
+                  ],
+                  "answer": 2,
+                  "explanation": "Use \"some\" for an amount that is not exact. We need some more tickets."
+                },
+                "work": {
+                  "prompt": "We need ___ more chairs for the meeting.",
+                  "choices": [
+                    "any",
+                    "no",
+                    "some",
+                    "several"
+                  ],
+                  "answer": 2,
+                  "explanation": "Use \"some\" for an amount that is not exact. We need some more chairs for the meeting."
+                },
+                "school": {
+                  "prompt": "We need ___ more pencils for the class.",
+                  "choices": [
+                    "any",
+                    "no",
+                    "some",
+                    "several"
+                  ],
+                  "answer": 2,
+                  "explanation": "Use \"some\" for an amount that is not exact. We need some more pencils for the class."
+                }
+              }
             },
             {
               "id": "a2p5q7",
@@ -23591,7 +24434,42 @@
               "answer": 0,
               "explanation": "\"Coffee\" is uncountable, so after \"too\" we use \"much\", not \"many\" (\"many\" is for countable nouns like cups).",
               "meaning": "a lot; used mainly in questions and negatives",
-              "example": "We don't have much time."
+              "example": "We don't have much time.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "He spends too ___ money on souvenirs.",
+                  "choices": [
+                    "much",
+                    "more",
+                    "many",
+                    "whole"
+                  ],
+                  "answer": 0,
+                  "explanation": "\"Too\" goes with \"much\" before a noun you cannot count. He spends too much money on souvenirs."
+                },
+                "work": {
+                  "prompt": "He drinks too ___ coffee at the office.",
+                  "choices": [
+                    "much",
+                    "more",
+                    "many",
+                    "whole"
+                  ],
+                  "answer": 0,
+                  "explanation": "\"Too\" goes with \"much\" before a noun you cannot count. He drinks too much coffee at the office."
+                },
+                "school": {
+                  "prompt": "He eats too ___ candy at school.",
+                  "choices": [
+                    "much",
+                    "more",
+                    "many",
+                    "whole"
+                  ],
+                  "answer": 0,
+                  "explanation": "\"Too\" goes with \"much\" before a noun you cannot count. He eats too much candy at school."
+                }
+              }
             },
             {
               "id": "a2p5q9",
@@ -23695,7 +24573,42 @@
               ],
               "answer": "Most",
               "explanation": "\"Most\" fits here. Rule to remember: Countable nouns take many/few; uncountable nouns take much/little.",
-              "meaning": "more than half; the largest part or number"
+              "meaning": "more than half; the largest part or number",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "___ of the tourists enjoyed the tour.",
+                  "bank": [
+                    "much",
+                    "many",
+                    "Most",
+                    "enough"
+                  ],
+                  "answer": "Most",
+                  "explanation": "Use \"Most\" of the, then a plural noun, to mean nearly all. Most of the tourists enjoyed the tour."
+                },
+                "work": {
+                  "prompt": "___ of the employees came to the meeting.",
+                  "bank": [
+                    "much",
+                    "many",
+                    "Most",
+                    "enough"
+                  ],
+                  "answer": "Most",
+                  "explanation": "Use \"Most\" of the, then a plural noun, to mean nearly all. Most of the employees came to the meeting."
+                },
+                "school": {
+                  "prompt": "___ of the students did their homework.",
+                  "bank": [
+                    "much",
+                    "many",
+                    "Most",
+                    "enough"
+                  ],
+                  "answer": "Most",
+                  "explanation": "Use \"Most\" of the, then a plural noun, to mean nearly all. Most of the students did their homework."
+                }
+              }
             },
             {
               "id": "a2p5q13",
@@ -23766,7 +24679,36 @@
                 "There are hardly any seats left.",
                 "There aren't a lot of seats left."
               ],
-              "explanation": "One way to say it: \"There aren't many seats left.\""
+              "explanation": "One way to say it: \"There aren't many seats left.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that few seats are left on the train.",
+                  "acceptableAnswers": [
+                    "There aren't many seats left on the train.",
+                    "Not many seats are left on the train.",
+                    "There are few seats left on the train."
+                  ],
+                  "explanation": "You can say \"There aren't many seats left on the train.\" \"many\" goes with plural nouns you can count, and a negative sentence uses \"aren't many\"."
+                },
+                "work": {
+                  "prompt": "Say that few chairs are left in the meeting room.",
+                  "acceptableAnswers": [
+                    "There aren't many chairs left in the meeting room.",
+                    "Not many chairs are left in the meeting room.",
+                    "There are few chairs left in the meeting room."
+                  ],
+                  "explanation": "You can say \"There aren't many chairs left in the meeting room.\" \"many\" goes with plural nouns you can count, and a negative sentence uses \"aren't many\"."
+                },
+                "school": {
+                  "prompt": "Say that few seats are left in the classroom.",
+                  "acceptableAnswers": [
+                    "There aren't many seats left in the classroom.",
+                    "Not many seats are left in the classroom.",
+                    "There are few seats left in the classroom."
+                  ],
+                  "explanation": "You can say \"There aren't many seats left in the classroom.\" \"many\" goes with plural nouns you can count, and a negative sentence uses \"aren't many\"."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -23892,7 +24834,36 @@
                 "I have a little bit of time.",
                 "I've got a bit of time."
               ],
-              "explanation": "One way to say it: \"I have a little time.\""
+              "explanation": "One way to say it: \"I have a little time.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you have a little time before the flight.",
+                  "acceptableAnswers": [
+                    "I have a little time before the flight.",
+                    "I've got a little time before the flight.",
+                    "I have a bit of time before the flight."
+                  ],
+                  "explanation": "You can say \"I have a little time before the flight.\" \"a little\" goes with a noun you cannot count and means some, but not a lot."
+                },
+                "work": {
+                  "prompt": "Say that you have a little time before the meeting.",
+                  "acceptableAnswers": [
+                    "I have a little time before the meeting.",
+                    "I've got a little time before the meeting.",
+                    "I have a bit of time before the meeting."
+                  ],
+                  "explanation": "You can say \"I have a little time before the meeting.\" \"a little\" goes with a noun you cannot count and means some, but not a lot."
+                },
+                "school": {
+                  "prompt": "Say that you have a little time before class.",
+                  "acceptableAnswers": [
+                    "I have a little time before class.",
+                    "I've got a little time before class.",
+                    "I have a bit of time before class."
+                  ],
+                  "explanation": "You can say \"I have a little time before class.\" \"a little\" goes with a noun you cannot count and means some, but not a lot."
+                }
+              }
             }
           ]
         },
@@ -24060,7 +25031,42 @@
               ],
               "answer": 2,
               "explanation": "\"are\" is the right form because \"going to\" for a plan needs the verb be to agree with the subject, and \"we\" takes \"are\".",
-              "meaning": "with going to, talks about plans"
+              "meaning": "with going to, talks about plans",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "We ___ going to visit Rome next month.",
+                  "choices": [
+                    "is",
+                    "am",
+                    "are",
+                    "were"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"We\", the going-to future uses \"are\" before \"going to\". We are going to visit Rome next month."
+                },
+                "work": {
+                  "prompt": "We ___ going to launch the product next month.",
+                  "choices": [
+                    "is",
+                    "am",
+                    "are",
+                    "were"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"We\", the going-to future uses \"are\" before \"going to\". We are going to launch the product next month."
+                },
+                "school": {
+                  "prompt": "We ___ going to take a school trip next month.",
+                  "choices": [
+                    "is",
+                    "am",
+                    "are",
+                    "were"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"We\", the going-to future uses \"are\" before \"going to\". We are going to take a school trip next month."
+                }
+              }
             },
             {
               "id": "a2p6q2",
@@ -24087,7 +25093,42 @@
                 "Might"
               ],
               "answer": 0,
-              "explanation": "\"Will\" is right because \"Will you...?\" is a common polite way to ask someone to do something; \"shall\", \"must\" and \"might\" do not make this kind of request."
+              "explanation": "\"Will\" is right because \"Will you...?\" is a common polite way to ask someone to do something; \"shall\", \"must\" and \"might\" do not make this kind of request.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "___ you take our photo, please? (a polite request)",
+                  "choices": [
+                    "Will",
+                    "Shall",
+                    "Must",
+                    "Might"
+                  ],
+                  "answer": 0,
+                  "explanation": "The word \"Will\" starts a polite request for help. Will you take our photo, please?"
+                },
+                "work": {
+                  "prompt": "___ you send me the report, please? (a polite request)",
+                  "choices": [
+                    "Will",
+                    "Shall",
+                    "Must",
+                    "Might"
+                  ],
+                  "answer": 0,
+                  "explanation": "The word \"Will\" starts a polite request for help. Will you send me the report, please?"
+                },
+                "school": {
+                  "prompt": "___ you lend me a pen, please? (a polite request)",
+                  "choices": [
+                    "Will",
+                    "Shall",
+                    "Must",
+                    "Might"
+                  ],
+                  "answer": 0,
+                  "explanation": "The word \"Will\" starts a polite request for help. Will you lend me a pen, please?"
+                }
+              }
             },
             {
               "id": "a2p6q4",
@@ -24142,7 +25183,36 @@
                 "Tonight I will study.",
                 "I'm studying tonight."
               ],
-              "explanation": "One way to say it: \"I'm going to study tonight.\""
+              "explanation": "One way to say it: \"I'm going to study tonight.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you are going to visit the old town tomorrow.",
+                  "acceptableAnswers": [
+                    "I'm going to visit the old town tomorrow.",
+                    "Tomorrow I'm going to visit the old town.",
+                    "I'm planning to visit the old town tomorrow."
+                  ],
+                  "explanation": "You can say \"I'm going to visit the old town tomorrow.\" We use \"going to\" for a plan we already have: \"I'm going to visit\"."
+                },
+                "work": {
+                  "prompt": "Say that you are going to finish the report tonight.",
+                  "acceptableAnswers": [
+                    "I'm going to finish the report tonight.",
+                    "Tonight I'm going to finish the report.",
+                    "I'm planning to finish the report tonight."
+                  ],
+                  "explanation": "You can say \"I'm going to finish the report tonight.\" We use \"going to\" for a plan we already have: \"I'm going to visit\"."
+                },
+                "school": {
+                  "prompt": "Say that you are going to do your homework tonight.",
+                  "acceptableAnswers": [
+                    "I'm going to do my homework tonight.",
+                    "Tonight I'm going to do my homework.",
+                    "I'm planning to do my homework tonight."
+                  ],
+                  "explanation": "You can say \"I'm going to do my homework tonight.\" We use \"going to\" for a plan we already have: \"I'm going to visit\"."
+                }
+              }
             }
           ]
         },
@@ -24163,7 +25233,42 @@
               ],
               "answer": 2,
               "explanation": "\"leaves\" is correct because a train schedule is a fixed schedule, so we use the present simple, and \"the train\" takes the -s form.",
-              "meaning": "departs; present simple for schedules"
+              "meaning": "departs; present simple for schedules",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "The flight ___ at ten tomorrow.",
+                  "choices": [
+                    "leave",
+                    "leaving",
+                    "leaves",
+                    "left"
+                  ],
+                  "answer": 2,
+                  "explanation": "A timetable uses the present simple for the future: \"leaves\". The flight leaves at ten tomorrow."
+                },
+                "work": {
+                  "prompt": "The shuttle to the office ___ at eight tomorrow.",
+                  "choices": [
+                    "leave",
+                    "leaving",
+                    "leaves",
+                    "left"
+                  ],
+                  "answer": 2,
+                  "explanation": "A timetable uses the present simple for the future: \"leaves\". The shuttle to the office leaves at eight tomorrow."
+                },
+                "school": {
+                  "prompt": "The school bus ___ at eight tomorrow.",
+                  "choices": [
+                    "leave",
+                    "leaving",
+                    "leaves",
+                    "left"
+                  ],
+                  "answer": 2,
+                  "explanation": "A timetable uses the present simple for the future: \"leaves\". The school bus leaves at eight tomorrow."
+                }
+              }
             },
             {
               "id": "a2p6q6",
@@ -24218,7 +25323,42 @@
               ],
               "answer": 2,
               "explanation": "\"are\" is correct because the present continuous asks about arrangements, and \"you\" takes \"are\" before \"doing\".",
-              "meaning": "helper verb with -ing to ask about plans"
+              "meaning": "helper verb with -ing to ask about plans",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What ___ you doing in Paris tonight?",
+                  "choices": [
+                    "is",
+                    "am",
+                    "are",
+                    "were"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"you\", the present continuous uses \"are\" plus the -ing verb. What are you doing in Paris tonight?"
+                },
+                "work": {
+                  "prompt": "What ___ you doing after work tonight?",
+                  "choices": [
+                    "is",
+                    "am",
+                    "are",
+                    "were"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"you\", the present continuous uses \"are\" plus the -ing verb. What are you doing after work tonight?"
+                },
+                "school": {
+                  "prompt": "What ___ you doing after school tonight?",
+                  "choices": [
+                    "is",
+                    "am",
+                    "are",
+                    "were"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"you\", the present continuous uses \"are\" plus the -ing verb. What are you doing after school tonight?"
+                }
+              }
             },
             {
               "id": "a2p6q28",
@@ -24260,14 +25400,60 @@
                 "I'm going to have the fish.",
                 "I'd like to have the fish."
               ],
-              "explanation": "One way to say it: \"I'll have the fish.\""
+              "explanation": "One way to say it: \"I'll have the fish.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "At a restaurant in Rome, say that you will have the pasta.",
+                  "acceptableAnswers": [
+                    "I'll have the pasta.",
+                    "I'll take the pasta.",
+                    "I'd like the pasta."
+                  ],
+                  "explanation": "You can say \"I'll have the pasta.\" We use \"I'll\" for a decision made at the moment of speaking, like ordering food."
+                },
+                "work": {
+                  "prompt": "At a business lunch, say that you will have the salad.",
+                  "acceptableAnswers": [
+                    "I'll have the salad.",
+                    "I'll take the salad.",
+                    "I'd like the salad."
+                  ],
+                  "explanation": "You can say \"I'll have the salad.\" We use \"I'll\" for a decision made at the moment of speaking, like ordering food."
+                },
+                "school": {
+                  "prompt": "At the school cafeteria, say that you will have the pizza.",
+                  "acceptableAnswers": [
+                    "I'll have the pizza.",
+                    "I'll take the pizza.",
+                    "I'd like the pizza."
+                  ],
+                  "explanation": "You can say \"I'll have the pizza.\" We use \"I'll\" for a decision made at the moment of speaking, like ordering food."
+                }
+              }
             },
             {
               "id": "sx1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I think it will rain tomorrow",
-              "explanation": "\"I think it will rain tomorrow\" uses \"will\" to give a prediction or opinion about the future."
+              "explanation": "\"I think it will rain tomorrow\" uses \"will\" to give a prediction or opinion about the future.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I think it will be sunny tomorrow",
+                  "explanation": "You say \"I think it will be sunny tomorrow\" We use \"will\" for a prediction, like the weather or the days ahead."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I think it will be a busy week",
+                  "explanation": "You say \"I think it will be a busy week\" We use \"will\" for a prediction, like the weather or the days ahead."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I think it will be a good class",
+                  "explanation": "You say \"I think it will be a good class\" We use \"will\" for a prediction, like the weather or the days ahead."
+                }
+              }
             }
           ]
         },
@@ -24303,7 +25489,42 @@
               ],
               "answer": "having",
               "explanation": "\"having\" is needed because \"We're\" (we are) plus an -ing form makes the present continuous for an arranged dinner at eight.",
-              "meaning": "eating; -ing form for arranged plans"
+              "meaning": "eating; -ing form for arranged plans",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "We're ___ dinner at the hotel at eight.",
+                  "bank": [
+                    "have",
+                    "having",
+                    "has",
+                    "had"
+                  ],
+                  "answer": "having",
+                  "explanation": "The present continuous for a plan uses \"be\" plus \"having\". We're having dinner at the hotel at eight."
+                },
+                "work": {
+                  "prompt": "We're ___ a team dinner at eight.",
+                  "bank": [
+                    "have",
+                    "having",
+                    "has",
+                    "had"
+                  ],
+                  "answer": "having",
+                  "explanation": "The present continuous for a plan uses \"be\" plus \"having\". We're having a team dinner at eight."
+                },
+                "school": {
+                  "prompt": "We're ___ a party at school at eight.",
+                  "bank": [
+                    "have",
+                    "having",
+                    "has",
+                    "had"
+                  ],
+                  "answer": "having",
+                  "explanation": "The present continuous for a plan uses \"be\" plus \"having\". We're having a party at school at eight."
+                }
+              }
             },
             {
               "id": "a2p6q12",
@@ -24374,7 +25595,45 @@
                 "We're having dinner at eight."
               ],
               "answer": "We're having dinner at eight.",
-              "explanation": "The audio says \"We're having dinner at eight.\""
+              "explanation": "The audio says \"We're having dinner at eight.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "We're having dinner at the hotel.",
+                  "choices": [
+                    "We're having lunch at the hotel.",
+                    "We're having dinner at the hotel.",
+                    "We're having dinner at the beach.",
+                    "We're having breakfast at the hotel."
+                  ],
+                  "answer": "We're having dinner at the hotel.",
+                  "explanation": "You heard \"We're having dinner at the hotel.\" The other choices change one word."
+                },
+                "work": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "We're having a meeting at eight.",
+                  "choices": [
+                    "We're having a meeting at eight.",
+                    "We're having a meeting at nine.",
+                    "We're having a party at eight.",
+                    "We're having a break at eight."
+                  ],
+                  "answer": "We're having a meeting at eight.",
+                  "explanation": "You heard \"We're having a meeting at eight.\" The other choices change one word."
+                },
+                "school": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "We're having a test at nine.",
+                  "choices": [
+                    "We're having a test at ten.",
+                    "We're having a test at nine.",
+                    "We're having a party at nine.",
+                    "We're having a class at nine."
+                  ],
+                  "answer": "We're having a test at nine.",
+                  "explanation": "You heard \"We're having a test at nine.\" The other choices change one word."
+                }
+              }
             },
             {
               "id": "a2p6q33",
@@ -24389,7 +25648,36 @@
                 "I am meeting my friend at six.",
                 "I'm meeting my friend at six o'clock."
               ],
-              "explanation": "One way to say it: \"I'm meeting a friend at six.\""
+              "explanation": "One way to say it: \"I'm meeting a friend at six.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you are meeting your guide at six.",
+                  "acceptableAnswers": [
+                    "I'm meeting my guide at six.",
+                    "At six I'm meeting my guide.",
+                    "I'm going to meet my guide at six."
+                  ],
+                  "explanation": "You can say \"I'm meeting my guide at six.\" The present continuous \"I'm meeting\" talks about a fixed plan for the future."
+                },
+                "work": {
+                  "prompt": "Say that you are meeting a client at six.",
+                  "acceptableAnswers": [
+                    "I'm meeting a client at six.",
+                    "At six I'm meeting a client.",
+                    "I'm going to meet a client at six."
+                  ],
+                  "explanation": "You can say \"I'm meeting a client at six.\" The present continuous \"I'm meeting\" talks about a fixed plan for the future."
+                },
+                "school": {
+                  "prompt": "Say that you are meeting your teacher at six.",
+                  "acceptableAnswers": [
+                    "I'm meeting my teacher at six.",
+                    "At six I'm meeting my teacher.",
+                    "I'm going to meet my teacher at six."
+                  ],
+                  "explanation": "You can say \"I'm meeting my teacher at six.\" The present continuous \"I'm meeting\" talks about a fixed plan for the future."
+                }
+              }
             }
           ]
         },
@@ -24410,7 +25698,42 @@
               ],
               "answer": "Shall",
               "explanation": "\"Shall\" fits here. Rule to remember: \"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements.",
-              "meaning": "used to suggest something to friends"
+              "meaning": "used to suggest something to friends",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "___ we take a taxi to the hotel? (an offer or suggestion)",
+                  "bank": [
+                    "Must",
+                    "Might",
+                    "Would",
+                    "Shall"
+                  ],
+                  "answer": "Shall",
+                  "explanation": "The word \"Shall\" makes an offer or a suggestion. Shall we take a taxi to the hotel?"
+                },
+                "work": {
+                  "prompt": "___ we start the meeting? (an offer or suggestion)",
+                  "bank": [
+                    "Must",
+                    "Might",
+                    "Would",
+                    "Shall"
+                  ],
+                  "answer": "Shall",
+                  "explanation": "The word \"Shall\" makes an offer or a suggestion. Shall we start the meeting?"
+                },
+                "school": {
+                  "prompt": "___ we start the class? (an offer or suggestion)",
+                  "bank": [
+                    "Must",
+                    "Might",
+                    "Would",
+                    "Shall"
+                  ],
+                  "answer": "Shall",
+                  "explanation": "The word \"Shall\" makes an offer or a suggestion. Shall we start the class?"
+                }
+              }
             },
             {
               "id": "a2p6q16",
@@ -26837,7 +28160,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "This is the most expensive bag in the store",
-              "explanation": "We use \"This is the most expensive bag in the store\" because \"expensive\" is a long adjective, so its superlative takes \"most\" instead of -est."
+              "explanation": "We use \"This is the most expensive bag in the store\" because \"expensive\" is a long adjective, so its superlative takes \"most\" instead of -est.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "This is the most expensive hotel in the city",
+                  "explanation": "You say \"This is the most expensive hotel in the city\" A long adjective uses \"the most\" for the top of a group: \"the most expensive\"."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "This is the most expensive printer in the store",
+                  "explanation": "You say \"This is the most expensive printer in the store\" A long adjective uses \"the most\" for the top of a group: \"the most expensive\"."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "This is the most expensive book in the store",
+                  "explanation": "You say \"This is the most expensive book in the store\" A long adjective uses \"the most\" for the top of a group: \"the most expensive\"."
+                }
+              }
             }
           ]
         },
@@ -28023,7 +29363,36 @@
                 "I don't eat breakfast.",
                 "I never have my breakfast."
               ],
-              "explanation": "One way to say it: \"I never eat breakfast.\""
+              "explanation": "One way to say it: \"I never eat breakfast.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you never eat breakfast at the hotel.",
+                  "acceptableAnswers": [
+                    "I never eat breakfast at the hotel.",
+                    "I never have breakfast at the hotel.",
+                    "At the hotel, I never eat breakfast."
+                  ],
+                  "explanation": "You can say \"I never eat breakfast at the hotel.\" \"never\" goes before the main verb and means not at any time."
+                },
+                "work": {
+                  "prompt": "Say that you never eat lunch at your desk.",
+                  "acceptableAnswers": [
+                    "I never eat lunch at my desk.",
+                    "I never have lunch at my desk.",
+                    "At my desk, I never eat lunch."
+                  ],
+                  "explanation": "You can say \"I never eat lunch at my desk.\" \"never\" goes before the main verb and means not at any time."
+                },
+                "school": {
+                  "prompt": "Say that you never eat lunch at school.",
+                  "acceptableAnswers": [
+                    "I never eat lunch at school.",
+                    "I never have lunch at school.",
+                    "At school, I never eat lunch."
+                  ],
+                  "explanation": "You can say \"I never eat lunch at school.\" \"never\" goes before the main verb and means not at any time."
+                }
+              }
             }
           ]
         },
@@ -28140,7 +29509,45 @@
                 "She often calls her teacher."
               ],
               "answer": "She often calls her mother.",
-              "explanation": "The audio says \"She often calls her mother.\""
+              "explanation": "The audio says \"She often calls her mother.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "She often visits her sister.",
+                  "choices": [
+                    "She often calls her sister.",
+                    "She often visits her brother.",
+                    "She never visits her sister.",
+                    "She often visits her sister."
+                  ],
+                  "answer": "She often visits her sister.",
+                  "explanation": "You heard \"She often visits her sister.\" The other choices change one word."
+                },
+                "work": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "She often calls her clients.",
+                  "choices": [
+                    "She often calls her boss.",
+                    "She often calls her clients.",
+                    "She often visits her clients.",
+                    "She never calls her clients."
+                  ],
+                  "answer": "She often calls her clients.",
+                  "explanation": "You heard \"She often calls her clients.\" The other choices change one word."
+                },
+                "school": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "She often texts her teacher.",
+                  "choices": [
+                    "She often calls her teacher.",
+                    "She often texts her teacher.",
+                    "She often texts her coach.",
+                    "She never texts her teacher."
+                  ],
+                  "answer": "She often texts her teacher.",
+                  "explanation": "You heard \"She often texts her teacher.\" The other choices change one word."
+                }
+              }
             },
             {
               "id": "a2p12q30",
@@ -28162,7 +29569,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "I sometimes cook dinner for my family",
-              "explanation": "\"I sometimes cook dinner for my family\" uses \"sometimes\" before the main verb to say it happens on some occasions, but not most of the time."
+              "explanation": "\"I sometimes cook dinner for my family\" uses \"sometimes\" before the main verb to say it happens on some occasions, but not most of the time.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I sometimes visit museums on my trips",
+                  "explanation": "You say \"I sometimes visit museums on my trips\" \"sometimes\" goes before the main verb and means on some occasions."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I sometimes work from home on Fridays",
+                  "explanation": "You say \"I sometimes work from home on Fridays\" \"sometimes\" goes before the main verb and means on some occasions."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "I sometimes study at the library after class",
+                  "explanation": "You say \"I sometimes study at the library after class\" \"sometimes\" goes before the main verb and means on some occasions."
+                }
+              }
             }
           ]
         },
@@ -28292,7 +29716,36 @@
                 "He is late a lot of the time.",
                 "He is late really often."
               ],
-              "explanation": "One way to say it: \"He is often late.\""
+              "explanation": "One way to say it: \"He is often late.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that your train is often late.",
+                  "acceptableAnswers": [
+                    "The train is often late.",
+                    "The train is late a lot.",
+                    "The train is frequently late."
+                  ],
+                  "explanation": "You can say \"The train is often late.\" \"often\" goes after the verb \"be\": \"is often late\"."
+                },
+                "work": {
+                  "prompt": "Say that your boss is often late.",
+                  "acceptableAnswers": [
+                    "My boss is often late.",
+                    "My boss is late a lot.",
+                    "My boss is frequently late."
+                  ],
+                  "explanation": "You can say \"My boss is often late.\" \"often\" goes after the verb \"be\": \"is often late\"."
+                },
+                "school": {
+                  "prompt": "Say that your school bus is often late.",
+                  "acceptableAnswers": [
+                    "The school bus is often late.",
+                    "The school bus is late a lot.",
+                    "The school bus is frequently late."
+                  ],
+                  "explanation": "You can say \"The school bus is often late.\" \"often\" goes after the verb \"be\": \"is often late\"."
+                }
+              }
             }
           ]
         },
@@ -28670,7 +30123,45 @@
                 "Turn left at the bank."
               ],
               "answer": "Turn right at the bank.",
-              "explanation": "The audio says \"Turn right at the bank.\""
+              "explanation": "The audio says \"Turn right at the bank.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "Turn right at the museum.",
+                  "choices": [
+                    "Turn left at the museum.",
+                    "Turn right at the museum.",
+                    "Turn right at the hotel.",
+                    "Turn right at the station."
+                  ],
+                  "answer": "Turn right at the museum.",
+                  "explanation": "You heard \"Turn right at the museum.\" The other choices change one word."
+                },
+                "work": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "Turn left at the elevator.",
+                  "choices": [
+                    "Turn right at the elevator.",
+                    "Turn left at the elevator.",
+                    "Turn left at the stairs.",
+                    "Turn left at the entrance."
+                  ],
+                  "answer": "Turn left at the elevator.",
+                  "explanation": "You heard \"Turn left at the elevator.\" The other choices change one word."
+                },
+                "school": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "Turn left at the library.",
+                  "choices": [
+                    "Turn right at the library.",
+                    "Turn left at the library.",
+                    "Turn left at the gym.",
+                    "Turn left at the cafeteria."
+                  ],
+                  "answer": "Turn left at the library.",
+                  "explanation": "You heard \"Turn left at the library.\" The other choices change one word."
+                }
+              }
             },
             {
               "id": "a2p13q27",
@@ -28965,14 +30456,60 @@
                 "Excuse me, how do I get to the library, please?",
                 "How do I go to the library, please?"
               ],
-              "explanation": "One way to say it: \"How do I get to the library?\""
+              "explanation": "One way to say it: \"How do I get to the library?\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Ask how to get to the train station.",
+                  "acceptableAnswers": [
+                    "How do I get to the train station?",
+                    "How can I get to the train station?",
+                    "How do I go to the train station?"
+                  ],
+                  "explanation": "You can say \"How do I get to the train station?\" \"How do I get to\" is the usual way to ask for directions."
+                },
+                "work": {
+                  "prompt": "Ask how to get to the conference room.",
+                  "acceptableAnswers": [
+                    "How do I get to the conference room?",
+                    "How can I get to the conference room?",
+                    "How do I go to the conference room?"
+                  ],
+                  "explanation": "You can say \"How do I get to the conference room?\" \"How do I get to\" is the usual way to ask for directions."
+                },
+                "school": {
+                  "prompt": "Ask how to get to the gym.",
+                  "acceptableAnswers": [
+                    "How do I get to the gym?",
+                    "How can I get to the gym?",
+                    "How do I go to the gym?"
+                  ],
+                  "explanation": "You can say \"How do I get to the gym?\" \"How do I get to\" is the usual way to ask for directions."
+                }
+              }
             },
             {
               "id": "sx1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "The hotel is near the city center",
-              "explanation": "\"The hotel is near the city center\" uses \"near\" to say the hotel is close to the center but not inside it."
+              "explanation": "\"The hotel is near the city center\" uses \"near\" to say the hotel is close to the center but not inside it.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "The station is near the city center",
+                  "explanation": "You say \"The station is near the city center\" \"near\" tells how close two places are, and \"the city center\" is the middle of town."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "The office is near the city center",
+                  "explanation": "You say \"The office is near the city center\" \"near\" tells how close two places are, and \"the city center\" is the middle of town."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "The school is near the city center",
+                  "explanation": "You say \"The school is near the city center\" \"near\" tells how close two places are, and \"the city center\" is the middle of town."
+                }
+              }
             }
           ]
         },
@@ -29523,7 +31060,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Could we meet on Saturday afternoon?",
-              "explanation": "You use \"Could we meet on Saturday afternoon?\" to politely suggest a time to see someone. \"Could we\" softens the request, and the base verb \"meet\" comes right after it."
+              "explanation": "You use \"Could we meet on Saturday afternoon?\" to politely suggest a time to see someone. \"Could we\" softens the request, and the base verb \"meet\" comes right after it.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Could we meet in the lobby at nine?",
+                  "explanation": "You say \"Could we meet in the lobby at nine?\" \"Could we\" starts a polite suggestion, and \"in\" gives the meeting place."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Could we meet in the conference room at nine?",
+                  "explanation": "You say \"Could we meet in the conference room at nine?\" \"Could we\" starts a polite suggestion, and \"in\" gives the meeting place."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Could we meet in the library at nine?",
+                  "explanation": "You say \"Could we meet in the library at nine?\" \"Could we\" starts a polite suggestion, and \"in\" gives the meeting place."
+                }
+              }
             }
           ]
         },
@@ -30327,7 +31881,36 @@
                 "I'm paying in cash.",
                 "I will pay by cash."
               ],
-              "explanation": "One way to say it: \"I'd like to pay in cash.\""
+              "explanation": "One way to say it: \"I'd like to pay in cash.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Tell the hotel clerk that you would like to pay for the room in cash.",
+                  "acceptableAnswers": [
+                    "I'd like to pay for the room in cash.",
+                    "I want to pay for the room in cash.",
+                    "I'd like to pay for the room with cash."
+                  ],
+                  "explanation": "You can say \"I'd like to pay for the room in cash.\" \"I'd like to\" is a polite way to say what you want to do, and \"in cash\" says how you pay."
+                },
+                "work": {
+                  "prompt": "Tell the cashier that you would like to pay for these supplies in cash.",
+                  "acceptableAnswers": [
+                    "I'd like to pay for these supplies in cash.",
+                    "I want to pay for these supplies in cash.",
+                    "I'd like to pay for these supplies with cash."
+                  ],
+                  "explanation": "You can say \"I'd like to pay for these supplies in cash.\" \"I'd like to\" is a polite way to say what you want to do, and \"in cash\" says how you pay."
+                },
+                "school": {
+                  "prompt": "Tell the cafeteria cashier that you would like to pay for your lunch in cash.",
+                  "acceptableAnswers": [
+                    "I'd like to pay for my lunch in cash.",
+                    "I want to pay for my lunch in cash.",
+                    "I'd like to pay for my lunch with cash."
+                  ],
+                  "explanation": "You can say \"I'd like to pay for my lunch in cash.\" \"I'd like to\" is a polite way to say what you want to do, and \"in cash\" says how you pay."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -31368,7 +32951,45 @@
                 "The cat is sitting beside the table."
               ],
               "answer": "The cat is sitting under the table.",
-              "explanation": "The audio says \"The cat is sitting under the table.\""
+              "explanation": "The audio says \"The cat is sitting under the table.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "The bag is sitting under the seat.",
+                  "choices": [
+                    "The bag is sitting under the table.",
+                    "The bag is sitting under the seat.",
+                    "The bag is sitting over the seat.",
+                    "The hat is sitting under the seat."
+                  ],
+                  "answer": "The bag is sitting under the seat.",
+                  "explanation": "You heard \"The bag is sitting under the seat.\" The other choices change one word."
+                },
+                "work": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "The box is sitting under the desk.",
+                  "choices": [
+                    "The box is sitting behind the desk.",
+                    "The box is sitting near the desk.",
+                    "The bag is sitting under the desk.",
+                    "The box is sitting under the desk."
+                  ],
+                  "answer": "The box is sitting under the desk.",
+                  "explanation": "You heard \"The box is sitting under the desk.\" The other choices change one word."
+                },
+                "school": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "The bag is sitting under the chair.",
+                  "choices": [
+                    "The bag is sitting behind the chair.",
+                    "The bag is sitting under the chair.",
+                    "The book is sitting under the chair.",
+                    "The bag is sitting near the chair."
+                  ],
+                  "answer": "The bag is sitting under the chair.",
+                  "explanation": "You heard \"The bag is sitting under the chair.\" The other choices change one word."
+                }
+              }
             },
             {
               "id": "a2p17q27",
@@ -32001,7 +33622,45 @@
                 "He was cooking when the alarm went off."
               ],
               "answer": "He was sleeping when the alarm went off.",
-              "explanation": "The audio says \"He was sleeping when the alarm went off.\""
+              "explanation": "The audio says \"He was sleeping when the alarm went off.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "He was sleeping when the plane landed.",
+                  "choices": [
+                    "He was sleeping when the plane left.",
+                    "He was reading when the plane landed.",
+                    "He was sleeping when the plane landed.",
+                    "She was sleeping when the plane landed."
+                  ],
+                  "answer": "He was sleeping when the plane landed.",
+                  "explanation": "You heard \"He was sleeping when the plane landed.\" The other choices change one word."
+                },
+                "work": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "He was working when the power went out.",
+                  "choices": [
+                    "He was working when the power went out.",
+                    "He was working when the lights went out.",
+                    "He was eating when the power went out.",
+                    "She was working when the power went out."
+                  ],
+                  "answer": "He was working when the power went out.",
+                  "explanation": "You heard \"He was working when the power went out.\" The other choices change one word."
+                },
+                "school": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "He was studying when the bell rang.",
+                  "choices": [
+                    "He was studying when the phone rang.",
+                    "He was sleeping when the bell rang.",
+                    "She was studying when the bell rang.",
+                    "He was studying when the bell rang."
+                  ],
+                  "answer": "He was studying when the bell rang.",
+                  "explanation": "You heard \"He was studying when the bell rang.\" The other choices change one word."
+                }
+              }
             },
             {
               "id": "a2p18q27",
@@ -32018,7 +33677,36 @@
                 "I was sleeping when the telephone rang.",
                 "I was sleeping when my phone rang."
               ],
-              "explanation": "One way to say it: \"I was sleeping when the phone rang.\""
+              "explanation": "One way to say it: \"I was sleeping when the phone rang.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you were sleeping when the plane landed.",
+                  "acceptableAnswers": [
+                    "I was sleeping when the plane landed.",
+                    "When the plane landed, I was sleeping.",
+                    "I was asleep when the plane landed."
+                  ],
+                  "explanation": "You can say \"I was sleeping when the plane landed.\" We use the past continuous \"was sleeping\" for the longer action, and \"when\" for the short action that interrupted it."
+                },
+                "work": {
+                  "prompt": "Say that you were working when the power went out.",
+                  "acceptableAnswers": [
+                    "I was working when the power went out.",
+                    "When the power went out, I was working.",
+                    "I was at work when the power went out."
+                  ],
+                  "explanation": "You can say \"I was working when the power went out.\" We use the past continuous \"was sleeping\" for the longer action, and \"when\" for the short action that interrupted it."
+                },
+                "school": {
+                  "prompt": "Say that you were studying when your friend called.",
+                  "acceptableAnswers": [
+                    "I was studying when my friend called.",
+                    "When my friend called, I was studying.",
+                    "I was doing homework when my friend called."
+                  ],
+                  "explanation": "You can say \"I was studying when my friend called.\" We use the past continuous \"was sleeping\" for the longer action, and \"when\" for the short action that interrupted it."
+                }
+              }
             }
           ]
         },
@@ -32651,7 +34339,45 @@
                 "She might speak three languages fluently."
               ],
               "answer": "She can speak three languages fluently.",
-              "explanation": "The audio says \"She can speak three languages fluently.\""
+              "explanation": "The audio says \"She can speak three languages fluently.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "She can speak Spanish with the guide.",
+                  "choices": [
+                    "She can speak French with the guide.",
+                    "She can speak Spanish with the driver.",
+                    "She can write Spanish with the guide.",
+                    "She can speak Spanish with the guide."
+                  ],
+                  "answer": "She can speak Spanish with the guide.",
+                  "explanation": "You heard \"She can speak Spanish with the guide.\" The other choices change one word."
+                },
+                "work": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "She can write reports in Spanish.",
+                  "choices": [
+                    "She can write emails in Spanish.",
+                    "She can read reports in Spanish.",
+                    "She can write reports in Spanish.",
+                    "She can write reports in French."
+                  ],
+                  "answer": "She can write reports in Spanish.",
+                  "explanation": "You heard \"She can write reports in Spanish.\" The other choices change one word."
+                },
+                "school": {
+                  "prompt": "Which sentence did you hear?",
+                  "audioText": "She can read English and French.",
+                  "choices": [
+                    "She can read English and German.",
+                    "She can write English and French.",
+                    "She can read Spanish and French.",
+                    "She can read English and French."
+                  ],
+                  "answer": "She can read English and French.",
+                  "explanation": "You heard \"She can read English and French.\" The other choices change one word."
+                }
+              }
             },
             {
               "id": "a2p19q27",
@@ -32663,14 +34389,60 @@
                 "I know how to play the piano.",
                 "I can play piano."
               ],
-              "explanation": "One way to say it: \"I can play the piano.\""
+              "explanation": "One way to say it: \"I can play the piano.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you can speak a little Spanish.",
+                  "acceptableAnswers": [
+                    "I can speak a little Spanish.",
+                    "I can speak some Spanish.",
+                    "I speak a little Spanish."
+                  ],
+                  "explanation": "You can say \"I can speak a little Spanish.\" \"can\" is followed by the base verb, with no \"to\": \"can speak\"."
+                },
+                "work": {
+                  "prompt": "Say that you can use this software.",
+                  "acceptableAnswers": [
+                    "I can use this software.",
+                    "I know how to use this software.",
+                    "I am able to use this software."
+                  ],
+                  "explanation": "You can say \"I can use this software.\" \"can\" is followed by the base verb, with no \"to\": \"can speak\"."
+                },
+                "school": {
+                  "prompt": "Say that you can play the guitar.",
+                  "acceptableAnswers": [
+                    "I can play the guitar.",
+                    "I know how to play the guitar.",
+                    "I am able to play the guitar."
+                  ],
+                  "explanation": "You can say \"I can play the guitar.\" \"can\" is followed by the base verb, with no \"to\": \"can speak\"."
+                }
+              }
             },
             {
               "id": "sx1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Could you help me carry this bag?",
-              "explanation": "The phrase \"Could you help me carry this bag?\" is a polite request. You use \"could\" with \"you\" to ask someone to do something for you."
+              "explanation": "The phrase \"Could you help me carry this bag?\" is a polite request. You use \"could\" with \"you\" to ask someone to do something for you.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Could you help me carry this suitcase?",
+                  "explanation": "You say \"Could you help me carry this suitcase?\" \"Could you\" starts a polite request for help."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Could you help me carry this box?",
+                  "explanation": "You say \"Could you help me carry this box?\" \"Could you\" starts a polite request for help."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Could you help me carry these books?",
+                  "explanation": "You say \"Could you help me carry these books?\" \"Could you\" starts a polite request for help."
+                }
+              }
             }
           ]
         },
@@ -32924,7 +34696,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "May I open the window, please?",
-              "explanation": "\"May I open the window, please?\" uses \"may\" with \"I\" to ask for permission politely, and \"please\" makes the request even softer."
+              "explanation": "\"May I open the window, please?\" uses \"may\" with \"I\" to ask for permission politely, and \"please\" makes the request even softer.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "May I take a photo here, please?",
+                  "explanation": "You say \"May I take a photo here, please?\" \"May I\" is a formal way to ask for permission."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "May I use your phone, please?",
+                  "explanation": "You say \"May I use your phone, please?\" \"May I\" is a formal way to ask for permission."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "May I go to the restroom, please?",
+                  "explanation": "You say \"May I go to the restroom, please?\" \"May I\" is a formal way to ask for permission."
+                }
+              }
             }
           ]
         },
@@ -33176,7 +34965,36 @@
                 "I am unable to come to the meeting.",
                 "I'm unable to attend the meeting."
               ],
-              "explanation": "One way to say it: \"I can't come to the meeting.\""
+              "explanation": "One way to say it: \"I can't come to the meeting.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you cannot come to the tour tomorrow.",
+                  "acceptableAnswers": [
+                    "I can't come to the tour tomorrow.",
+                    "I'm not able to come to the tour tomorrow.",
+                    "I won't be able to come to the tour tomorrow."
+                  ],
+                  "explanation": "You can say \"I can't come to the tour tomorrow.\" \"can't\" is the negative of \"can\", and it is followed by the base verb: \"come\"."
+                },
+                "work": {
+                  "prompt": "Say that you cannot come to the meeting on Friday.",
+                  "acceptableAnswers": [
+                    "I can't come to the meeting on Friday.",
+                    "I'm not able to come to the meeting on Friday.",
+                    "I won't be able to come to the meeting on Friday."
+                  ],
+                  "explanation": "You can say \"I can't come to the meeting on Friday.\" \"can't\" is the negative of \"can\", and it is followed by the base verb: \"come\"."
+                },
+                "school": {
+                  "prompt": "Say that you cannot come to class tomorrow.",
+                  "acceptableAnswers": [
+                    "I can't come to class tomorrow.",
+                    "I'm not able to come to class tomorrow.",
+                    "I won't be able to come to class tomorrow."
+                  ],
+                  "explanation": "You can say \"I can't come to class tomorrow.\" \"can't\" is the negative of \"can\", and it is followed by the base verb: \"come\"."
+                }
+              }
             },
             {
               "id": "sx1",
