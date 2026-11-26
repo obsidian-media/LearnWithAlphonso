@@ -20,6 +20,8 @@ export const OPS_EVENT_THRESHOLDS: Record<string, OpsThreshold> = {
   // One is already one too many.
   publish_cleanup_failed: { amberAt: 1, redAt: 1, alertPerHour: 1 },
   hearts_settlement_shadow_stale_pro: { amberAt: 10, redAt: 100, alertPerHour: 50 },
+  // A push that could not be delivered to a device (not a dead token): APNs or FCM refused or did not answer.
+  push_send_failed: { amberAt: 5, redAt: 25, alertPerHour: 20 },
 };
 
 /**
@@ -32,6 +34,7 @@ export const OPS_EVENT_LABELS: Record<string, string> = {
   hearts_settlement_shadow_pro_unknown: "Pro check at settlement",
   publish_cleanup_failed: "Draft left public after a failed publish",
   hearts_settlement_shadow_stale_pro: "Stale Pro answer at settlement",
+  push_send_failed: "Push delivery",
 };
 
 /** A readable label for an event: the table above, else the name with spaces ("some_new_event" to "Some new event"). */

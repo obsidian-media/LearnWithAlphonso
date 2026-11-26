@@ -32,6 +32,18 @@ export function skillResults(graded: { type: string; correct: boolean }[]): Skil
 
 export const MAX_ACTIVITY_SECONDS = 900;
 
+/** The Edge twin of lessonProfilePayload in src/lib/profile-data.ts: sent inside the completion's transaction. */
+export function lessonProfilePayload(lesson: {
+  sessionIssuedAtMs: number | null;
+  nowMs: number;
+  graded: { type: string; correct: boolean }[];
+}): { lesson_seconds: number; skills: SkillResult[] } {
+  return {
+    lesson_seconds: lessonSeconds(lesson.sessionIssuedAtMs, lesson.nowMs),
+    skills: skillResults(lesson.graded),
+  };
+}
+
 export function lessonSeconds(sessionIssuedAtMs: number | null, nowMs: number): number {
   if (sessionIssuedAtMs === null || !Number.isFinite(sessionIssuedAtMs)) return 0;
   return Math.min(

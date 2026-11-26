@@ -78,9 +78,9 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 /**
- * What Alphonso remembers (approved mock: r15-recap, screens 2, 2b and 3). Pro learners read, fix and delete every
- * line; anyone else sees the same page locked. Presentation only: the server decides who is Pro and what is deleted
- * (src/routes/api/tutor-memory.ts).
+ * What Alphonso remembers (approved mock: r15-recap, screens 2, 2b and 3). Every learner reads, fixes and deletes
+ * every line (free since 2026-11-26); the locked page is only for a server that still answers not-entitled. The server
+ * decides what is deleted (src/routes/api/tutor-memory.ts).
  */
 class TutorMemoryViewModel(private val ai: AiConversationClient) : ViewModel() {
     data class State(val load: TutorMemoryLoad? = null, val busy: Boolean = false)
@@ -276,7 +276,7 @@ private fun ReadyBody(memory: TutorMemory, busy: Boolean, speaking: String?, vm:
 @Composable
 private fun LockedBody(weakSpots: List<String>, goalsNote: String?, onPaywall: () -> Unit, onBack: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    Hero("With Pro, Alphonso keeps notes between calls and you can read, fix and delete every line.")
+    Hero("Alphonso keeps notes between calls and you can read, fix and delete every line.")
     Text("He could remember", style = Type.headline.toTextStyle(), color = ds.ink, modifier = Modifier.padding(top = Space.s2).semantics { heading() })
     val lock: @Composable () -> Unit = { Icon(Icons.Filled.Lock, null, tint = ds.inkFaint, modifier = Modifier.padding(end = Space.s2)) }
     weakSpots.forEach { w -> MemoryRow("x", ds.wrongTint, ds.wrongInk, w, "From your weak spots", lock) }

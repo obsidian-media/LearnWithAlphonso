@@ -90,6 +90,8 @@ async function buildAuthToken(): Promise<string> {
 
 export type SendPushResult = {
   sent: number;
+  /** Devices a send was attempted for that failed for a reason other than a dead token (counted, never thrown). */
+  failed?: number;
   skipped: "not_configured" | null;
 };
 
@@ -113,7 +115,7 @@ export async function sendPushToUser(
   // project with only FCM set still sends to Android phones.
   const fcm = readFcmConfig();
   if (!apnsConfigured() && !fcm) {
-    return { sent: 0, skipped: "not_configured" };
+    return { sent: 0, failed: 0, skipped: "not_configured" };
   }
 
   const { data: tokens } = await admin
@@ -121,7 +123,7 @@ export async function sendPushToUser(
     .select("id, token, platform")
     .eq("user_id", userId);
   if (!tokens || tokens.length === 0) {
-    return { sent: 0, skipped: null };
+    return { sent: 0, failed: 0, skipped: null };
   }
 
   type TokenRow = { id: string; token: string; platform: string | null };
@@ -130,6 +132,7 @@ export async function sendPushToUser(
   const iosRows = rows.filter((r) => r.platform !== "android");
   const staleTokenIds: string[] = [];
   let sent = 0;
+  let failed = 0;
 
   if (fcm && androidRows.length > 0) {
     try {
@@ -139,10 +142,13 @@ export async function sendPushToUser(
         accessToken,
       });
       sent += result.sent;
+      failed += result.failed;
       staleTokenIds.push(...result.stale);
     } catch {
       // A failed token exchange is a configuration or Google outage, not
       // evidence any device token is dead -- prune nothing, send nothing.
+      // It is still a failure to deliver to every Android device: count it.
+      failed += androidRows.length;
     }
   }
 
@@ -150,7 +156,7 @@ export async function sendPushToUser(
     if (staleTokenIds.length > 0) {
       await admin.from("device_tokens").delete().in("id", staleTokenIds);
     }
-    return { sent, skipped: null };
+    return { sent, failed, skipped: null };
   }
 
   const jwt = await buildAuthToken();
@@ -179,10 +185,13 @@ export async function sendPushToUser(
         sent++;
       } else if (res.status === 400 || res.status === 410) {
         staleTokenIds.push(row.id);
+      } else {
+        failed++;
       }
     } catch {
       // Best-effort -- a single device's delivery failure must never
-      // fail the caller (nudge insert / lesson completion).
+      // fail the caller (nudge insert / lesson completion). It is counted.
+      failed++;
     }
   }));
 
@@ -190,5 +199,5 @@ export async function sendPushToUser(
     await admin.from("device_tokens").delete().in("id", staleTokenIds);
   }
 
-  return { sent, skipped: null };
+  return { sent, failed, skipped: null };
 }

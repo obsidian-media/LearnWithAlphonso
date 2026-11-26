@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { scenarioPrompt } from "@/data/scenarios";
 
-/** Alphonso's Pro calls are primed with the learner's memory (labels only); free learners' calls are not. */
+/** Alphonso's calls are primed with the learner's memory (labels only), for every learner: it is free (2026-11-26). */
 const h = vi.hoisted(() => ({ memory: [] as { memory_key: string }[], pro: "active" as string }));
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
@@ -60,16 +60,18 @@ afterEach(() => {
 });
 
 describe("priming Alphonso's calls from memory", () => {
-  it("a Pro learner with memory gets one leading background turn naming the topic", async () => {
+  it("a learner with memory gets one leading background turn naming the topic", async () => {
     const m = await sentMessages();
     expect(m).toHaveLength(3);
     expect(m[1]!.role).toBe("user");
     expect(m[1]!.content).toContain("Ser or estar");
     expect(m[2]!.content).toBe("hola");
   });
-  it("a learner who is not Pro gets none, even with stored lines", async () => {
+  it("a learner who is not Pro is primed too: the entitlement is not asked", async () => {
     h.pro = "inactive";
-    expect(await sentMessages()).toHaveLength(2);
+    const m = await sentMessages();
+    expect(m).toHaveLength(3);
+    expect(m[1]!.content).toContain("Ser or estar");
   });
   it("a learner with no memory gets none", async () => {
     h.memory = [];

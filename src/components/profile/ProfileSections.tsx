@@ -813,24 +813,22 @@ export function HectorNoticed({ o, pro }: { o: ProfileOverview; pro: boolean }) 
 }
 
 /**
- * "What Alphonso remembers" on Profile. Pro: the counts of what he keeps, one tap to see and edit. Free: a teaser made
- * only from the learner's own weak spots (the same rule as "Hector can help"), linking to the locked page.
+ * "What Alphonso remembers" on Profile: the counts of what he keeps, one tap to see and edit. Free for every learner
+ * (practice-call memory, 2026-11-26); Hector's memory is the Pro one. Hidden until the notes have loaded.
  */
-export function MemoryCard({ o, pro }: { o: ProfileOverview; pro: boolean }) {
+export function MemoryCard() {
   const memory = useQuery({
     queryKey: ["tutor-memory"],
     queryFn: fetchTutorMemory,
-    enabled: pro,
     retry: false,
     staleTime: 60_000,
   });
   const ready = memory.data?.status === "ok" ? memory.data.data : null;
-  const topics = weakSpots(o.weakItems, 2).top.map((w) => w.display);
-  if (pro && !ready) return null;
+  if (!ready) return null;
   return (
     <Link
       to="/profile/memory"
-      data-memory-card={pro ? "pro" : "teaser"}
+      data-memory-card="ready"
       className="flex items-center gap-2.5 rounded-[18px] bg-ds-brand px-3 py-2.5 text-ds-on-hero"
     >
       <img
@@ -839,18 +837,9 @@ export function MemoryCard({ o, pro }: { o: ProfileOverview; pro: boolean }) {
         className="size-[46px] shrink-0 rounded-full bg-ds-sunk object-cover object-[center_12%] shadow-[0_0_0_2px_var(--c-action)]"
       />
       <div className="min-w-0 flex-1">
-        <b className="block ds-type-footnote font-extrabold">
-          {pro ? "What Alphonso remembers" : "What Alphonso can remember"}
-          <span className="ml-1 rounded-[5px] bg-ds-action px-1 align-[2px] ds-type-overline text-ds-on-action">
-            Pro
-          </span>
-        </b>
+        <b className="block ds-type-footnote font-extrabold">What Alphonso remembers</b>
         <small className="block ds-type-caption text-ds-on-hero-soft">
-          {ready
-            ? `${memorySummary({ mistakes: ready.mistakes.length, phrases: ready.phrases.length, goals: goalLines(ready.goals).length })} See and edit.`
-            : topics.length > 0
-              ? `He could remember ${joinTopics(topics)}. See what Pro keeps.`
-              : "With Pro, Alphonso keeps notes between calls. See what he could keep."}
+          {`${memorySummary({ mistakes: ready.mistakes.length, phrases: ready.phrases.length, goals: goalLines(ready.goals).length })} See and edit.`}
         </small>
       </div>
       <DsIcon name="chevron" className="size-[22px] shrink-0 text-ds-on-hero-soft" />

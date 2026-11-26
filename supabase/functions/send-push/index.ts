@@ -14,6 +14,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { sendPushToUser } from "../_shared/apns.ts";
 import { isAuthorizedPushCaller } from "./auth.ts";
+import { deliverPush } from "./deliver.ts";
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -54,7 +55,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     { auth: { persistSession: false } },
   );
 
-  const result = await sendPushToUser(admin, userId, title, message, data ?? {});
+  const result = await deliverPush(sendPushToUser, admin, userId, title, message, data ?? {});
   return jsonResponse(result, 200);
 }
 

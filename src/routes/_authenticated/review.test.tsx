@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -99,7 +99,12 @@ describe("Review page", () => {
 
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en" },
+      data: {
+        itemKey: "u1l1:q1",
+        answer: "Good morning.",
+        course: "en",
+        attemptId: expect.any(String),
+      },
     });
 
     await user.click(screen.getByRole("button", { name: "Finish" }));
@@ -136,7 +141,12 @@ describe("Review page", () => {
 
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "savedword:0123456789abcdef", answer: "a happy accident", course: "en" },
+      data: {
+        itemKey: "savedword:0123456789abcdef",
+        answer: "a happy accident",
+        course: "en",
+        attemptId: expect.any(String),
+      },
     });
     // The explanation's words can be saved too (the page provides the save dialog).
     expect(screen.getByRole("button", { name: "accident" })).toBeInTheDocument();
@@ -167,7 +177,12 @@ describe("Review page", () => {
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "podcast:0123456789abcdefq2", answer: "A small coffee", course: "en" },
+      data: {
+        itemKey: "podcast:0123456789abcdefq2",
+        answer: "A small coffee",
+        course: "en",
+        attemptId: expect.any(String),
+      },
     });
   });
 
@@ -191,7 +206,12 @@ describe("Review page", () => {
 
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "a1p23l1:a1p23q0", answer: "She's a doctor.", course: "en" },
+      data: {
+        itemKey: "a1p23l1:a1p23q0",
+        answer: "She's a doctor.",
+        course: "en",
+        attemptId: expect.any(String),
+      },
     });
   });
 
@@ -216,7 +236,12 @@ describe("Review page", () => {
 
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "a1p24l1:a1p24q0", answer: "good morning", course: "en" },
+      data: {
+        itemKey: "a1p24l1:a1p24q0",
+        answer: "good morning",
+        course: "en",
+        attemptId: expect.any(String),
+      },
     });
   });
 
@@ -237,7 +262,12 @@ describe("Review page", () => {
 
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "a1p25l1:a1p25q0", answer: "morning to you all", course: "en" },
+      data: {
+        itemKey: "a1p25l1:a1p25q0",
+        answer: "morning to you all",
+        course: "en",
+        attemptId: expect.any(String),
+      },
     });
   });
 
@@ -283,7 +313,7 @@ describe("Review page", () => {
 
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "u1l1:q2", answer: "meet", course: "en" },
+      data: { itemKey: "u1l1:q2", answer: "meet", course: "en", attemptId: expect.any(String) },
     });
   });
 
@@ -331,7 +361,7 @@ describe("Review page", () => {
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "u1l2:q9", answer: "Doctor", course: "en" },
+      data: { itemKey: "u1l2:q9", answer: "Doctor", course: "en", attemptId: expect.any(String) },
     });
   });
 
@@ -367,7 +397,12 @@ describe("Review page", () => {
 
     expect(await screen.findByText("Still got it.")).toBeInTheDocument();
     expect(gradeReview).toHaveBeenCalledWith({
-      data: { itemKey: "u1l2:q11", answer: "She is a doctor", course: "en" },
+      data: {
+        itemKey: "u1l2:q11",
+        answer: "She is a doctor",
+        course: "en",
+        attemptId: expect.any(String),
+      },
     });
   });
 
@@ -458,6 +493,30 @@ describe("Review page -- failures are said, never mistaken for an empty or finis
     // The second card, not the end of the queue that a double advance would reach.
     expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
     expect(screen.queryByText("Review complete")).not.toBeInTheDocument();
+  });
+
+  it("a Try again sends the same attempt id as the first try, and a new card a new one", async () => {
+    fetchDueReviews.mockResolvedValue({
+      due: [{ itemKey: "u1l1:q1" }, { itemKey: "u1l1:q2" }],
+      total: 2,
+    });
+    gradeReview
+      .mockRejectedValueOnce(new Error("reply lost"))
+      .mockResolvedValue({ retired: false, dueOn: "2026-09-21" });
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("This answer didn't save");
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    await user.click(await screen.findByRole("button", { name: "Continue" }));
+    await user.click(await screen.findByRole("button", { name: "meet" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await waitFor(() => expect(gradeReview).toHaveBeenCalledTimes(3));
+    const ids = gradeReview.mock.calls.map((c) => c[0].data.attemptId);
+    expect(ids[0]).toEqual(expect.any(String));
+    expect(ids[1]).toBe(ids[0]);
+    expect(ids[2]).not.toBe(ids[0]);
   });
 
   it("a Try again whose first attempt did land is counted as this learner's own, not another tab's", async () => {

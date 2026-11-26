@@ -48,10 +48,10 @@ fun ProfileHubScreen(
     var tab by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(ProfileTab.OVERVIEW) }
     var picking by remember { mutableStateOf(false) }
     var reload by remember { mutableStateOf(0) }
-    // Pro: the counts on the memory card, read from the server (null until they arrive, or when the read fails).
+    // The counts on the memory card, read from the server (null until they arrive, or when the read fails). Free for everyone.
     var memorySummary by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(isPro, reload) {
-        memorySummary = if (isPro) (container.aiClient.tutorMemory() as? com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryLoad.Ready)?.memory?.summary else null
+    LaunchedEffect(reload) {
+        memorySummary = (container.aiClient.tutorMemory() as? com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryLoad.Ready)?.memory?.summary
     }
     val userId = container.session.userId
     LaunchedEffect(course, userId, isPro, reload) {
@@ -89,7 +89,7 @@ fun ProfileHubScreen(
                             ProfileWeekSection(m)
                             ProfileAchievementsPreview(m, onClick = onOpenAchievements)
                             ProfileHector(m, onPaywall = onOpenPaywall)
-                            ProfileMemory(isPro, m.weak.first.take(2).map { it.display }, memorySummary, onOpenMemory)
+                            ProfileMemory(memorySummary, onOpenMemory)
                             ProfileRowCard("Edit your answers", "Goal, level, daily time, interests", R.drawable.ds_target, ds.choiceTint, ds.choice, onEditAnswers)
                             ProfileRowCard("Settings", "Theme and account", R.drawable.ds_settings, ds.rightTint, ds.right, onOpenSettings)
                         }

@@ -157,22 +157,12 @@ describe("loadAlphonsoPriming", () => {
     q.limit = async () => ({ data: keys.map((memory_key) => ({ memory_key })) });
     return { from: () => q };
   };
-  it("primes a Pro learner with labels from their memory", async () => {
-    const m = await loadAlphonsoPriming(dbWith(["ser-estar"]), "u1", "es", async () => "active");
+  it("primes any learner with labels from their memory, Pro or not", async () => {
+    const m = await loadAlphonsoPriming(dbWith(["ser-estar"]), "u1", "es");
     expect(m?.content).toContain("Ser or estar");
   });
-  it("does not prime a learner who is not Pro, or whose entitlement cannot be read", async () => {
-    expect(
-      await loadAlphonsoPriming(dbWith(["ser-estar"]), "u1", "es", async () => "inactive"),
-    ).toBeNull();
-    expect(
-      await loadAlphonsoPriming(dbWith(["ser-estar"]), "u1", "es", async () => "unavailable"),
-    ).toBeNull();
-  });
-  it("asks nothing about Pro when there is no memory", async () => {
-    const pro = vi.fn(async () => "active" as const);
-    expect(await loadAlphonsoPriming(dbWith([]), "u1", "es", pro)).toBeNull();
-    expect(pro).not.toHaveBeenCalled();
+  it("is null when there is no memory", async () => {
+    expect(await loadAlphonsoPriming(dbWith([]), "u1", "es")).toBeNull();
   });
   it("is null when the read throws", async () => {
     const db = {
@@ -180,6 +170,6 @@ describe("loadAlphonsoPriming", () => {
         throw new Error("down");
       },
     };
-    expect(await loadAlphonsoPriming(db, "u1", "es", async () => "active")).toBeNull();
+    expect(await loadAlphonsoPriming(db, "u1", "es")).toBeNull();
   });
 });

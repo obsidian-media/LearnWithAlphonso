@@ -602,6 +602,18 @@ describe("completeLessonRemote", () => {
       }),
     );
 
+    // The lesson's learning time and skill results ride inside the completion's transaction (20261128190000); there
+    // are no later add_learning_seconds / add_skill_results calls whose failures nobody saw.
+    const onceArgs = adminRpc.mock.calls.find(
+      (c) => c[0] === "apply_lesson_completion_once",
+    )?.[1] as {
+      _next: { profile: { lesson_seconds: number; skills: { skill: string; total: number }[] } };
+    };
+    expect(onceArgs._next.profile.lesson_seconds).toEqual(expect.any(Number));
+    expect(onceArgs._next.profile.skills.length).toBeGreaterThan(0);
+    expect(adminRpc.mock.calls.map((c) => c[0])).not.toContain("add_learning_seconds");
+    expect(adminRpc.mock.calls.map((c) => c[0])).not.toContain("add_skill_results");
+
     expect(result.xpGain).toBe(8 * 10 + 20); // computeXpGain(8, 8)
     expect(result.heartsBonus).toBe("perfect");
     expect(result.progress.hearts).toBe(5);

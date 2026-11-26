@@ -19,6 +19,7 @@ import { resolveLessonSubmission } from "./lesson-version";
 import { localDay, streakBridge } from "./local-day";
 import { recordOpsEvent } from "./ops-events.server";
 import { readAllRows } from "./paged-read";
+import { lessonProfilePayload } from "./profile-data";
 import {
   MAX_HEARTS,
   XP_HEART_COST,
@@ -734,6 +735,12 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           total: bestTotal,
           best_xp: bestXp,
           day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
+          // Booked in the same transaction as the lesson (it used to be two later calls whose failures were ignored).
+          profile: lessonProfilePayload({
+            sessionIssuedAtMs: sessionIssuedAt,
+            nowMs: Date.now(),
+            graded,
+          }),
         },
         _missed_question_ids: missedQuestionIds,
         _activity_events: activityEvents,
@@ -815,14 +822,6 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     }
     if (!applied) throw new Error("Could not save lesson completion; retry");
     if ("redeemed" in applied && applied.redeemed) return await replayRedeemed(applied.redeemed);
-
-    // Profile data: the lesson's time and each answer's result by this server's own grading. Never fails the save.
-    const { recordLessonProfileData } = await import("./profile-data.server");
-    await recordLessonProfileData(supabaseAdmin, userId, {
-      sessionIssuedAtMs: sessionIssuedAt,
-      nowMs: Date.now(),
-      graded,
-    });
 
     // Hearts are settled on the server from this grading (same as the complete-lesson Edge Function).
     const { serverHeartsMode } = await import("./hearts-gate.server");

@@ -37,7 +37,7 @@ public struct CallRecap: Equatable, Sendable {
     public let phrase: Phrase?
     /// Signed by the server; "Review these" sends it back. nil: the button is not shown.
     public let reviewToken: String?
-    /// True when this recap was kept in What Alphonso remembers (a Pro learner).
+    /// True when this recap was kept in What Alphonso remembers (every learner; false only if the save failed).
     public let saved: Bool
     public let reviewCount: Int
 
@@ -97,7 +97,7 @@ public enum CallRecapAttempt: Equatable, Sendable {
     case retry
 }
 
-/// What Alphonso remembers about a Pro learner, as the server listed it.
+/// What Alphonso remembers about a learner (free for everyone), as the server listed it.
 public struct TutorMemory: Equatable, Sendable {
     public struct Mistake: Equatable, Sendable, Identifiable {
         public let id: String

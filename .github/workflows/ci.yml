@@ -580,7 +580,13 @@ jobs:
         working-directory: supabase/functions/send-push
         run: |
           deno check index.ts
-          deno test auth.test.ts
+          deno test auth.test.ts deliver.test.ts
+
+      - name: Test get-season-status (settling a cohort, the division a learner starts in)
+        working-directory: supabase/functions/get-season-status
+        run: |
+          deno check index.ts
+          deno test resolve.test.ts season-math.test.ts
 
       # A new Edge Function directory needs its own deno.json import map, and
       # nothing caught a missing one until the real deploy -- found 2026-09-22

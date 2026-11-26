@@ -57,7 +57,7 @@ describe("LISTING", () => {
 
   it("keeps the fuller benefits sentence in the Subscription paragraph", () => {
     expect(LISTING.description).toContain(
-      "within the hearts and AI limits of a free account. Alphonso Pro is an optional auto-renewable monthly subscription. It gives you Hector, the AI voice tutor, unlimited hearts in lessons, What Alphonso remembers (notes from your practice calls), and a larger monthly allowance for the AI features. Eligible new subscribers",
+      "within the hearts and AI limits of a free account. Alphonso Pro is an optional auto-renewable monthly subscription. It gives you Hector, the AI voice tutor, unlimited hearts in lessons, and a larger monthly allowance for the AI features. Eligible new subscribers",
     );
   });
 

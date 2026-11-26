@@ -157,13 +157,13 @@ function Terms() {
           items={[
             "Hector, the AI voice tutor, including explanations in your own language inside Hector;",
             "unlimited hearts in lessons;",
-            "What Alphonso remembers: short notes kept from your practice calls, so your next calls build on them;",
             "a larger monthly allowance for the AI features than free accounts have.",
           ]}
         />
         <p>
-          Lessons, review, the placement test, the audio library and practice calls with Alphonso
-          stay free, within the hearts and AI limits that apply to free accounts.
+          Lessons, review, the placement test, the audio library, practice calls with Alphonso and
+          What Alphonso remembers (short notes kept from your practice calls) stay free, within the
+          hearts and AI limits that apply to free accounts.
         </p>
         <Bullets
           items={[

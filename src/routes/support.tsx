@@ -69,7 +69,7 @@ function Support() {
       <Section heading="Subscriptions">
         <Bullets
           items={[
-            "Alphonso Pro is an auto-renewable subscription. The plans on offer (monthly, and yearly where offered) and their prices are shown before you confirm. It gives you Hector, the AI voice tutor, unlimited hearts, What Alphonso remembers, and a larger monthly AI allowance. Lessons, review, audio and practice calls with Alphonso stay free, within the hearts and AI limits that apply to free accounts. Our Terms of Use list exactly what Pro includes.",
+            "Alphonso Pro is an auto-renewable subscription. The plans on offer (monthly, and yearly where offered) and their prices are shown before you confirm. It gives you Hector, the AI voice tutor, unlimited hearts, and a larger monthly AI allowance. Lessons, review, audio, practice calls with Alphonso and What Alphonso remembers stay free, within the hearts and AI limits that apply to free accounts. Our Terms of Use list exactly what Pro includes.",
             "If you start with a free trial, you are charged when it ends unless you cancel at least 24 hours before.",
             "Manage or cancel it in the Settings app on your iPhone: tap your name, then Subscriptions. Cancel at least 24 hours before the end of the current period to avoid the next charge. We cannot cancel it for you, because Apple handles billing.",
             "Refunds are handled by Apple at reportaproblem.apple.com.",

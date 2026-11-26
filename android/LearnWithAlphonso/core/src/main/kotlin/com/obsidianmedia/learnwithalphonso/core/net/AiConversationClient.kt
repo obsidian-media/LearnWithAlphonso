@@ -168,7 +168,7 @@ class AiConversationClient(private val http: ApiHttp) {
         http.post("api/call-recap-review", buildJsonObject { put("callId", callId); put("reviewToken", reviewToken) }).status.value in 200..299
     }.getOrDefault(false)
 
-    /** GET /api/tutor-memory: Pro only, checked on the server (403 reads as locked). */
+    /** GET /api/tutor-memory: open to every signed-in learner (a 403 from an older server still reads as locked). */
     suspend fun tutorMemory(): TutorMemoryLoad = runCatching {
         val response = http.get("api/tutor-memory")
         val status = response.status.value

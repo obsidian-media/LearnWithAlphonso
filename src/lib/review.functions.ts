@@ -212,6 +212,7 @@ export const gradeReview = createServerFn({ method: "POST" })
       course?: string;
       expectedDueOn?: string;
       expectedLastReviewedAt?: string | null;
+      attemptId?: string;
     }) =>
       z
         .object({
@@ -231,6 +232,10 @@ export const gradeReview = createServerFn({ method: "POST" })
             .regex(/^\d{4}-\d{2}-\d{2}$/)
             .optional(),
           expectedLastReviewedAt: z.string().max(64).nullable().optional(),
+          // This answer's identity, stable across a Try again. The database stores the first result under it, so a
+          // retry after a lost reply replays that result instead of grading the item a second time. Optional for older
+          // pages (which send none and are protected only by the snapshot above).
+          attemptId: z.string().min(8).max(200).optional(),
         })
         .parse(d),
   )
@@ -245,6 +250,26 @@ export const gradeReview = createServerFn({ method: "POST" })
       .eq("language", course)
       .maybeSingle();
     if (rowError) throw new Error("Could not load review item");
+    if (data.attemptId) {
+      // A retry of an answer that already landed: replay what was stored, without grading the item again.
+      const { supabaseAdmin: replayDb } = await import("@/integrations/supabase/client.server");
+      const { data: prior, error: priorError } = await replayDb
+        .from("review_grade_attempts")
+        .select("item_key,language,result")
+        .eq("user_id", userId)
+        .eq("attempt_id", data.attemptId)
+        .maybeSingle();
+      if (priorError) throw new Error("Could not load review attempt");
+      if (prior) {
+        if (prior.item_key !== data.itemKey || prior.language !== course) {
+          throw new Error("Review attempt identity collision");
+        }
+        const stored = prior.result as { retired?: boolean; dueOn?: string; correct?: boolean };
+        if (typeof stored?.retired === "boolean" && stored.dueOn) {
+          return { retired: stored.retired, dueOn: stored.dueOn, correct: stored.correct };
+        }
+      }
+    }
     if (!row) return { retired: false, dueOn: today(), correct: false };
     if (
       data.expectedDueOn !== undefined &&
@@ -350,7 +375,7 @@ export const gradeReview = createServerFn({ method: "POST" })
         _user_id: userId,
         _item_key: data.itemKey,
         _language: course,
-        _attempt_id: null,
+        _attempt_id: data.attemptId ?? null,
         _expected_last_reviewed_at: row.last_reviewed_at,
         _expected_due_on: row.due_on,
         _retired: outcome.retired,

@@ -4,7 +4,7 @@ import { forgetTopicNotes } from "@/lib/call-recap-api";
 
 /**
  * Settings, for every learner (free or Pro): the topic labels recorded after a call ("past tense", no sentences) can be
- * deleted here. Pro learners also have Forget everything on What Alphonso remembers; this one touches only the labels.
+ * deleted here. Every learner also has Forget everything on What Alphonso remembers; this one touches only the labels.
  */
 export function TopicNotesSetting() {
   const [state, setState] = useState<"idle" | "asking" | "busy" | "done" | "failed">("idle");

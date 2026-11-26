@@ -42,6 +42,22 @@ export function skillResults(graded: { type: string; correct: boolean }[]): Skil
 /** The most learning time one lesson or one practice call is credited (add_learning_seconds refuses over 3600). */
 export const MAX_ACTIVITY_SECONDS = 900;
 
+/**
+ * What a saved lesson adds to the Profile data, sent INSIDE the completion's own transaction (apply_lesson_completion
+ * reads it from `_next.profile`, migration 20261128190000) instead of as two separate calls afterwards whose failures
+ * were swallowed. Keys are the database's (snake case).
+ */
+export function lessonProfilePayload(lesson: {
+  sessionIssuedAtMs: number | null;
+  nowMs: number;
+  graded: { type: string; correct: boolean }[];
+}): { lesson_seconds: number; skills: SkillResult[] } {
+  return {
+    lesson_seconds: lessonSeconds(lesson.sessionIssuedAtMs, lesson.nowMs),
+    skills: skillResults(lesson.graded),
+  };
+}
+
 /** Seconds from the lesson session's start to now, within [0, MAX_ACTIVITY_SECONDS]; 0 when the start is unknown. */
 export function lessonSeconds(sessionIssuedAtMs: number | null, nowMs: number): number {
   if (sessionIssuedAtMs === null || !Number.isFinite(sessionIssuedAtMs)) return 0;

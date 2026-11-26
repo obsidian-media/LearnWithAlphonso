@@ -238,14 +238,13 @@ type MemoryReader = {
 };
 
 /**
- * Alphonso's priming for a PRO learner's call: topic labels from their own memory lines. The cheap read comes first,
- * so a learner with no memory (nearly everyone) costs no entitlement lookup. Best effort: any failure is no priming.
+ * Alphonso's priming for a call: topic labels from the learner's own memory lines (free for every learner). A learner
+ * with no memory costs one cheap read. Best effort: any failure is no priming. Hector's memory stays Pro (hector-respond).
  */
 export async function loadAlphonsoPriming(
   db: unknown,
   userId: string,
   course: Course,
-  proState: (userId: string) => Promise<ProState> = proStateFor,
 ): Promise<Turn | null> {
   try {
     const { data } = await (db as MemoryReader)
@@ -257,7 +256,6 @@ export async function loadAlphonsoPriming(
       .order("last_seen_at", { ascending: false })
       .limit(3);
     if (!data || data.length === 0) return null;
-    if ((await proState(userId)) !== "active") return null;
     return buildAlphonsoPriming(
       course,
       data.map((r) => r.memory_key),

@@ -31,6 +31,9 @@ import {
  *   5. Retries "a person replied" notices that did not go out and tells the owner about new support tickets.
  *   6. The AI cost log: rolls raw rows older than 90 days into the daily summary, and once a day emails the owner when
  *      yesterday's estimated spend crossed a threshold (src/lib/ai-cost-sweep.server.ts).
+ *   8. Settles every finished season cohort and the last weeks' weekly challenge rewards in the database
+ *      (resolve_closed_season_cohorts, settle_closed_weekly_challenges; migration 20261128180000). Both used to happen
+ *      only when a learner opened a screen the right week, so nobody who did not came out settled. Idempotent.
  *   7. Operational events: emails the owner when a server-side failure event crosses its hourly threshold, once per
  *      event per 24 hours (src/lib/ops-alert-sweep.server.ts).
  *   8. Trial-ending reminder emails, OFF unless TRIAL_REMINDER_ENABLED=true (src/lib/trial-reminder.server.ts).
@@ -73,7 +76,26 @@ export type MaintenanceDeps = {
   opsAlerts?: OpsAlertDeps;
   /** The trial-ending reminder (src/lib/trial-reminder.server.ts); absent, that step is skipped. */
   trialReminders?: TrialReminderDeps;
+  /** The database settlements (seasons, weekly challenge rewards); absent, those steps are skipped. */
+  settle?: SettleDeps;
 };
+
+/** Two server-only SQL functions, each returning how many it settled. */
+export type SettleDeps = {
+  rpc: (
+    fn: "resolve_closed_season_cohorts" | "settle_closed_weekly_challenges",
+  ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+};
+
+/** Runs one settlement function; a database error is a failure of the step (the pass reports it), not a zero. */
+export async function runSettlement(
+  settle: SettleDeps,
+  fn: Parameters<SettleDeps["rpc"]>[0],
+): Promise<number> {
+  const { data, error } = await settle.rpc(fn);
+  if (error) throw new Error(`${fn} failed: ${error.message}`);
+  return typeof data === "number" ? data : 0;
+}
 
 export type RevocationResult = { revoked: number; stillPending: number; expired: number };
 
@@ -403,6 +425,14 @@ async function defaultDeps(): Promise<MaintenanceDeps> {
     aiCost: await defaultAiCostDeps(),
     opsAlerts: await defaultOpsAlertDeps(),
     trialReminders: await defaultTrialReminderDeps(),
+    settle: {
+      rpc: (fn) =>
+        (
+          supabaseAdmin as unknown as {
+            rpc: (f: string) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+          }
+        ).rpc(fn),
+    },
   };
 }
 
@@ -451,6 +481,15 @@ export async function handleMaintenance(
   const trialReminders = trialDeps
     ? await run("trial-reminders", () => sweepTrialReminders(trialDeps))
     : null;
+  const settleDeps = deps.settle;
+  const seasons = settleDeps
+    ? await run("season-cohorts", () => runSettlement(settleDeps, "resolve_closed_season_cohorts"))
+    : null;
+  const challenges = settleDeps
+    ? await run("weekly-challenges", () =>
+        runSettlement(settleDeps, "settle_closed_weekly_challenges"),
+      )
+    : null;
   // Counts only: this response is stored in the database's request log.
   return json(
     {
@@ -463,6 +502,7 @@ export async function handleMaintenance(
       ...(aiCostDeps ? { aiCost } : {}),
       ...(opsDeps ? { opsAlerts } : {}),
       ...(trialDeps ? { trialReminders } : {}),
+      ...(settleDeps ? { seasonsSettled: seasons, challengesPaid: challenges } : {}),
     },
     failures.length ? 500 : 200,
   );

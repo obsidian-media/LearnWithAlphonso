@@ -1140,22 +1140,19 @@ Deno.test(
 );
 
 Deno.test(
-  "a saved lesson records its time and each answer's result by the server's own grading",
+  "a saved lesson sends its time and each answer's result INSIDE the completion's transaction, not as later calls",
   async () => {
     const { db, handler } = setup({ sessionAgeMs: 120_000 });
     const res = await handler(post(body(["a", "d"])));
     assertEquals(res.status, 200);
     const missed = (db.rpcCalls[0].args._missed_question_ids as string[]).length;
-    assertEquals(db.profileCalls, [
-      {
-        name: "add_learning_seconds",
-        args: { _user_id: USER, _lesson_seconds: 120, _practice_seconds: 0 },
-      },
-      {
-        name: "add_skill_results",
-        args: { _user_id: USER, _results: [{ skill: "vocabulary", right: 2 - missed, total: 2 }] },
-      },
-    ]);
+    // The profile rides in _next (apply_lesson_completion books it with the lesson) ...
+    assertEquals((db.rpcCalls[0].args._next as { profile: unknown }).profile, {
+      lesson_seconds: 120,
+      skills: [{ skill: "vocabulary", right: 2 - missed, total: 2 }],
+    });
+    // ... and nothing calls add_learning_seconds / add_skill_results afterwards (that would book it twice).
+    assertEquals(db.profileCalls, []);
   },
 );
 

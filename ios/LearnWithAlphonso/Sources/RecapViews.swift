@@ -468,7 +468,7 @@ struct TutorMemoryView: View {
     }
 
     @ViewBuilder private var lockedBody: some View {
-        hero("With Pro, Alphonso keeps notes between calls and you can read, fix and delete every line.")
+        hero("Alphonso keeps notes between calls and you can read, fix and delete every line.")
         Text("He could remember").dsText(.headline).foregroundStyle(ds.ink).padding(.top, AlphonsoDS.Space.s2)
         ForEach(weakSpots, id: \.self) { w in
             row(icon: "xmark.circle", tint: ds.wrongTint, ink: ds.wrongInk, title: w, note: "From your weak spots",
@@ -527,7 +527,7 @@ struct TutorMemoryView: View {
 
 // MARK: Settings
 
-/// The "What Alphonso remembers" row in Settings: Pro learners open their notes, everyone else the locked page.
+/// The "What Alphonso remembers" row in Settings: every learner opens their notes (free since 2026-11-26).
 struct MemorySettingsRow: View {
     let session: Session
     let course: Course
@@ -536,7 +536,7 @@ struct MemorySettingsRow: View {
 
     var body: some View {
         DSCard(spacing: AlphonsoDS.Space.s1) {
-            SettingsNavLabel(title: "What Alphonso remembers", subtitle: "Pro. Read, fix and delete his notes.")
+            SettingsNavLabel(title: "What Alphonso remembers", subtitle: "Read, fix and delete his notes.")
                 .background(NavigationLink("What Alphonso remembers") {
                     TutorMemoryView(session: session, course: course, onUpgrade: onUpgrade)
                 }.opacity(0).accessibilityHidden(true))
@@ -578,7 +578,7 @@ struct TopicNotesSettingsCard: View {
 /// Builds the subscription screen for a sheet; the Practice hub supplies it, so the call screens never touch Pro rules.
 typealias UpgradeViewBuilder = (_ close: @escaping () -> Void) -> AnyView
 
-/// What Alphonso remembers as a sheet over a result screen: its "Try Alphonso Pro" opens the subscription screen.
+/// What Alphonso remembers as a sheet over a result screen: its locked page (only an older server answers locked) offers "Try Alphonso Pro".
 struct MemorySheetHost: View {
     let session: Session
     let course: Course
