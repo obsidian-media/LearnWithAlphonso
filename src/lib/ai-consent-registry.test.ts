@@ -21,6 +21,8 @@ const GATED_ROUTES: Record<string, RegExp> = {
     /authorizeAiRequest\(request,\s*"chat",\s*\{\s*route:\s*"analyze-weaknesses"\s*\}\)/,
   "src/routes/api/call-recap.ts":
     /authorizeAiRequest\(request,\s*"recap",\s*\{\s*route:\s*"call-recap"\s*\}\)/,
+  "src/routes/api/hector-call-end.ts":
+    /authorizeAiRequest\(request,\s*"recap",\s*\{\s*route:\s*"hector-call-end",\s*deferQuota:\s*true\s*\}\)/,
   "src/routes/api/hector-respond.ts":
     /requireAiConsent\(userId,\s*\{\s*db:\s*supabaseAdmin,\s*route:\s*"hector-respond"\s*\}\)/,
   "src/routes/api/define-word.ts":

@@ -68,6 +68,7 @@ export type AiOutputRoute =
   | "grade-translation"
   | "analyze-weaknesses"
   | "call-recap"
+  | "hector-call-end"
   | "lesson-weakness";
 export type FilterOptions = { check: BlockedTermCheck; course: Course; route: AiOutputRoute };
 

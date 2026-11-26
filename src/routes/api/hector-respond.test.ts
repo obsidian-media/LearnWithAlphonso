@@ -15,7 +15,28 @@ const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
 }));
 let weaknessRows: { category: string; event_type: string; created_at: string }[] = [];
 const weaknessEq = vi.fn(async (_k: string, _v: string) => ({ data: weaknessRows, error: null }));
-const adminFrom = vi.fn((_t: string) => ({ select: (_c: string) => ({ eq: weaknessEq }) }));
+let memoryRows: { kind: string; memory_key: string; text: string; detail: string | null }[] = [];
+let weakItemRows: { weakness_display: string | null }[] = [];
+// A query builder that answers per table, whatever chain the code under test builds.
+const adminFrom = vi.fn((table: string) => {
+  const rows = () =>
+    table === "weakness_events"
+      ? weaknessRows
+      : table === "tutor_memory"
+        ? memoryRows
+        : weakItemRows;
+  const q: Record<string, unknown> = {
+    select: () => q,
+    order: () => q,
+    limit: () => q,
+    eq: (k: string, v: string) => {
+      if (table === "weakness_events") void weaknessEq(k, v);
+      return q;
+    },
+    then: (ok: (v: unknown) => unknown) => ok({ data: rows(), error: null }),
+  };
+  return q;
+});
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     auth: { getUser },
@@ -80,6 +101,8 @@ beforeEach(() => {
   isSwitchOn.mockResolvedValue(true);
   blockedRpc.mockClear();
   weaknessRows = [];
+  memoryRows = [];
+  weakItemRows = [];
   weaknessEq.mockClear();
   adminFrom.mockClear();
   process.env.OPENROUTER_API_KEY = "nv_test";
@@ -770,6 +793,90 @@ describe("POST /api/hector-respond: Hector's memory", () => {
     expect(m[1].role).toBe("user");
     expect(m[1].content).toContain("working on: past tense, articles");
     expect(m).toHaveLength(3);
+  });
+
+  it("reads what earlier calls saved (tutor_memory) and the weak review items into the prompt", async () => {
+    memoryRows = [
+      {
+        kind: "mistake",
+        memory_key: "past-tense",
+        text: "Yesterday I went to school",
+        detail: null,
+      },
+      { kind: "phrase", memory_key: "no worries", text: "No worries", detail: "it is fine" },
+    ];
+    weakItemRows = [{ weakness_display: "Choosing between a and an" }];
+    const f = upstream();
+    const res = await handler({ request: req({ text: "hi", course: "en", history: [] }) });
+    expect(res.status).toBe(200);
+    const memory = llmMessages(f)[1].content;
+    expect(memory).toContain("Past tense");
+    expect(memory).toContain("Yesterday I went to school");
+    expect(memory).toContain("No worries");
+    expect(memory).toContain("Choosing between a and an");
+  });
+
+  it("the history of turn N reaches the model, in order, then the new words", async () => {
+    const f = upstream();
+    await handler({
+      request: req({
+        text: "I like football",
+        history: [
+          { role: "assistant", content: "Hi! What do you do for fun?" },
+          { role: "user", content: "I play games" },
+          { role: "assistant", content: "Which games?" },
+        ],
+      }),
+    });
+    const m = llmMessages(f);
+    expect(m.map((x) => x.role)).toEqual(["system", "assistant", "user", "assistant", "user"]);
+    expect(m[4].content).toBe("I like football");
+    expect(m[2].content).toBe("I play games");
+  });
+
+  it("a client-sent priming turn is dropped, and the current turn is not sent twice", async () => {
+    memoryRows = [{ kind: "mistake", memory_key: "articles", text: "I saw a dog", detail: null }];
+    const f = upstream();
+    await handler({
+      request: req({
+        text: "hello again",
+        history: [
+          {
+            role: "user",
+            content: "[Background for you, the tutor, not part of what the learner said: x]",
+          },
+          { role: "assistant", content: "Hi!" },
+          { role: "user", content: "hello again" },
+        ],
+      }),
+    });
+    const m = llmMessages(f);
+    expect(m.filter((x) => x.content.startsWith("[Background"))).toHaveLength(1);
+    expect(m.filter((x) => x.content === "hello again")).toHaveLength(1);
+    expect(m[1].content).toContain("I saw a dog");
+  });
+
+  it("asks for a varied reply, not a deterministic one", async () => {
+    const f = upstream();
+    await handler({ request: req({ text: "hi" }) });
+    const call = f.mock.calls.find(([u]) => String(u).includes("openrouter.ai"))!;
+    const sent = JSON.parse((call[1] as RequestInit).body as string);
+    expect(sent.temperature).toBeGreaterThan(0.5);
+  });
+
+  it("a failed memory read is logged, never silent, and the turn still answers", async () => {
+    adminFrom.mockImplementationOnce(() => {
+      throw new Error("db down");
+    });
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const f = upstream();
+    const res = await handler({ request: req({ text: "hi", history: [] }) });
+    expect(res.status).toBe(200);
+    expect(err.mock.calls.some((c) => String(c[0]).includes("hector_memory_read_failed"))).toBe(
+      true,
+    );
+    expect(f).toHaveBeenCalled();
+    err.mockRestore();
   });
 
   it("a free learner gets no memory and no weakness read", async () => {
