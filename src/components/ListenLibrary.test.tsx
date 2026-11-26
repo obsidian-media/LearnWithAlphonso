@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { usePodcastPlayer } from "../lib/podcast-player";
@@ -263,6 +263,44 @@ describe("Library: the Watch shelf", () => {
     render(<ListenLibraryView library={lib()} videos={[vid()]} onOpenVideo={onOpenVideo} />);
     await userEvent.click(screen.getByRole("button", { name: /I'd like vs I want/ }));
     expect(onOpenVideo).toHaveBeenCalledWith(expect.objectContaining({ id: "v1" }));
+  });
+
+  it("the Watch tab says it is offline, not 'No videos yet', when the list is empty and the browser has no network", async () => {
+    const online = vi.spyOn(navigator, "onLine", "get");
+    try {
+      online.mockReturnValue(false);
+      render(<ListenLibraryView library={lib()} videos={[]} initialTab="watch" />);
+      expect(screen.getByText("You're offline")).toBeInTheDocument();
+      expect(screen.getByText("Connect to load the videos.")).toBeInTheDocument();
+      expect(screen.queryByText("No videos yet")).toBeNull();
+    } finally {
+      online.mockRestore();
+    }
+  });
+
+  it("the Watch tab still says 'No videos yet' when online with nothing published", () => {
+    render(<ListenLibraryView library={lib()} videos={[]} initialTab="watch" />);
+    expect(screen.getByText("No videos yet")).toBeInTheDocument();
+    expect(screen.queryByText("You're offline")).toBeNull();
+  });
+
+  it("the Watch tab follows the browser going offline and back online", async () => {
+    render(<ListenLibraryView library={lib()} videos={[]} initialTab="watch" />);
+    const online = vi.spyOn(navigator, "onLine", "get");
+    try {
+      online.mockReturnValue(false);
+      await act(async () => {
+        window.dispatchEvent(new Event("offline"));
+      });
+      expect(screen.getByText("You're offline")).toBeInTheDocument();
+      online.mockReturnValue(true);
+      await act(async () => {
+        window.dispatchEvent(new Event("online"));
+      });
+      expect(screen.getByText("No videos yet")).toBeInTheDocument();
+    } finally {
+      online.mockRestore();
+    }
   });
 
   it("shows the existing error pattern with Try again when the videos fail to load, instead of hiding it", async () => {
