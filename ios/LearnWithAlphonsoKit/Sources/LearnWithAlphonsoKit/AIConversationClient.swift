@@ -342,7 +342,7 @@ public final class AIConversationClient: Sendable {
         return (200...299).contains(http.statusCode)
     }
 
-    /// GET /api/tutor-memory -- Pro only, checked on the server (403 reads as locked).
+    /// GET /api/tutor-memory -- open to every signed-in learner (a 403 from an older server still reads as locked).
     public func tutorMemory() async -> TutorMemoryLoad {
         guard let request = try? recapRequest("api/tutor-memory", method: "GET", body: nil),
               let (data, response) = try? await perform(request),

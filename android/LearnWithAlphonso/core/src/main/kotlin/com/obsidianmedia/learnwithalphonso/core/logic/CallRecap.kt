@@ -22,7 +22,7 @@ data class CallRecap(
     val phrase: Phrase?,
     /** Signed by the server; "Review these" sends it back. Null: the button is not shown. */
     val reviewToken: String?,
-    /** True when this recap was kept in What Alphonso remembers (a Pro learner). */
+    /** True when this recap was kept in What Alphonso remembers (every learner; false only if the save failed). */
     val saved: Boolean,
     val reviewCount: Int,
 ) {
@@ -73,7 +73,7 @@ data class CallRecap(
 private fun JsonObject.str(key: String): String? = this[key]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
 private fun JsonArray?.elements(): List<kotlinx.serialization.json.JsonElement> = this?.toList() ?: emptyList()
 
-/** What Alphonso remembers about a Pro learner, as the server listed it. */
+/** What Alphonso remembers about a learner (free for everyone), as the server listed it. */
 data class TutorMemory(val mistakes: List<Mistake>, val phrases: List<Phrase>, val goals: Goals) {
     data class Mistake(val id: String, val topic: String, val label: String, val seenCount: Int, val lastSeenAt: Instant) {
         /** "Seen in 4 calls, last 2 days ago". */

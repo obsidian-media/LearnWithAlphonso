@@ -30,7 +30,7 @@ object Routes {
     const val HELP = "help"
     /** The Help chat opened from a "a person replied" notification: it pops back to wherever the learner was. */
     const val HELP_REPLY = "help/reply"
-    /** What Alphonso remembers (Pro; the locked page for everyone else). */
+    /** What Alphonso remembers (free for every learner). */
     const val MEMORY = "memory"
     const val LEAGUE = "league"
     const val TEAMS = "teams"

@@ -578,7 +578,7 @@ struct TopicNotesSettingsCard: View {
 /// Builds the subscription screen for a sheet; the Practice hub supplies it, so the call screens never touch Pro rules.
 typealias UpgradeViewBuilder = (_ close: @escaping () -> Void) -> AnyView
 
-/// What Alphonso remembers as a sheet over a result screen: its "Try Alphonso Pro" opens the subscription screen.
+/// What Alphonso remembers as a sheet over a result screen: its locked page (only an older server answers locked) offers "Try Alphonso Pro".
 struct MemorySheetHost: View {
     let session: Session
     let course: Course

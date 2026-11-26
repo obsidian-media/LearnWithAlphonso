@@ -233,6 +233,26 @@ describe("season and challenge settlement (real Postgres, whole migration histor
       expect(await receipts(u)).toBe(3);
     });
 
+    it("is bounded: a run pays at most the cap per template and the next run finishes the rest", async () => {
+      const people = [await user(), await user(), await user()];
+      let prev = "";
+      for (const u of people) prev = await busyLastWeek(u, "en");
+      const first = await db.query<{ n: number }>(
+        "SELECT public._settle_challenge_week($1::date, 1) AS n",
+        [prev],
+      );
+      // 3 templates are drawn for a week, so one run pays at most 3 (one learner each).
+      expect(first.rows[0]!.n).toBeLessThanOrEqual(3);
+      let guard = 0;
+      while (guard++ < 20) {
+        const r = await db.query<{ n: number }>(
+          "SELECT public.settle_closed_weekly_challenges() AS n",
+        );
+        if (r.rows[0]!.n === 0) break;
+      }
+      for (const u of people) expect(await receipts(u)).toBe(3);
+    }, 60_000);
+
     it("writes no receipt when there is no row to pay, and pays once there is", async () => {
       const u = await user();
       const prev = await busyLastWeek(u, null);

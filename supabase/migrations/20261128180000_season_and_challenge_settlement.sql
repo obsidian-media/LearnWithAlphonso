@@ -19,8 +19,10 @@
 --      _pay_weekly_challenge(...)        locks the destination row first, then writes the receipt and the +100 together;
 --                                        no destination row means no receipt (so it is paid when one exists).
 --      get_weekly_challenges()           same result as before, paying through that function.
---      settle_closed_weekly_challenges() pays the eligible challenges of the last 3 finished weeks, for the sweep.
---                                        Progress is counted inside that week only. Idempotent (the receipt key).
+--      settle_closed_weekly_challenges() pays the eligible challenges of the LAST finished week, at most 500 learners per
+--                                        template per run (set-based; the sweep's request must stay under 30 s). The two
+--                                        weeks before it are backfilled once, in this migration. Progress is counted inside
+--                                        that week only. Idempotent (the receipt key).
 --
 -- All new functions are server-only (service_role); no table is added, so nothing new for the export or deletion.
 --
@@ -28,7 +30,7 @@
 -- (get_weekly_challenges), 20261105100800 (weekly_xp).
 --
 -- Rollback: DROP FUNCTION public.resolve_closed_season_cohorts(); DROP FUNCTION public.resolve_season_cohort(uuid);
---   DROP FUNCTION public.settle_closed_weekly_challenges(); re-apply get_weekly_challenges from
+--   DROP FUNCTION public.settle_closed_weekly_challenges(); DROP FUNCTION public._settle_challenge_week(date, integer); re-apply get_weekly_challenges from
 --   20261006170000_fix_team_joins_and_course_aware_payouts.sql; DROP FUNCTION public._pay_weekly_challenge(uuid, date, text, text).
 
 -- ---- seasons ----
@@ -196,7 +198,10 @@ $$;
 REVOKE ALL ON FUNCTION public.get_weekly_challenges() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_weekly_challenges() TO authenticated;
 
-CREATE FUNCTION public.settle_closed_weekly_challenges()
+-- One finished week. Set-based per template: only learners who reached the threshold and have no receipt yet, at most
+-- _cap of them per template per call, so a run stays far inside the 30 s the sweep's request allows however many
+-- learners there are (the rest are picked up by the next 15-minute run). Idempotent (the receipt key).
+CREATE FUNCTION public._settle_challenge_week(_week date, _cap integer)
 RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -204,57 +209,71 @@ SET search_path = ''
 SET timezone = 'UTC'
 AS $$
 DECLARE
-  cur date := (current_date - ((extract(isodow from current_date)::int) - 1));
-  w date;
   tpl record;
   u record;
-  progress integer;
   lang text;
   paid integer := 0;
 BEGIN
-  FOR w IN SELECT cur - 7 * g FROM generate_series(1, 3) g LOOP
-    FOR tpl IN
-      SELECT ct.id, ct.type, ct.threshold FROM public.challenge_templates ct
-       ORDER BY hashtext(ct.id || w::text) LIMIT 3
-    LOOP
-      FOR u IN
-        SELECT lc.user_id FROM public.lesson_completions lc WHERE lc.completed_at >= w AND lc.completed_at < w + 7
+  FOR tpl IN
+    SELECT ct.id, ct.type, ct.threshold FROM public.challenge_templates ct
+     ORDER BY hashtext(ct.id || _week::text) LIMIT 3
+  LOOP
+    FOR u IN
+      SELECT c.user_id FROM (
+        SELECT lc.user_id FROM public.lesson_completions lc WHERE lc.completed_at >= _week AND lc.completed_at < _week + 7
         UNION
-        SELECT ad.user_id FROM public.activity_days ad WHERE ad.day >= w AND ad.day < w + 7
-      LOOP
-        BEGIN
-          IF EXISTS (SELECT 1 FROM public.challenge_completions cc
-                      WHERE cc.user_id = u.user_id AND cc.week_start = w AND cc.template_id = tpl.id) THEN
-            CONTINUE;
-          END IF;
-          IF tpl.type = 'lesson_count' THEN
-            SELECT count(*) INTO progress FROM public.lesson_completions lc
-              WHERE lc.user_id = u.user_id AND lc.completed_at >= w AND lc.completed_at < w + 7;
-          ELSIF tpl.type = 'perfect_score_count' THEN
-            SELECT count(*) INTO progress FROM public.lesson_completions lc
-              WHERE lc.user_id = u.user_id AND lc.completed_at >= w AND lc.completed_at < w + 7 AND lc.correct = lc.total;
-          ELSE
-            SELECT count(DISTINCT ad.day) INTO progress FROM public.activity_days ad
-              WHERE ad.user_id = u.user_id AND ad.day >= w AND ad.day < w + 7;
-          END IF;
-          IF progress < tpl.threshold THEN CONTINUE; END IF;
-          -- Paid to the course the learner studied that week (else their latest).
+        SELECT ad.user_id FROM public.activity_days ad WHERE ad.day >= _week AND ad.day < _week + 7
+      ) c
+      WHERE NOT EXISTS (SELECT 1 FROM public.challenge_completions cc
+                         WHERE cc.user_id = c.user_id AND cc.week_start = _week AND cc.template_id = tpl.id)
+        AND (CASE tpl.type
+               WHEN 'lesson_count' THEN
+                 (SELECT count(*) FROM public.lesson_completions lc
+                   WHERE lc.user_id = c.user_id AND lc.completed_at >= _week AND lc.completed_at < _week + 7)
+               WHEN 'perfect_score_count' THEN
+                 (SELECT count(*) FROM public.lesson_completions lc
+                   WHERE lc.user_id = c.user_id AND lc.completed_at >= _week AND lc.completed_at < _week + 7
+                     AND lc.correct = lc.total)
+               ELSE
+                 (SELECT count(DISTINCT ad.day) FROM public.activity_days ad
+                   WHERE ad.user_id = c.user_id AND ad.day >= _week AND ad.day < _week + 7)
+             END) >= tpl.threshold
+      LIMIT _cap
+    LOOP
+      BEGIN
+        -- Paid to the course the learner studied that week (else their latest).
+        SELECT lc.language INTO lang FROM public.lesson_completions lc
+          WHERE lc.user_id = u.user_id AND lc.completed_at >= _week AND lc.completed_at < _week + 7
+          ORDER BY lc.completed_at DESC LIMIT 1;
+        IF lang IS NULL THEN
           SELECT lc.language INTO lang FROM public.lesson_completions lc
-            WHERE lc.user_id = u.user_id AND lc.completed_at >= w AND lc.completed_at < w + 7
-            ORDER BY lc.completed_at DESC LIMIT 1;
-          IF lang IS NULL THEN
-            SELECT lc.language INTO lang FROM public.lesson_completions lc
-              WHERE lc.user_id = u.user_id ORDER BY lc.completed_at DESC LIMIT 1;
-          END IF;
-          IF public._pay_weekly_challenge(u.user_id, w, tpl.id, lang) THEN paid := paid + 1; END IF;
-        EXCEPTION WHEN OTHERS THEN
-          RAISE WARNING 'settle_closed_weekly_challenges: % % failed: %', u.user_id, tpl.id, SQLERRM;
-        END;
-      END LOOP;
+            WHERE lc.user_id = u.user_id ORDER BY lc.completed_at DESC LIMIT 1;
+        END IF;
+        IF public._pay_weekly_challenge(u.user_id, _week, tpl.id, lang) THEN paid := paid + 1; END IF;
+      EXCEPTION WHEN OTHERS THEN
+        RAISE WARNING '_settle_challenge_week: % % failed: %', u.user_id, tpl.id, SQLERRM;
+      END;
     END LOOP;
   END LOOP;
   RETURN paid;
 END;
 $$;
+REVOKE ALL ON FUNCTION public._settle_challenge_week(date, integer) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public._settle_challenge_week(date, integer) TO service_role;
+
+-- The sweep's call: the LAST finished week only, at most 500 learners per template per run.
+CREATE FUNCTION public.settle_closed_weekly_challenges()
+RETURNS integer
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = ''
+SET timezone = 'UTC'
+AS $$
+  SELECT public._settle_challenge_week((current_date - ((extract(isodow from current_date)::int) - 1)) - 7, 500);
+$$;
 REVOKE ALL ON FUNCTION public.settle_closed_weekly_challenges() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.settle_closed_weekly_challenges() TO service_role;
+
+-- One-time backfill, run once here: the two weeks before the last finished one (the sweep covers that one).
+SELECT public._settle_challenge_week((current_date - ((extract(isodow from current_date)::int) - 1)) - 14, 5000);
+SELECT public._settle_challenge_week((current_date - ((extract(isodow from current_date)::int) - 1)) - 21, 5000);
