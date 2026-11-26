@@ -4,12 +4,17 @@ import { asTestFns, chainable, createSupabaseMock } from "./__testutils__/supaba
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
 vi.mock("@tanstack/react-start", () => ({
   createServerFn: () => {
+    let validator: ((d: unknown) => unknown) | undefined;
     const builder = {
       middleware: () => builder,
+      inputValidator: (v: (d: unknown) => unknown) => {
+        validator = v;
+        return builder;
+      },
       handler:
         (fn: (opts: { data: unknown; context: unknown }) => unknown) =>
         async (opts: { data?: unknown; context?: unknown } = {}) =>
-          fn({ data: opts.data, context: opts.context ?? {} }),
+          fn({ data: validator ? validator(opts.data) : opts.data, context: opts.context ?? {} }),
     };
     return builder;
   },
@@ -62,6 +67,20 @@ describe("getWeaknessTrend", () => {
         lastEventAt: "2026-09-03T00:00:00Z",
       },
     ]);
+  });
+
+  it("reads one course's events when asked, and every course when not", async () => {
+    const scoped = createSupabaseMock();
+    const scopedChain = chainable({ data: [] });
+    scoped.from.mockReturnValueOnce(scopedChain);
+    await getWeaknessTrend({ data: { course: "fr" }, context: ctx(scoped) });
+    expect(scopedChain.calls).toContainEqual({ method: "eq", args: ["course", "fr"] });
+
+    const all = createSupabaseMock();
+    const allChain = chainable({ data: [] });
+    all.from.mockReturnValueOnce(allChain);
+    await getWeaknessTrend({ context: ctx(all) });
+    expect(allChain.calls.some((c) => c.method === "eq" && c.args[0] === "course")).toBe(false);
   });
 
   it("scopes the read to the caller's own user id", async () => {

@@ -344,7 +344,7 @@ function HectorConversation({
     // Everything the greeting uses is best effort: without it Hector still says hello.
     void Promise.allSettled([
       progress,
-      getWeaknessTrend(),
+      getWeaknessTrend({ data: { course } }),
       supabase.auth.getSession(),
       isHectorAllowanceUsedUp(supabase),
       rememberedTopic(supabase, course),

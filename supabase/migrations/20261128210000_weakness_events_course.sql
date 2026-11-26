@@ -14,6 +14,22 @@ ALTER TABLE public.weakness_events
   ADD COLUMN course text NOT NULL DEFAULT 'en' CHECK (course IN ('en', 'fr', 'es'));
 CREATE INDEX weakness_events_user_course_idx ON public.weakness_events (user_id, course, created_at);
 
+-- Approximate backfill. An old event never recorded its course, so the DEFAULT above labels every old French or
+-- Spanish event 'en'. Where the learner's weakness review items (review_items.weakness_label) are all in exactly ONE
+-- language, that is the only course their events can have come from, so those events take that course. A learner
+-- whose weakness items span several languages (or who has none left, since a retired item is deleted) stays 'en':
+-- it cannot be told which course an event belonged to, and guessing would be worse than the default.
+UPDATE public.weakness_events e
+   SET course = s.language
+  FROM (
+    SELECT user_id, min(language) AS language
+      FROM public.review_items
+     WHERE weakness_label IS NOT NULL
+     GROUP BY user_id
+    HAVING count(DISTINCT language) = 1 AND min(language) IN ('en', 'fr', 'es')
+  ) s
+ WHERE e.user_id = s.user_id AND s.language <> 'en';
+
 CREATE OR REPLACE FUNCTION public.apply_review_grade(
   _user_id uuid,
   _item_key text,
@@ -81,7 +97,8 @@ BEGIN
     DELETE FROM public.review_items WHERE id = _row.id;
     IF _row.source = 'weakness' AND _row.weakness_label IS NOT NULL THEN
       INSERT INTO public.weakness_events (user_id, category, event_type, course)
-        VALUES (_user_id, _row.weakness_label, 'resolved', _row.language);
+        VALUES (_user_id, _row.weakness_label, 'resolved',
+          CASE WHEN _row.language IN ('en', 'fr', 'es') THEN _row.language ELSE 'en' END);
     END IF;
   ELSE
     UPDATE public.review_items SET
