@@ -12,6 +12,7 @@ import {
   type Recap,
   type Turn,
 } from "./call-recap";
+import { parseRehearsalMoments, type RunMoments } from "./rehearsal-run-memory";
 
 /**
  * The server half of the call recap: the one AI call, the signed hand-off to "Review these", the review rows, and
@@ -27,8 +28,10 @@ export async function generateCallRecap(args: {
   cefrLevel?: string;
   scene?: string;
   turns: Turn[];
+  /** A rehearsal call: the rehearsal's hard-moment labels, so the reply can also say which came up and went well. */
+  rehearsalLabels?: readonly string[];
   signal?: AbortSignal;
-}): Promise<Recap | null> {
+}): Promise<(Recap & { moments?: RunMoments }) | null> {
   try {
     const resp = await llmChatCompletion({
       apiKey: args.apiKey,
@@ -38,7 +41,7 @@ export async function generateCallRecap(args: {
         model: args.model,
         max_tokens: RECAP_MAX_TOKENS,
         messages: [
-          { role: "system", content: recapSystemPrompt(args.course) },
+          { role: "system", content: recapSystemPrompt(args.course, args.rehearsalLabels) },
           {
             role: "user",
             content: recapUserMessage({
@@ -56,8 +59,11 @@ export async function generateCallRecap(args: {
       return null;
     }
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
-    const recap = parseRecap(data.choices?.[0]?.message?.content ?? "", args.turns, args.course);
+    const content = data.choices?.[0]?.message?.content ?? "";
+    const recap = parseRecap(content, args.turns, args.course);
     if (!recap) console.error("[call-recap] reply was not usable JSON");
+    if (recap && args.rehearsalLabels)
+      return { ...recap, moments: parseRehearsalMoments(content, args.rehearsalLabels) };
     return recap;
   } catch (err) {
     console.error(`[call-recap] AI call failed: ${err instanceof Error ? err.name : "error"}`);

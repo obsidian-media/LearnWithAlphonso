@@ -203,7 +203,7 @@ export function recapStrings(r: Recap): string[] {
 
 const LANGUAGE: Record<Course, string> = { en: "English", fr: "French", es: "Spanish" };
 
-export function recapSystemPrompt(course: Course): string {
+export function recapSystemPrompt(course: Course, rehearsalLabels?: readonly string[]): string {
   const language = LANGUAGE[course];
   const topics = Object.keys(RECAP_TOPICS[course]).join(", ");
   return (
@@ -216,7 +216,13 @@ export function recapSystemPrompt(course: Course): string {
     `"wrong":["<wrong meaning>","<wrong meaning>","<wrong meaning>"]}}. ` +
     `At most 3 corrections, the most useful ones, each a different topic; copy "said" exactly from a learner turn. ` +
     `Use "corrections":[] when the learner made no mistake worth fixing and "phrase":null when there is no good phrase. ` +
-    `Never repeat names, places or any personal detail from the call.`
+    `Never repeat names, places or any personal detail from the call.` +
+    // A rehearsal call: which of the rehearsal's own hard moments came up, chosen from a closed list (never free text).
+    (rehearsalLabels && rehearsalLabels.length > 0
+      ? ` Also add "moments":{"shown":[...],"wentWell":[...]} to the JSON: "shown" lists the moments from this list that ` +
+        `came up in the call, "wentWell" those the learner handled well. Copy each entry exactly from this list and add nothing else: ` +
+        `${JSON.stringify(rehearsalLabels)}.`
+      : "")
   );
 }
 
