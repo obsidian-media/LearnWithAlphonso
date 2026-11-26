@@ -298,14 +298,21 @@ public final class AIConversationClient: Sendable {
     /// call, offline, the AI or its checks failing, consent off, over the limit), and the result screen then keeps its
     /// slip. Nothing is sent for a call under `CallRecap.minLearnerTurns` learner replies.
     public func callRecap(callId: String, transcript: [ChatMessage], cefrLevel: String? = nil, scene: String? = nil, timeout: TimeInterval = 10) async -> CallRecap? {
-        guard CallRecap.qualifies(transcript) else { return nil }
+        if case .got(let recap) = await callRecapAttempt(callId: callId, transcript: transcript, cefrLevel: cefrLevel, scene: scene, timeout: timeout) { return recap }
+        return nil
+    }
+
+    /// As `callRecap`, but tells a failure a second try may fix (offline, timeout, a 5xx, or the server's `retry`) from
+    /// "nothing to show" (a short call, consent off, over the limit), so the result screen can offer "Try again".
+    public func callRecapAttempt(callId: String, transcript: [ChatMessage], cefrLevel: String? = nil, scene: String? = nil, timeout: TimeInterval = 10) async -> CallRecapAttempt {
+        guard CallRecap.qualifies(transcript) else { return .empty }
         var payload: [String: Any] = [
             "callId": callId,
             "messages": transcript.map { ["role": $0.role, "content": $0.content] },
         ]
         if let cefrLevel { payload["cefrLevel"] = cefrLevel }
         if let scene { payload["scene"] = scene }
-        guard var request = try? recapRequest("api/call-recap", method: "POST", body: payload) else { return nil }
+        guard var request = try? recapRequest("api/call-recap", method: "POST", body: payload) else { return .empty }
         request.timeoutInterval = timeout
         // A total deadline: timeoutInterval only limits idle time, so a slow trickle could hold the recap up for minutes.
         let sent = request
@@ -320,9 +327,10 @@ public final class AIConversationClient: Sendable {
             group.cancelAll()
             return first
         }
-        guard let (data, response) = outcome,
-              let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else { return nil }
-        return CallRecap.parse(data)
+        guard let (data, response) = outcome, let http = response as? HTTPURLResponse else { return .retry }
+        guard (200...299).contains(http.statusCode) else { return http.statusCode >= 500 && http.statusCode != 503 ? .retry : .empty }
+        if let recap = CallRecap.parse(data) { return .got(recap) }
+        return CallRecap.retryRequested(data) ? .retry : .empty
     }
 
     /// POST /api/call-recap-review -- "Review these": the server adds the recap's items to the review queue from the

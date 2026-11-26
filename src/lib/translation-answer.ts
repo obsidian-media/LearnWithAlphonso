@@ -1,5 +1,34 @@
 import { normaliseSpoken } from "./spoken-answer";
 
+/** A letters-only stand-in for "ñ" that survives the spoken normaliser's accent fold and punctuation strip. */
+const ENYE = "xqenyeqx";
+
+/**
+ * Spanish words whose tilde-less spelling is itself a different real word (año/ano, uña/una, peña/pena, caña/cana,
+ * sueño/sueno, cuña/cuna, moño/mono, ceño/ceno, maña/mana, cañón/canon). Kept IN STEP in the Deno, Swift and Kotlin
+ * copies; the shared grading-parity cases fail when they drift. (The grader word list is not used: it drops words
+ * under five letters and is not available on the native apps.)
+ */
+const ENYE_TWINS = new Set([
+  "año",
+  "años",
+  "peña",
+  "peñas",
+  "caña",
+  "cañas",
+  "sueño",
+  "sueños",
+  "uña",
+  "uñas",
+  "cuña",
+  "cuñas",
+  "moño",
+  "moños",
+  "ceño",
+  "maña",
+  "cañón",
+]);
+
 /**
  * Comparing a learner's written translation against the curated phrasings a
  * question accepts.
@@ -17,7 +46,16 @@ import { normaliseSpoken } from "./spoken-answer";
  * changing its mind for no visible reason.
  */
 export function normaliseWritten(input: string): string {
-  return normaliseSpoken(input);
+  // The spoken normaliser folds every accent, so a missing tilde is a forgivable slip ("espanol" for "español": many
+  // keyboards have no enye). The one exception: a word whose tilde-less spelling is a DIFFERENT real word ("ano" for
+  // "año", "una" for "uña") keeps its enye through the fold, so the two never compare equal. Speech keeps its tolerance
+  // (spoken-answer-es.ts); this is the written side only.
+  const protectedInput = input
+    .normalize("NFC")
+    .replace(/\p{L}*[ñÑ]\p{L}*/gu, (word) =>
+      ENYE_TWINS.has(word.toLowerCase()) ? word.replace(/ñ/gi, ENYE) : word,
+    );
+  return normaliseSpoken(protectedInput).split(ENYE).join("ñ");
 }
 
 /**

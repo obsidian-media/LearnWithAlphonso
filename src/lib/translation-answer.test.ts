@@ -37,3 +37,31 @@ describe("matchesAcceptableAnswer", () => {
     expect(matchesAcceptableAnswer("anything at all", [])).toBe(false);
   });
 });
+
+describe("written Spanish: a missing tilde is a slip unless it makes a different real word", () => {
+  const ANO = ["Tengo un año."];
+  it("a dropped tilde is accepted when the tilde-less form is not a word", () => {
+    expect(matchesAcceptableAnswer("hablo espanol", ["Hablo español."])).toBe(true);
+    expect(matchesAcceptableAnswer("hasta manana", ["Hasta mañana."])).toBe(true);
+    expect(matchesAcceptableAnswer("donde esta el nino", ["¿Dónde está el niño?"])).toBe(true);
+  });
+  it("año is not ano, uña is not una, in either direction, but is año however it is typed", () => {
+    expect(matchesAcceptableAnswer("me duele la una", ["Me duele la uña."])).toBe(false);
+    expect(matchesAcceptableAnswer("vamos a la pena", ["Vamos a la peña."])).toBe(false);
+    expect(matchesAcceptableAnswer("tengo un ano", ANO)).toBe(false);
+    expect(matchesAcceptableAnswer("tengo un año", ANO)).toBe(true);
+    expect(matchesAcceptableAnswer("TENGO UN AÑO", ANO)).toBe(true);
+    expect(matchesAcceptableAnswer("Tengo un año.", ANO)).toBe(true);
+    expect(matchesAcceptableAnswer("Tengo un año.", ["Tengo un ano."])).toBe(false);
+  });
+  it("other accents and inverted marks still fold", () => {
+    expect(matchesAcceptableAnswer("donde esta el niño", ["¿Dónde está el niño?"])).toBe(true);
+    expect(matchesAcceptableAnswer("we meet at the cafe", ["We meet at the café."])).toBe(true);
+  });
+  it("normaliseWritten keeps the enye only on a twin word, and the spoken normaliser always folds it", async () => {
+    expect(normaliseWritten("¡El Niño!")).toBe("el nino");
+    expect(normaliseWritten("Un AÑO")).toBe("un año");
+    const { normaliseSpoken } = await import("./spoken-answer");
+    expect(normaliseSpoken("año")).toBe("ano");
+  });
+});

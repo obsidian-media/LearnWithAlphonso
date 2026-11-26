@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   bucketForEpisode,
   DRAFT_AUDIO_BUCKET,
@@ -241,5 +241,83 @@ describe("wiring of the writers", () => {
     );
     expect(sql).toMatch(/'podcast-audio-drafts', 'podcast-audio-drafts', false/);
     expect(sql).not.toMatch(/CREATE POLICY/i);
+  });
+});
+
+describe("a failed publish whose rollback also fails (a draft left public)", () => {
+  it("is reported loudly: operator cleanup_failed with the path, the original cause, and the hook is called", async () => {
+    const { storage, buckets } = fakeStorage(
+      { [DRAFT_AUDIO_BUCKET]: [PATH] },
+      { failRemoveIn: PUBLIC_AUDIO_BUCKET },
+    );
+    const reported: { bucket: string; paths: string[]; message: string }[] = [];
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const run = moveAudioForPublishState({
+        storage,
+        path: PATH,
+        publish: true,
+        flip: async () => {
+          throw new Error("db down");
+        },
+        onCleanupFailed: (f) => {
+          reported.push(f);
+        },
+      });
+      await expect(run).rejects.toThrow(
+        /operator: cleanup_failed podcast-audio\/en\/a1\/ordering-coffee\.mp3/,
+      );
+      await expect(run).rejects.toThrow(/db down/);
+      expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain(
+        "publish_cleanup_failed",
+      );
+    } finally {
+      err.mockRestore();
+    }
+    // The draft really is still public: the error is the only thing standing between it and nobody noticing.
+    expect(buckets[PUBLIC_AUDIO_BUCKET].has(PATH)).toBe(true);
+    expect(reported).toEqual([{ bucket: PUBLIC_AUDIO_BUCKET, paths: [PATH], message: "boom" }]);
+  });
+
+  it("a rollback that works still rethrows the flip error alone and reports nothing", async () => {
+    const { storage } = fakeStorage({ [DRAFT_AUDIO_BUCKET]: [PATH] });
+    const onCleanupFailed = vi.fn();
+    await expect(
+      moveAudioForPublishState({
+        storage,
+        path: PATH,
+        publish: true,
+        flip: async () => {
+          throw new Error("db down");
+        },
+        onCleanupFailed,
+      }),
+    ).rejects.toThrow(/^db down$/);
+    expect(onCleanupFailed).not.toHaveBeenCalled();
+  });
+
+  it("a hook that throws cannot hide the cleanup_failed error", async () => {
+    const { storage } = fakeStorage(
+      { [DRAFT_AUDIO_BUCKET]: [PATH] },
+      { failRemoveIn: PUBLIC_AUDIO_BUCKET },
+    );
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await expect(
+        moveAudioForPublishState({
+          storage,
+          path: PATH,
+          publish: true,
+          flip: async () => {
+            throw new Error("db down");
+          },
+          onCleanupFailed: () => {
+            throw new Error("ops down");
+          },
+        }),
+      ).rejects.toThrow(/operator: cleanup_failed/);
+    } finally {
+      err.mockRestore();
+    }
   });
 });

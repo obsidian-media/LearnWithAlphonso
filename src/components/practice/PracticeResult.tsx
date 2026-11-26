@@ -7,7 +7,7 @@ import type { PracticeResult as Result } from "@/lib/practice-api";
 import { MAX_STARS } from "@/lib/practice-stars";
 import { practiceResultButtons, repliesMeter } from "@/lib/practice-result-buttons";
 import type { RecapController } from "@/lib/use-call-recap";
-import { RecapCard, RecapSkeleton } from "./RecapCard";
+import { RecapCard, RecapRetry, RecapSkeleton } from "./RecapCard";
 
 /**
  * After the call (mock-up screen 5): the verdict in the same room. The stars are the server's, for this call; the
@@ -162,7 +162,8 @@ export function PracticeResult({
         </dl>
         {recap?.status === "pending" && <RecapSkeleton />}
         {recap?.status === "ready" && <RecapCard ctl={recap} lang={course} />}
-        {slip && (recap?.status ?? "off") === "off" && (
+        {recap?.status === "failed" && <RecapRetry ctl={recap} />}
+        {slip && ((recap?.status ?? "off") === "off" || recap?.status === "failed") && (
           <div
             data-slip=""
             className="rounded-[14px] border-2 border-ds-line bg-ds-card px-3 py-2 text-left"

@@ -16,6 +16,9 @@ export const OPS_EVENT_THRESHOLDS: Record<string, OpsThreshold> = {
   lesson_result_finalize_failed: { amberAt: 1, redAt: 5, alertPerHour: 3 },
   // RevenueCat did not answer and no stored answer was usable: hearts were not charged. Noisy during an outage.
   hearts_settlement_shadow_pro_unknown: { amberAt: 10, redAt: 100, alertPerHour: 50 },
+  // A publish failed and the draft's public copy could not be removed again: a private draft is publicly reachable.
+  // One is already one too many.
+  publish_cleanup_failed: { amberAt: 1, redAt: 1, alertPerHour: 1 },
   hearts_settlement_shadow_stale_pro: { amberAt: 10, redAt: 100, alertPerHour: 50 },
 };
 
@@ -27,6 +30,7 @@ export const OPS_EVENT_LABELS: Record<string, string> = {
   hearts_settlement_failed: "Hearts settlement",
   lesson_result_finalize_failed: "Lesson result saving",
   hearts_settlement_shadow_pro_unknown: "Pro check at settlement",
+  publish_cleanup_failed: "Draft left public after a failed publish",
   hearts_settlement_shadow_stale_pro: "Stale Pro answer at settlement",
 };
 

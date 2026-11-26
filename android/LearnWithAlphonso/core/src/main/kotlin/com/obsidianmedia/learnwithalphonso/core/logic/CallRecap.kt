@@ -37,6 +37,12 @@ data class CallRecap(
 
         private val json = Json { ignoreUnknownKeys = true }
 
+        /** True when the server says the attempt failed and the call is not used up (`"retry": true`): the screen offers "Try again". */
+        fun retryRequested(text: String): Boolean {
+            val root = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull() ?: return false
+            return runCatching { root["retry"]?.jsonPrimitive?.booleanOrNull }.getOrNull() == true
+        }
+
         /** The answer of /api/call-recap. Null for `{"recap": null}`, an empty recap or anything malformed. */
         fun parse(text: String): CallRecap? {
             val root = runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull() ?: return null

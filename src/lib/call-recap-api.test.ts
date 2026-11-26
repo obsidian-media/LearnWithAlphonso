@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./auth-headers", () => ({ authHeaders: async () => ({ Authorization: "Bearer t" }) }));
-const { callQualifiesForRecap, fetchCallRecap } = await import("./call-recap-api");
+const { callQualifiesForRecap, fetchCallRecap, fetchCallRecapAttempt } =
+  await import("./call-recap-api");
 
 const call = (n: number) =>
   Array.from({ length: n }, (_, i) => ({ role: "user" as const, content: `u${i}` })).flatMap(
@@ -53,5 +54,35 @@ describe("when the web sends a call for a recap", () => {
     ],
   ])("%s hides the recap (null), never throws", async (_n, f) => {
     expect(await fetchCallRecap({ callId: CALL, messages: call(3), fetchImpl: f })).toBeNull();
+  });
+});
+
+describe("when a recap attempt fails the screen can offer Try again", () => {
+  const attempt = (f: typeof fetch) =>
+    fetchCallRecapAttempt({ callId: CALL, messages: call(3), fetchImpl: f });
+  it("the server's retry flag, a server error and being offline are retryable", async () => {
+    expect(
+      await attempt((async () => Response.json({ recap: null, retry: true })) as never),
+    ).toEqual({ recap: null, retry: true });
+    expect(await attempt((async () => new Response("{}", { status: 502 })) as never)).toEqual({
+      recap: null,
+      retry: true,
+    });
+    expect(
+      await attempt((async () => {
+        throw new TypeError("offline");
+      }) as never),
+    ).toEqual({ recap: null, retry: true });
+  });
+  it("nothing to say, consent off and over the limit are not retryable", async () => {
+    expect(await attempt(ok(null))).toEqual({ recap: null, retry: false });
+    expect(await attempt((async () => new Response("{}", { status: 403 })) as never)).toEqual({
+      recap: null,
+      retry: false,
+    });
+    expect(await attempt((async () => new Response("{}", { status: 429 })) as never)).toEqual({
+      recap: null,
+      retry: false,
+    });
   });
 });

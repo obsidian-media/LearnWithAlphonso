@@ -8,6 +8,8 @@ const h = vi.hoisted(() => ({
   rpcs: [] as { fn: string; args: Record<string, unknown> }[],
   callRow: null as unknown,
   claim: true,
+  claimError: false,
+  finishError: false,
   blocked: [] as boolean[],
 }));
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest: h.authorize }));
@@ -34,7 +36,14 @@ vi.mock("@/integrations/supabase/client.server", () => ({
     },
     rpc: async (fn: string, args: Record<string, unknown>) => {
       h.rpcs.push({ fn, args });
-      if (fn === "claim_call_recap") return { data: h.claim, error: null };
+      if (fn === "claim_call_recap")
+        return h.claimError
+          ? { data: null, error: { message: "boom" } }
+          : { data: h.claim, error: null };
+      if (fn === "finish_call_recap")
+        return h.finishError
+          ? { data: null, error: { message: "boom" } }
+          : { data: 1, error: null };
       return { data: 1, error: null };
     },
   },
@@ -78,6 +87,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   h.rpcs = [];
   h.claim = true;
+  h.claimError = false;
+  h.finishError = false;
   h.blocked = [];
   h.callRow = { course: "es", finished_at: "2026-11-16T10:00:00Z", recap_at: null };
   h.authorize.mockResolvedValue({ ok: true, userId: "u1", supabase: {} });
@@ -111,11 +122,14 @@ describe("hidden states: every one is a 200 with no recap, and spends nothing it
     expect(await (await call({ callId: CALL, messages: msgs })).json()).toEqual({ recap: null });
     expect(h.generate).not.toHaveBeenCalled();
   });
-  it("an AI failure or an empty recap", async () => {
-    h.generate.mockResolvedValue(null);
-    expect(await (await call({ callId: CALL, messages: msgs })).json()).toEqual({ recap: null });
+  it("an empty recap completes the call with nothing written and shows nothing", async () => {
     h.generate.mockResolvedValue({ corrections: [], phrase: null });
     expect(await (await call({ callId: CALL, messages: msgs })).json()).toEqual({ recap: null });
+    expect(h.rpcs.find((r) => r.fn === "finish_call_recap")!.args).toMatchObject({
+      _topics: [],
+      _mistakes: [],
+    });
+    expect(h.rpcs.some((r) => r.fn === "release_call_recap")).toBe(false);
   });
   it("everything the blocked-term check flags is dropped", async () => {
     h.blocked = [true, true];
@@ -134,6 +148,64 @@ describe("hidden states: every one is a 200 with no recap, and spends nothing it
     });
     expect((await call({ callId: CALL, messages: msgs })).status).toBe(403);
     expect(h.generate).not.toHaveBeenCalled();
+  });
+});
+
+describe("a failed attempt does not consume the call", () => {
+  const fns = () => h.rpcs.map((r) => r.fn);
+  it("a model failure releases the claim, never completes, and answers retry", async () => {
+    h.generate.mockResolvedValue(null);
+    expect(await (await call({ callId: CALL, messages: msgs })).json()).toEqual({
+      recap: null,
+      retry: true,
+    });
+    expect(fns()).toEqual(["claim_call_recap", "release_call_recap"]);
+  });
+  it("a thrown error after the claim releases it too", async () => {
+    h.generate.mockRejectedValue(new Error("network"));
+    expect(await (await call({ callId: CALL, messages: msgs })).json()).toEqual({
+      recap: null,
+      retry: true,
+    });
+    expect(fns()).toContain("release_call_recap");
+    expect(fns()).not.toContain("finish_call_recap");
+  });
+  it("a failed memory write releases the claim and answers retry, with no recap shown", async () => {
+    h.finishError = true;
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await (await call({ callId: CALL, messages: msgs })).json()).toEqual({
+        recap: null,
+        retry: true,
+      });
+    } finally {
+      err.mockRestore();
+    }
+    expect(fns()).toEqual(["claim_call_recap", "finish_call_recap", "release_call_recap"]);
+  });
+  it("a failed claim call answers retry; a claim held elsewhere does not", async () => {
+    h.claimError = true;
+    expect(await (await call({ callId: CALL, messages: msgs })).json()).toEqual({
+      recap: null,
+      retry: true,
+    });
+    h.claimError = false;
+    h.claim = false;
+    expect(await (await call({ callId: CALL, messages: msgs })).json()).toEqual({ recap: null });
+    expect(fns()).not.toContain("release_call_recap");
+  });
+  it("a retry after a failure succeeds and completes exactly once", async () => {
+    h.generate.mockResolvedValueOnce(null);
+    await call({ callId: CALL, messages: msgs });
+    const second = (await (await call({ callId: CALL, messages: msgs })).json()) as {
+      recap: { reviewCount: number };
+    };
+    expect(second.recap.reviewCount).toBe(2);
+    expect(fns().filter((f) => f === "finish_call_recap")).toHaveLength(1);
+  });
+  it("a successful recap does not release the claim", async () => {
+    await call({ callId: CALL, messages: msgs });
+    expect(fns()).toEqual(["claim_call_recap", "finish_call_recap"]);
   });
 });
 
@@ -180,7 +252,7 @@ describe("the recap", () => {
 });
 
 describe("Pro gating is decided on the server", () => {
-  const memoryCall = () => h.rpcs.find((r) => r.fn === "remember_call_recap")!;
+  const memoryCall = () => h.rpcs.find((r) => r.fn === "finish_call_recap")!;
   it("a free learner: events recorded, memory NOT saved", async () => {
     h.pro.mockResolvedValue("inactive");
     await call({ callId: CALL, messages: msgs, pro: true });

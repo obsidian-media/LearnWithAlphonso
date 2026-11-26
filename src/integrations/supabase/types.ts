@@ -1751,6 +1751,7 @@ export type Database = {
           kind: string;
           last_reply_at: string;
           recap_at: string | null;
+          recap_claimed_at: string | null;
           replies: number;
           right_replies: number;
           short_replies: number;
@@ -1767,6 +1768,7 @@ export type Database = {
           kind: string;
           last_reply_at?: string;
           recap_at?: string | null;
+          recap_claimed_at?: string | null;
           replies?: number;
           right_replies?: number;
           short_replies?: number;
@@ -1783,6 +1785,7 @@ export type Database = {
           kind?: string;
           last_reply_at?: string;
           recap_at?: string | null;
+          recap_claimed_at?: string | null;
           replies?: number;
           right_replies?: number;
           short_replies?: number;
@@ -3674,6 +3677,17 @@ export type Database = {
         Args: { _path: Json; _story_id: string; _user_id: string };
         Returns: Json;
       };
+      finish_call_recap: {
+        Args: {
+          _call_id: string;
+          _course: string;
+          _mistakes: Json;
+          _save: boolean;
+          _topics: string[];
+          _user_id: string;
+        };
+        Returns: number;
+      };
       finish_practice_call: {
         Args: { _call_id: string; _replies: number; _stars: number; _user_id: string };
         Returns: {
@@ -4003,6 +4017,7 @@ export type Database = {
         Returns: string;
       };
       release_ai_cost_alert_day: { Args: { p_day: string }; Returns: undefined };
+      release_call_recap: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
       release_lesson_completion_slot: {
         Args: { _at: string; _user_id: string };
         Returns: undefined;

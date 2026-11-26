@@ -131,8 +131,19 @@ class AiConversationClient(private val http: ApiHttp) {
      * offline, the AI or its checks failing, consent off, over the limit), and the result screen then keeps its slip.
      * Nothing is sent for a call under [CallRecap.MIN_LEARNER_TURNS] learner replies.
      */
-    suspend fun callRecap(callId: String, transcript: List<ChatMessage>, cefrLevel: String? = null, scene: String? = null): CallRecap? {
-        if (!CallRecap.qualifies(transcript.map { it.role })) return null
+    suspend fun callRecap(callId: String, transcript: List<ChatMessage>, cefrLevel: String? = null, scene: String? = null): CallRecap? =
+        (callRecapAttempt(callId, transcript, cefrLevel, scene) as? RecapAttempt.Got)?.recap
+
+    /** One attempt's outcome: a recap, nothing to show, or a failure a second try may fix (the screen offers "Try again"). */
+    sealed interface RecapAttempt {
+        data class Got(val recap: CallRecap) : RecapAttempt
+        data object Empty : RecapAttempt
+        data object Retry : RecapAttempt
+    }
+
+    /** As [callRecap], but tells a retryable failure (offline, timeout, a 5xx, or the server's `retry`) from "nothing to show". */
+    suspend fun callRecapAttempt(callId: String, transcript: List<ChatMessage>, cefrLevel: String? = null, scene: String? = null): RecapAttempt {
+        if (!CallRecap.qualifies(transcript.map { it.role })) return RecapAttempt.Empty
         val body = buildJsonObject {
             put("callId", callId)
             putJsonArray("messages") { transcript.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
@@ -141,8 +152,15 @@ class AiConversationClient(private val http: ApiHttp) {
         }
         return runCatching {
             val response = http.post("api/call-recap", body, timeoutMillis = RECAP_TIMEOUT_MS)
-            if (response.status.value !in 200..299) null else CallRecap.parse(response.bodyAsText())
-        }.getOrNull()
+            val code = response.status.value
+            if (code !in 200..299) {
+                if (code >= 500 && code != 503) RecapAttempt.Retry else RecapAttempt.Empty
+            } else {
+                val text = response.bodyAsText()
+                CallRecap.parse(text)?.let { RecapAttempt.Got(it) }
+                    ?: if (CallRecap.retryRequested(text)) RecapAttempt.Retry else RecapAttempt.Empty
+            }
+        }.getOrElse { RecapAttempt.Retry }
     }
 
     /** POST /api/call-recap-review: "Review these". The server adds the recap's items from the signed recap it wrote. */

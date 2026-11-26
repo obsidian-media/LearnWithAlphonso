@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const refreshSession = vi.fn();
@@ -9,6 +10,7 @@ beforeEach(() => {
   vi.resetModules();
   refreshSession.mockReset();
   saveOnServer.mockReset();
+  localStorage.clear();
 });
 
 async function load() {
@@ -64,5 +66,59 @@ describe("saveLearnerProfile (browser)", () => {
     );
     expect(refreshSession).not.toHaveBeenCalled();
     expect(completeProfileSkippedThisVisit()).toBe(false);
+  });
+});
+
+describe("Not now on Complete your profile", () => {
+  it("a failed server write is remembered on this device and held for the visit, never lost", async () => {
+    const { dismissCompleteProfile, completeProfileSkippedThisVisit, hasPendingDismissal } =
+      await load();
+    saveOnServer.mockRejectedValue(new Error("offline"));
+    await expect(dismissCompleteProfile("u1")).resolves.toBe(false);
+    expect(hasPendingDismissal("u1")).toBe(true);
+    expect(completeProfileSkippedThisVisit()).toBe(true);
+    expect(hasPendingDismissal("u2")).toBe(false);
+  });
+
+  it("a successful write leaves nothing pending", async () => {
+    const { dismissCompleteProfile, hasPendingDismissal } = await load();
+    saveOnServer.mockResolvedValue({ dismissedAt: "2026-11-26T00:00:00Z" });
+    refreshSession.mockResolvedValue({ data: {}, error: null });
+    await expect(dismissCompleteProfile("u1")).resolves.toBe(true);
+    expect(saveOnServer).toHaveBeenCalledWith({ data: { patch: {}, mark: "dismissed" } });
+    expect(hasPendingDismissal("u1")).toBe(false);
+  });
+
+  it("a later visit retries the write and clears it only once the server has it", async () => {
+    const { dismissCompleteProfile, retryPendingDismissal, hasPendingDismissal } = await load();
+    saveOnServer.mockRejectedValue(new Error("offline"));
+    await dismissCompleteProfile("u1");
+    await expect(retryPendingDismissal("u1")).resolves.toBe(false);
+    expect(hasPendingDismissal("u1")).toBe(true);
+    saveOnServer.mockResolvedValue({ dismissedAt: "2026-11-26T00:00:00Z" });
+    await expect(retryPendingDismissal("u1")).resolves.toBe(true);
+    expect(hasPendingDismissal("u1")).toBe(false);
+  });
+
+  it("sends nothing when nothing is pending", async () => {
+    const { retryPendingDismissal } = await load();
+    await expect(retryPendingDismissal("u1")).resolves.toBe(true);
+    expect(saveOnServer).not.toHaveBeenCalled();
+  });
+
+  it("pending dismissals are per account and survive a corrupt value", async () => {
+    const {
+      rememberPendingDismissal,
+      hasPendingDismissal,
+      clearPendingDismissal,
+      PENDING_DISMISSAL_KEY,
+    } = await load();
+    rememberPendingDismissal("a");
+    rememberPendingDismissal("b");
+    clearPendingDismissal("a");
+    expect(hasPendingDismissal("a")).toBe(false);
+    expect(hasPendingDismissal("b")).toBe(true);
+    localStorage.setItem(PENDING_DISMISSAL_KEY, "{not json");
+    expect(hasPendingDismissal("b")).toBe(false);
   });
 });

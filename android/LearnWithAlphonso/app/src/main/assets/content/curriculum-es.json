@@ -12516,7 +12516,7 @@
             {
               "id": "esa1p28q13",
               "type": "mc",
-              "prompt": "La tela de este saco es muy ___ y áspera. (coarse)",
+              "prompt": "El tejido de este saco es muy ___ y áspero. (coarse)",
               "choices": [
                 "justo",
                 "vasto",
@@ -12526,7 +12526,7 @@
               "answer": 2,
               "explanation": "\"basto\" is the spelling that means coarse here. It is easy to mix up with \"vasto\", a different word, so the meaning decides the spelling.",
               "meaning": "coarse",
-              "example": "La tela de este saco es muy basto y áspera."
+              "example": "El tejido de este saco es muy basto y áspero."
             },
             {
               "id": "esa1p28q14",

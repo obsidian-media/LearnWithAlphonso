@@ -14,6 +14,11 @@ const MIGRATION = readFileSync(
   "utf8",
 );
 
+const RETRY_MIGRATION = readFileSync(
+  path.join(process.cwd(), "supabase/migrations/20261128170000_call_recap_retryable_claim.sql"),
+  "utf8",
+);
+
 const A = "00000000-0000-4000-8000-0000000000a1";
 const B = "00000000-0000-4000-8000-0000000000b2";
 const CALL = "00000000-0000-4000-8000-0000000000c1";
@@ -45,6 +50,7 @@ beforeAll(async () => {
     INSERT INTO public.practice_calls VALUES ('${CALL}', '${A}', now()), ('${CALL2}', '${A}', NULL);
   `);
   await db.exec(MIGRATION);
+  await db.exec(RETRY_MIGRATION);
 }, 120_000);
 afterAll(async () => {
   await db.close();
@@ -362,5 +368,81 @@ describe("the recap quota kind", () => {
       expect(q).toBe(limit);
       expect(DAILY_LIMITS[kind as keyof typeof DAILY_LIMITS]).toBe(limit);
     }
+  });
+});
+
+describe("a failed recap attempt does not consume the call (20261128170000)", () => {
+  const CALL3 = "00000000-0000-4000-8000-0000000000c3";
+  const CALL4 = "00000000-0000-4000-8000-0000000000c4";
+  const q = async (sql: string) => (await server(() => db.query<{ r: unknown }>(sql))).rows[0]!.r;
+  const claim = (id = CALL3) => q(`SELECT public.claim_call_recap('${A}', '${id}') r`);
+  const finish = (topics: string[]) =>
+    server(
+      async () =>
+        (
+          await db.query<{ r: number }>(
+            `SELECT public.finish_call_recap('${A}', 'es', '${CALL3}', $1::text[], $2::jsonb, true) r`,
+            [`{${topics.join(",")}}`, mistakes(...topics)],
+          )
+        ).rows[0]!.r,
+    );
+  const completed = (id: string) =>
+    n(
+      `SELECT count(*)::text n FROM public.practice_calls WHERE id = '${id}' AND recap_at IS NOT NULL`,
+    );
+  const events = (cat: string) =>
+    n(
+      `SELECT count(*)::text n FROM public.weakness_events WHERE user_id = '${A}' AND category = '${cat}'`,
+    );
+
+  it("an open claim blocks a second, a release re-opens it, and an expired lease re-opens it", async () => {
+    await db.exec(
+      `INSERT INTO public.practice_calls (id, user_id, finished_at) VALUES ('${CALL3}', '${A}', now()), ('${CALL4}', '${A}', now())`,
+    );
+    expect(await claim()).toBe(true);
+    expect(await claim()).toBe(false); // lease still held
+    await server(() => db.query(`SELECT public.release_call_recap('${A}', '${CALL3}')`));
+    expect(await claim()).toBe(true); // released: a retry may go
+    await db.exec(
+      `UPDATE public.practice_calls SET recap_claimed_at = now() - interval '3 minutes' WHERE id = '${CALL3}'`,
+    );
+    expect(await claim()).toBe(true); // lease ran out
+    expect(await completed(CALL3)).toBe(0); // claiming never marks it completed
+  });
+
+  it("only finish_call_recap completes the call, once, and writes the memory in the same step", async () => {
+    expect(await finish(["tiempo"])).toBe(1);
+    expect(await completed(CALL3)).toBe(1);
+    expect(await events("tiempo")).toBe(1);
+    // A second finish (a retry, another device) writes nothing and says so.
+    expect(await finish(["tiempo"])).toBe(-1);
+    expect(await events("tiempo")).toBe(1);
+    // Once completed, neither claim nor release touches it.
+    expect(await claim()).toBe(false);
+    expect(await q(`SELECT public.release_call_recap('${A}', '${CALL3}') r`)).toBe(false);
+  });
+
+  it("a finish that fails part-way rolls back, so the call stays retryable", async () => {
+    await expect(
+      server(() =>
+        db.query(
+          `SELECT public.finish_call_recap('${A}', 'es', '${CALL4}', '{x}'::text[], '[{"topic":"x"}]'::jsonb, true)`,
+        ),
+      ),
+    ).rejects.toThrow(); // tutor_memory.text is NOT NULL: the memory write fails after the event insert
+    expect(await completed(CALL4)).toBe(0);
+    expect(await events("x")).toBe(0);
+    expect(await claim(CALL4)).toBe(true);
+  });
+
+  it("is not callable by a signed-in learner", async () => {
+    await expect(
+      asUser(A, () => db.query(`SELECT public.release_call_recap('${A}', '${CALL3}')`)),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      asUser(A, () =>
+        db.query(`SELECT public.finish_call_recap('${A}', 'es', '${CALL3}', '{}', '[]', false)`),
+      ),
+    ).rejects.toThrow(/permission denied/);
   });
 });

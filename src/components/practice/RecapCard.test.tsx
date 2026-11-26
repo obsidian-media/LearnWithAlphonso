@@ -41,6 +41,7 @@ const ctl = (over: Partial<RecapController>): RecapController => ({
   status: "ready",
   recap: recapData,
   review: "idle",
+  onRetry: vi.fn(),
   onReview: vi.fn(),
   speaking: null,
   onSpeak: vi.fn(),
@@ -83,6 +84,14 @@ describe("the recap takes the slip's slot and gives it back", () => {
     const { container } = show(c);
     expect(container.querySelector("[data-recap]")).toBeNull();
     expect(container.querySelector("[data-slip]")).not.toBeNull();
+  });
+  it("failed: a Try again card shows beside the slip, and tapping it asks again", () => {
+    const c = ctl({ status: "failed", recap: null });
+    const { container } = show(c);
+    expect(container.querySelector("[data-recap=failed]")).not.toBeNull();
+    expect(container.querySelector("[data-slip]")).not.toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(c.onRetry).toHaveBeenCalledTimes(1);
   });
   it("no 'saved' line for a free learner", () => {
     show(ctl({ recap: { ...recapData, saved: false } }));

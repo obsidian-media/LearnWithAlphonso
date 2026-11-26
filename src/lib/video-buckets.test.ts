@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   bucketForVideo,
   DRAFT_VIDEO_BUCKET,
@@ -220,5 +220,68 @@ describe("scripts/video-tool.ts", () => {
 
   it("publishes and unpublishes through the move, not by flipping the flag alone", () => {
     expect(tool).toContain("moveVideoForPublishState");
+  });
+});
+
+describe("a failed publish whose rollback also fails (a draft left public)", () => {
+  it("is reported loudly: operator cleanup_failed with every path left behind, and the hook is called", async () => {
+    const { storage, buckets } = fakeStorage(
+      { [DRAFT_VIDEO_BUCKET]: PATHS },
+      { failRemoveIn: PUBLIC_VIDEO_BUCKET },
+    );
+    const reported: { bucket: string; paths: string[]; message: string }[] = [];
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const run = moveVideoForPublishState({
+        storage,
+        paths: PATHS,
+        publish: true,
+        flip: async () => {
+          throw new Error("db down");
+        },
+        onCleanupFailed: (f) => {
+          reported.push(f);
+        },
+      });
+      await expect(run).rejects.toThrow(/operator: cleanup_failed videos\/en\/x\.mp4/);
+      await expect(run).rejects.toThrow(/videos\/en\/x\.en\.vtt/);
+      await expect(run).rejects.toThrow(/db down/);
+    } finally {
+      err.mockRestore();
+    }
+    expect([...buckets[PUBLIC_VIDEO_BUCKET].keys()].sort()).toEqual([...PATHS].sort());
+    expect(reported).toEqual([{ bucket: PUBLIC_VIDEO_BUCKET, paths: PATHS, message: "boom" }]);
+  });
+
+  it("a copy that fails part-way and cannot be undone is reported the same way", async () => {
+    const { storage } = fakeStorage(
+      { [DRAFT_VIDEO_BUCKET]: PATHS },
+      { failRemoveIn: PUBLIC_VIDEO_BUCKET, failUploadOf: "en/x.en.vtt" },
+    );
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await expect(
+        moveVideoForPublishState({ storage, paths: PATHS, publish: true, flip: async () => {} }),
+      ).rejects.toThrow(/operator: cleanup_failed videos\/en\/x\.mp4, videos\/en\/x\.jpg/);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("a rollback that works still rethrows the original error alone and reports nothing", async () => {
+    const { storage } = fakeStorage({ [DRAFT_VIDEO_BUCKET]: PATHS });
+    const onCleanupFailed = vi.fn();
+    await expect(
+      moveVideoForPublishState({
+        storage,
+        paths: PATHS,
+        publish: true,
+        flip: async () => {
+          throw new Error("db down");
+        },
+        onCleanupFailed,
+      }),
+    ).rejects.toThrow(/^db down$/);
+    expect(onCleanupFailed).not.toHaveBeenCalled();
   });
 });

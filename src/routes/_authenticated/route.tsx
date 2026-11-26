@@ -8,7 +8,12 @@ import { OfflineScreen } from "@/components/OfflineScreen";
 import { NamePrompt } from "@/components/NamePrompt";
 import { ReferralClaim } from "@/components/ReferralBridge";
 import { AiConsentProvider } from "@/lib/ai-consent-context";
-import { browserFirstRunStore, completeProfileSkippedThisVisit } from "@/lib/first-run";
+import {
+  browserFirstRunStore,
+  completeProfileSkippedThisVisit,
+  hasPendingDismissal,
+} from "@/lib/first-run";
+import { retryPendingDismissal } from "@/lib/learner-profile-save";
 import {
   LEARNER_PROFILE_KEY,
   needsCompleteProfile,
@@ -68,9 +73,13 @@ export const Route = createFileRoute("/_authenticated")({
     }
     // Learners who signed up before the first run existed see it once, as "Complete your profile". Only from the
     // home screen, so a deep link (a lesson, an invite) is never hijacked.
+    // A Not now whose server write failed earlier is finished in the background and still counts as said.
+    const dismissalPending = hasPendingDismissal(user.id);
+    if (dismissalPending) void retryPendingDismissal(user.id);
     if (
       location?.pathname === "/learn" &&
       !completeProfileSkippedThisVisit() &&
+      !dismissalPending &&
       profileNeeded(user) &&
       // The session's copy of the metadata can be stale: the profile is saved server-side (admin API), maybe on
       // another device, and Complete your profile itself reads getUser(). Ask the auth server before redirecting;

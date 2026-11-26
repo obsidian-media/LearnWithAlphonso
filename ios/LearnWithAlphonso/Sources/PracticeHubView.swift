@@ -566,9 +566,12 @@ struct PracticeResultView: View {
                     HStack(spacing: AlphonsoDS.Space.s2) { stats }
                     VStack(spacing: AlphonsoDS.Space.s2) { stats }
                 }
+                // A failed recap shows "Try again" beside the slip; a pending or ready one takes the slip's slot.
+                let recapTakesSlot = session != nil && (recap?.status == .pending || recap?.status == .ready)
                 if let recap, let session, recap.status != .off {
                     RecapCardView(model: recap, session: session, callId: callId, courseCode: course, onOpenMemory: onOpenMemory)
-                } else if let slip = result.slipToShow(slip) {
+                }
+                if !recapTakesSlot, let slip = result.slipToShow(slip) {
                     VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                         Text("Your slip").dsText(.caption)
                         Text(slip.said).strikethrough().foregroundStyle(ds.wrongInk)

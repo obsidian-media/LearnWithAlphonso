@@ -59,6 +59,31 @@ export function RecapSkeleton() {
   );
 }
 
+/** The attempt failed and the call is not used up: a quiet card with "Try again", never an error screen. */
+export function RecapRetry({ ctl }: { ctl: RecapController }) {
+  return (
+    <section
+      aria-label="From this call"
+      data-recap="failed"
+      className="flex items-center justify-between gap-2 rounded-[18px] border-2 border-ds-line bg-ds-card px-3.5 py-2.5 text-left"
+    >
+      <div className="min-w-0">
+        <span className="ds-type-overline text-ds-action-text">From this call</span>
+        <p className="ds-type-caption text-ds-ink-soft">
+          Alphonso could not write it up this time.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={ctl.onRetry}
+        className="inline-flex min-h-11 shrink-0 items-center px-3.5 ds-type-subhead font-extrabold text-ds-choice"
+      >
+        Try again
+      </button>
+    </section>
+  );
+}
+
 export function RecapCard({ ctl, lang }: { ctl: RecapController; lang: string }) {
   const r = ctl.recap;
   if (!r) return null;

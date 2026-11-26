@@ -36,3 +36,15 @@ Deno.test("matchesAcceptableAnswer treats an empty submission as no answer", () 
 Deno.test("matchesAcceptableAnswer fails closed on an empty acceptable list", () => {
   assertEquals(matchesAcceptableAnswer("anything at all", []), false);
 });
+
+Deno.test("written Spanish: a missing tilde is a slip unless it makes a different real word", () => {
+  assertEquals(matchesAcceptableAnswer("hablo espanol", ["Hablo español."]), true);
+  assertEquals(matchesAcceptableAnswer("me duele la una", ["Me duele la uña."]), false);
+  const ANO = ["Tengo un año."];
+  assertEquals(matchesAcceptableAnswer("tengo un ano", ANO), false);
+  assertEquals(matchesAcceptableAnswer("TENGO UN AÑO", ANO), true);
+  assertEquals(matchesAcceptableAnswer("Tengo un año.", ANO), true);
+  assertEquals(matchesAcceptableAnswer("donde esta el niño", ["¿Dónde está el niño?"]), true);
+  assertEquals(normaliseWritten("¡El Niño!"), "el nino");
+  assertEquals(normaliseWritten("Un AÑO"), "un año");
+});

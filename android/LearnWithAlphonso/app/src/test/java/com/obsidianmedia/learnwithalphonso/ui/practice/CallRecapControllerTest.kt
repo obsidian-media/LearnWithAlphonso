@@ -59,6 +59,32 @@ class CallRecapControllerTest {
     }
 
     @Test
+    fun `a failed attempt offers Try again and the retry shows the recap`() = runBlocking {
+        var calls = 0
+        val s = FakeServer { if (++calls == 1) json("""{"recap":null,"retry":true}""") else json(recap("LATER")) }
+        val c = controller(s)
+        c.start("call-1", call, null)
+        awaitTrue("failed") { c.ui.value.status == CallRecapController.Status.FAILED }
+        c.retry()
+        awaitTrue("ready") { c.ui.value.status == CallRecapController.Status.READY }
+        assertEquals("LATER", c.ui.value.recap!!.corrections.single().said)
+        assertEquals(2, s.seen.size)
+    }
+
+    @Test
+    fun `retry does nothing unless the last attempt failed`() = runBlocking {
+        val s = FakeServer { json(recap("X")) }
+        val c = controller(s)
+        c.retry()
+        assertTrue(s.seen.isEmpty())
+        c.start("call-1", call, null)
+        awaitTrue("ready") { c.ui.value.status == CallRecapController.Status.READY }
+        c.retry()
+        delay(200)
+        assertEquals(1, s.seen.size)
+    }
+
+    @Test
     fun `a short call is off from the start and sends nothing`() = runBlocking {
         val s = FakeServer { json(recap("X")) }
         val c = controller(s)

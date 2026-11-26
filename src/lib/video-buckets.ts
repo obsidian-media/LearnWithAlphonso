@@ -8,6 +8,8 @@
  * objects across before the row flips; unpublishing copies them back and then removes the public copies.
  */
 
+import { removeAfterFailedPublish, type CleanupReporter } from "./storage-cleanup";
+
 export const PUBLIC_VIDEO_BUCKET = "videos";
 export const DRAFT_VIDEO_BUCKET = "video-drafts";
 
@@ -71,6 +73,8 @@ async function copyObject(
  *   unpublish: copy public -> draft, flip the row, remove the public copies.
  *
  * `flip` writes the row and must throw when it fails; if it does, public copies made for a publish are removed again.
+ * That removal is checked: when it fails too, a draft is public, so the error thrown is `operator: cleanup_failed
+ * <bucket>/<path>` (see storage-cleanup.ts) and `onCleanupFailed` is told, instead of the original error alone.
  * An object already in the target bucket and missing from the source (data written before drafts were private) is
  * accepted. An object missing everywhere is an error: a row must never be flipped over nothing. Paths are derived from
  * the slug (videoStoragePaths), so no two videos share a file.
@@ -80,6 +84,8 @@ export async function moveVideoForPublishState(args: {
   paths: string[];
   publish: boolean;
   flip: () => Promise<void>;
+  /** Told when the rollback removal failed (the admin function writes an ops_events row). */
+  onCleanupFailed?: CleanupReporter;
 }): Promise<void> {
   const { storage, publish, flip } = args;
   const paths = [...new Set(args.paths)];
@@ -87,9 +93,17 @@ export async function moveVideoForPublishState(args: {
   const target = publish ? PUBLIC_VIDEO_BUCKET : DRAFT_VIDEO_BUCKET;
 
   const copied: string[] = [];
-  const addedToTarget = async () => {
+  const addedToTarget = async (cause: unknown) => {
     // Undo what we added: public copies of files that did not get published must not stay.
-    if (publish && copied.length > 0) await storage.from(target).remove(copied);
+    if (publish && copied.length > 0) {
+      await removeAfterFailedPublish({
+        storage,
+        bucket: target,
+        paths: copied,
+        cause,
+        onCleanupFailed: args.onCleanupFailed,
+      });
+    }
   };
   try {
     for (const path of paths) {
@@ -100,7 +114,7 @@ export async function moveVideoForPublishState(args: {
     }
     await flip();
   } catch (e) {
-    await addedToTarget();
+    await addedToTarget(e);
     throw e;
   }
 
