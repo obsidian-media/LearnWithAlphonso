@@ -56,6 +56,12 @@ public struct HectorOpening: Equatable, Sendable {
     /// Why the server line was not used (consent, quota, auth, network, server); nil when it was.
     public let fallbackReason: String?
 
+    public init(text: String, fromServer: Bool, fallbackReason: String?) {
+        self.text = text
+        self.fromServer = fromServer
+        self.fallbackReason = fallbackReason
+    }
+
     /// A slow greeting request gives way to the local template after this long.
     public static let greetingTimeout: TimeInterval = 5
 
