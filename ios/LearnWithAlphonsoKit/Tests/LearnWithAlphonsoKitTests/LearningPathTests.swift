@@ -20,7 +20,7 @@ final class LearningPathTests: XCTestCase {
     }
 
     func testEveryCheckedInScenarioDecodes() throws {
-        for key in ["onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay", "withVideo"] {
+        for key in ["onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay", "withVideo", "noGoal", "weakSpots"] {
             XCTAssertNoThrow(try LearningPathDecoding.path(from: try scenario(key)), key)
         }
     }
@@ -154,5 +154,34 @@ final class LearningPathTests: XCTestCase {
         XCTAssertEqual(box.body["restDay"] as? Int, 5)
         _ = try await client.change(course: "en", .setRestDay(PathRestDay.none))
         XCTAssertEqual(box.body["restDay"] as? String, "none")
+        _ = try await client.change(course: "en", .setFixOff(true))
+        XCTAssertEqual(box.body["action"] as? String, "set_fix_off")
+        XCTAssertEqual(box.body["off"] as? Bool, true)
+    }
+
+    // MARK: path v2: a suggested goal, "Fix before it sticks"
+
+    func testANoGoalPathIsSuggestedAndSaysWhatItWasBuiltFrom() throws {
+        let p = try path("noGoal")
+        XCTAssertTrue(p.goalIsSuggested)
+        XCTAssertEqual(p.goal?.built, "Built from your answers: travel, 10 min a day, placed at A1, interests in food.")
+        XCTAssertEqual(p.progress.targetLevel, "A2")
+        XCTAssertFalse(try path("behind").goalIsSuggested)
+        XCTAssertNil(try path("behind").fix)
+    }
+
+    func testTheWeakSpotsPathHasAFixCardApartFromToday() throws {
+        let p = try path("weakSpots")
+        let fix = try XCTUnwrap(p.fix)
+        XCTAssertEqual(fix.title, "Two weak spots to tidy up")
+        XCTAssertEqual(fix.overline, "Fix before it sticks \u{00B7} 7 min")
+        XCTAssertEqual(fix.minutes, 7)
+        XCTAssertEqual(fix.items.map(\.title), ["5 items due in Review", "Refresher: Plurals (A1)"])
+        XCTAssertEqual(fix.items[0].ref?.kind, "review")
+        XCTAssertEqual(fix.items[1].ref?.kind, "lesson")
+        XCTAssertEqual(fix.items[1].subtitle, "You mixed up plurals 3 times")
+        XCTAssertFalse(p.today.items.contains { $0.id == "weakspots" })
+        XCTAssertEqual(p.fixOff, false)
+        XCTAssertTrue(p.why.contains { $0.source == "weak" && $0.headline == "Fix your weak spots" })
     }
 }

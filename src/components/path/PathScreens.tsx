@@ -233,12 +233,26 @@ function Stop({ stop }: { stop: RoadStop }) {
   );
 }
 
+/** A path built from a suggested goal says so under its title; "Change" opens Build my path. */
+function SuggestedStrip({ path }: { path: LearningPath }) {
+  if (!path.goal.suggested) return null;
+  return (
+    <p className="mb-3 text-sm text-ds-ink-soft">
+      Suggested from your answers ·{" "}
+      <Link to="/path/build" className="font-bold text-ds-ink underline">
+        Change
+      </Link>
+    </p>
+  );
+}
+
 export function RoadScreen() {
   const s = usePathScreen();
   return (
     <Gate s={s} back="/learn" title="My path">
       {(p) => (
         <Frame title={`My path to ${p.progress.targetLevel}`} sub={subtitle(p)} back="/learn">
+          <SuggestedStrip path={p} />
           {p.trimmed ? (
             <div className="mb-3 flex items-center gap-3 rounded-2xl border-2 border-ds-xp-edge bg-ds-xp-tint p-3">
               <p className="flex-1 text-sm text-ds-ink">
@@ -423,6 +437,9 @@ export function BuildScreen() {
       alive = false;
     };
   }, []);
+  function toggleFix() {
+    void s.change({ action: "set_fix_off", off: !path?.fixOff });
+  }
   function toggle(type: Exclude<PathType, "lesson">) {
     const next = off.includes(type) ? off.filter((t) => t !== type) : [...off, type];
     void s.change({ action: "set_off", off: next as Exclude<PathType, "lesson">[] });
@@ -445,6 +462,23 @@ export function BuildScreen() {
               <MixBar mix={path.mix} label="Your weekly mix" />
             </div>
           </div>
+          {/* The label text is nested two elements deep, beyond the rule's default depth. */}
+          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+          <label className={`${CARD} flex min-h-12 items-center gap-3 px-3 text-sm text-ds-ink`}>
+            <input
+              type="checkbox"
+              checked={!path.fixOff}
+              disabled={s.busy}
+              onChange={toggleFix}
+              className="size-5"
+            />
+            <span>
+              <b className="block font-extrabold">Fix before it sticks</b>
+              <small className="text-xs text-ds-ink-soft">
+                Show weak spots and short refreshers in Today.
+              </small>
+            </span>
+          </label>
           <h2 className="mt-1 ds-type-overline text-ds-ink-soft">Rest day</h2>
           <div
             role="radiogroup"

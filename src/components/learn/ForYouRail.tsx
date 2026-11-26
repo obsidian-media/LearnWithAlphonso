@@ -51,8 +51,13 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
 
   const goal = state.kind === "ready" ? pathGoalCard(state.path) : pathGoalCard(null);
   const pathHref = state.kind === "ready" ? "/path" : "/path/build";
-  const pathLabel = state.kind === "ready" ? "My path" : "Build my path";
-  const pathValue = state.kind === "ready" ? goal.headline : "Set a goal";
+  const pathLabel = "My path";
+  const pathValue =
+    state.kind !== "ready"
+      ? "Set a goal"
+      : state.path.goal.suggested
+        ? "Suggested for you"
+        : goal.headline;
   // Until the path is known there is no goal to show and no planner to offer.
   const pathKnown = state.kind === "ready" || state.kind === "none";
 

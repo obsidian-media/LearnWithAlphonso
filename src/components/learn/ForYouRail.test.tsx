@@ -69,7 +69,7 @@ describe("ForYouRail", () => {
 
   it("with no goal the path card opens the planner; nothing hides the card", () => {
     renderRail();
-    expect(screen.getByRole("link", { name: /^Build my path: Set a goal/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /^My path: Set a goal/ })).toHaveAttribute(
       "href",
       "/path/build",
     );

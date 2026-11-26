@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { ForYouRail } from "../../components/learn/ForYouRail";
+import { PathCards } from "../../components/learn/PathCards";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
 import { COURSES, getCourse } from "../../data/courses";
@@ -445,6 +446,7 @@ function LearnPage() {
           </div>
         )}
 
+        <PathCards course={course} />
         <div className="my-4">
           <ForYouRail course={course} dueCount={dueCount} />
         </div>

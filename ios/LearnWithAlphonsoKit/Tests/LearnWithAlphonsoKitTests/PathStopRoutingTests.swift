@@ -15,6 +15,11 @@ final class PathStopRoutingTests: XCTestCase {
         XCTAssertEqual(PathStopRouting.destination(for: ref("campaign", "cafe", scene: 2), done: false), .campaign("cafe", scene: 2))
         XCTAssertEqual(PathStopRouting.destination(for: ref("podcast", "ep-1"), done: false), .podcastLibrary)
         XCTAssertEqual(PathStopRouting.destination(for: ref("video", "vid-1"), done: false), .video("vid-1"))
+        XCTAssertEqual(PathStopRouting.destination(for: ref("review", "weakspots"), done: false), .review)
+    }
+
+    func testReviewIsNotAPracticeDestination() {
+        XCTAssertNil(PathStopRouting.practiceChoice(for: .review, scenarioIDs: ["coffee"], campaignSceneCounts: [:]))
     }
 
     func testAVideoIsNotAPracticeDestination() {

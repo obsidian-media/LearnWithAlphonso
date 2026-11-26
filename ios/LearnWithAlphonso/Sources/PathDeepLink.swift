@@ -15,7 +15,7 @@ final class PathDeepLink {
     /// "practice this" arrives here), a video in the Library.
     static func tab(for destination: PathDestination) -> RootTab? {
         switch destination {
-        case .lesson: return .learn
+        case .lesson, .review: return .learn
         case .podcastLibrary, .video: return .listen
         case .talk, .campaign: return .practice
         }

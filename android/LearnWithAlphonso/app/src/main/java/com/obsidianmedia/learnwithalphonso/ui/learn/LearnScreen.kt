@@ -223,7 +223,7 @@ fun LearnScreen(
     val firstRunLevel by produceState<String?>(null) { value = runCatching { container.learnerProfileClient.fetch().answers.level }.getOrNull() }
     val offerStyle = if (state.placementTaken == null) PlacementOffer.Style.NONE
         else PlacementOffer.style(firstRunLevel, placementTaken = state.placementTaken == true, dismissed = offerDismissed, surface = PlacementOffer.Surface.LEARN)
-    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = offerStyle != PlacementOffer.Style.NONE)
+    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = offerStyle != PlacementOffer.Style.NONE, pathCards = com.obsidianmedia.learnwithalphonso.ui.path.learnPathCardCount((pathUi as? PathUi.Ready)?.path) > 0)
     val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
     // No scroll on first show: the status row and the climbing map are the top of the screen. "Jump to current" is the way down.
     Column(Modifier.fillMaxSize().background(ds.surface)) {
@@ -257,13 +257,19 @@ fun LearnScreen(
                     LearnClimbMap(c, greeting(progress), continueLessonId = currentUnit?.lessonId, reduceMotion = reduceMotion, onOpenLesson = { id -> onOpenLesson(state.course, id) })
                 }
             }
+            // Path cards (Your path is ready, Today, Fix before it sticks) between the map and the rail: one list item, present only with content.
+            if (com.obsidianmedia.learnwithalphonso.ui.path.learnPathCardCount((pathUi as? PathUi.Ready)?.path) > 0) {
+                item(key = "path-cards") {
+                    com.obsidianmedia.learnwithalphonso.ui.path.LearnPathCards(pathVm, container, state.course, onBuild = onBuildPath, onOpenRef = onOpenPathRef, onOpenReview = { onOpenReview(state.course) })
+                }
+            }
             item(key = "for-you") {
                 val hasNoGoal = pathUi is PathUi.None
                 val pathValue = when (val u = pathUi) {
                     PathUi.Loading -> "Loading"
                     is PathUi.Failed -> "Couldn't load"
                     PathUi.None -> LearnRail.PATH_UNSET
-                    is PathUi.Ready -> PathGoalCard.lines(u.path).headline
+                    is PathUi.Ready -> if (u.path.goalIsSuggested) "Suggested for you" else PathGoalCard.lines(u.path).headline
                 }
                 // A finished quest that is not yet claimed is a reward waiting to be claimed (challenges pay themselves).
                 val claimReady = state.quests.any { it.claimable }
@@ -638,5 +644,5 @@ private fun HeartsPill(progress: LessonCompletionProgress) {
  * you rail, the levels menu and the jump row always; the climbing map, the open For-you detail and the placement
  * banner when shown. Keep it in step with the `item(...)` calls before the unit rows in [LearnScreen].
  */
-internal fun learnFixedItems(hasClimb: Boolean, forYouDetailOpen: Boolean, showsPlacement: Boolean): Int =
-    4 + (if (hasClimb) 1 else 0) + (if (forYouDetailOpen) 1 else 0) + (if (showsPlacement) 1 else 0)
+internal fun learnFixedItems(hasClimb: Boolean, forYouDetailOpen: Boolean, showsPlacement: Boolean, pathCards: Boolean = false): Int =
+    4 + (if (hasClimb) 1 else 0) + (if (forYouDetailOpen) 1 else 0) + (if (showsPlacement) 1 else 0) + (if (pathCards) 1 else 0)

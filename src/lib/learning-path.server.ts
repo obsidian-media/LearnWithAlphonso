@@ -2,7 +2,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Course } from "@/data/courses";
 import type { Level } from "@/data/levels";
 import type { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  REFRESHER_WINDOW_DAYS,
+  TUTOR_MEMORY_LIMIT,
+  WEAKNESS_EVENTS_LIMIT,
+  WEAK_SPOTS_DUE_LIMIT,
+} from "@/data/path-config";
 import { LEVEL_ORDER } from "@/lib/learning-goal";
+import { localDay } from "@/lib/local-day";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import type { PathData } from "@/lib/learning-path-data";
 
@@ -24,14 +31,16 @@ const fail = (what: string, error: { message: string } | null) => {
 /**
  * Loads the rows the learning path needs for one learner and course. Throws on any database error so the route answers
  * 500: a failed read must never look like "no activity". Every query is scoped to the user id from the verified token.
- * Returns null when the learner has no goal yet (the Build my path screen).
+ * No saved goal is not an error and not null any more: `goal` comes back null and the builder works out a SUGGESTED one
+ * (path v2). The weakness reads (Review due, weakness_events, tutor_memory) are bounded and course-scoped where the
+ * table has a course; weakness_events has none, and the builder reads them for the English course only.
  */
 export async function loadPathData(
   admin: Admin,
   userId: string,
   course: Course,
   now: Date,
-): Promise<PathData | null> {
+): Promise<PathData> {
   const untyped = admin as unknown as SupabaseClient;
   const since = new Date(now.getTime() - HISTORY_DAYS * 86_400_000).toISOString();
   const sinceDay = since.slice(0, 10);
@@ -43,7 +52,6 @@ export async function loadPathData(
     .eq("language", course)
     .maybeSingle();
   fail("goal", goalRes.error);
-  if (!goalRes.data) return null;
 
   const [level, done, days, skills, episodes, listen, videos, watches, calls, stars, user, zone] =
     await Promise.all([
@@ -104,16 +112,70 @@ export async function loadPathData(
 
   const known = level.data?.cefr_level as Level | undefined;
   const meta = (user.data.user.user_metadata ?? {}) as Record<string, unknown>;
-  const targetLevel = goalRes.data.target_level as Level;
+  const saved = goalRes.data;
+  const today = localDay(
+    now.getTime(),
+    zone.error ? null : ((zone.data as { time_zone?: string } | null)?.time_zone ?? null),
+  );
+  const windowStart = new Date(now.getTime() - REFRESHER_WINDOW_DAYS * 86_400_000).toISOString();
+  const [due, events, memory] = await Promise.all([
+    admin
+      .from("review_items")
+      .select("item_key,weakness_label")
+      .eq("user_id", userId)
+      .eq("language", course)
+      .lte("due_on", today)
+      .order("due_on", { ascending: true })
+      .limit(WEAK_SPOTS_DUE_LIMIT),
+    admin
+      .from("weakness_events")
+      .select("category,event_type,created_at")
+      .eq("user_id", userId)
+      .gte("created_at", windowStart)
+      .order("created_at", { ascending: false })
+      .limit(WEAKNESS_EVENTS_LIMIT),
+    admin
+      .from("tutor_memory")
+      .select("memory_key,seen_count,created_at,last_seen_at")
+      .eq("user_id", userId)
+      .eq("course", course)
+      .eq("kind", "mistake")
+      .gte("last_seen_at", windowStart)
+      .order("last_seen_at", { ascending: false })
+      .limit(TUTOR_MEMORY_LIMIT),
+  ]);
+  for (const [what, r] of Object.entries({ due, events, memory }))
+    fail(what, r.error as { message: string } | null);
   return {
     course,
     now,
     timeZone: zone.error ? null : ((zone.data as { time_zone?: string } | null)?.time_zone ?? null),
     currentLevel: known && LEVEL_ORDER.includes(known) ? known : "A1",
-    goal: {
-      targetLevel: LEVEL_ORDER.includes(targetLevel) ? targetLevel : "A1",
-      targetDate: goalRes.data.target_date,
-      createdAt: new Date(goalRes.data.created_at).toISOString(),
+    goal: saved
+      ? {
+          targetLevel: LEVEL_ORDER.includes(saved.target_level as Level)
+            ? (saved.target_level as Level)
+            : "A1",
+          targetDate: saved.target_date,
+          createdAt: new Date(saved.created_at).toISOString(),
+        }
+      : null,
+    weak: {
+      reviewDue: (due.data ?? []).map((r) => ({
+        itemKey: r.item_key,
+        weaknessLabel: r.weakness_label,
+      })),
+      weaknessEvents: (events.data ?? []).map((e) => ({
+        category: e.category,
+        eventType: e.event_type,
+        createdAt: e.created_at,
+      })),
+      mistakes: (memory.data ?? []).map((m) => ({
+        topic: m.memory_key,
+        seenCount: m.seen_count,
+        createdAt: m.created_at,
+        lastSeenAt: m.last_seen_at,
+      })),
     },
     completions: (done.data ?? []).map((r) => ({
       lessonId: r.lesson_id,

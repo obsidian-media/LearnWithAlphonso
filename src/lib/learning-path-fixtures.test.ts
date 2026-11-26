@@ -14,11 +14,17 @@ const FILE = new URL("./learning-path.fixtures.json", import.meta.url);
 const NOW = new Date("2026-11-11T10:00:00Z");
 const lessons = getCourse("en").curriculum.flatMap((u) => u.lessons);
 
+const savedGoal = {
+  targetLevel: "A2",
+  targetDate: "2027-06-01",
+  createdAt: "2026-10-01T00:00:00.000Z",
+} as const;
+
 const base: PathData = {
   course: "en",
   now: NOW,
   currentLevel: "A1",
-  goal: { targetLevel: "A2", targetDate: "2027-06-01", createdAt: "2026-10-01T00:00:00.000Z" },
+  goal: savedGoal,
   completions: lessons.slice(0, 6).map((l, i) => ({
     lessonId: l.id,
     completedAt: `2026-11-0${Math.min(9, i + 4)}T08:00:00.000Z`,
@@ -47,7 +53,7 @@ const base: PathData = {
 };
 
 const scenarios: Record<string, PathData> = {
-  onTrack: { ...base, goal: { ...base.goal, targetDate: "2028-06-01" } },
+  onTrack: { ...base, goal: { ...savedGoal, targetDate: "2028-06-01" } },
   behind: base,
   restDayChosen: { ...base, profile: { ...base.profile, pathRestDay: 3 } },
   // An Alphonso video (Library > Watch) is on the path: a "video" stop with a ref the apps open in the player.
@@ -64,9 +70,29 @@ const scenarios: Record<string, PathData> = {
     ],
   },
   noRestDay: { ...base, profile: { ...base.profile, pathRestDay: "none" } },
+  // v2: no saved goal. The path is built from a SUGGESTED one (goal.suggested) and nothing is saved.
+  noGoal: { ...base, goal: null },
+  // v2: five Review items due, and "plurals" detected three times: "Fix your weak spots" (a Review ref) and a refresher
+  // (an earlier completed Plurals lesson, an ordinary lesson ref) are in Today.
+  weakSpots: {
+    ...base,
+    completions: [
+      ...base.completions,
+      { lessonId: "a1p1l1", completedAt: "2026-10-20T08:00:00.000Z" },
+    ],
+    weak: {
+      reviewDue: [1, 2, 3, 4, 5].map((n) => ({ itemKey: `k${n}`, weaknessLabel: null })),
+      weaknessEvents: [3, 4, 5].map((d) => ({
+        category: "plurals",
+        eventType: "detected",
+        createdAt: `2026-11-0${d}T09:00:00.000Z`,
+      })),
+      mistakes: [],
+    },
+  },
   behindTrimmed: {
     ...base,
-    goal: { ...base.goal, targetDate: "2026-12-15" },
+    goal: { ...savedGoal, targetDate: "2026-12-15" },
     completions: base.completions.slice(0, 1),
     profile: { ...base.profile, pathTrimUntil: "2026-11-25", pathOff: ["talk"] },
   },
@@ -110,6 +136,35 @@ describe("learning path contract fixtures", () => {
     expect(stops).toHaveLength(1);
     expect(stops[0].ref).toEqual({ kind: "video", id: "vid-order" });
     expect(built.behind?.mix.find((m) => m.type === "video")?.minutes).toBe(0);
+  });
+  it("the no-goal scenario is a suggested path: the next level, an ok date, flagged suggested", () => {
+    const p = built.noGoal!;
+    expect(p.goal.suggested).toBe(true);
+    expect(p.goal.built).toContain("Built from your answers: travel, 10 min a day, placed at A1");
+    expect(built.behind?.goal.suggested).toBe(false);
+    expect(p.progress.targetLevel).toBe("A2");
+    expect(p.progress.targetDate > "2027-02-01").toBe(true);
+    expect(p.today.items.length).toBeGreaterThan(0);
+  });
+  it("the weak-spots scenario has the review item and the refresher in Today, with their reasons", () => {
+    const p = built.weakSpots!;
+    const weak = p.fix?.items.find((i) => i.id === "weakspots");
+    expect(weak).toMatchObject({
+      title: "5 items due in Review",
+      minutes: 2,
+      ref: { kind: "review", id: "weakspots" },
+    });
+    const refresher = p.fix?.items.find((i) => i.title.startsWith("Refresher"));
+    expect(refresher?.title).toBe("Refresher: Plurals (A1)");
+    expect(refresher?.subtitle).toBe("You mixed up plurals 3 times");
+    expect(p.fix?.title).toBe("Two weak spots to tidy up");
+    expect(p.today.items.some((i) => i.id === "weakspots")).toBe(false);
+    expect(refresher?.ref?.kind).toBe("lesson");
+    expect(p.why.filter((w) => w.source === "weak").map((w) => w.headline)).toEqual([
+      "Fix your weak spots",
+      "Refresher: Plurals",
+    ]);
+    expect(built.behind?.fix).toBeNull();
   });
   it("the behind-and-trimmed scenario really is behind and trimmed", () => {
     expect(built.behindTrimmed?.status).toBe("behind");

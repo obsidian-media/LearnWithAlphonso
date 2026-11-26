@@ -29,7 +29,7 @@ class LearningPathTest {
     }
 
     @Test fun `every checked-in scenario decodes`() {
-        for (key in listOf("onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay", "withVideo")) path(key)
+        for (key in listOf("onTrack", "behind", "behindTrimmed", "restDayChosen", "noRestDay", "withVideo", "noGoal", "weakSpots")) path(key)
     }
 
     @Test fun `the behind path carries the three ways forward`() {
@@ -119,6 +119,30 @@ class LearningPathTest {
         assertEquals(PathKind.VIDEO, PathKind.fromWire("video"))
         assertEquals(PathKind.PODCAST, PathKind.fromWire("podcast"))
         assertEquals(PathKind.UNKNOWN, PathKind.fromWire("hologram"))
+    }
+
+    @Test fun `a no-goal path is suggested and says what it was built from`() {
+        val p = path("noGoal")
+        assertTrue(p.goalIsSuggested)
+        assertEquals("Built from your answers: travel, 10 min a day, placed at A1, interests in food.", p.goal?.built)
+        assertEquals("A2", p.progress.targetLevel)
+        assertTrue(!path("behind").goalIsSuggested)
+        assertNull(path("behind").fix)
+    }
+
+    @Test fun `the weak spots path has a fix card apart from today`() {
+        val p = path("weakSpots")
+        val fix = p.fix!!
+        assertEquals("Two weak spots to tidy up", fix.title)
+        assertEquals("Fix before it sticks \u00B7 7 min", fix.overline)
+        assertEquals(7, fix.minutes)
+        assertEquals(listOf("5 items due in Review", "Refresher: Plurals (A1)"), fix.items.map { it.title })
+        assertEquals("review", fix.items[0].ref?.kind)
+        assertEquals("lesson", fix.items[1].ref?.kind)
+        assertEquals("You mixed up plurals 3 times", fix.items[1].subtitle)
+        assertTrue(p.today.items.none { it.id == "weakspots" })
+        assertTrue(!p.fixOff)
+        assertTrue(p.why.any { it.source == "weak" && it.headline == "Fix your weak spots" })
     }
 
     @Test fun `no goal decodes as null`() {

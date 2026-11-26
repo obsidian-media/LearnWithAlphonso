@@ -328,6 +328,8 @@ private fun SignedInApp(
                 "lesson" -> nav.navigate(Routes.lesson(container.activeCourse.course.value.code, ref.id))
                 "talk" -> nav.navigate(Routes.scenario(ref.id))
                 "campaign" -> nav.navigate(Routes.campaign(ref.id, ref.sceneIndex ?: 0))
+                // "Fix your weak spots" opens the existing Review flow.
+                "review" -> nav.navigate(Routes.review(container.activeCourse.course.value.code))
                 // A video opens its player in the Library tab: the shelf picks the id up once the videos are loaded.
                 "video" -> {
                     container.pendingVideoId.value = ref.id

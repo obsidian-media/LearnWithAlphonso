@@ -90,6 +90,13 @@ export function ItemLink({
         {children}
       </Link>
     );
+  // "Fix your weak spots": the existing Review flow.
+  if (ref.kind === "review")
+    return (
+      <Link to="/review" className={className}>
+        {children}
+      </Link>
+    );
   if (ref.kind === "talk")
     return (
       <Link to="/converse/$scenarioId" params={{ scenarioId: ref.id }} className={className}>

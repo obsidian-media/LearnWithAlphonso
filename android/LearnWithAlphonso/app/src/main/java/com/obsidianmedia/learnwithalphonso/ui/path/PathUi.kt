@@ -439,6 +439,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.roadItems(
     container: AppContainer, course: Course,
     onOpenWeek: () -> Unit, onOpenWhy: () -> Unit, onBuild: () -> Unit, onOpenRef: (PathItemRef) -> Unit,
 ) {
+    // Still a suggestion: say so; "Change" opens Build my path.
+    if (p.goalIsSuggested) item(key = "suggested-strip") {
+        val ds = LocalAlphonsoTokens.current
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+            Text("Suggested from your answers ·", style = FootnoteType, color = ds.inkSoft)
+            Text("Change", style = FootnoteType, color = ds.actionText, modifier = Modifier.clickable(role = Role.Button, onClick = onBuild).heightIn(min = AlphonsoTokens.Space.minTouch).padding(horizontal = AlphonsoTokens.Space.s1))
+        }
+    }
     if (p.trimmed) item(key = "trim") {
         Card {
             val ds = LocalAlphonsoTokens.current
@@ -650,6 +658,23 @@ fun PathBuildScreen(
                         Text("${path.progress.requiredPerWeek} lessons a week", style = DisplayType, color = ds.onHero)
                         Text("${path.dailyMinutes} minutes a day, ${PathRestDay.studyDays(path.restDay)} days. The rest of each day is filled with the mix below.", style = FootnoteType, color = ds.onHeroSoft)
                         PathMixBar(path.mix, onHero = true)
+                    }
+                    DsOverline("Fix before it sticks")
+                    DsCard(padding = AlphonsoTokens.Space.s3) {
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch),
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text("Weak spots and refreshers", style = HeadlineType, color = ds.ink)
+                                Text("Show them in Today", style = CaptionType, color = ds.inkSoft)
+                            }
+                            DsSwitch(
+                                checked = !path.fixOff, enabled = !busy,
+                                onChange = { nowOn -> vm.apply(LearningPathChange.SetFixOff(!nowOn)) },
+                                modifier = Modifier.semantics { contentDescription = "Fix before it sticks in my path" },
+                            )
+                        }
                     }
                     DsOverline("Rest day")
                     DsCard {

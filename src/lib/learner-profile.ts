@@ -379,6 +379,18 @@ const isoTime = z
 /** Every field the client may send. Strict: an unknown key (a birth date, say) fails the whole save. */
 const pathRestDaySchema = z.union([z.literal("none"), z.number().int().min(0).max(6)]);
 
+/** The refresher last offered, per course: the lesson and the learner's day it was offered (path v2). */
+const pathRefresherOfferSchema = z
+  .object({ lessonId: z.string().min(1).max(40), offeredOn: isoDate })
+  .strict();
+const pathRefresherSchema = z
+  .object({
+    en: pathRefresherOfferSchema.optional(),
+    fr: pathRefresherOfferSchema.optional(),
+    es: pathRefresherOfferSchema.optional(),
+  })
+  .strict();
+
 /** The answers a learner may remove again. */
 export const CLEARABLE = ["goal", "dailyMinutes", "interests"] as const;
 
@@ -410,6 +422,10 @@ export const learnerProfilePatchSchema = z
     pathTrimUntil: isoDate.nullable().optional(),
     /** The learner's rest day on the path: a weekday 0 (Sunday) to 6 (Saturday), or "none" for seven study days. */
     pathRestDay: pathRestDaySchema.optional(),
+    /** Learning path: true switches "Fix before it sticks" (weak spots and refreshers) off in Today. */
+    pathFixOff: z.boolean().optional(),
+    /** The refresher last offered per course; the path's 3-day cooldown counts from it (replays leave no other trace). */
+    pathRefresher: pathRefresherSchema.optional(),
     /** Answers to remove (What Alphonso remembers lets a learner delete a goal line). Applied after the rest. */
     clear: z.array(z.enum(CLEARABLE)).max(CLEARABLE.length).optional(),
   })
@@ -466,6 +482,9 @@ export function parseLearnerProfile(raw: unknown): LearnerProfile {
   }
   const pathRestDay = pick(pathRestDaySchema, v.pathRestDay);
   if (pathRestDay !== undefined) out.pathRestDay = pathRestDay;
+  if (v.pathFixOff === true) out.pathFixOff = true;
+  const pathRefresher = pick(pathRefresherSchema, v.pathRefresher);
+  if (pathRefresher) out.pathRefresher = pathRefresher;
   const pathTrimUntil = pick(isoDate, v.pathTrimUntil);
   if (pathTrimUntil) out.pathTrimUntil = pathTrimUntil;
   const completedAt = pick(isoTime, v.completedAt);

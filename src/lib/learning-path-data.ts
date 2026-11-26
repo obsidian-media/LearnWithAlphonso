@@ -5,9 +5,14 @@ import { PODCAST_QUIZZES } from "@/data/podcast-quizzes";
 import {
   CAMPAIGN_SCENE_MINUTES,
   DEFAULT_DAILY_MINUTES,
+  DEFAULT_LESSON_MINUTES,
   QUIZ_MINUTES,
+  REFRESHER_WINDOW_DAYS,
+  STUDY_DAYS_NO_REST,
+  STUDY_DAYS_PER_WEEK,
   TALK_MINUTES,
 } from "@/data/path-config";
+import { refresherPattern } from "@/data/refresher-topics";
 import {
   CAMPAIGN_TAGS,
   PODCAST_TAGS,
@@ -21,6 +26,8 @@ import { estimateLessonMinutes } from "./lesson-time";
 import { unlockedLessonIds } from "./lesson-unlock";
 import { callCountsAsDone } from "./practice-stars";
 import { LEVEL_ORDER, planGoal } from "./learning-goal";
+import { suggestGoal } from "./suggest-goal";
+import { topicLabel } from "./call-recap";
 import { lessonsByLevel } from "./learning-goal.server";
 import type { LearnerProfile } from "./learner-profile";
 import {
@@ -29,6 +36,8 @@ import {
   type Candidate,
   type LearningPath,
   type PathType,
+  type WeakCategory,
+  type WeakInput,
 } from "./path-plan";
 import { sceneKey } from "./practice-catalog";
 import { starLookup, type StarRow } from "./practice-hub";
@@ -49,7 +58,8 @@ export type PathData = {
   /** Offer only lessons the server lets this learner start (lesson-unlock.ts). The API sets it; the checked-in contract
    *  fixtures (shared with the apps' own builders) leave it off. */
   startableOnly?: boolean;
-  goal: { targetLevel: Level; targetDate: string; createdAt: string };
+  /** The saved goal, or null when the learner has none: the path is then built from a suggested one (never saved here). */
+  goal: { targetLevel: Level; targetDate: string; createdAt: string } | null;
   completions: { lessonId: string; completedAt: string }[];
   learningDays: { day: string; lessonSeconds: number; practiceSeconds: number }[];
   skillDays: SkillDayRow[];
@@ -85,6 +95,15 @@ export type PathData = {
   }[];
   stars: StarRow[];
   profile: LearnerProfile;
+  /** What the learner got wrong lately, for "Fix your weak spots" and the refresher (v2). Left out: neither appears. */
+  weak?: {
+    /** Review items due today or earlier on this course. `weaknessLabel` is the call-mistake topic one came from. */
+    reviewDue: { itemKey: string; weaknessLabel: string | null }[];
+    /** weakness_events rows (no course column: the English taxonomy, so only the English course reads them). */
+    weaknessEvents: { category: string; eventType: string; createdAt: string }[];
+    /** tutor_memory "mistake" lines of this course. */
+    mistakes: { topic: string; seenCount: number; createdAt: string; lastSeenAt: string }[];
+  };
 };
 
 const MONTHS = [
@@ -107,28 +126,161 @@ export function goalLabel(level: string, targetDate: string): string {
 }
 
 const LESSON_CANDIDATES = 40;
+const DAY_MS = 86_400_000;
 /** A call counts for at most this long: a call left open in a background tab is not 40 minutes of study. */
 const MAX_CALL_MINUTES = 15;
 
 const noTag: PathTag | null = null;
+
+// ---------------------------------------------------------------- weak spots (path v2)
+
+type UnitList = ReturnType<typeof getCourse>["curriculum"];
+
+/**
+ * The earlier COMPLETED lesson that trains a weakness category: the shortest lesson (the earliest on a tie) of the
+ * units the category maps to (src/data/refresher-topics.ts). Null when no unit maps or none of its lessons is done.
+ */
+function refresherLesson(
+  course: Course,
+  category: string,
+  completedAt: Record<string, string>,
+  units: UnitList,
+): Candidate | null {
+  const pattern = refresherPattern(course, category);
+  if (!pattern) return null;
+  let best: Candidate | null = null;
+  for (const u of units) {
+    if (!pattern.test(u.title)) continue;
+    for (const l of u.lessons) {
+      if (!(l.id in completedAt)) continue;
+      const minutes = estimateLessonMinutes(l.questions, 0);
+      if (best && minutes >= best.minutes) continue;
+      best = {
+        id: l.id,
+        type: "lesson",
+        title: l.title,
+        subtitle: `${u.eyebrow} · ${u.level}`,
+        minutes,
+        level: u.level,
+        goals: [],
+        interests: [],
+        skills: [],
+        ref: { kind: "lesson", id: l.id },
+      };
+    }
+  }
+  return best;
+}
+
+/** Turns the weakness rows into the engine's input: counts per category in the window, the lesson for each, the last offer. */
+function weakInput(
+  data: PathData,
+  completedAt: Record<string, string>,
+  units: UnitList,
+): WeakInput {
+  const w = data.weak!;
+  const course = data.course;
+  const since = data.now.getTime() - REFRESHER_WINDOW_DAYS * DAY_MS;
+
+  // Call mistakes (course-scoped). One that already became a due Review item is counted there, not twice.
+  const mistakes = w.mistakes.filter(
+    (m) => Date.parse(m.lastSeenAt) >= since && topicLabel(course, m.topic) !== null,
+  );
+  const dueTopics = new Set(w.reviewDue.flatMap((r) => (r.weaknessLabel ? [r.weaknessLabel] : [])));
+
+  // Category counts. weakness_events carry no course and use the English taxonomy, so only the English course reads
+  // them; detected minus resolved, like the Hector memory rule. A call-mistake line counts as many times as it was
+  // seen when all of those sightings fall inside the window, otherwise once (it was seen again lately).
+  const counts = new Map<string, number>();
+  if (course === "en") {
+    const net = new Map<string, number>();
+    for (const e of w.weaknessEvents) {
+      if (Date.parse(e.createdAt) < since) continue;
+      net.set(e.category, (net.get(e.category) ?? 0) + (e.eventType === "detected" ? 1 : -1));
+    }
+    for (const [category, n] of net)
+      if (n > 0 && topicLabel(course, category)) counts.set(category, n);
+  }
+  for (const m of mistakes) {
+    const n = Date.parse(m.createdAt) >= since ? m.seenCount : 1;
+    counts.set(m.topic, Math.max(counts.get(m.topic) ?? 0, n));
+  }
+  const categories: WeakCategory[] = [...counts]
+    .map(([category, count]) => ({
+      category,
+      label: topicLabel(course, category) ?? category,
+      count,
+      lesson: refresherLesson(course, category, completedAt, units),
+    }))
+    .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
+
+  return {
+    reviewDue: w.reviewDue.length,
+    callMistakes: mistakes.filter((m) => !dueTopics.has(m.topic)).length,
+    categories,
+    offered: data.profile.pathRefresher?.[course] ?? null,
+  };
+}
+
+/**
+ * The `pathRefresher` value to save after a path was built, or null when nothing needs saving. A refresher in the path
+ * is a NEW offer unless it was already recorded for today: the record is what the 3-day cooldown counts from, because
+ * replaying a lesson leaves no trace in lesson_completions. The record keeps the other courses' offers.
+ */
+export function refresherOfferToSave(
+  path: LearningPath | null,
+  profile: LearnerProfile,
+  course: Course,
+): NonNullable<LearnerProfile["pathRefresher"]> | null {
+  const refresher = path?.fix?.items.find((i) => i.ref?.kind === "lesson");
+  if (!path || !refresher) return null;
+  const stored = profile.pathRefresher?.[course];
+  if (stored && stored.offeredOn === path.today.day && stored.lessonId === refresher.id)
+    return null;
+  return {
+    ...profile.pathRefresher,
+    [course]: { lessonId: refresher.id, offeredOn: path.today.day },
+  };
+}
 
 export function buildLearningPath(data: PathData): LearningPath | null {
   const { course, now } = data;
   const completedAt: Record<string, string> = {};
   for (const c of data.completions) completedAt[c.lessonId] = c.completedAt;
 
+  const units = getCourse(course).curriculum;
+  const dailyMinutes = data.profile.dailyMinutes ?? DEFAULT_DAILY_MINUTES;
+  // No saved goal: the next level, about three months out, stretched to the learner's minutes. Nothing is written.
+  let goal = data.goal;
+  if (!goal) {
+    const next = units
+      .flatMap((u) => u.lessons.filter((l) => !(l.id in completedAt)))
+      .slice(0, 8)
+      .map((l) => estimateLessonMinutes(l.questions, 0));
+    const suggested = suggestGoal({
+      currentLevel: data.currentLevel,
+      now,
+      lessonsByLevel: lessonsByLevel(course),
+      completedAt,
+      dailyMinutes,
+      studyDays: data.profile.pathRestDay === "none" ? STUDY_DAYS_NO_REST : STUDY_DAYS_PER_WEEK,
+      lessonMinutes: next.length
+        ? next.reduce((a, b) => a + b, 0) / next.length
+        : DEFAULT_LESSON_MINUTES,
+    });
+    goal = { ...suggested, createdAt: "" };
+  }
   const plan = planGoal({
     currentLevel: data.currentLevel,
-    targetLevel: data.goal.targetLevel,
-    targetDate: data.goal.targetDate,
+    targetLevel: goal.targetLevel,
+    targetDate: goal.targetDate,
     lessonsByLevel: lessonsByLevel(course),
     completedAt,
-    goalCreatedAt: data.goal.createdAt,
+    goalCreatedAt: data.goal ? data.goal.createdAt : null,
     now,
   });
   if (!plan) return null;
 
-  const units = getCourse(course).curriculum;
   const lessonInfo = new Map<
     string,
     { title: string; questions: (typeof units)[number]["lessons"][number]["questions"] }
@@ -361,11 +513,13 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     timeZone: data.timeZone,
     course,
     goalPlan: plan,
-    goalLabel: goalLabel(data.goal.targetLevel, data.goal.targetDate),
+    goalLabel: goalLabel(goal.targetLevel, goal.targetDate),
+    goalSuggested: !data.goal,
+    weak: data.weak ? weakInput(data, completedAt, units) : undefined,
     profile: {
       goal: data.profile.goal,
       interests: data.profile.interests ?? [],
-      dailyMinutes: data.profile.dailyMinutes ?? DEFAULT_DAILY_MINUTES,
+      dailyMinutes,
       // Never chosen: left out, so the engine's default rest day applies. "none" is no rest day.
       ...(data.profile.pathRestDay === undefined
         ? {}
@@ -374,6 +528,7 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     prefs: {
       off: [...(data.profile.pathOff ?? [])],
       trimUntil: data.profile.pathTrimUntil ?? null,
+      fixOff: data.profile.pathFixOff === true,
     },
     skillPct,
     candidates,
