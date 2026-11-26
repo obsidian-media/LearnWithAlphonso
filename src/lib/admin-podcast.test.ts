@@ -66,6 +66,14 @@ function client(
 }
 const ctx = (supabaseAdmin: unknown, userId = STAFF) => ({ supabaseAdmin, userId });
 
+/** A storage that holds the episode's audio in both buckets, for the writes that now move audio on publish. */
+const holdsAudio = () =>
+  ({
+    download: async () => ({ data: new Blob(["mp3"]), error: null }),
+    upload: async () => ({ data: {}, error: null }),
+    remove: async () => ({ data: {}, error: null }),
+  }) as never;
+
 type Write = {
   name: keyof typeof fns;
   data: Record<string, unknown>;
@@ -142,6 +150,7 @@ describe("every podcast write refuses without a valid reason, before anything is
       });
       // delete and move read their tables first (an empty folder, an empty tree)
       db.from.mockReturnValue(chainable({ data: [], count: 0, error: null }) as never);
+      db.storage.from.mockReturnValue(holdsAudio());
       await fns[w.name]({ data: { ...w.data, reason: `  ${REASON}  ` }, context: ctx(db) });
       expect(db.rpc).toHaveBeenCalledTimes(1);
       const [name, args] = db.rpc.mock.calls[0] as unknown as [string, Record<string, unknown>];
@@ -208,6 +217,7 @@ describe("what the database says becomes a sentence a person can act on", () => 
 
   it("the table's own licence CHECK is translated too (a race past the first check)", async () => {
     const db = client({ error: { message: "check", code: "23514" } });
+    db.storage.from.mockReturnValue(holdsAudio());
     db.from.mockReturnValue(
       chainable({ data: { voice_provider: "deepgram" }, error: null }) as never,
     );

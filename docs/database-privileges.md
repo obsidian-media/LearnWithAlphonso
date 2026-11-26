@@ -130,7 +130,7 @@ Client writes (`20261105100100`): `weakness_events` has no client INSERT (the se
 no client INSERT or UPDATE (`claim_device_token` only) and a token-shape check; `nudges` allows INSERT on
 `sender_id, recipient_id` and UPDATE on `read_at` only. A trigger caps nudges and content reports at 20 per hour per
 sender and drops podcast play events past 120 per hour. `profiles.country` must be two capital letters
-(`20261105100200`). The `podcast-audio` bucket can no longer be listed (`20261105100300`).
+(`20261105100200`). The `podcast-audio` bucket can no longer be listed (`20261105100300`). Unpublished podcast audio sits in the private `podcast-audio-drafts` bucket (`20261128120000`, no storage policy).
 
 ### Client write privileges, 2026-11-18 (#628, `20261125100000_client_write_privileges.sql`)
 
