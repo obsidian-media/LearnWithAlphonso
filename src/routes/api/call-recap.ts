@@ -10,7 +10,9 @@ import {
   recapStrings,
   topicLabel,
 } from "@/lib/call-recap";
-import { isCallId } from "@/lib/practice-calls.server";
+import { REHEARSAL_FINISH_MIN_REPLIES, isCallId } from "@/lib/practice-calls.server";
+import { isRehearsalId, isStage } from "@/lib/rehearsal-rules";
+import { buildRunMemory, hasNumber } from "@/lib/rehearsal-run-memory";
 import { timedRoute } from "@/lib/stage-timer.server";
 
 /**
@@ -65,7 +67,7 @@ export const Route = createFileRoute("/api/call-recap")({
           const { data: call } = await timer.time("call", async () =>
             admin
               .from("practice_calls")
-              .select("course,finished_at,recap_at")
+              .select("course,finished_at,recap_at,kind,item_key,replies")
               .eq("id", callId)
               .eq("user_id", userId)
               .maybeSingle(),
@@ -74,9 +76,39 @@ export const Route = createFileRoute("/api/call-recap")({
             course: string;
             finished_at: string | null;
             recap_at: string | null;
+            kind?: string;
+            item_key?: string;
+            replies?: number;
           } | null;
           if (!row || !row.finished_at || row.recap_at || !isCourse(row.course)) return NONE();
           const course: Course = row.course;
+
+          // A rehearsal call is a run only with the rehearsal finish rule's replies: fewer is no run (no AI call, no
+          // memory, no stage done). A run also names its rehearsal, so the recap can say which hard moments came up.
+          let runOf: { rehearsalId: string; labels: string[] } | null = null;
+          if (row.kind === "rehearsal") {
+            if ((row.replies ?? 0) < REHEARSAL_FINISH_MIN_REPLIES) return NONE();
+            const [rehearsalId, stage] = (row.item_key ?? "").split(":");
+            if (isRehearsalId(rehearsalId) && isStage(stage)) {
+              const { data: found } = await timer.time("rehearsal", async () =>
+                admin
+                  .from("rehearsals")
+                  .select("brief")
+                  .eq("id", rehearsalId)
+                  .eq("user_id", userId)
+                  .maybeSingle(),
+              );
+              const moments = (found as { brief?: { hardMoments?: { label?: unknown }[] } } | null)
+                ?.brief?.hardMoments;
+              if (found)
+                runOf = {
+                  rehearsalId,
+                  labels: (moments ?? []).flatMap((m) =>
+                    typeof m.label === "string" ? [m.label] : [],
+                  ),
+                };
+            }
+          }
 
           // One attempt at a time: an expiring claim before the AI call, so a second device or a reopened result cannot
           // bill twice while one is running. It is released on failure and only recap_at (set by finish_call_recap) ends it.
@@ -106,6 +138,7 @@ export const Route = createFileRoute("/api/call-recap")({
                 cefrLevel: cefr,
                 scene,
                 turns,
+                ...(runOf ? { rehearsalLabels: runOf.labels } : {}),
                 signal: AbortSignal.any([request.signal, AbortSignal.timeout(8000)]),
               }),
             );
@@ -128,24 +161,53 @@ export const Route = createFileRoute("/api/call-recap")({
 
             // Topic labels become weakness events (what native recorded through analyze-weaknesses); memory lines are kept too.
             const topics = [...new Set(kept.corrections.map((c) => c.topic))];
+            const finishArgs = {
+              _user_id: userId,
+              _course: course,
+              _call_id: callId,
+              _topics: nothingToShow ? [] : topics,
+              // A rehearsal is full of real details (a salary, a date): its corrected forms with a number never reach
+              // everyday memory. Other call kinds are unchanged.
+              _mistakes: (nothingToShow
+                ? []
+                : runOf
+                  ? kept.corrections.filter((c) => !hasNumber(c.fixed))
+                  : kept.corrections
+              ).map((c) => ({
+                topic: c.topic,
+                // Only the corrected form is kept: never the learner's own words (they can hold names or details).
+                text: c.fixed,
+              })),
+              _save: true,
+            };
+            // A rehearsal run: the same finish also writes the run's memory (moment labels and corrected forms only),
+            // in one transaction, once per call.
+            const run = runOf
+              ? buildRunMemory({
+                  corrections: kept.corrections,
+                  moments: recap.moments ?? null,
+                  labels: runOf.labels,
+                })
+              : null;
             const memo = await timer.time("memory", async () =>
-              admin.rpc("finish_call_recap", {
-                _user_id: userId,
-                _course: course,
-                _call_id: callId,
-                _topics: nothingToShow ? [] : topics,
-                _mistakes: (nothingToShow ? [] : kept.corrections).map((c) => ({
-                  topic: c.topic,
-                  // Only the corrected form is kept: never the learner's own words (they can hold names or details).
-                  text: c.fixed,
-                })),
-                _save: true,
-              }),
+              run
+                ? admin.rpc("finish_rehearsal_recap", {
+                    ...finishArgs,
+                    _moments: run.momentsShown,
+                    _went_well: run.wentWell,
+                    _corrections: run.corrections,
+                  })
+                : admin.rpc("finish_call_recap", finishArgs),
             );
             if (memo.error) {
               console.error("[call-recap] memory write failed");
               await release();
               return RETRY();
+            }
+            // The database's own finish rule refused the run: nothing was written, so nothing shows and the claim goes.
+            if (run && memo.data === -2) {
+              await release();
+              return NONE();
             }
             // Everything it had to say was filtered out: the call is completed with nothing written, and nothing shows.
             if (nothingToShow) return NONE();

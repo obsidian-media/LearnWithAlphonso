@@ -10,7 +10,14 @@ import {
   type RehearsalBrief,
 } from "./rehearsal-brief";
 import type { Rehearsal, RehearsalSummary } from "./rehearsal-api";
-import type { EventKind, Intake } from "./rehearsal-rules";
+import {
+  nextStage,
+  stageProgress,
+  type EventKind,
+  type Intake,
+  type RunMemory,
+  type Stage,
+} from "./rehearsal-rules";
 
 export type { Rehearsal, RehearsalSummary } from "./rehearsal-api";
 
@@ -90,6 +97,48 @@ export async function loadActiveRehearsal(
   return (data as RehearsalRow | null) ?? null;
 }
 
+/** One of the learner's own rehearsals by id, whatever its status; null for an unknown id or someone else's. */
+export async function loadRehearsalById(
+  db: Db,
+  userId: string,
+  id: string,
+): Promise<RehearsalRow | null> {
+  const { data, error } = await db
+    .from("rehearsals")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw new Error("rehearsals read failed");
+  return (data as RehearsalRow | null) ?? null;
+}
+
+type RunRow = {
+  stage: Stage;
+  finished_at: string;
+  moments_shown: string[] | null;
+  went_well: string[] | null;
+  corrections: string[] | null;
+};
+
+/** What the finished runs of a rehearsal taught the tutor (rehearsal_runs), oldest first. */
+export async function loadRuns(db: Db, userId: string, rehearsalId: string): Promise<RunMemory[]> {
+  const { data, error } = await db
+    .from("rehearsal_runs")
+    .select("stage,finished_at,moments_shown,went_well,corrections")
+    .eq("rehearsal_id", rehearsalId)
+    .eq("user_id", userId)
+    .order("finished_at", { ascending: true });
+  if (error) throw new Error("rehearsal_runs read failed");
+  return ((data ?? []) as RunRow[]).map((x) => ({
+    stage: x.stage,
+    finishedAt: x.finished_at,
+    momentsShown: x.moments_shown ?? [],
+    wentWell: x.went_well ?? [],
+    corrections: x.corrections ?? [],
+  }));
+}
+
 /** The state the clients render: the active rehearsal, the closed ones, and whether the free one is still there. */
 export async function loadRehearsalState(db: Db, userId: string, course: Course) {
   const [active, history, used] = await Promise.all([
@@ -105,8 +154,13 @@ export async function loadRehearsalState(db: Db, userId: string, course: Course)
     hasUsedFreeRehearsal(db, userId),
   ]);
   if (history.error) throw new Error("rehearsals history read failed");
+  // Which of the three stages are done, and which to offer next, from the finished runs.
+  const runs = active ? await loadRuns(db, userId, active.id) : [];
+  const progress = active ? stageProgress(runs) : null;
   return {
     active: active ? toRehearsal(active) : null,
+    progress,
+    nextStage: progress ? nextStage(progress, runs) : null,
     history: ((history.data ?? []) as RehearsalRow[]).map(toSummary),
     freeAvailable: !used,
   };

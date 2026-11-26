@@ -40,6 +40,110 @@ export type RunMemory = {
   corrections: string[];
 };
 
+export type StageProgress = Record<Stage, "todo" | "done">;
+
+/** A stage is done once it has a finished run (a rehearsal_runs row exists only for a run that met the finish rule). */
+export function stageProgress(runs: readonly RunMemory[]): StageProgress {
+  const done = (s: Stage) => (runs.some((r) => r.stage === s) ? "done" : "todo");
+  return {
+    warmup: done("warmup"),
+    conversation: done("conversation"),
+    hard_moments: done("hard_moments"),
+  };
+}
+
+/**
+ * Which stage to offer next: the first one not done, in the order warm-up, conversation, hard moments; once all are
+ * done, the weakest one (the most corrections in its LAST run, a tie going to the earlier stage). Independent of the
+ * order `runs` is given in.
+ */
+export function nextStage(progress: StageProgress, runs: readonly RunMemory[]): Stage {
+  const open = STAGES.find((s) => progress[s] === "todo");
+  if (open) return open;
+  let weakest: Stage = STAGES[0];
+  let most = -1;
+  for (const s of STAGES) {
+    const last = runs
+      .filter((r) => r.stage === s)
+      .reduce<RunMemory | null>(
+        (a, r) => (a === null || r.finishedAt > a.finishedAt ? r : a),
+        null,
+      );
+    const count = last?.corrections.length ?? 0;
+    if (count > most) {
+      most = count;
+      weakest = s;
+    }
+  }
+  return weakest;
+}
+
+// ---------------------------------------------------------------- How did it go?
+
+export const OUTCOME_CHOICES = ["well", "ok", "hard", "moved"] as const;
+export type OutcomeChoice = (typeof OUTCOME_CHOICES)[number];
+export const isOutcomeChoice = (v: unknown): v is OutcomeChoice =>
+  typeof v === "string" && (OUTCOME_CHOICES as readonly string[]).includes(v);
+
+const EVENT_NOUN: Record<EventKind, string> = {
+  interview: "a job interview",
+  meeting: "a work meeting",
+  presentation: "a presentation",
+  appointment: "an appointment",
+  housing: "a conversation with a landlord",
+  first_day: "a first day at work",
+  other: "a real conversation",
+};
+const OUTCOME_PHRASE = { well: "it went well", ok: "it went okay", hard: "it was hard" } as const;
+
+/**
+ * The one memory line a closed rehearsal leaves in the tutor's memory: a fixed template per event kind and outcome.
+ * It holds no learner text (not their words, not the counterpart they described), so it can never leak any.
+ */
+export const OUTCOME_MEMORY_LINES: Record<
+  EventKind,
+  Record<"well" | "ok" | "hard", string>
+> = Object.fromEntries(
+  EVENT_KINDS.map((k) => [
+    k,
+    Object.fromEntries(
+      (Object.keys(OUTCOME_PHRASE) as (keyof typeof OUTCOME_PHRASE)[]).map((o) => [
+        o,
+        `Rehearsed ${EVENT_NOUN[k]}: ${OUTCOME_PHRASE[o]}`,
+      ]),
+    ),
+  ]),
+) as Record<EventKind, Record<"well" | "ok" | "hard", string>>;
+
+export type OutcomeResult =
+  | { ok: true; action: "close"; outcome: { choice: "well" | "ok" | "hard" }; memoryText: string }
+  | { ok: true; action: "move"; eventDate: string }
+  | { ok: false; error: "invalid_choice" | "invalid_date" | "closed" };
+
+/**
+ * "How did it go?": taps only. well, ok and hard close the rehearsal (done) with one fixed memory line; moved needs a
+ * new date AFTER the learner's local `today` (YYYY-MM-DD) and keeps it active. A closed rehearsal answers "closed".
+ */
+export function applyOutcome(
+  rehearsal: { status: "active" | "done" | "cancelled"; eventKind: EventKind },
+  choice: unknown,
+  newDate: unknown,
+  today: string,
+): OutcomeResult {
+  if (!isOutcomeChoice(choice)) return { ok: false, error: "invalid_choice" };
+  if (rehearsal.status !== "active") return { ok: false, error: "closed" };
+  if (choice === "moved") {
+    if (!isCalendarDate(newDate) || newDate <= today) return { ok: false, error: "invalid_date" };
+    return { ok: true, action: "move", eventDate: newDate };
+  }
+  return {
+    ok: true,
+    action: "close",
+    outcome: { choice },
+    memoryText: OUTCOME_MEMORY_LINES[rehearsal.eventKind][choice],
+  };
+}
+
 export type CreateDecision = "ok_free" | "ok_pro" | "paywall" | "retry";
 
 /**
