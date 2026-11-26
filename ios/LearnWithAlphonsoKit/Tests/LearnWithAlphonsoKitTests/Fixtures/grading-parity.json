@@ -1,5 +1,5 @@
 {
-  "$comment": "One answer-grading fixture set, run by web (vitest), Deno, iOS (Swift Kit) and Android (JVM core). Each case has kind, input and expected. runtimes (optional) lists where a case applies: absent means all four of web, deno, ios, android; typo-verdict and confusion exist only on web and deno. Every runtime a case applies to must produce `expected`; there is no per-runtime exception. Do not edit the native copies (ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures and android/LearnWithAlphonso/core/src/test/resources) by hand: copy this file over them, because guard tests fail when they differ.",
+  "$comment": "One answer-grading fixture set, run by web (vitest), Deno, iOS (Swift Kit) and Android (JVM core). Each case has kind, input and expected. runtimes (optional) lists where a case applies: absent means all four of web, deno, ios, android; typo-verdict and confusion exist only on web and deno. A case may carry `variants` (goal-flavoured versions of the question, each with the same fields as the case: choices+answerIndex, bank+answer, answer, or acceptable): the input is right when it is right for the case itself OR for any variant. Every runtime a case applies to must produce `expected`; there is no per-runtime exception. Do not edit the native copies (ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures and android/LearnWithAlphonso/core/src/test/resources) by hand: copy this file over them, because guard tests fail when they differ.",
   "version": 1,
   "cases": [
     {
@@ -2644,6 +2644,140 @@
       "kind": "listening",
       "answer": "caf\u00e9",
       "input": "caf\u00e8",
+      "expected": false
+    },
+    {
+      "id": "variant-mc-variant-answer-accepted",
+      "kind": "mc",
+      "choices": ["cat", "dog", "bird"],
+      "answerIndex": 1,
+      "variants": [{ "choices": ["train", "bus", "taxi"], "answerIndex": 2 }],
+      "input": "taxi",
+      "expected": true
+    },
+    {
+      "id": "variant-mc-base-answer-still-accepted",
+      "kind": "mc",
+      "choices": ["cat", "dog", "bird"],
+      "answerIndex": 1,
+      "variants": [{ "choices": ["train", "bus", "taxi"], "answerIndex": 2 }],
+      "input": "dog",
+      "expected": true
+    },
+    {
+      "id": "variant-mc-base-wrong-choice-stays-wrong",
+      "kind": "mc",
+      "choices": ["cat", "dog", "bird"],
+      "answerIndex": 1,
+      "variants": [{ "choices": ["train", "bus", "taxi"], "answerIndex": 2 }],
+      "input": "cat",
+      "expected": false
+    },
+    {
+      "id": "variant-mc-variant-wrong-choice-stays-wrong",
+      "kind": "mc",
+      "choices": ["cat", "dog", "bird"],
+      "answerIndex": 1,
+      "variants": [{ "choices": ["train", "bus", "taxi"], "answerIndex": 2 }],
+      "input": "train",
+      "expected": false
+    },
+    {
+      "id": "variant-mc-second-variant-accepted",
+      "kind": "mc",
+      "choices": ["cat", "dog", "bird"],
+      "answerIndex": 1,
+      "variants": [
+        { "choices": ["train", "bus", "taxi"], "answerIndex": 2 },
+        { "choices": ["email", "memo", "report"], "answerIndex": 0 }
+      ],
+      "input": "email",
+      "expected": true
+    },
+    {
+      "id": "variant-fill-variant-answer-accepted",
+      "kind": "fill",
+      "answer": "meet",
+      "variants": [{ "bank": ["greet", "great", "grit", "grate"], "answer": "greet" }],
+      "input": "Greet",
+      "expected": true
+    },
+    {
+      "id": "variant-fill-variant-wrong-word-stays-wrong",
+      "kind": "fill",
+      "answer": "meet",
+      "variants": [{ "bank": ["greet", "great", "grit", "grate"], "answer": "greet" }],
+      "input": "great",
+      "expected": false
+    },
+    {
+      "id": "variant-listening-variant-answer-accepted",
+      "kind": "listening",
+      "answer": "went",
+      "variants": [{ "choices": ["flew", "fly", "flown", "flow"], "answer": "flew" }],
+      "input": "flew",
+      "expected": true
+    },
+    {
+      "id": "variant-listening-variant-wrong-choice-stays-wrong",
+      "kind": "listening",
+      "answer": "went",
+      "variants": [{ "choices": ["flew", "fly", "flown", "flow"], "answer": "flew" }],
+      "input": "flown",
+      "expected": false
+    },
+    {
+      "id": "variant-speak-variant-answer-accepted",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She is a doctor",
+      "variants": [{ "answer": "She is a pilot" }],
+      "input": "she's a pilot",
+      "expected": true
+    },
+    {
+      "id": "variant-speak-other-phrase-stays-wrong",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She is a doctor",
+      "variants": [{ "answer": "She is a pilot" }],
+      "input": "she is a nurse",
+      "expected": false
+    },
+    {
+      "id": "variant-speak-fr-variant-answer-accepted",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "Je suis m\u00e9decin",
+      "variants": [{ "answer": "Je suis pilote" }],
+      "input": "je suis pilote",
+      "expected": true
+    },
+    {
+      "id": "variant-translate-variant-wording-accepted",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Where is the bank?"],
+      "variants": [{ "acceptable": ["Where is the station?", "Where's the station?"] }],
+      "input": "where is the station",
+      "expected": true
+    },
+    {
+      "id": "variant-translate-base-wording-still-accepted",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Where is the bank?"],
+      "variants": [{ "acceptable": ["Where is the station?", "Where's the station?"] }],
+      "input": "Where is the bank?",
+      "expected": true
+    },
+    {
+      "id": "variant-translate-unlisted-wording-stays-wrong",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Where is the bank?"],
+      "variants": [{ "acceptable": ["Where is the station?", "Where's the station?"] }],
+      "input": "Where is the airport?",
       "expected": false
     }
   ]

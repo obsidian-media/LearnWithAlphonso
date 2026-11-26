@@ -1,0 +1,1404 @@
+{
+  "a1p11l3": {
+    "a1p11q33": {
+      "travel": {
+        "prompt": "Say that you want to pay for the hotel by card.",
+        "acceptableAnswers": [
+          "I want to pay for the hotel by card.",
+          "I'd like to pay for the hotel by card.",
+          "I want to pay for the hotel with a card.",
+          "I'll pay for the hotel by card."
+        ],
+        "explanation": "You can say \"I want to pay for the hotel by card.\" We use \"by\" with the way we pay."
+      },
+      "work": {
+        "prompt": "Say that you want to pay for the office supplies by card.",
+        "acceptableAnswers": [
+          "I want to pay for the office supplies by card.",
+          "I'd like to pay for the office supplies by card.",
+          "I want to pay for the office supplies with a card.",
+          "I'll pay for the office supplies by card."
+        ],
+        "explanation": "You can say \"I want to pay for the office supplies by card.\" We use \"by\" with the way we pay."
+      },
+      "school": {
+        "prompt": "Say that you want to pay for the school trip by card.",
+        "acceptableAnswers": [
+          "I want to pay for the school trip by card.",
+          "I'd like to pay for the school trip by card.",
+          "I want to pay for the school trip with a card.",
+          "I'll pay for the school trip by card."
+        ],
+        "explanation": "You can say \"I want to pay for the school trip by card.\" We use \"by\" with the way we pay."
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Could I have a room key, please?",
+        "explanation": "You say \"Could I have a room key, please?\" Starting with \"Could I\" is a polite way to ask for something."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Could I have the report, please?",
+        "explanation": "You say \"Could I have the report, please?\" Starting with \"Could I\" is a polite way to ask for something."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Could I have a pencil, please?",
+        "explanation": "You say \"Could I have a pencil, please?\" Starting with \"Could I\" is a polite way to ask for something."
+      }
+    }
+  },
+  "a1p12l2": {
+    "a1p12q30": {
+      "travel": {
+        "prompt": "Say that your friend works as a tour guide.",
+        "acceptableAnswers": [
+          "My friend works as a tour guide.",
+          "My friend is a tour guide.",
+          "My friend is working as a tour guide.",
+          "A friend of mine works as a tour guide."
+        ],
+        "explanation": "You can say \"My friend works as a tour guide.\" You use \"works as\" to name a job."
+      },
+      "work": {
+        "prompt": "Say that your friend works as an engineer.",
+        "acceptableAnswers": [
+          "My friend works as an engineer.",
+          "My friend is an engineer.",
+          "My friend is working as an engineer.",
+          "A friend of mine works as an engineer."
+        ],
+        "explanation": "You can say \"My friend works as an engineer.\" You use \"works as\" to name a job."
+      },
+      "school": {
+        "prompt": "Say that your friend works as a teacher.",
+        "acceptableAnswers": [
+          "My friend works as a teacher.",
+          "My friend is a teacher.",
+          "My friend is working as a teacher.",
+          "A friend of mine works as a teacher."
+        ],
+        "explanation": "You can say \"My friend works as a teacher.\" You use \"works as\" to name a job."
+      }
+    }
+  },
+  "a1p14l4": {
+    "a1p14q36": {
+      "travel": {
+        "prompt": "Say that your tour is on Thursday afternoon.",
+        "acceptableAnswers": [
+          "My tour is on Thursday afternoon.",
+          "My tour is on Thursday in the afternoon.",
+          "I have my tour on Thursday afternoon.",
+          "On Thursday afternoon I have a tour."
+        ],
+        "explanation": "You can say \"My tour is on Thursday afternoon.\" We use \"on\" with a day of the week."
+      },
+      "work": {
+        "prompt": "Say that your meeting is on Thursday afternoon.",
+        "acceptableAnswers": [
+          "My meeting is on Thursday afternoon.",
+          "My meeting is on Thursday in the afternoon.",
+          "I have my meeting on Thursday afternoon.",
+          "On Thursday afternoon I have a meeting."
+        ],
+        "explanation": "You can say \"My meeting is on Thursday afternoon.\" We use \"on\" with a day of the week."
+      },
+      "school": {
+        "prompt": "Say that your test is on Thursday afternoon.",
+        "acceptableAnswers": [
+          "My test is on Thursday afternoon.",
+          "My test is on Thursday in the afternoon.",
+          "I have my test on Thursday afternoon.",
+          "On Thursday afternoon I have a test."
+        ],
+        "explanation": "You can say \"My test is on Thursday afternoon.\" We use \"on\" with a day of the week."
+      }
+    }
+  },
+  "a1p16l1": {
+    "a1p16q3": {
+      "travel": {
+        "prompt": "We ___ breakfast at the hotel every morning.",
+        "choices": ["eats", "eating", "eat", "are eat"],
+        "answer": 2,
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"eat\". We eat breakfast at the hotel every morning."
+      },
+      "work": {
+        "prompt": "We ___ lunch together at the office every day.",
+        "choices": ["eats", "eating", "eat", "are eat"],
+        "answer": 2,
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"eat\". We eat lunch together at the office every day."
+      },
+      "school": {
+        "prompt": "We ___ lunch together at school every day.",
+        "choices": ["eats", "eating", "eat", "are eat"],
+        "answer": 2,
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"eat\". We eat lunch together at school every day."
+      }
+    }
+  },
+  "a1p16l2": {
+    "a1p16q29": {
+      "travel": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "She cooks dinner for the tourists every evening.",
+        "choices": [
+          "She cooking dinner for the tourists every evening.",
+          "She cooks dinner for the tourists every morning.",
+          "She cooks dinner for the tourists every evening.",
+          "She cooks lunch for the tourists every evening."
+        ],
+        "answer": "She cooks dinner for the tourists every evening.",
+        "explanation": "You heard \"She cooks dinner for the tourists every evening.\" The other choices change one word."
+      },
+      "work": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "She cooks lunch for the team every day.",
+        "choices": [
+          "She cooks lunch for the team every night.",
+          "She cooks dinner for the team every day.",
+          "She cooks lunch for the team every day.",
+          "She cooking lunch for the team every day."
+        ],
+        "answer": "She cooks lunch for the team every day.",
+        "explanation": "You heard \"She cooks lunch for the team every day.\" The other choices change one word."
+      },
+      "school": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "She cooks lunch for the students every day.",
+        "choices": [
+          "She cooks dinner for the students every day.",
+          "She cooks lunch for the students every day.",
+          "She cooks lunch for the students every night.",
+          "She cooking lunch for the students every day."
+        ],
+        "answer": "She cooks lunch for the students every day.",
+        "explanation": "You heard \"She cooks lunch for the students every day.\" The other choices change one word."
+      }
+    },
+    "a1p16q30": {
+      "travel": {
+        "prompt": "Say that your train leaves at half past eight.",
+        "acceptableAnswers": [
+          "My train leaves at half past eight.",
+          "My train leaves at 8:30.",
+          "My train departs at half past eight.",
+          "My train departs at 8:30."
+        ],
+        "explanation": "You can say \"My train leaves at half past eight.\" We use \"at\" with clock times."
+      },
+      "work": {
+        "prompt": "Say that your meeting starts at half past eight.",
+        "acceptableAnswers": [
+          "My meeting starts at half past eight.",
+          "My meeting starts at 8:30.",
+          "My meeting begins at half past eight.",
+          "My meeting begins at 8:30."
+        ],
+        "explanation": "You can say \"My meeting starts at half past eight.\" We use \"at\" with clock times."
+      },
+      "school": {
+        "prompt": "Say that your class starts at half past eight.",
+        "acceptableAnswers": [
+          "My class starts at half past eight.",
+          "My class starts at 8:30.",
+          "My class begins at half past eight.",
+          "My lesson starts at half past eight."
+        ],
+        "explanation": "You can say \"My class starts at half past eight.\" We use \"at\" with clock times."
+      }
+    },
+    "a1p16q5": {
+      "travel": {
+        "prompt": "The guide ___ around the city by bus every day.",
+        "choices": ["travels", "travel", "traveling", "to travel"],
+        "answer": 0,
+        "explanation": "A singular subject takes the -s form in the present simple: \"travels\". The guide travels around the city by bus every day."
+      },
+      "work": {
+        "prompt": "She ___ to the office by train every day.",
+        "choices": ["travels", "travel", "traveling", "to travel"],
+        "answer": 0,
+        "explanation": "A singular subject takes the -s form in the present simple: \"travels\". She travels to the office by train every day."
+      },
+      "school": {
+        "prompt": "She ___ to school by bus every day.",
+        "choices": ["travels", "travel", "traveling", "to travel"],
+        "answer": 0,
+        "explanation": "A singular subject takes the -s form in the present simple: \"travels\". She travels to school by bus every day."
+      }
+    },
+    "a1p16q7": {
+      "travel": {
+        "prompt": "We ___ lunch at a cafe near the hotel.",
+        "choices": ["has", "having", "have", "hasn't"],
+        "answer": 2,
+        "explanation": "With the plural \"We\", the present simple uses \"have\". We have lunch at a cafe near the hotel."
+      },
+      "work": {
+        "prompt": "We ___ a team meeting every Monday.",
+        "choices": ["has", "having", "have", "hasn't"],
+        "answer": 2,
+        "explanation": "With the plural \"We\", the present simple uses \"have\". We have a team meeting every Monday."
+      },
+      "school": {
+        "prompt": "We ___ English class every Monday.",
+        "choices": ["has", "having", "have", "hasn't"],
+        "answer": 2,
+        "explanation": "With the plural \"We\", the present simple uses \"have\". We have English class every Monday."
+      }
+    }
+  },
+  "a1p16l3": {
+    "a1p16q11": {
+      "travel": {
+        "prompt": "We ___ the sunset from the hotel every evening.",
+        "bank": ["watch", "watches", "watching", "to watch"],
+        "answer": "watch",
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"watch\". We watch the sunset from the hotel every evening."
+      },
+      "work": {
+        "prompt": "We ___ the sales numbers every Friday.",
+        "bank": ["watch", "watches", "watching", "to watch"],
+        "answer": "watch",
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"watch\". We watch the sales numbers every Friday."
+      },
+      "school": {
+        "prompt": "We ___ a short video in class every Friday.",
+        "bank": ["watch", "watches", "watching", "to watch"],
+        "answer": "watch",
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"watch\". We watch a short video in class every Friday."
+      }
+    }
+  },
+  "a1p20l2": {
+    "a1p20q30": {
+      "travel": {
+        "prompt": "Say that you go to the beach by bike.",
+        "acceptableAnswers": [
+          "I go to the beach by bike.",
+          "I ride my bike to the beach.",
+          "I go to the beach on my bike.",
+          "I cycle to the beach."
+        ],
+        "explanation": "You can say \"I go to the beach by bike.\" We use \"by\" with a means of transport."
+      },
+      "work": {
+        "prompt": "Say that you go to the office by bike.",
+        "acceptableAnswers": [
+          "I go to the office by bike.",
+          "I ride my bike to the office.",
+          "I go to the office on my bike.",
+          "I cycle to the office."
+        ],
+        "explanation": "You can say \"I go to the office by bike.\" We use \"by\" with a means of transport."
+      },
+      "school": {
+        "prompt": "Say that you go to the library by bike.",
+        "acceptableAnswers": [
+          "I go to the library by bike.",
+          "I ride my bike to the library.",
+          "I go to the library on my bike.",
+          "I cycle to the library."
+        ],
+        "explanation": "You can say \"I go to the library by bike.\" We use \"by\" with a means of transport."
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "I usually take the train to the city",
+        "explanation": "You say \"I usually take the train to the city\". \"Usually\" comes before the verb to say what happens most days, and \"take\" goes with a train or a bus."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "I usually take the train to the office",
+        "explanation": "You say \"I usually take the train to the office\". \"Usually\" comes before the verb to say what happens most days, and \"take\" goes with a train or a bus."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "I usually take the bus to school",
+        "explanation": "You say \"I usually take the bus to school\". \"Usually\" comes before the verb to say what happens most days, and \"take\" goes with a train or a bus."
+      }
+    }
+  },
+  "a1p2l1": {
+    "a1p2q0": {
+      "travel": {
+        "prompt": "I ___ a tourist in this city.",
+        "choices": ["am", "is", "are", "be"],
+        "answer": 0,
+        "explanation": "\"am\" is the form of be that goes with \"I\". I am a tourist in this city."
+      },
+      "work": {
+        "prompt": "I ___ a new employee here.",
+        "choices": ["am", "is", "are", "be"],
+        "answer": 0,
+        "explanation": "\"am\" is the form of be that goes with \"I\". I am a new employee here."
+      },
+      "school": {
+        "prompt": "I ___ a new student at this school.",
+        "choices": ["am", "is", "are", "be"],
+        "answer": 0,
+        "explanation": "\"am\" is the form of be that goes with \"I\". I am a new student at this school."
+      }
+    },
+    "a1p2q2": {
+      "travel": {
+        "prompt": "The tourists ___ at the hotel.",
+        "choices": ["is", "am", "are", "be"],
+        "answer": 2,
+        "explanation": "\"are\" is the form of be that goes with a plural subject. The tourists are at the hotel."
+      },
+      "work": {
+        "prompt": "The managers ___ in a meeting.",
+        "choices": ["is", "am", "are", "be"],
+        "answer": 2,
+        "explanation": "\"are\" is the form of be that goes with a plural subject. The managers are in a meeting."
+      },
+      "school": {
+        "prompt": "The students ___ in the classroom.",
+        "choices": ["is", "am", "are", "be"],
+        "answer": 2,
+        "explanation": "\"are\" is the form of be that goes with a plural subject. The students are in the classroom."
+      }
+    },
+    "a1p2q26": {
+      "travel": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "She goes to the airport by taxi every day.",
+        "choices": [
+          "She goes to the airport by train every day.",
+          "She goes to the airport by taxi every day.",
+          "She go to the airport by taxi every day.",
+          "She going to the airport by taxi every day."
+        ],
+        "answer": "She goes to the airport by taxi every day.",
+        "explanation": "You heard \"She goes to the airport by taxi every day.\" The other choices change one word."
+      },
+      "work": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "She goes to the office by train every day.",
+        "choices": [
+          "She going to the office by train every day.",
+          "She goes to the office by train every day.",
+          "She go to the office by train every day.",
+          "She goes to the office by bus every day."
+        ],
+        "answer": "She goes to the office by train every day.",
+        "explanation": "You heard \"She goes to the office by train every day.\" The other choices change one word."
+      },
+      "school": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "He goes to school by bike every day.",
+        "choices": [
+          "He go to school by bike every day.",
+          "He going to school by bike every day.",
+          "He goes to school by bus every day.",
+          "He goes to school by bike every day."
+        ],
+        "answer": "He goes to school by bike every day.",
+        "explanation": "You heard \"He goes to school by bike every day.\" The other choices change one word."
+      }
+    },
+    "a1p2q3": {
+      "travel": {
+        "prompt": "The guide ___ to the museum every morning.",
+        "bank": ["go", "going", "goes", "is go"],
+        "answer": "goes",
+        "explanation": "A singular subject needs the -s form in the present simple: \"goes\". The guide goes to the museum every morning."
+      },
+      "work": {
+        "prompt": "Our manager ___ to the office by train every day.",
+        "bank": ["go", "going", "goes", "is go"],
+        "answer": "goes",
+        "explanation": "A singular subject needs the -s form in the present simple: \"goes\". Our manager goes to the office by train every day."
+      },
+      "school": {
+        "prompt": "My teacher ___ to school by bike every day.",
+        "bank": ["go", "going", "goes", "is go"],
+        "answer": "goes",
+        "explanation": "A singular subject needs the -s form in the present simple: \"goes\". My teacher goes to school by bike every day."
+      }
+    },
+    "a1p2q4": {
+      "travel": {
+        "prompt": "We ___ the city map every morning.",
+        "choices": ["study", "studies", "studying", "are study"],
+        "answer": 0,
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"study\". We study the city map every morning."
+      },
+      "work": {
+        "prompt": "We ___ the sales report every Monday.",
+        "choices": ["study", "studies", "studying", "are study"],
+        "answer": 0,
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"study\". We study the sales report every Monday."
+      },
+      "school": {
+        "prompt": "We ___ English at school every day.",
+        "choices": ["study", "studies", "studying", "are study"],
+        "answer": 0,
+        "explanation": "With the plural \"We\", the present simple uses the base verb: \"study\". We study English at school every day."
+      }
+    }
+  },
+  "a1p2l2": {
+    "a1p2q29": {
+      "travel": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The beach is crowded today.",
+        "choices": [
+          "The beach is closed today.",
+          "The beach is crowded today.",
+          "The beach am crowded today.",
+          "The beach are crowded today."
+        ],
+        "answer": "The beach is crowded today.",
+        "explanation": "You heard \"The beach is crowded today.\" The other choices change one word."
+      },
+      "work": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The office is quiet today.",
+        "choices": [
+          "The office are quiet today.",
+          "The office am quiet today.",
+          "The office is quiet today.",
+          "The office is closed today."
+        ],
+        "answer": "The office is quiet today.",
+        "explanation": "You heard \"The office is quiet today.\" The other choices change one word."
+      },
+      "school": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The library is open today.",
+        "choices": [
+          "The library am open today.",
+          "The library are open today.",
+          "The library is open today.",
+          "The library is closed today."
+        ],
+        "answer": "The library is open today.",
+        "explanation": "You heard \"The library is open today.\" The other choices change one word."
+      }
+    },
+    "a1p2q6": {
+      "travel": {
+        "prompt": "The people at the hotel ___ very kind.",
+        "choices": ["is", "am", "are", "be"],
+        "answer": 2,
+        "explanation": "\"are\" is the form of be that goes with a plural subject. The people at the hotel are very kind."
+      },
+      "work": {
+        "prompt": "My coworkers ___ very helpful.",
+        "choices": ["is", "am", "are", "be"],
+        "answer": 2,
+        "explanation": "\"are\" is the form of be that goes with a plural subject. My coworkers are very helpful."
+      },
+      "school": {
+        "prompt": "My classmates ___ very friendly.",
+        "choices": ["is", "am", "are", "be"],
+        "answer": 2,
+        "explanation": "\"are\" is the form of be that goes with a plural subject. My classmates are very friendly."
+      }
+    },
+    "a1p2q7": {
+      "travel": {
+        "prompt": "The guide ___ coffee at the hotel every morning.",
+        "bank": ["drink", "drinking", "is drink", "drinks"],
+        "answer": "drinks",
+        "explanation": "A singular subject takes the -s form in the present simple: \"drinks\". The guide drinks coffee at the hotel every morning."
+      },
+      "work": {
+        "prompt": "My boss ___ coffee at her desk every morning.",
+        "bank": ["drink", "drinking", "is drink", "drinks"],
+        "answer": "drinks",
+        "explanation": "A singular subject takes the -s form in the present simple: \"drinks\". My boss drinks coffee at her desk every morning."
+      },
+      "school": {
+        "prompt": "My teacher ___ coffee before class every morning.",
+        "bank": ["drink", "drinking", "is drink", "drinks"],
+        "answer": "drinks",
+        "explanation": "A singular subject takes the -s form in the present simple: \"drinks\". My teacher drinks coffee before class every morning."
+      }
+    },
+    "a1p2q8": {
+      "travel": {
+        "prompt": "I ___ like crowded beaches.",
+        "choices": ["don't", "doesn't", "isn't", "aren't"],
+        "answer": 0,
+        "explanation": "With \"I\", the present simple negative uses \"don't\" (do not). I don't like crowded beaches."
+      },
+      "work": {
+        "prompt": "I ___ like long meetings.",
+        "choices": ["don't", "doesn't", "isn't", "aren't"],
+        "answer": 0,
+        "explanation": "With \"I\", the present simple negative uses \"don't\" (do not). I don't like long meetings."
+      },
+      "school": {
+        "prompt": "I ___ like early classes.",
+        "choices": ["don't", "doesn't", "isn't", "aren't"],
+        "answer": 0,
+        "explanation": "With \"I\", the present simple negative uses \"don't\" (do not). I don't like early classes."
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "The tourists drink coffee at the cafe.",
+        "explanation": "You say \"The tourists drink coffee at the cafe.\" With a plural subject, the verb \"drink\" has no -s."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "My coworkers drink coffee at their desks.",
+        "explanation": "You say \"My coworkers drink coffee at their desks.\" With a plural subject, the verb \"drink\" has no -s."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "My classmates drink juice at lunch.",
+        "explanation": "You say \"My classmates drink juice at lunch.\" With a plural subject, the verb \"drink\" has no -s."
+      }
+    }
+  },
+  "a1p2l3": {
+    "a1p2q10": {
+      "travel": {
+        "prompt": "___ you a tourist here?",
+        "bank": ["Are", "Is", "Am", "Do"],
+        "answer": "Are",
+        "explanation": "A question with \"you\" starts with \"Are\" when it uses the verb be. Are you a tourist here?"
+      },
+      "work": {
+        "prompt": "___ you the new manager?",
+        "bank": ["Are", "Is", "Am", "Do"],
+        "answer": "Are",
+        "explanation": "A question with \"you\" starts with \"Are\" when it uses the verb be. Are you the new manager?"
+      },
+      "school": {
+        "prompt": "___ you a new student?",
+        "bank": ["Are", "Is", "Am", "Do"],
+        "answer": "Are",
+        "explanation": "A question with \"you\" starts with \"Are\" when it uses the verb be. Are you a new student?"
+      }
+    },
+    "a1p2q12": {
+      "travel": {
+        "prompt": "The tickets ___ on the table.",
+        "bank": ["is", "are", "am", "be"],
+        "answer": "are",
+        "explanation": "\"are\" is the form of be that goes with a plural subject. The tickets are on the table."
+      },
+      "work": {
+        "prompt": "The reports ___ on my desk.",
+        "bank": ["is", "are", "am", "be"],
+        "answer": "are",
+        "explanation": "\"are\" is the form of be that goes with a plural subject. The reports are on my desk."
+      },
+      "school": {
+        "prompt": "The books ___ on my desk.",
+        "bank": ["is", "are", "am", "be"],
+        "answer": "are",
+        "explanation": "\"are\" is the form of be that goes with a plural subject. The books are on my desk."
+      }
+    }
+  },
+  "a1p2l4": {
+    "a1p2q15": {
+      "travel": {
+        "prompt": "She ___ a ticket for the train.",
+        "choices": ["have", "is", "has", "having"],
+        "answer": 2,
+        "explanation": "A singular subject takes \"has\", not \"have\", for having something. She has a ticket for the train."
+      },
+      "work": {
+        "prompt": "She ___ a meeting at ten.",
+        "choices": ["have", "is", "has", "having"],
+        "answer": 2,
+        "explanation": "A singular subject takes \"has\", not \"have\", for having something. She has a meeting at ten."
+      },
+      "school": {
+        "prompt": "She ___ a test on Friday.",
+        "choices": ["have", "is", "has", "having"],
+        "answer": 2,
+        "explanation": "A singular subject takes \"has\", not \"have\", for having something. She has a test on Friday."
+      }
+    },
+    "a1p2q17": {
+      "travel": {
+        "prompt": "___ the station far from here?",
+        "choices": ["Is", "Are", "Am", "Do"],
+        "answer": 0,
+        "explanation": "With a singular subject, a question with be starts with \"Is\". Is the station far from here?"
+      },
+      "work": {
+        "prompt": "___ it time for the meeting?",
+        "choices": ["Is", "Are", "Am", "Do"],
+        "answer": 0,
+        "explanation": "With a singular subject, a question with be starts with \"Is\". Is it time for the meeting?"
+      },
+      "school": {
+        "prompt": "___ it time for class?",
+        "choices": ["Is", "Are", "Am", "Do"],
+        "answer": 0,
+        "explanation": "With a singular subject, a question with be starts with \"Is\". Is it time for class?"
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "We are ready for the tour.",
+        "explanation": "You say \"We are ready for the tour.\" With \"We\", the verb be takes the form \"are\"."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "We are ready for the meeting.",
+        "explanation": "You say \"We are ready for the meeting.\" With \"We\", the verb be takes the form \"are\"."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "We are ready for the test.",
+        "explanation": "You say \"We are ready for the test.\" With \"We\", the verb be takes the form \"are\"."
+      }
+    }
+  },
+  "a1p2l5": {
+    "a1p2q20": {
+      "travel": {
+        "prompt": "The museum ___ at nine every day.",
+        "choices": ["open", "opening", "opens", "do open"],
+        "answer": 2,
+        "explanation": "A singular subject takes the -s form in the present simple: \"opens\". The museum opens at nine every day."
+      },
+      "work": {
+        "prompt": "The office ___ at eight every day.",
+        "choices": ["open", "opening", "opens", "do open"],
+        "answer": 2,
+        "explanation": "A singular subject takes the -s form in the present simple: \"opens\". The office opens at eight every day."
+      },
+      "school": {
+        "prompt": "The library ___ at eight every day.",
+        "choices": ["open", "opening", "opens", "do open"],
+        "answer": 2,
+        "explanation": "A singular subject takes the -s form in the present simple: \"opens\". The library opens at eight every day."
+      }
+    },
+    "a1p2q24": {
+      "travel": {
+        "prompt": "The guide ___ in Rome now.",
+        "choices": ["live", "living", "lives", "is live"],
+        "answer": 2,
+        "explanation": "A singular subject takes the -s form in the present simple: \"lives\". The guide lives in Rome now."
+      },
+      "work": {
+        "prompt": "Our manager ___ in Chicago now.",
+        "choices": ["live", "living", "lives", "is live"],
+        "answer": 2,
+        "explanation": "A singular subject takes the -s form in the present simple: \"lives\". Our manager lives in Chicago now."
+      },
+      "school": {
+        "prompt": "My teacher ___ near the school now.",
+        "choices": ["live", "living", "lives", "is live"],
+        "answer": 2,
+        "explanation": "A singular subject takes the -s form in the present simple: \"lives\". My teacher lives near the school now."
+      }
+    }
+  },
+  "a1p4l1": {
+    "a1p4q0": {
+      "travel": {
+        "prompt": "Our flight is ___ 15 March.",
+        "choices": ["at", "by", "on", "in"],
+        "answer": 2,
+        "explanation": "We use \"on\" with dates. Our flight is on 15 March."
+      },
+      "work": {
+        "prompt": "The meeting is ___ 15 March.",
+        "choices": ["at", "by", "on", "in"],
+        "answer": 2,
+        "explanation": "We use \"on\" with dates. The meeting is on 15 March."
+      },
+      "school": {
+        "prompt": "The test is ___ 15 March.",
+        "choices": ["at", "by", "on", "in"],
+        "answer": 2,
+        "explanation": "We use \"on\" with dates. The test is on 15 March."
+      }
+    },
+    "a1p4q1": {
+      "travel": {
+        "prompt": "We visited Paris ___ 2019.",
+        "bank": ["on", "at", "for", "in"],
+        "answer": "in",
+        "explanation": "We use \"in\" with years. We visited Paris in 2019."
+      },
+      "work": {
+        "prompt": "I started this job ___ 2022.",
+        "bank": ["on", "at", "for", "in"],
+        "answer": "in",
+        "explanation": "We use \"in\" with years. I started this job in 2022."
+      },
+      "school": {
+        "prompt": "I started school ___ 2012.",
+        "bank": ["on", "at", "for", "in"],
+        "answer": "in",
+        "explanation": "We use \"in\" with years. I started school in 2012."
+      }
+    },
+    "a1p4q2": {
+      "travel": {
+        "prompt": "The train leaves ___ seven o'clock.",
+        "choices": ["at", "in", "on", "for"],
+        "answer": 0,
+        "explanation": "We use \"at\" with clock times. The train leaves at seven o'clock."
+      },
+      "work": {
+        "prompt": "The shift starts ___ seven o'clock.",
+        "choices": ["at", "in", "on", "for"],
+        "answer": 0,
+        "explanation": "We use \"at\" with clock times. The shift starts at seven o'clock."
+      },
+      "school": {
+        "prompt": "The bus to school leaves ___ seven o'clock.",
+        "choices": ["at", "in", "on", "for"],
+        "answer": 0,
+        "explanation": "We use \"at\" with clock times. The bus to school leaves at seven o'clock."
+      }
+    },
+    "a1p4q26": {
+      "travel": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The ticket is under the bag.",
+        "choices": [
+          "The ticket is above the bag.",
+          "The ticket is under the bag.",
+          "The ticket is behind the bag.",
+          "The ticket is beside the bag."
+        ],
+        "answer": "The ticket is under the bag.",
+        "explanation": "You heard \"The ticket is under the bag.\" The other choices change one word."
+      },
+      "work": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The folder is under the laptop.",
+        "choices": [
+          "The folder is beside the laptop.",
+          "The folder is above the laptop.",
+          "The folder is behind the laptop.",
+          "The folder is under the laptop."
+        ],
+        "answer": "The folder is under the laptop.",
+        "explanation": "You heard \"The folder is under the laptop.\" The other choices change one word."
+      },
+      "school": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The pencil is under the notebook.",
+        "choices": [
+          "The pencil is beside the notebook.",
+          "The pencil is behind the notebook.",
+          "The pencil is above the notebook.",
+          "The pencil is under the notebook."
+        ],
+        "answer": "The pencil is under the notebook.",
+        "explanation": "You heard \"The pencil is under the notebook.\" The other choices change one word."
+      }
+    },
+    "a1p4q4": {
+      "travel": {
+        "prompt": "We are staying ___ Paris.",
+        "choices": ["on", "at", "in", "to"],
+        "answer": 2,
+        "explanation": "We use \"in\" with cities and countries. We are staying in Paris."
+      },
+      "work": {
+        "prompt": "My company is ___ Chicago.",
+        "choices": ["on", "at", "in", "to"],
+        "answer": 2,
+        "explanation": "We use \"in\" with cities and countries. My company is in Chicago."
+      },
+      "school": {
+        "prompt": "My school is ___ Boston.",
+        "choices": ["on", "at", "in", "to"],
+        "answer": 2,
+        "explanation": "We use \"in\" with cities and countries. My school is in Boston."
+      }
+    }
+  },
+  "a1p4l2": {
+    "a1p4q8": {
+      "travel": {
+        "prompt": "Our trip to Spain is ___ May.",
+        "choices": ["on", "at", "in", "for"],
+        "answer": 2,
+        "explanation": "We use \"in\" with months. Our trip to Spain is in May."
+      },
+      "work": {
+        "prompt": "The new manager arrives ___ May.",
+        "choices": ["on", "at", "in", "for"],
+        "answer": 2,
+        "explanation": "We use \"in\" with months. The new manager arrives in May."
+      },
+      "school": {
+        "prompt": "The exchange students arrive ___ May.",
+        "choices": ["on", "at", "in", "for"],
+        "answer": 2,
+        "explanation": "We use \"in\" with months. The exchange students arrive in May."
+      }
+    },
+    "a1p4q9": {
+      "travel": {
+        "prompt": "We leave ___ Friday evening.",
+        "bank": ["at", "in", "on", "by"],
+        "answer": "on",
+        "explanation": "We use \"on\" with days of the week, even with a part of the day. We leave on Friday evening."
+      },
+      "work": {
+        "prompt": "The team meets ___ Friday morning.",
+        "bank": ["at", "in", "on", "by"],
+        "answer": "on",
+        "explanation": "We use \"on\" with days of the week, even with a part of the day. The team meets on Friday morning."
+      },
+      "school": {
+        "prompt": "The class trip is ___ Friday morning.",
+        "bank": ["at", "in", "on", "by"],
+        "answer": "on",
+        "explanation": "We use \"on\" with days of the week, even with a part of the day. The class trip is on Friday morning."
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "The tour starts at nine o'clock",
+        "explanation": "You say \"The tour starts at nine o'clock\". We use \"at\" with clock times."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "The meeting starts at nine o'clock",
+        "explanation": "You say \"The meeting starts at nine o'clock\". We use \"at\" with clock times."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "The exam starts at nine o'clock",
+        "explanation": "You say \"The exam starts at nine o'clock\". We use \"at\" with clock times."
+      }
+    }
+  },
+  "a1p4l3": {
+    "a1p4q10": {
+      "travel": {
+        "prompt": "The tour bus stops ___ the hotel door. (at that exact point)",
+        "choices": ["at", "in", "under"],
+        "answer": 0,
+        "explanation": "We use \"at\" for one exact point or place. The tour bus stops at the hotel door."
+      },
+      "work": {
+        "prompt": "The shuttle stops ___ the office gate. (at that exact point)",
+        "choices": ["at", "in", "under"],
+        "answer": 0,
+        "explanation": "We use \"at\" for one exact point or place. The shuttle stops at the office gate."
+      },
+      "school": {
+        "prompt": "The school bus stops ___ the school gate. (at that exact point)",
+        "choices": ["at", "in", "under"],
+        "answer": 0,
+        "explanation": "We use \"at\" for one exact point or place. The school bus stops at the school gate."
+      }
+    },
+    "a1p4q12": {
+      "travel": {
+        "prompt": "My passport is ___ my bag. (inside it)",
+        "bank": ["on", "under", "behind", "in"],
+        "answer": "in",
+        "explanation": "We use \"in\" for something inside a container. My passport is in my bag."
+      },
+      "work": {
+        "prompt": "My laptop is ___ my bag. (inside it)",
+        "bank": ["on", "under", "behind", "in"],
+        "answer": "in",
+        "explanation": "We use \"in\" for something inside a container. My laptop is in my bag."
+      },
+      "school": {
+        "prompt": "My notebook is ___ my bag. (inside it)",
+        "bank": ["on", "under", "behind", "in"],
+        "answer": "in",
+        "explanation": "We use \"in\" for something inside a container. My notebook is in my bag."
+      }
+    }
+  },
+  "a1p4l4": {
+    "a1p4q18": {
+      "travel": {
+        "prompt": "We travel around the country ___ train.",
+        "bank": ["with", "at", "for", "by"],
+        "answer": "by",
+        "explanation": "We use \"by\" with a means of transport. We travel around the country by train."
+      },
+      "work": {
+        "prompt": "I travel to the office ___ train.",
+        "bank": ["with", "at", "for", "by"],
+        "answer": "by",
+        "explanation": "We use \"by\" with a means of transport. I travel to the office by train."
+      },
+      "school": {
+        "prompt": "I travel to school ___ train.",
+        "bank": ["with", "at", "for", "by"],
+        "answer": "by",
+        "explanation": "We use \"by\" with a means of transport. I travel to school by train."
+      }
+    },
+    "a1p4q19": {
+      "travel": {
+        "prompt": "The ferry leaves ___ midnight.",
+        "choices": ["at", "on", "in"],
+        "answer": 0,
+        "explanation": "We use \"at\" with clock times and night-time points like midnight. The ferry leaves at midnight."
+      },
+      "work": {
+        "prompt": "The night shift ends ___ midnight.",
+        "choices": ["at", "on", "in"],
+        "answer": 0,
+        "explanation": "We use \"at\" with clock times and night-time points like midnight. The night shift ends at midnight."
+      },
+      "school": {
+        "prompt": "The school dance ends ___ midnight.",
+        "choices": ["at", "on", "in"],
+        "answer": 0,
+        "explanation": "We use \"at\" with clock times and night-time points like midnight. The school dance ends at midnight."
+      }
+    },
+    "a1p4q35": {
+      "travel": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The taxi is behind the hotel.",
+        "choices": [
+          "The taxi is opposite the hotel.",
+          "The taxi is behind the hotel.",
+          "The taxi is beside the hotel.",
+          "The taxi is near the hotel."
+        ],
+        "answer": "The taxi is behind the hotel.",
+        "explanation": "You heard \"The taxi is behind the hotel.\" The other choices change one word."
+      },
+      "work": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The printer is behind the door.",
+        "choices": [
+          "The printer is beside the door.",
+          "The printer is behind the door.",
+          "The printer is near the door.",
+          "The printer is opposite the door."
+        ],
+        "answer": "The printer is behind the door.",
+        "explanation": "You heard \"The printer is behind the door.\" The other choices change one word."
+      },
+      "school": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "The bus is behind the school.",
+        "choices": [
+          "The bus is near the school.",
+          "The bus is beside the school.",
+          "The bus is behind the school.",
+          "The bus is opposite the school."
+        ],
+        "answer": "The bus is behind the school.",
+        "explanation": "You heard \"The bus is behind the school.\" The other choices change one word."
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "We travel to the airport by taxi",
+        "explanation": "You say \"We travel to the airport by taxi\". We use \"by\" with a means of transport."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "We travel to the office by subway",
+        "explanation": "You say \"We travel to the office by subway\". We use \"by\" with a means of transport."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "We travel to school by bus",
+        "explanation": "You say \"We travel to school by bus\". We use \"by\" with a means of transport."
+      }
+    }
+  },
+  "a1p4l5": {
+    "a1p4q20": {
+      "travel": {
+        "prompt": "We visit museums ___ the morning.",
+        "choices": ["in", "at", "on", "for"],
+        "answer": 0,
+        "explanation": "We say \"in\" the morning, \"in\" the afternoon and \"in\" the evening. We visit museums in the morning."
+      },
+      "work": {
+        "prompt": "I answer emails ___ the morning.",
+        "choices": ["in", "at", "on", "for"],
+        "answer": 0,
+        "explanation": "We say \"in\" the morning, \"in\" the afternoon and \"in\" the evening. I answer emails in the morning."
+      },
+      "school": {
+        "prompt": "I have math class ___ the morning.",
+        "choices": ["in", "at", "on", "for"],
+        "answer": 0,
+        "explanation": "We say \"in\" the morning, \"in\" the afternoon and \"in\" the evening. I have math class in the morning."
+      }
+    },
+    "a1p4q22": {
+      "travel": {
+        "prompt": "We are ___ vacation in Italy.",
+        "choices": ["in", "at", "on", "to"],
+        "answer": 2,
+        "explanation": "We say \"on\" vacation. We are on vacation in Italy."
+      },
+      "work": {
+        "prompt": "My boss is ___ vacation this week.",
+        "choices": ["in", "at", "on", "to"],
+        "answer": 2,
+        "explanation": "We say \"on\" vacation. My boss is on vacation this week."
+      },
+      "school": {
+        "prompt": "The students are ___ vacation this week.",
+        "choices": ["in", "at", "on", "to"],
+        "answer": 2,
+        "explanation": "We say \"on\" vacation. The students are on vacation this week."
+      }
+    }
+  },
+  "a1p5l1": {
+    "a1p5q27": {
+      "travel": {
+        "prompt": "Say that you take a taxi to the airport.",
+        "acceptableAnswers": [
+          "I take a taxi to the airport.",
+          "I take the taxi to the airport.",
+          "I go to the airport by taxi.",
+          "I get a taxi to the airport."
+        ],
+        "explanation": "You can say \"I take a taxi to the airport.\" You use the verb \"take\" with a means of transport."
+      },
+      "work": {
+        "prompt": "Say that you take the train to the office.",
+        "acceptableAnswers": [
+          "I take the train to the office.",
+          "I take a train to the office.",
+          "I go to the office by train.",
+          "I get the train to the office."
+        ],
+        "explanation": "You can say \"I take the train to the office.\" You use the verb \"take\" with a means of transport."
+      },
+      "school": {
+        "prompt": "Say that you take the bus to school.",
+        "acceptableAnswers": [
+          "I take the bus to school.",
+          "I take a bus to school.",
+          "I go to school by bus.",
+          "I get the bus to school."
+        ],
+        "explanation": "You can say \"I take the bus to school.\" You use the verb \"take\" with a means of transport."
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "I plan my trip after dinner.",
+        "explanation": "You say \"I plan my trip after dinner.\" The verb \"plan\" goes with \"trip\": you plan a trip before you go."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "I answer my emails after lunch.",
+        "explanation": "You say \"I answer my emails after lunch.\" The verb \"answer\" goes with \"emails\": you answer an email you receive."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "I read my textbook after school.",
+        "explanation": "You say \"I read my textbook after school.\" The verb \"read\" goes with \"textbook\": you read a textbook to study."
+      }
+    }
+  },
+  "a1p6l1": {
+    "a1p6q0": {
+      "travel": {
+        "prompt": "___ is the name of this street?",
+        "choices": ["What", "When", "Which", "Why"],
+        "answer": 0,
+        "explanation": "\"What\" asks for a name or a thing. What is the name of this street?"
+      },
+      "work": {
+        "prompt": "___ is your job title?",
+        "choices": ["What", "When", "Which", "Why"],
+        "answer": 0,
+        "explanation": "\"What\" asks for a name or a thing. What is your job title?"
+      },
+      "school": {
+        "prompt": "___ is the name of your school?",
+        "choices": ["What", "When", "Which", "Why"],
+        "answer": 0,
+        "explanation": "\"What\" asks for a name or a thing. What is the name of your school?"
+      }
+    },
+    "a1p6q1": {
+      "travel": {
+        "prompt": "___ is the hotel? Near the station.",
+        "bank": ["Where", "Which", "Why", "How"],
+        "answer": "Where",
+        "explanation": "\"Where\" asks about a place. Where is the hotel? Near the station."
+      },
+      "work": {
+        "prompt": "___ is your office? In Chicago.",
+        "bank": ["Where", "Which", "Why", "How"],
+        "answer": "Where",
+        "explanation": "\"Where\" asks about a place. Where is your office? In Chicago."
+      },
+      "school": {
+        "prompt": "___ is your school? Near the park.",
+        "bank": ["Where", "Which", "Why", "How"],
+        "answer": "Where",
+        "explanation": "\"Where\" asks about a place. Where is your school? Near the park."
+      }
+    },
+    "a1p6q2": {
+      "travel": {
+        "prompt": "___ is the train late? Because of the storm.",
+        "choices": ["Which", "Where", "Why", "When"],
+        "answer": 2,
+        "explanation": "\"Why\" asks for a reason. Why is the train late? Because of the storm."
+      },
+      "work": {
+        "prompt": "___ are you late? Because of a meeting.",
+        "choices": ["Which", "Where", "Why", "When"],
+        "answer": 2,
+        "explanation": "\"Why\" asks for a reason. Why are you late? Because of a meeting."
+      },
+      "school": {
+        "prompt": "___ are you late? Because I missed the bus.",
+        "choices": ["Which", "Where", "Why", "When"],
+        "answer": 2,
+        "explanation": "\"Why\" asks for a reason. Why are you late? Because I missed the bus."
+      }
+    },
+    "a1p6q3": {
+      "travel": {
+        "prompt": "___ does the tour start? At nine o'clock.",
+        "bank": ["When", "How", "Whose", "What"],
+        "answer": "When",
+        "explanation": "\"When\" asks about a time. When does the tour start? At nine o'clock."
+      },
+      "work": {
+        "prompt": "___ does the meeting start? At ten o'clock.",
+        "bank": ["When", "How", "Whose", "What"],
+        "answer": "When",
+        "explanation": "\"When\" asks about a time. When does the meeting start? At ten o'clock."
+      },
+      "school": {
+        "prompt": "___ does the class start? At nine o'clock.",
+        "bank": ["When", "How", "Whose", "What"],
+        "answer": "When",
+        "explanation": "\"When\" asks about a time. When does the class start? At nine o'clock."
+      }
+    },
+    "a1p6q4": {
+      "travel": {
+        "prompt": "___ is that man? Our tour guide.",
+        "choices": ["Who", "How", "What", "When"],
+        "answer": 0,
+        "explanation": "\"Who\" asks about a person. Who is that man? Our tour guide."
+      },
+      "work": {
+        "prompt": "___ is that woman? Our new manager.",
+        "choices": ["Who", "How", "What", "When"],
+        "answer": 0,
+        "explanation": "\"Who\" asks about a person. Who is that woman? Our new manager."
+      },
+      "school": {
+        "prompt": "___ is that man? The school principal.",
+        "choices": ["Who", "How", "What", "When"],
+        "answer": 0,
+        "explanation": "\"Who\" asks about a person. Who is that man? The school principal."
+      }
+    }
+  },
+  "a1p6l2": {
+    "a1p6q5": {
+      "travel": {
+        "prompt": "___ much is a ticket to the museum?",
+        "bank": ["Where", "Which", "How", "Whose"],
+        "answer": "How",
+        "explanation": "\"How\" goes before \"much\" to ask about a price. How much is a ticket to the museum?"
+      },
+      "work": {
+        "prompt": "___ much is the conference ticket?",
+        "bank": ["Where", "Which", "How", "Whose"],
+        "answer": "How",
+        "explanation": "\"How\" goes before \"much\" to ask about a price. How much is the conference ticket?"
+      },
+      "school": {
+        "prompt": "___ much is the bus pass for school?",
+        "bank": ["Where", "Which", "How", "Whose"],
+        "answer": "How",
+        "explanation": "\"How\" goes before \"much\" to ask about a price. How much is the bus pass for school?"
+      }
+    },
+    "a1p6q8": {
+      "travel": {
+        "prompt": "___ old is this castle?",
+        "choices": ["How", "What", "Where", "Who"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"old\" to ask about age. How old is this castle?"
+      },
+      "work": {
+        "prompt": "___ old is your company?",
+        "choices": ["How", "What", "Where", "Who"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"old\" to ask about age. How old is your company?"
+      },
+      "school": {
+        "prompt": "___ old is your school?",
+        "choices": ["How", "What", "Where", "Who"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"old\" to ask about age. How old is your school?"
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Where is the train station?",
+        "explanation": "You say \"Where is the train station?\" You start with \"Where\" to ask about a place."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Where is the meeting room?",
+        "explanation": "You say \"Where is the meeting room?\" You start with \"Where\" to ask about a place."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Where is the school library?",
+        "explanation": "You say \"Where is the school library?\" You start with \"Where\" to ask about a place."
+      }
+    }
+  },
+  "a1p6l3": {
+    "a1p6q13": {
+      "travel": {
+        "prompt": "___ often does the train to the airport leave?",
+        "choices": ["How", "Which", "When", "Why"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"often\" to ask about frequency. How often does the train to the airport leave?"
+      },
+      "work": {
+        "prompt": "___ often do you have team meetings?",
+        "choices": ["How", "Which", "When", "Why"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"often\" to ask about frequency. How often do you have team meetings?"
+      },
+      "school": {
+        "prompt": "___ often do you have English class?",
+        "choices": ["How", "Which", "When", "Why"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"often\" to ask about frequency. How often do you have English class?"
+      }
+    },
+    "a1p6q14": {
+      "travel": {
+        "prompt": "___ do you get to the airport? By train.",
+        "bank": ["How", "Where", "Who", "When"],
+        "answer": "How",
+        "explanation": "\"How\" asks about the way of traveling. How do you get to the airport? By train."
+      },
+      "work": {
+        "prompt": "___ do you get to the office? By subway.",
+        "bank": ["How", "Where", "Who", "When"],
+        "answer": "How",
+        "explanation": "\"How\" asks about the way of traveling. How do you get to the office? By subway."
+      },
+      "school": {
+        "prompt": "___ do you get to school? By bike.",
+        "bank": ["How", "Where", "Who", "When"],
+        "answer": "How",
+        "explanation": "\"How\" asks about the way of traveling. How do you get to school? By bike."
+      }
+    }
+  },
+  "a1p6l4": {
+    "a1p6q19": {
+      "travel": {
+        "prompt": "___ is the next bus to the city? At noon.",
+        "choices": ["Where", "Which", "When", "Why"],
+        "answer": 2,
+        "explanation": "\"When\" asks about a time or a day. When is the next bus to the city? At noon."
+      },
+      "work": {
+        "prompt": "___ can we have the meeting? On Tuesday.",
+        "choices": ["Where", "Which", "When", "Why"],
+        "answer": 2,
+        "explanation": "\"When\" asks about a time or a day. When can we have the meeting? On Tuesday."
+      },
+      "school": {
+        "prompt": "___ is the test? On Friday.",
+        "choices": ["Where", "Which", "When", "Why"],
+        "answer": 2,
+        "explanation": "\"When\" asks about a time or a day. When is the test? On Friday."
+      }
+    },
+    "a1p6q35": {
+      "travel": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "How far is the airport?",
+        "choices": [
+          "Why far is the airport?",
+          "How far is the airport?",
+          "When far is the airport?",
+          "What far is the airport?"
+        ],
+        "answer": "How far is the airport?",
+        "explanation": "You heard \"How far is the airport?\" The other choices change one word."
+      },
+      "work": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "How far is the office?",
+        "choices": [
+          "How far is the office?",
+          "When far is the office?",
+          "Why far is the office?",
+          "What far is the office?"
+        ],
+        "answer": "How far is the office?",
+        "explanation": "You heard \"How far is the office?\" The other choices change one word."
+      },
+      "school": {
+        "prompt": "Which sentence did you hear?",
+        "audioText": "How far is the school?",
+        "choices": [
+          "How far is the school?",
+          "When far is the school?",
+          "Why far is the school?",
+          "What far is the school?"
+        ],
+        "answer": "How far is the school?",
+        "explanation": "You heard \"How far is the school?\" The other choices change one word."
+      }
+    }
+  },
+  "a1p6l5": {
+    "a1p6q22": {
+      "travel": {
+        "prompt": "___ long does the flight take?",
+        "choices": ["How", "Who", "What", "Why"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"long\" to ask about time. How long does the flight take?"
+      },
+      "work": {
+        "prompt": "___ long does the meeting take?",
+        "choices": ["How", "Who", "What", "Why"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"long\" to ask about time. How long does the meeting take?"
+      },
+      "school": {
+        "prompt": "___ long does the test take?",
+        "choices": ["How", "Who", "What", "Why"],
+        "answer": 0,
+        "explanation": "\"How\" goes before \"long\" to ask about time. How long does the test take?"
+      }
+    }
+  }
+}

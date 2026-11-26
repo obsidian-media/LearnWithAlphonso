@@ -1006,6 +1006,40 @@ Deno.test(
   },
 );
 
+Deno.test(
+  "a goal variant's answer is graded correct on the server, and a wrong one is still a miss",
+  async () => {
+    // The learner saw the travel version of q2 ("e"/"f", right answer "f"); the server is never told which goal was
+    // shown, so it accepts an answer that is right in the base question OR in any variant.
+    const variantQ2 = {
+      ...QUESTIONS[1],
+      goal_variants: [{ goal: "travel", choices: ["e", "f"], answer_index: 1 }],
+    };
+    const right = setup();
+    right.db.lesson = {
+      id: "u1l1",
+      course: "fr",
+      units: { level_id: "A2" },
+      questions: [QUESTIONS[0], variantQ2],
+    };
+    const ok = await right.handler(post(body(["a", "f"])));
+    assertEquals(ok.status, 200);
+    assertEquals(right.db.rpcCalls[0].args._missed_question_ids, []);
+
+    const wrong = setup();
+    wrong.db.lesson = {
+      id: "u1l1",
+      course: "fr",
+      units: { level_id: "A2" },
+      questions: [QUESTIONS[0], variantQ2],
+    };
+    // "e" is the variant's WRONG choice; it must still be a miss.
+    const bad = await wrong.handler(post(body(["a", "e"])));
+    assertEquals(bad.status, 200);
+    assertEquals(wrong.db.rpcCalls[0].args._missed_question_ids, ["q2"]);
+  },
+);
+
 Deno.test("only friends actually passed get an overtake push", async () => {
   const { db, handler, pushes } = setup();
   const xp = computeXpGain(2, 2);

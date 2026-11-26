@@ -13,6 +13,16 @@ import Foundation
 /// exact prior behaviour without changes -- only `.speak` branches on it.
 public func isAnswerCorrect(_ question: Question, picked: String?, course: Course = .english) -> Bool {
     guard let picked else { return false }
+    if isAnswerCorrectForVersion(question, picked: picked, course: course) { return true }
+    // Goal-flavoured variants (GoalVariants.swift): the server is never told which goal a learner saw, so an answer
+    // that is right in ANY version of the question is right. Kept in step with srs.ts and the Deno copy.
+    return question.variantVersions().contains {
+        isAnswerCorrectForVersion($0, picked: picked, course: course)
+    }
+}
+
+/// One version of a question (the base, or a variant laid over it) against an answer.
+private func isAnswerCorrectForVersion(_ question: Question, picked: String, course: Course) -> Bool {
     switch question {
     case .multipleChoice(let q):
         return q.choices.indices.contains(q.answer) && q.choices[q.answer] == picked

@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import com.obsidianmedia.learnwithalphonso.core.content.resolveForGoal
 import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsProperties
 import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
 import com.obsidianmedia.learnwithalphonso.Analytics
@@ -93,6 +94,8 @@ data class LessonUiState(
     val elapsedMs: Long? = null,
     /** Bumped each time a wrong answer has spent a heart in the store, so the HUD reads the new count. */
     val heartsSpent: Int = 0,
+    /** The learner's goal from their first-run answers (null until read, or when skipped); see GoalVariant.kt. */
+    val goal: String? = null,
 ) {
     val total: Int get() = lesson.questions.size
     val isReinforcing: Boolean get() = activeReinforcement != null
@@ -128,6 +131,8 @@ class LessonViewModel(
     private val isPro: () -> Boolean = { false },
     /** How long a tapped Start waits for the session call (which has no deadline) before playing without it. */
     private val sessionWaitMs: Long = SESSION_WAIT_MS,
+    /** The learner's goal, for goal-flavoured questions (GoalVariant.kt). A failed read means the base questions. */
+    private val learnerGoal: suspend () -> String? = { null },
 ) : ViewModel() {
     companion object {
         /** How long a tapped Start waits for the start-lesson-session call before the lesson plays without it. */
@@ -136,6 +141,13 @@ class LessonViewModel(
 
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val goal = runCatching { learnerGoal() }.getOrNull()
+            _state.update { it.copy(goal = goal) }
+        }
+    }
     private var attemptSeed = UUID.randomUUID().toString()
 
     private val _soundEffects = MutableSharedFlow<SoundEffectRequest>(extraBufferCapacity = 16)
@@ -304,6 +316,9 @@ class LessonViewModel(
             return
         }
         timer = ActiveTimer(now())
+        // The questions are written for the learner's goal when they have a version for it. Fixed here, as the quiz
+        // starts, so a slow profile read never swaps a question under the learner's thumb; ids, count and order stay.
+        _state.update { it.copy(lesson = it.lesson.resolveForGoal(it.goal)) }
         _state.update { it.copy(phase = if (vocab.isEmpty()) LessonPhase.Quiz else LessonPhase.Vocab) }
     }
     fun startPractice() = _state.update { it.copy(phase = LessonPhase.Quiz) }

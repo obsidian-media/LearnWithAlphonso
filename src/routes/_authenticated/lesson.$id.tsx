@@ -36,6 +36,10 @@ import { VocabImage } from "../../components/VocabImage";
 import { COURSES, getCourse, localeForCourse, type Course } from "../../data/courses";
 import { pickReinforcementQuestion, reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
+import { lessonHasGoalVariant, resolveForGoal } from "../../lib/goal-variants";
+import { useLearnerGoal } from "../../lib/use-learner-goal";
+import { GoalTag } from "../../components/GoalTag";
+import type { Goal } from "../../lib/learner-profile";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
 import { canSpeak, speak } from "../../lib/speech";
 import { useProgress } from "../../lib/progress";
@@ -194,12 +198,20 @@ function LessonPage() {
   // Fresh per-mount seed so replaying the same lesson shuffles answer
   // order differently each time, instead of always looking identical.
   const [attemptSeed] = useState(() => `${id}-${Date.now()}-${Math.random()}`);
+  // Goal-flavoured variants (goal-variants.ts): the questions are written for the learner's goal when they have a
+  // variant for it. The goal is fixed when the quiz starts, so a slow profile read never swaps a question under
+  // the learner's thumb.
+  const learnerGoal = useLearnerGoal();
+  const quizGoal = useRef<{ goal: Goal | null } | null>(null);
+  if (phase === "quiz" && !quizGoal.current) quizGoal.current = { goal: learnerGoal };
+  const goal = quizGoal.current ? quizGoal.current.goal : learnerGoal;
   const questions = useMemo(
     () =>
       (maybeLesson?.questions ?? []).map((question, i) =>
-        reshuffleQuestion(question, `${attemptSeed}-${i}`),
+        // Resolve for the goal BEFORE reshuffling: the shuffle must see the variant's own choices and answer.
+        reshuffleQuestion(resolveForGoal(question, goal), `${attemptSeed}-${i}`),
       ),
-    [maybeLesson, attemptSeed],
+    [maybeLesson, attemptSeed, goal],
   );
 
   // When the verdict sheet rises, the list scrolls the right answer into view above it.
@@ -707,6 +719,7 @@ function LessonPage() {
           unitLine={unitLine}
           words={vocab.length}
           wordSample={vocab.slice(0, 3).map((v) => v.term.replace(/[.!?…]+$/, ""))}
+          goalTag={lessonHasGoalVariant(lesson, goal) ? goal : null}
           questions={total}
           kinds={practiceKinds(questions.map((q) => q.type))}
           minutes={estimateLessonMinutes(questions, vocab.length)}
@@ -782,6 +795,9 @@ function LessonPage() {
         />
         <div className="relative z-[4] flex flex-1 flex-col gap-3 px-4 pb-4">
           <div className={layout.size === "small" ? "-mt-9" : "-mt-11"}>
+            {!isReinforcing && goal && lesson.questions[idx]?.goalVariants?.[goal] && (
+              <GoalTag goal={goal} className="mb-2" />
+            )}
             <AlphonsoBubble
               label={bubbleLabel}
               onPlay={onPlay}
@@ -1207,7 +1223,10 @@ function OverviewScreen({
   start = "ready",
   onStart,
   onRetry,
+  goalTag = null,
 }: {
+  /** The learner's goal when this lesson has questions written for it: shows the "For your goal" pill. */
+  goalTag?: Goal | null;
   title: string;
   unitLine: string;
   words: number;
@@ -1270,6 +1289,11 @@ function OverviewScreen({
           </>
         }
       />
+      {goalTag && (
+        <div className="px-[18px] pt-3">
+          <GoalTag goal={goalTag} />
+        </div>
+      )}
       <p data-lesson-meta="" className="px-[18px] pt-3 ds-type-footnote font-bold text-ds-ink-soft">
         {`About ${minutes} min · ${questions} question${questions === 1 ? "" : "s"} · Up to ${maxXp} XP`}
       </p>

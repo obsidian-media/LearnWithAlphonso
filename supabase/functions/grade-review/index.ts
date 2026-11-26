@@ -202,7 +202,7 @@ export async function handleRequest(req: Request): Promise<Response> {
       // live in `bank`, and the prompt is what the AI grader is marking
       // against. Without them a translate row grades as a bare string
       // comparison against its canonical answer alone.
-      .select("type, prompt, choices, bank, answer_index, answer_text")
+      .select("type, prompt, choices, bank, answer_index, answer_text, goal_variants")
       .eq("lesson_id", lessonId)
       .eq("id", questionId)
       .maybeSingle();

@@ -17,6 +17,14 @@ type Case = {
   acceptable?: string[];
   submission?: string;
   reply?: Record<string, unknown>;
+  /** Goal-flavoured versions of the question: the input is right when it is right for the case OR for any of these. */
+  variants?: {
+    choices?: string[];
+    answerIndex?: number;
+    answer?: string;
+    bank?: string[];
+    acceptable?: string[];
+  }[];
   expected: boolean;
   runtimes?: Runtime[];
 };
@@ -40,6 +48,15 @@ async function grade(c: Case): Promise<boolean> {
     bank: c.kind === "translate" ? c.acceptable! : null,
     answer_index: c.kind === "mc" ? c.answerIndex! : null,
     answer_text: c.answer ?? null,
+    // The DB keeps a variant in the row's own shape (the translate wordings ride in `bank`).
+    goal_variants: c.variants?.map((v, i) => ({
+      goal: "g" + i,
+      ...(v.choices ? { choices: v.choices } : {}),
+      ...(v.answerIndex !== undefined ? { answer_index: v.answerIndex } : {}),
+      ...(v.answer !== undefined ? { answer_text: v.answer } : {}),
+      ...(v.acceptable ? { bank: v.acceptable } : {}),
+      ...(v.bank ? { bank: v.bank } : {}),
+    })),
   };
   return await deriveAnswerCorrectness(row, c.input!, course);
 }

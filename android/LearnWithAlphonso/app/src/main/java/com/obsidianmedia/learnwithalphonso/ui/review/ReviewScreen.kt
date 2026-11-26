@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.review
 
+import com.obsidianmedia.learnwithalphonso.core.content.hasVariantForGoal
+import com.obsidianmedia.learnwithalphonso.ui.components.GoalTagPill
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentSurface
 import android.text.format.DateUtils
 import androidx.compose.foundation.Image
@@ -73,6 +75,7 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit, se
         ReviewViewModel(container.content, container.progressClient, container.syncStore, { container.connectivity.isConnected.value }, course, onQueueFetched = container.reminders::onQueueLoaded, ownerUserId = { container.session.userId })
     }
     val state by vm.state.collectAsState()
+    LaunchedEffect(vm) { vm.setGoal(runCatching { container.learnerProfileClient.fetch().answers.goal }.getOrNull()) }
 
     SaveWordHost(container) {
         Column(Modifier.fillMaxSize().background(ds.surface)) {
@@ -106,6 +109,8 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit, se
                             modifier = Modifier.fillMaxWidth().background(ds.actionTint).padding(AlphonsoTokens.Space.s2),
                         )
                     }
+                    val variantGoal = state.goal?.takeIf { question.hasVariantForGoal(it) }
+                    if (variantGoal != null) Box(Modifier.padding(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s1)) { GoalTagPill(variantGoal) }
                     val layout = LessonStage.layout(LocalConfiguration.current.screenHeightDp, question.promptText)
                     val answered = state.checked
                     val correct = if (answered) vm.isCurrentCorrect() else false

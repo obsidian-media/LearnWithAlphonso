@@ -50,6 +50,9 @@ struct LessonPlayerView: View {
     private enum Phase { case overview, vocab, quiz }
 
     @State private var phase: Phase = .overview
+    /// The learner's goal from their first-run answers (nil until read, or when they skipped it). Goal-flavoured
+    /// questions (GoalVariants.swift) use it; a failed read just means the base questions.
+    @State private var goal: String?
     /// The word the learner tapped in a lesson explanation, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
     /// "See all achievements" from the unlock sheet opens the catalog over the lesson.
@@ -281,6 +284,9 @@ struct LessonPlayerView: View {
             return
         }
         lessonTimer = ActiveTimer(now: Date().timeIntervalSince1970)
+        // The questions are written for the learner's goal when they have a version for it. Fixed here, as the quiz
+        // starts, so a slow profile read never swaps a question under the learner's thumb; ids, count and order stay.
+        lesson = lesson.resolved(forGoal: goal)
         phase = vocab.isEmpty ? .quiz : .vocab
         Analytics.track(.lessonStarted, ["lesson_id": lesson.id, "level": "\(unit?.level ?? "")", "course": course.wireCode])
     }
@@ -295,6 +301,7 @@ struct LessonPlayerView: View {
         .toolbar(onStage ? .hidden : .visible, for: .navigationBar)
         .toolbar(onStage ? .hidden : .visible, for: .tabBar)
         .task(id: lesson.id) { await openLessonSession() }
+        .task { goal = (try? await learnerProfileClient(session)?.fetch())?.answers.goal }
         // Sound effects: loaded before the first answer, and never played over the question cards' spoken lines.
         .onAppear {
             SoundEffectsPlayer.shared.preload()
@@ -396,7 +403,9 @@ struct LessonPlayerView: View {
             case .overview:
                 LessonStartView(
                     roomID: roomID, unitLine: unitLine, title: lesson.title, meta: startMeta, steps: startSteps,
-                    hearts: hudHearts, topInset: topInset, waiting: startWhenOpen, onClose: { dismiss() }, onStart: startLesson)
+                    hearts: hudHearts, topInset: topInset, waiting: startWhenOpen,
+                    goalTag: lesson.questions.contains { $0.hasVariant(forGoal: goal) } ? goal : nil,
+                    onClose: { dismiss() }, onStart: startLesson)
             case .vocab:
                 VStack(spacing: 0) {
                     LessonHUD(progress: 0, hearts: hudHearts, onLight: true, onClose: { dismiss() })
@@ -446,6 +455,12 @@ struct LessonPlayerView: View {
                             valueText: "Question \(idx + 1) of \(total)", onClose: { dismiss() })
                             .padding(.horizontal, 16)
                             .padding(.top, topInset + 16)
+                    }
+                    .overlay(alignment: .bottomLeading) {
+                        // A question showing its goal version says so, just above Alphonso's bubble.
+                        if !isReinforcing, let goal, question.hasVariant(forGoal: goal) {
+                            GoalTagView(goal: goal).padding(.leading, 16).padding(.bottom, 52)
+                        }
                     }
                     // .id() forces a fresh QuestionCard (and its reorder @State)
                     // per question -- without it, SwiftUI would keep reusing the

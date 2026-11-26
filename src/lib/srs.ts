@@ -8,6 +8,7 @@ import { matchesSpokenAnswerFr } from "./spoken-answer-fr";
 import { matchesSpokenAnswerEs } from "./spoken-answer-es";
 import { matchesAcceptableAnswer } from "./translation-answer";
 import type { Course } from "../data/courses";
+import { variantQuestions } from "./goal-variants";
 
 /**
  * gradeReview used to trust a raw `correct: boolean` from the client --
@@ -34,6 +35,15 @@ export function deriveAnswerCorrectness(
   answer: string,
   course: Course = "en",
 ): boolean {
+  if (deriveForVersion(question, answer, course)) return true;
+  // Goal-flavoured variants (goal-variants.ts): the server is never told which goal a learner saw, so an answer that
+  // is right in ANY version of the question is right. The gate that keeps every version's right answer out of every
+  // other version's wrong choices is what makes that safe. Kept in step with _shared/answer-correctness.ts.
+  return variantQuestions(question).some((v) => deriveForVersion(v, answer, course));
+}
+
+/** One version of a question (the base, or a variant laid over it) against an answer. */
+function deriveForVersion(question: Question, answer: string, course: Course): boolean {
   if (question.type === "mc") return question.choices[question.answer] === answer;
   // A spoken answer arrives as a speech-to-text transcript, whose spelling of
   // the same utterance varies run to run ("she is"/"she's"/"shes"). It needs

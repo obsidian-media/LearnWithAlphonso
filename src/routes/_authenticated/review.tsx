@@ -26,6 +26,10 @@ import { SaveWordProvider } from "../../components/SaveWord";
 import { VocabImage } from "../../components/VocabImage";
 import { getCourse, localeForCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
+import { resolveForGoal } from "../../lib/goal-variants";
+import { useLearnerGoal } from "../../lib/use-learner-goal";
+import { GoalTag } from "../../components/GoalTag";
+import type { Goal } from "../../lib/learner-profile";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
 import { canSpeak, speak } from "../../lib/speech";
 import { sceneSrc } from "../../lib/scenes";
@@ -178,7 +182,19 @@ function ReviewPage() {
     };
   }, [load, course, batch]);
 
-  const card = cards && idx < cards.length ? cards[idx] : null;
+  const baseCard = cards && idx < cards.length ? cards[idx] : null;
+  // Goal-flavoured variants (goal-variants.ts): a due question is shown in the version written for the learner's goal.
+  // The goal is fixed once the queue is on screen, so a slow profile read never swaps a question mid-answer. The
+  // review key and the server's grading are the base question's (the server accepts any version).
+  const learnerGoal = useLearnerGoal();
+  const queueGoal = useRef<{ goal: Goal | null } | null>(null);
+  if (cards !== null && !queueGoal.current) queueGoal.current = { goal: learnerGoal };
+  const goal = queueGoal.current?.goal ?? null;
+  const card = useMemo(
+    () => (baseCard ? { ...baseCard, question: resolveForGoal(baseCard.question, goal) } : null),
+    [baseCard, goal],
+  );
+  const showingVariant = !!(goal && baseCard?.question.goalVariants?.[goal]);
   const queueCleared = cards !== null && cards.length > 0 && idx >= cards.length;
 
   useEffect(() => {
@@ -466,6 +482,7 @@ function ReviewPage() {
 
         <div className="relative z-[4] flex flex-1 flex-col gap-3 px-4 pb-4">
           <div className="-mt-6">
+            {showingVariant && goal && <GoalTag goal={goal} className="mb-2" />}
             <AlphonsoBubble
               label={bubbleLabel}
               onPlay={onPlay}

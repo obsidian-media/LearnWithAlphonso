@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.review
 
+import com.obsidianmedia.learnwithalphonso.core.content.resolveForGoal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
@@ -27,6 +28,8 @@ import java.time.Instant
 import java.time.ZoneOffset
 
 data class ReviewUiState(
+    /** The learner's goal (null until read, or when skipped): a due question is shown in its goal version. */
+    val goal: String? = null,
     val isLoading: Boolean = true,
     val queue: List<ReviewItem> = emptyList(),
     val idx: Int = 0,
@@ -69,7 +72,9 @@ class ReviewViewModel(
         if (item.isSelfContained) return questionFromWeaknessItem(item)
         val found = content.findLesson(item.lessonId, course) ?: return null
         val questionId = item.itemKey.substringAfterLast(':')
-        return found.second.questions.firstOrNull { it.id == questionId }
+        // The goal version is shown (GoalVariant.kt); the review key and the server's grading are the base question's,
+        // and grading accepts any version.
+        return found.second.questions.firstOrNull { it.id == questionId }?.resolveForGoal(_state.value.goal)
     }
 
     /**
@@ -97,6 +102,7 @@ class ReviewViewModel(
         if (!outcome.isStillDue(utcDateString(now()))) syncStore.removeCachedDueReview(itemKey)
     }
 
+    fun setGoal(goal: String?) = _state.update { it.copy(goal = goal) }
     fun pick(value: String?) = _state.update { if (it.checked) it else it.copy(picked = value) }
 
     fun isCurrentCorrect(): Boolean {

@@ -30,6 +30,7 @@ import type { Question } from "../data/curriculum";
 import type { Course } from "../data/courses";
 import { deriveAnswerCorrectness } from "./srs";
 import { matchesAcceptableAnswer } from "./translation-answer";
+import { allAcceptableAnswers } from "./goal-variants";
 import { gradeTranslationWithAi } from "./translation-grader.server";
 import { resolveLlmApiKey, resolveLlmChatModel } from "./llm-chat-model.server";
 
@@ -48,7 +49,9 @@ export async function gradeLessonAnswer(
   if (question.type !== "translate") {
     return deriveAnswerCorrectness(question, answer, course);
   }
-  if (matchesAcceptableAnswer(answer, question.acceptableAnswers)) return true;
+  // The base wordings and every goal variant's (goal-variants.ts): the server is never told which goal was shown.
+  const acceptable = allAcceptableAnswers(question);
+  if (matchesAcceptableAnswer(answer, acceptable)) return true;
   if (!answer.trim()) return false;
   // No consent, no vendor call; the curated verdict stands. Omitting `ai` means no AI at all, so a new caller that
   // forgets consent fails safe. Consent is asked before quota so a refusal spends nothing.
@@ -58,7 +61,7 @@ export async function gradeLessonAnswer(
   if (ai.checkQuota && !(await ai.checkQuota())) return false;
   const verdict = await gradeTranslationWithAi({
     prompt: question.prompt,
-    acceptableAnswers: question.acceptableAnswers,
+    acceptableAnswers: acceptable,
     submission: answer,
     apiKey,
     model: resolveLlmChatModel(),

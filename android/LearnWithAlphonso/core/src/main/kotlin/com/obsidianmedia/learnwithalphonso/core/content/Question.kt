@@ -33,6 +33,8 @@ sealed interface Question {
         val example: String? = null,
         /** The word the vocab card teaches when it is not the answer (curriculum.ts `term`); "" = no card. */
         val term: String? = null,
+        /** Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); see GoalVariant.kt. */
+        val goalVariants: Map<String, GoalVariant>? = null,
     ) : Question
 
     @Serializable
@@ -47,6 +49,8 @@ sealed interface Question {
         val example: String? = null,
         /** The word the vocab card teaches when it is not the answer (curriculum.ts `term`); "" = no card. */
         val term: String? = null,
+        /** Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); see GoalVariant.kt. */
+        val goalVariants: Map<String, GoalVariant>? = null,
     ) : Question
 
     @Serializable
@@ -66,6 +70,8 @@ sealed interface Question {
         val choices: List<String>,
         val answer: String,
         override val explanation: String,
+        /** Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); see GoalVariant.kt. */
+        val goalVariants: Map<String, GoalVariant>? = null,
     ) : Question
 
     @Serializable
@@ -74,6 +80,8 @@ sealed interface Question {
         val prompt: String,
         val answer: String,
         override val explanation: String,
+        /** Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); see GoalVariant.kt. */
+        val goalVariants: Map<String, GoalVariant>? = null,
     ) : Question
 
     @Serializable
@@ -82,6 +90,8 @@ sealed interface Question {
         val prompt: String,
         val acceptableAnswers: List<String>,
         override val explanation: String,
+        /** Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); see GoalVariant.kt. */
+        val goalVariants: Map<String, GoalVariant>? = null,
     ) : Question
 }
 

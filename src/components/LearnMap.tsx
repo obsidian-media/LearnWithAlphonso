@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { GoalTag } from "./GoalTag";
+import { useLessonGoalTag } from "../lib/use-lesson-goal-tag";
 import { useEffect, useId, useState } from "react";
 import { DsIcon } from "@/components/ds/DsIcon";
 import { dsButtonClass } from "@/components/ds/buttons";
@@ -378,6 +380,7 @@ function StartSheet({
   onClose: () => void;
 }) {
   const next = map.next!;
+  const goalTag = useLessonGoalTag(next.lessonId);
   const titleId = useId();
   const coverageId = useId();
   const chips = [
@@ -399,6 +402,7 @@ function StartSheet({
       <h2 id={titleId} className="mt-1 break-words font-display text-2xl font-extrabold">
         {next.title}
       </h2>
+      {goalTag && <GoalTag goal={goalTag} className="mt-2" />}
       {next.coverage && (
         <p id={coverageId} className="mt-1 text-sm text-ds-ink-soft">
           {next.coverage}

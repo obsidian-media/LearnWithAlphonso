@@ -340,7 +340,7 @@ async function findLesson(
   const { data, error } = await admin
     .from("lessons")
     .select(
-      "id, units!inner(course, level_id), questions(id, type, prompt, choices, bank, answer_index, answer_text)",
+      "id, units!inner(course, level_id), questions(id, type, prompt, choices, bank, answer_index, answer_text, goal_variants)",
     )
     .eq("id", lessonId)
     .eq("units.course", course)

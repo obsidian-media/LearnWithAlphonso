@@ -35,12 +35,17 @@ public enum Question: Decodable, Sendable {
         /// The word the vocab card teaches when it is not the answer text
         /// (curriculum.ts `term`); "" means this question makes no card.
         public let term: String?
+        /// Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); nil for nearly every
+        /// question. See GoalVariants.swift: the player shows `resolved(forGoal:)`, grading accepts any version.
+        public var goalVariants: [String: GoalVariant]?
 
         public init(
             id: String, prompt: String, choices: [String], answer: Int, explanation: String,
             imageKey: String? = nil, audioText: String? = nil,
-            meaning: String? = nil, example: String? = nil, term: String? = nil
+            meaning: String? = nil, example: String? = nil, term: String? = nil,
+            goalVariants: [String: GoalVariant]? = nil
         ) {
+            self.goalVariants = goalVariants
             self.id = id
             self.prompt = prompt
             self.choices = choices
@@ -66,6 +71,9 @@ public enum Question: Decodable, Sendable {
         public let choices: [String]
         public let answer: String
         public let explanation: String
+        /// Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); nil for nearly every
+        /// question. See GoalVariants.swift: the player shows `resolved(forGoal:)`, grading accepts any version.
+        public var goalVariants: [String: GoalVariant]?
     }
 
     /// Mirrors curriculum.ts's "speak" variant: the learner says `answer`
@@ -78,8 +86,15 @@ public enum Question: Decodable, Sendable {
         public let prompt: String
         public let answer: String
         public let explanation: String
+        /// Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); nil for nearly every
+        /// question. See GoalVariants.swift: the player shows `resolved(forGoal:)`, grading accepts any version.
+        public var goalVariants: [String: GoalVariant]?
 
-        public init(id: String, prompt: String, answer: String, explanation: String) {
+        public init(
+            id: String, prompt: String, answer: String, explanation: String,
+            goalVariants: [String: GoalVariant]? = nil
+        ) {
+            self.goalVariants = goalVariants
             self.id = id
             self.prompt = prompt
             self.answer = answer
@@ -101,8 +116,15 @@ public enum Question: Decodable, Sendable {
         public let prompt: String
         public let acceptableAnswers: [String]
         public let explanation: String
+        /// Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); nil for nearly every
+        /// question. See GoalVariants.swift: the player shows `resolved(forGoal:)`, grading accepts any version.
+        public var goalVariants: [String: GoalVariant]?
 
-        public init(id: String, prompt: String, acceptableAnswers: [String], explanation: String) {
+        public init(
+            id: String, prompt: String, acceptableAnswers: [String], explanation: String,
+            goalVariants: [String: GoalVariant]? = nil
+        ) {
+            self.goalVariants = goalVariants
             self.id = id
             self.prompt = prompt
             self.acceptableAnswers = acceptableAnswers
@@ -123,11 +145,16 @@ public enum Question: Decodable, Sendable {
         /// The word the vocab card teaches when it is not the answer text
         /// (curriculum.ts `term`); "" means this question makes no card.
         public let term: String?
+        /// Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); nil for nearly every
+        /// question. See GoalVariants.swift: the player shows `resolved(forGoal:)`, grading accepts any version.
+        public var goalVariants: [String: GoalVariant]?
 
         public init(
             id: String, prompt: String, bank: [String], answer: String, explanation: String,
-            meaning: String? = nil, example: String? = nil, term: String? = nil
+            meaning: String? = nil, example: String? = nil, term: String? = nil,
+            goalVariants: [String: GoalVariant]? = nil
         ) {
+            self.goalVariants = goalVariants
             self.id = id
             self.prompt = prompt
             self.bank = bank

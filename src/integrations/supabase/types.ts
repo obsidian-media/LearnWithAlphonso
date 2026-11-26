@@ -1925,6 +1925,7 @@ export type Database = {
           bank: Json | null;
           choices: Json | null;
           explanation: string;
+          goal_variants: Json | null;
           id: string;
           lesson_id: string;
           prompt: string;
@@ -1937,6 +1938,7 @@ export type Database = {
           bank?: Json | null;
           choices?: Json | null;
           explanation: string;
+          goal_variants?: Json | null;
           id: string;
           lesson_id: string;
           prompt: string;
@@ -1949,6 +1951,7 @@ export type Database = {
           bank?: Json | null;
           choices?: Json | null;
           explanation?: string;
+          goal_variants?: Json | null;
           id?: string;
           lesson_id?: string;
           prompt?: string;

@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import com.obsidianmedia.learnwithalphonso.core.content.hasVariantForGoal
+import com.obsidianmedia.learnwithalphonso.ui.components.GoalTagPill
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
 import com.obsidianmedia.learnwithalphonso.ui.components.DsEmptyState
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
@@ -124,6 +126,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             hasAiConsent = { container.aiConsent.isGranted },
             ownerUserId = { container.session.userId },
             isPro = { container.entitlements.isPro },
+            learnerGoal = { container.learnerProfileClient.fetch().answers.goal },
         )
     }
     val state by vm.state.collectAsState()
@@ -216,6 +219,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                             roomId, unitLine, state.lesson.title,
                             "About $minutes min · $total question${if (total == 1) "" else "s"} · Up to ${LessonXp.maxXp(total)} XP",
                             steps, hearts, onClose = onExit, onStart = vm::begin, waiting = state.startPending,
+                            goalTag = state.goal?.takeIf { g -> state.lesson.questions.any { it.hasVariantForGoal(g) } },
                         )
                     }
                     LessonPhase.Vocab -> if (androidx.compose.ui.platform.LocalDensity.current.fontScale >= 1.5f) {
@@ -321,6 +325,9 @@ private fun QuizStage(vm: LessonViewModel, state: LessonUiState, course: Course,
                     LessonHud((state.idx + if (answered) 1 else 0).toFloat() / maxOf(1, state.total), hearts, onExit, valueText = "Question ${state.idx + 1} of ${state.total}")
                 }
             }
+            // A question showing its goal version says so, just above Alphonso's bubble.
+            val variantGoal = state.goal?.takeIf { !state.isReinforcing && question.hasVariantForGoal(it) }
+            if (variantGoal != null) Box(Modifier.padding(start = 16.dp, top = 4.dp).offset(y = (-40).dp)) { GoalTagPill(variantGoal) }
             Box(Modifier.padding(horizontal = 16.dp).offset(y = if (layout.size == LessonStage.Size.SMALL) (-36).dp else (-44).dp)) {
                 key(state.isReinforcing, question.id) {
                     LessonStageQuestion(

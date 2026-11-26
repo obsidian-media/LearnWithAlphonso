@@ -22,7 +22,34 @@ export type QuestionRow = {
   bank: string[] | null;
   answer_index: number | null;
   answer_text: string | null;
+  /**
+   * Goal-flavoured versions of this question (questions.goal_variants, src/lib/goal-variants.ts). Each entry holds
+   * only the answer-bearing columns its type uses, in the row's own shape. An answer that is right in ANY version is
+   * right: the server is never told which goal the learner saw, and the content gate keeps every version's right
+   * answer out of every other version's wrong choices.
+   */
+  goal_variants?: VariantRow[] | null;
 };
+
+export type VariantRow = {
+  goal?: string;
+  choices?: string[] | null;
+  bank?: string[] | null;
+  answer_index?: number | null;
+  answer_text?: string | null;
+};
+
+/** The versions of a question other than the base: each variant laid over the row. */
+function variantRows(question: QuestionRow): QuestionRow[] {
+  return (question.goal_variants ?? []).map((v) => {
+    const next: QuestionRow = { ...question, goal_variants: null };
+    if (v.choices !== undefined) next.choices = v.choices;
+    if (v.bank !== undefined) next.bank = v.bank;
+    if (v.answer_index !== undefined) next.answer_index = v.answer_index;
+    if (v.answer_text !== undefined) next.answer_text = v.answer_text;
+    return next;
+  });
+}
 
 export type AiGrading = {
   /** True only when the learner allowed AI processing. Asked lazily, after the curated list rejects. */
@@ -39,6 +66,26 @@ export type AiGrading = {
  * Every other type resolves synchronously and never awaits anything.
  */
 export async function deriveAnswerCorrectness(
+  question: QuestionRow,
+  answer: string,
+  course: "en" | "fr" | "es" = "en",
+  ai?: AiGrading,
+): Promise<boolean> {
+  const variants = variantRows(question);
+  if (!variants.length) return deriveOneVersion(question, answer, course, ai);
+  // Every version is tried locally first (no `ai`, so a translate is only matched against its curated list).
+  for (const version of [question, ...variants])
+    if (await deriveOneVersion(version, answer, course)) return true;
+  if (question.type !== "translate") return false;
+  // Only a translation can still be right: ask the AI grader once, with every version's wordings as the acceptable
+  // set (the base prompt stands for the idea).
+  const bank = [...(question.bank ?? [])];
+  for (const v of variants) for (const w of v.bank ?? []) if (!bank.includes(w)) bank.push(w);
+  return deriveOneVersion({ ...question, bank, goal_variants: null }, answer, course, ai);
+}
+
+/** One version of a question (the base row, or a variant laid over it) against an answer. */
+async function deriveOneVersion(
   question: QuestionRow,
   answer: string,
   course: "en" | "fr" | "es" = "en",
