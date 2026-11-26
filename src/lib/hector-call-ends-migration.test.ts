@@ -4,13 +4,13 @@ import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 /**
- * 20261128160000: the claim of /api/hector-call-end, EXECUTED in a real Postgres (PGlite). A call is claimed once; a
+ * 20261128200000: the claim of /api/hector-call-end, EXECUTED in a real Postgres (PGlite). A call is claimed once; a
  * live claim blocks a second; a release re-opens it; a claim whose holder died is taken over after the 2 minute lease;
  * only a completed call is 'done', and it is never claimed or released again; clients hold nothing; the rows go with
  * the account.
  */
 const migration = readFileSync(
-  path.join(process.cwd(), "supabase/migrations/20261128160000_hector_call_ends.sql"),
+  path.join(process.cwd(), "supabase/migrations/20261128200000_hector_call_ends.sql"),
   "utf8",
 );
 const U = "00000000-0000-4000-8000-0000000000a1";
@@ -36,7 +36,7 @@ afterAll(async () => {
 const one = async (sql: string) => (await db.query<{ r: unknown }>(sql)).rows[0]!.r;
 const claim = () => one(`SELECT public.claim_hector_call('${U}', '${C}') r`);
 
-describe("20261128160000_hector_call_ends.sql (real Postgres)", () => {
+describe("20261128200000_hector_call_ends.sql (real Postgres)", () => {
   it("claims once, blocks a second while the lease is live, and re-opens on release", async () => {
     expect(await claim()).toBe("claimed");
     expect(await claim()).toBe("busy");

@@ -17,7 +17,7 @@
 -- All three are service role only (the route uses supabaseAdmin), as is the table. It goes with the account (ON
 -- DELETE CASCADE) and is part of the GDPR export, read with the service role.
 --
--- Depends on 20261128150000 (the newest migration when this was written; nothing here reads it).
+-- Depends on nothing: it only references auth.users. Versioned last so it can merge after the other migrations in flight.
 --
 -- Rollback: DROP FUNCTION public.claim_hector_call(uuid, uuid); DROP FUNCTION public.release_hector_call(uuid, uuid);
 --   DROP FUNCTION public.complete_hector_call(uuid, uuid); DROP TABLE public.hector_call_ends;
