@@ -5,6 +5,7 @@ import type { Question } from "@/data/curriculum";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { generatePracticeQuestions } from "@/lib/practice-generation.server";
 import { buildFallbackPractice } from "@/lib/practice-fallback";
+import { GOALS, type Goal } from "@/lib/learner-profile";
 import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 
 /**
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/api/generate-practice")({
         if (!key)
           return noStoreJson({ error: "Practice generation is not configured" }, { status: 500 });
 
-        let body: { lessonId?: string; course?: string };
+        let body: { lessonId?: string; course?: string; goal?: string };
         try {
           body = await request.json();
         } catch {
@@ -48,6 +49,8 @@ export const Route = createFileRoute("/api/generate-practice")({
         const rawCourse = body.course ?? "";
         const course: Course = isCourse(rawCourse) ? rawCourse : "en";
         if (!lessonId) return noStoreJson({ error: "Missing lessonId" }, { status: 400 });
+        // Optional: the learner's goal, so the fallback shows the version written for it (goal-variants.ts).
+        const goal: Goal | null = GOALS.find((g) => g === body.goal) ?? null;
 
         const found = getCourse(course).findLesson(lessonId);
         if (!found) return noStoreJson({ error: "Unknown lesson" }, { status: 400 });
@@ -97,7 +100,7 @@ export const Route = createFileRoute("/api/generate-practice")({
         // Never an empty answer for a lesson that has practiceable questions.
         if (safe.length === 0) {
           return noStoreJson({
-            questions: buildFallbackPractice(found.lesson, found.lesson.id),
+            questions: buildFallbackPractice(found.lesson, found.lesson.id, goal),
             source: "fallback",
           });
         }

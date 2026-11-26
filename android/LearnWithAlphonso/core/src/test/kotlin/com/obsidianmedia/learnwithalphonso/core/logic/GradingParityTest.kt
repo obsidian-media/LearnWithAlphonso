@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.logic
 
 import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.core.content.GoalVariant
 import com.obsidianmedia.learnwithalphonso.core.content.Question
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -34,14 +35,34 @@ class GradingParityTest {
         else -> Course.ENGLISH
     }
 
-    private fun question(c: JsonObject): Question = when (val kind = c.str("kind")) {
-        "mc" -> Question.MultipleChoice("q", "p", c.strList("choices"), c["answerIndex"]!!.jsonPrimitive.int, "e")
-        "fill" -> Question.FillInBlank("q", "p", emptyList(), c.str("answer"), "e")
-        "reorder" -> Question.Reorder("q", "p", emptyList(), c.str("answer"), "e")
-        "listening" -> Question.Listening("q", "p", "a", emptyList(), c.str("answer"), "e")
-        "speak" -> Question.Speak("q", "p", c.str("answer"), "e")
-        "translate" -> Question.Translate("q", "p", c.strList("acceptable"), "e")
-        else -> error("unknown kind $kind")
+    /** A fixture case's `variants` as the goal variants a bundle would carry (one goal each, in order). */
+    private fun goalVariants(c: JsonObject): Map<String, GoalVariant>? =
+        c["variants"]?.jsonArray?.mapIndexed { i, v ->
+            val o = v.jsonObject
+            "g$i" to GoalVariant(
+                prompt = "v",
+                choices = o["choices"]?.let { o.strList("choices") },
+                answerIndex = o["answerIndex"]?.jsonPrimitive?.int,
+                answerText = o["answer"]?.let { o.str("answer") },
+                bank = o["bank"]?.let { o.strList("bank") },
+                acceptableAnswers = o["acceptable"]?.let { o.strList("acceptable") },
+                explanation = "e",
+            )
+        }?.toMap()
+
+    private fun question(c: JsonObject): Question {
+        val gv = goalVariants(c)
+        return when (val kind = c.str("kind")) {
+            "mc" -> Question.MultipleChoice(
+                "q", "p", c.strList("choices"), c["answerIndex"]!!.jsonPrimitive.int, "e", goalVariants = gv,
+            )
+            "fill" -> Question.FillInBlank("q", "p", listOf(c.str("answer")), c.str("answer"), "e", goalVariants = gv)
+            "reorder" -> Question.Reorder("q", "p", emptyList(), c.str("answer"), "e")
+            "listening" -> Question.Listening("q", "p", "a", emptyList(), c.str("answer"), "e", gv)
+            "speak" -> Question.Speak("q", "p", c.str("answer"), "e", gv)
+            "translate" -> Question.Translate("q", "p", c.strList("acceptable"), "e", gv)
+            else -> error("unknown kind $kind")
+        }
     }
 
     private fun applies(c: JsonObject): Boolean =
@@ -58,7 +79,7 @@ class GradingParityTest {
         val failures = mutableListOf<String>()
         var ran = 0
         for (c in applicable) {
-            val got = isAnswerCorrect(question(c), c.str("input"), course(c))
+            val got = isAnswerCorrect(question(c), c.str("input"), course(c), c["variantIndex"]?.jsonPrimitive?.int?.let { "g$it" })
             val want = c["expected"]!!.jsonPrimitive.boolean
             if (got != want) failures += "${c.str("id")}: got $got, fixture says $want"
             ran++

@@ -256,7 +256,8 @@ private fun PathBar(fraction: Float, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PathItemRow(item: PathItem, onClick: (() -> Unit)? = null) {
+/** [goalTag] is the learner's goal when this lesson has questions written for it: shows the "For your goal" pill. */
+fun PathItemRow(item: PathItem, onClick: (() -> Unit)? = null, goalTag: String? = null) {
     val ds = LocalAlphonsoTokens.current
     val done = item.state == "done"
     val tone = when {
@@ -278,6 +279,7 @@ fun PathItemRow(item: PathItem, onClick: (() -> Unit)? = null) {
         Column(Modifier.weight(1f)) {
             Text(item.title, style = HeadlineType, color = ds.ink, maxLines = 1)
             Text(item.subtitle, style = FootnoteType, color = ds.inkSoft, maxLines = 1)
+            if (goalTag != null) com.obsidianmedia.learnwithalphonso.ui.components.GoalTagPill(goalTag, Modifier.padding(top = 2.dp))
         }
         Text((if (done) "✓ " else "") + "${item.minutes} min", style = CaptionType, color = if (done) ds.rightInk else ds.inkSoft)
     }
@@ -331,7 +333,7 @@ private fun GoalCard(path: LearningPath?, onOpenPlanner: () -> Unit) {
 }
 
 @Composable
-fun PathCard(vm: PathViewModel, onOpenRoad: () -> Unit, onBuild: () -> Unit, onOpenRef: (PathItemRef) -> Unit) {
+fun PathCard(vm: PathViewModel, onOpenRoad: () -> Unit, onBuild: () -> Unit, onOpenRef: (PathItemRef) -> Unit, goalTagFor: (PathItem) -> String? = { null }) {
     val ds = LocalAlphonsoTokens.current
     val ui by vm.ui.collectAsState()
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -363,7 +365,7 @@ fun PathCard(vm: PathViewModel, onOpenRoad: () -> Unit, onBuild: () -> Unit, onO
                     Text("Today · ${p.today.targetMinutes} min", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
                     Text(if (p.today.minutesLeft > 0) "${p.today.minutesLeft} min left" else "Done for today", style = CaptionType, color = ds.inkSoft)
                 }
-                p.today.items.forEach { item -> PathItemRow(item, onClick = item.ref?.let { r -> { onOpenRef(r) } }) }
+                p.today.items.forEach { item -> PathItemRow(item, onClick = item.ref?.let { r -> { onOpenRef(r) } }, goalTag = goalTagFor(item)) }
                 if (p.today.items.isEmpty()) Text("Nothing planned today. Enjoy the rest.", style = BodyType, color = ds.inkSoft)
                 Text("Minutes are estimates from lesson length, episode length and typical call length.", style = CaptionType, color = ds.inkSoft)
             }

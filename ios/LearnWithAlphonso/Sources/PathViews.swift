@@ -154,6 +154,8 @@ struct PathBar: View {
 
 struct PathItemRow: View {
     let item: PathItem
+    /// The learner's goal when this lesson has questions written for it: shows the "For your goal" pill.
+    var goalTag: String?
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
@@ -163,6 +165,7 @@ struct PathItemRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(item.title).dsText(.headline).foregroundStyle(ds.ink).lineLimit(1)
                 Text(item.subtitle).dsText(.caption).foregroundStyle(ds.inkSoft).lineLimit(1)
+                if let goalTag { GoalTagView(goal: goalTag).padding(.top, 2) }
             }
             Spacer(minLength: AlphonsoDS.Space.s2)
             Text("\(done ? "\u{2713} " : "")\(item.minutes) min")
@@ -222,9 +225,21 @@ struct PathMixBar: View {
 struct PathCardSection: View {
     let session: Session
     let course: Course
+    let contentStore: ContentStore
     let onBuild: () -> Void
     @State private var model: PathModel?
+    /// The learner's goal from their first-run answers (nil until read, or when skipped), for the lesson pill.
+    @State private var goal: String?
     @Environment(\.alphonsoDS) private var ds
+
+    /// A lesson on the Today row says so when it has questions written for the learner's goal.
+    private func goalTag(for item: PathItem) -> String? {
+        guard let goal, let ref = item.ref, ref.kind == "lesson",
+            let found = contentStore.findLesson(id: ref.id, course: course),
+            found.lesson.questions.contains(where: { $0.hasVariant(forGoal: goal) })
+        else { return nil }
+        return goal
+    }
 
     var body: some View {
         Section {
@@ -237,6 +252,7 @@ struct PathCardSection: View {
             model = made
             await made.load()
         }
+        .task { goal = (try? await learnerProfileClient(session)?.fetch())?.answers.goal }
     }
 
     /// The goal at the top of MY PATH (target level and date, lessons a week, status) or an invitation to set one. It
@@ -306,7 +322,7 @@ struct PathCardSection: View {
             }
             .listRowBackground(ds.card)
             ForEach(Array(path.today.items.enumerated()), id: \.offset) { _, item in
-                PathItemRow(item: item).listRowBackground(ds.card)
+                PathItemRow(item: item, goalTag: goalTag(for: item)).listRowBackground(ds.card)
             }
             if path.today.items.isEmpty {
                 Text("Nothing planned today. Enjoy the rest.").dsText(.footnote).foregroundStyle(ds.inkSoft)

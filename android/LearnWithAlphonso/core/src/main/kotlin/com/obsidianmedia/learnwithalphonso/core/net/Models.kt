@@ -6,7 +6,12 @@ import kotlinx.serialization.Serializable
 /** Wire models shared by ProgressSyncClient, the sync queue and the UI. Field names match the JSON. */
 
 @Serializable
-data class LessonAnswer(val questionId: String, val answer: String)
+data class LessonAnswer(
+    val questionId: String,
+    val answer: String,
+    /** The goal of the goal-flavoured version the learner was shown (GoalVariant.kt); null for the base question. The server grades the base and this one version only. */
+    val variantGoal: String? = null,
+)
 
 @Serializable
 data class LessonCompletionProgress(

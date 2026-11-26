@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
+import com.obsidianmedia.learnwithalphonso.core.content.VariantGoalTag
 import com.obsidianmedia.learnwithalphonso.core.net.LessonAnswer
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.core.net.ReviewItem
@@ -60,11 +61,15 @@ data class PendingReviewGradeRecord(
     val expectedDueOn: String? = null,
     val expectedLastReviewedAt: String? = null,
 ) {
-    fun asPending() = PendingReviewGrade(itemKey, answer, course, queuedAt, ownerUserId, attemptCount, nextAttemptAt, expectedDueOn, expectedLastReviewedAt)
+    fun asPending(): PendingReviewGrade {
+        val (text, goal) = VariantGoalTag.decode(answer)
+        return PendingReviewGrade(itemKey, text, course, queuedAt, ownerUserId, attemptCount, nextAttemptAt, expectedDueOn, expectedLastReviewedAt, goal)
+    }
 
     companion object {
         fun from(p: PendingReviewGrade) = PendingReviewGradeRecord(
-            itemKey = p.itemKey, answer = p.answer, course = p.course, queuedAt = p.queuedAt,
+            // The goal of a goal-flavoured version rides inside the stored text (VariantGoalTag): no schema change.
+            itemKey = p.itemKey, answer = VariantGoalTag.encode(p.answer, p.variantGoal), course = p.course, queuedAt = p.queuedAt,
             ownerUserId = p.ownerUserId, attemptCount = p.attemptCount, nextAttemptAt = p.nextAttemptAt,
             expectedDueOn = p.expectedDueOn,
             expectedLastReviewedAt = p.expectedLastReviewedAt,

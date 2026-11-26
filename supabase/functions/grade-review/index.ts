@@ -34,6 +34,12 @@ const itemKeySchema = z
 const gradeReviewSchema = z.object({
   itemKey: itemKeySchema,
   answer: z.string().max(200),
+  // The goal of the goal-flavoured version the learner was shown (src/lib/goal-variants.ts); absent or null for the
+  // base question. Grading accepts the base and this one version only.
+  variantGoal: z
+    .string()
+    .regex(/^[a-z]{1,16}$/)
+    .nullish(),
   course: courseSchema,
   attemptId: z.string().min(1).max(200).optional(),
   // Snapshot the due date shown when the learner answered. This is essential
@@ -115,7 +121,8 @@ export async function handleRequest(req: Request): Promise<Response> {
   } catch {
     return jsonResponse({ error: "Invalid request body" }, 400);
   }
-  const { itemKey, answer, course, attemptId, expectedDueOn, expectedLastReviewedAt } = parsed;
+  const { itemKey, answer, course, attemptId, expectedDueOn, expectedLastReviewedAt, variantGoal } =
+    parsed;
   const [lessonId, questionId] = itemKey.split(":");
 
   const admin = createClient(
@@ -202,7 +209,7 @@ export async function handleRequest(req: Request): Promise<Response> {
       // live in `bank`, and the prompt is what the AI grader is marking
       // against. Without them a translate row grades as a bare string
       // comparison against its canonical answer alone.
-      .select("type, prompt, choices, bank, answer_index, answer_text")
+      .select("type, prompt, choices, bank, answer_index, answer_text, goal_variants")
       .eq("lesson_id", lessonId)
       .eq("id", questionId)
       .maybeSingle();
@@ -217,7 +224,13 @@ export async function handleRequest(req: Request): Promise<Response> {
       checkQuota,
       recordUsage: makeTranslateCostLogger(admin, userId),
     };
-    correct = await deriveAnswerCorrectness(question as QuestionRow, answer, course, ai);
+    correct = await deriveAnswerCorrectness(
+      question as QuestionRow,
+      answer,
+      course,
+      ai,
+      variantGoal,
+    );
     if (consent && !(await consent)) {
       console.log(
         JSON.stringify({

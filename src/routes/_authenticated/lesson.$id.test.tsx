@@ -41,6 +41,15 @@ vi.mock("../../data/lesson-extras", () => ({
   applyLessonExtras: <T,>(units: T) => units,
 }));
 
+// Likewise the goal-flavoured variants (src/data/goal-variants), which name those appended questions.
+vi.mock("../../data/goal-variants", () => ({
+  GOAL_VARIANTS: { en: {}, fr: {}, es: {} },
+  applyGoalVariants: <T,>(units: T) => units,
+}));
+
+// The learner's goal comes from their account; these tests are about the base lesson.
+vi.mock("../../lib/use-learner-goal", () => ({ useLearnerGoal: () => null }));
+
 vi.mock("../../lib/speech", () => ({
   speak: vi.fn(),
   canSpeak: () => canSpeak(),

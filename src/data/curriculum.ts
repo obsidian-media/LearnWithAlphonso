@@ -3,11 +3,34 @@ import { applyQuestionFixes } from "./question-fixes";
 import { applyReviewFixes } from "./review-fixes";
 import { addQuestionVariety } from "./question-variety";
 import { applyLessonExtras } from "./lesson-extras";
+import { applyGoalVariants } from "./goal-variants";
 import { generatedUnits } from "./lesson-bank";
+import type { Goal } from "../lib/learner-profile";
 export type { Level };
 export { LEVELS } from "./levels";
 
-export type Question =
+/**
+ * What a goal variant overrides on its question (docs: goal-flavoured lessons). The id, type, skill, grammar point
+ * and answer SHAPE never change, so a variant is the same question in a different setting. Only fields that exist on
+ * the question's own type are used: mc `choices` + `answer` (an index), fill `bank` + `answer` (text), listening
+ * `audioText` + `choices` + `answer` (text), speak `answer`, translate `acceptableAnswers`. A reorder question has no
+ * variants. Authored in src/data/goal-variants/{en,fr,es}.json and applied by applyGoalVariants.
+ */
+export type GoalVariantBody = {
+  prompt?: string;
+  choices?: string[];
+  answer?: string | number;
+  bank?: string[];
+  acceptableAnswers?: string[];
+  explanation?: string;
+  audioText?: string;
+};
+/** A question's variants, by learner goal. Goals without an entry (exam, fun, family today) show the base question. */
+export type GoalVariants = Partial<Record<Goal, GoalVariantBody>>;
+
+export type Question = QuestionCore & { goalVariants?: GoalVariants };
+
+export type QuestionCore =
   | {
       id: string;
       type: "mc";
@@ -1232,8 +1255,11 @@ const existingCountByLevel = handAuthored.reduce(
 export const rawCurriculum: Unit[] = [...handAuthored, ...generatedUnits(existingCountByLevel)];
 
 /** The fixed curriculum plus one reorder, listening and translate question per A1/A2 lesson (question-variety.ts). */
-export const curriculum: Unit[] = applyReviewFixes(
-  applyLessonExtras(addQuestionVariety(applyQuestionFixes(rawCurriculum)), "en"),
+export const curriculum: Unit[] = applyGoalVariants(
+  applyReviewFixes(
+    applyLessonExtras(addQuestionVariety(applyQuestionFixes(rawCurriculum)), "en"),
+    "en",
+  ),
   "en",
 );
 

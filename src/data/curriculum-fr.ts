@@ -3,9 +3,10 @@ import type { Lesson, Question, Unit } from "./curriculum";
 import { generatedUnitsFr } from "./lesson-bank-fr";
 import { applyReviewFixes } from "./review-fixes";
 import { applyLessonExtras } from "./lesson-extras";
+import { applyGoalVariants } from "./goal-variants";
 
-export const curriculumFr: Unit[] = applyReviewFixes(
-  applyLessonExtras(generatedUnitsFr(), "fr"),
+export const curriculumFr: Unit[] = applyGoalVariants(
+  applyReviewFixes(applyLessonExtras(generatedUnitsFr(), "fr"), "fr"),
   "fr",
 );
 

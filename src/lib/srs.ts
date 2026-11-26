@@ -8,6 +8,7 @@ import { matchesSpokenAnswerFr } from "./spoken-answer-fr";
 import { matchesSpokenAnswerEs } from "./spoken-answer-es";
 import { matchesAcceptableAnswer } from "./translation-answer";
 import type { Course } from "../data/courses";
+import { shownVariant } from "./goal-variants";
 
 /**
  * gradeReview used to trust a raw `correct: boolean` from the client --
@@ -33,7 +34,18 @@ export function deriveAnswerCorrectness(
   question: Question,
   answer: string,
   course: Course = "en",
+  variantGoal?: string | null,
 ): boolean {
+  if (deriveForVersion(question, answer, course)) return true;
+  // Goal-flavoured variants (goal-variants.ts): the client names the goal of the version it showed (`variantGoal`,
+  // null or absent for the base question), and an answer is right against the base OR that one version, never
+  // another goal's. Kept in step with _shared/answer-correctness.ts, the Swift Kit and the Android core.
+  const shown = shownVariant(question, variantGoal);
+  return shown !== null && deriveForVersion(shown, answer, course);
+}
+
+/** One version of a question (the base, or a variant laid over it) against an answer. */
+function deriveForVersion(question: Question, answer: string, course: Course): boolean {
   if (question.type === "mc") return question.choices[question.answer] === answer;
   // A spoken answer arrives as a speech-to-text transcript, whose spelling of
   // the same utterance varies run to run ("she is"/"she's"/"shes"). It needs

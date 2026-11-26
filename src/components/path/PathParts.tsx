@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { GoalTag } from "../GoalTag";
+import { useLessonGoalTag } from "../../lib/use-lesson-goal-tag";
 import { DsIcon } from "@/components/ds/DsIcon";
 import type { DsIconName } from "@/design/icons.generated";
 import {
@@ -128,6 +130,8 @@ export function ItemLink({
 }
 
 export function ItemRow({ item }: { item: PlannedItem }) {
+  // A lesson with questions written for the learner's goal says so (goal-variants.ts).
+  const goalTag = useLessonGoalTag(item.ref?.kind === "lesson" ? item.ref.id : null);
   const done = item.state === "done";
   const tone = done
     ? "border-ds-right-edge bg-ds-right-tint"
@@ -146,6 +150,7 @@ export function ItemRow({ item }: { item: PlannedItem }) {
           {item.title}
         </b>
         <small className="block truncate text-xs text-ds-ink-soft">{item.subtitle}</small>
+        {goalTag && <GoalTag goal={goalTag} className="mt-0.5" />}
       </span>
       <span
         className={`shrink-0 text-xs font-extrabold ${done ? "text-ds-right-ink" : "text-ds-ink-soft"}`}

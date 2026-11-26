@@ -84,7 +84,7 @@ describe("AI consent registry", () => {
       const fn = file;
       const src = read(`supabase/functions/${file}`);
       expect(src, fn).toContain("hasAiConsent(admin, userId)");
-      expect(src, fn).toMatch(/deriveAnswerCorrectness\([^)]*, ai\)/);
+      expect(src, fn).toMatch(/deriveAnswerCorrectness\([^)]*[,\s]ai(,\s*variantGoal)?,?\s*\)/);
     }
   });
 });
