@@ -169,6 +169,20 @@ public struct PathProgress: Decodable, Equatable, Sendable {
     public let suggestedDate: String?
 }
 
+/// `suggested`: the goal was worked out from the learner's answers and not saved; `built` says what from.
+public struct PathGoalInfo: Decodable, Equatable, Sendable {
+    public let suggested: Bool
+    public let built: String
+}
+
+/// "Fix before it sticks": the weak-spot items, kept apart from Today's plan. Missing (or null) when there is nothing to fix.
+public struct PathFixCard: Decodable, Equatable, Sendable {
+    public let overline: String
+    public let title: String
+    public let minutes: Int
+    public let items: [PathItem]
+}
+
 public struct PathToday: Decodable, Equatable, Sendable {
     public let day: String
     public let targetMinutes: Int
@@ -184,6 +198,10 @@ public struct LearningPath: Decodable, Equatable, Sendable {
     public let status: String
     public let statusLine: String
     public let statusDetail: String
+    /// Missing from an older server: then the goal is a saved one.
+    public let goal: PathGoalInfo?
+    public let fix: PathFixCard?
+    public let fixOff: Bool?
     public let progress: PathProgress
     public let dailyMinutes: Int
     /// The rest day as planned: 0 (Sunday) to 6, or `PathRestDay.none` (-1) for seven study days. Missing from an
@@ -201,6 +219,9 @@ public struct LearningPath: Decodable, Equatable, Sendable {
     public let recovery: [PathRecovery]
     public let why: [PathWhy]
     public let streaks: [PathStreak]
+
+    /// True while the goal is only a suggestion (Learn shows "Your path is ready").
+    public var goalIsSuggested: Bool { goal?.suggested ?? false }
 
     /// The rest day to show as selected: the server's, or Sunday for an older server that does not say.
     public var restDayValue: Int { restDay ?? PathRestDay.sunday }
@@ -267,6 +288,8 @@ public enum LearningPathChange: Equatable, Sendable {
     case setDailyMinutes(Int)
     /// 0 (Sunday) to 6, or `PathRestDay.none` for no rest day.
     case setRestDay(Int)
+    /// true switches "Fix before it sticks" off.
+    case setFixOff(Bool)
 
     var body: [String: Any] {
         switch self {
@@ -274,6 +297,7 @@ public enum LearningPathChange: Equatable, Sendable {
         case .lessonsFirst: return ["action": "lessons_first"]
         case .resume: return ["action": "resume"]
         case .setDailyMinutes(let minutes): return ["action": "set_daily_minutes", "dailyMinutes": minutes]
+        case .setFixOff(let off): return ["action": "set_fix_off", "off": off]
         case .setRestDay(let day):
             return ["action": "set_rest_day", "restDay": day == PathRestDay.none ? "none" : day]
         }

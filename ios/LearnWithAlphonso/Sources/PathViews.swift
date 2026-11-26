@@ -330,6 +330,7 @@ struct PathScreen: View {
     /// Talks, campaign scenes and podcasts live in other tabs; the app-wide link carries the tap to them.
     @Environment(PathDeepLink.self) private var deepLink
     @State private var model: PathModel?
+    @State private var showingBuild = false
     @State private var picked: String?
     @Environment(\.alphonsoDS) private var ds
 
@@ -374,6 +375,17 @@ struct PathScreen: View {
         Section {
             Text("\(path.dailyMinutes) min a day \u{00B7} by \(GoalCopy.formatDate(path.progress.targetDate))")
                 .dsText(.footnote).foregroundStyle(ds.inkSoft)
+            if path.goalIsSuggested {
+                // Still a suggestion: say so, and "Change" opens Build my path.
+                HStack(spacing: AlphonsoDS.Space.s1) {
+                    Text("Suggested from your answers \u{00B7}").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    Button("Change") { showingBuild = true }
+                        .dsText(.footnote).foregroundStyle(ds.actionText)
+                }
+                .sheet(isPresented: $showingBuild, onDismiss: { Task { await model?.load() } }) {
+                    PathBuildView(session: session, course: course)
+                }
+            }
         }
         if path.trimmed {
             Section {
@@ -609,6 +621,21 @@ struct PathBuildView: View {
             Text("\(path.dailyMinutes) minutes a day, \(PathRestDay.studyDays(path.restDayValue)) days. The rest of each day is filled with the mix below.")
                 .dsText(.footnote).foregroundStyle(ds.onHeroSoft)
             PathMixBar(mix: path.mix, onHero: true)
+        }
+        DSOverline("Fix before it sticks")
+        DSCard(padding: AlphonsoDS.Space.s3) {
+            Toggle(isOn: Binding(
+                get: { !(path.fixOff ?? false) },
+                set: { on in Task { await model?.apply(.setFixOff(!on)) } }
+            )) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Weak spots and refreshers").dsText(.headline).foregroundStyle(ds.ink)
+                    Text("Show them in Today").dsText(.caption).foregroundStyle(ds.inkSoft)
+                }
+            }
+            .tint(ds.choice)
+            .disabled(model?.busy ?? false)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
         }
         DSOverline("Rest day")
         DSCard {

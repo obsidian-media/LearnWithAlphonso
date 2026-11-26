@@ -329,7 +329,8 @@ struct LessonBrowserView: View {
         case .loading: return "Loading"
         case .failed: return "Couldn't load"
         case .none: return "Set a goal"
-        case .ready(let path): return PathGoalCard.lines(for: path).headline
+        case .ready(let path):
+            return path.goalIsSuggested ? "Suggested for you" : PathGoalCard.lines(for: path).headline
         }
     }
 
@@ -461,6 +462,18 @@ struct LessonBrowserView: View {
                 //
                 // Presented rather than pushed (showingReview), because ReviewQueueView owns its own
                 // NavigationStack -- pushing it would nest two.
+                if let railPath {
+                    LearnPathCards(
+                        model: railPath, session: session, course: course,
+                        onBuild: { showingPathBuild = true },
+                        onOpenLesson: { openedLesson = OpenedLesson(id: $0) },
+                        onOpenReview: { showingReview = true }
+                    )
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                }
+
                 LearnForYouRail(items: forYouItems)
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
@@ -632,6 +645,11 @@ struct LessonBrowserView: View {
                 lessonDestination(opened.id)
             }
             .task(id: deepLink.pending) {
+                if case .review? = deepLink.pending {
+                    deepLink.pending = nil
+                    showingReview = true
+                    return
+                }
                 guard case let .lesson(id)? = deepLink.pending else { return }
                 deepLink.pending = nil
                 openedLesson = OpenedLesson(id: id)

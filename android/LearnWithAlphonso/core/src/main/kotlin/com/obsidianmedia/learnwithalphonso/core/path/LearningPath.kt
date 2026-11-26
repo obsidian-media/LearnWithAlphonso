@@ -122,6 +122,14 @@ data class PathProgress(
     val suggestedDate: String? = null,
 )
 
+/** `suggested`: the goal was worked out from the learner's answers and not saved; `built` says what from. */
+@Serializable
+data class PathGoalInfo(val suggested: Boolean, val built: String)
+
+/** "Fix before it sticks": the weak-spot items, kept apart from Today's plan. Null when there is nothing to fix. */
+@Serializable
+data class PathFixCard(val overline: String, val title: String, val minutes: Int, val items: List<PathItem>)
+
 @Serializable
 data class PathToday(val day: String, val targetMinutes: Int, val minutesLeft: Int, val items: List<PathItem>)
 
@@ -134,6 +142,10 @@ data class LearningPath(
     val status: String,
     val statusLine: String,
     val statusDetail: String,
+    /** An older server omits it: then the goal is a saved one. */
+    val goal: PathGoalInfo? = null,
+    val fix: PathFixCard? = null,
+    val fixOff: Boolean = false,
     val progress: PathProgress,
     val dailyMinutes: Int,
     /** The rest day as planned: 0 (Sunday) to 6, or [PathRestDay.NONE] (-1) for seven study days. An older server omits it: Sunday. */
@@ -151,6 +163,9 @@ data class LearningPath(
     val why: List<PathWhy>,
     val streaks: List<PathStreak>,
 ) {
+    /** True while the goal is only a suggestion (Learn shows "Your path is ready"). */
+    val goalIsSuggested: Boolean get() = goal?.suggested == true
+
     /** Share of the lessons in scope that are done, 0..1, for the progress bar. */
     val lessonFraction: Float get() = progress.lessonsDone.toFloat() / maxOf(progress.lessonsInScope, 1)
 
@@ -195,6 +210,9 @@ sealed interface LearningPathChange {
 
     /** 0 (Sunday) to 6, or [PathRestDay.NONE] for no rest day. */
     data class SetRestDay(val day: Int) : LearningPathChange
+
+    /** true switches "Fix before it sticks" off. */
+    data class SetFixOff(val off: Boolean) : LearningPathChange
 }
 
 /** The rest-day choices in "Build my path", shared by the three platforms (weekday 0 = Sunday, -1 = none). */

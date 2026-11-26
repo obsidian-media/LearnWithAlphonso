@@ -12,6 +12,8 @@ public enum PathDestination: Equatable, Sendable {
     case talk(String)
     /// A campaign stop opens that scene's pre-call sheet in Practice.
     case campaign(String, scene: Int)
+    /// "Fix your weak spots" opens the existing Review flow.
+    case review
 }
 
 /// What Practice should open for a campaign or talk destination, resolved against the content that is really there.
@@ -30,6 +32,7 @@ public enum PathStopRouting {
         case "talk": return .talk(ref.id)
         case "campaign": return .campaign(ref.id, scene: max(0, ref.sceneIndex ?? 0))
         case "video": return .video(ref.id)
+        case "review": return .review
         default: return .podcastLibrary
         }
     }
@@ -48,7 +51,7 @@ public enum PathStopRouting {
         case let .campaign(id, scene):
             guard let count = campaignSceneCounts[id], count > 0 else { return nil }
             return .campaign(id, scene: min(max(0, scene), count - 1))
-        case .lesson, .podcastLibrary, .video:
+        case .lesson, .podcastLibrary, .video, .review:
             return nil
         }
     }

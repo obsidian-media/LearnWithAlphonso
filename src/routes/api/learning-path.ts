@@ -14,11 +14,13 @@ import { loadPathData } from "@/lib/learning-path.server";
  * choices (types switched off, "lessons first" until a date) live with the first-run answers in
  * user_metadata.learner_profile.
  *
- *   GET ?course=en                                        { path } or { path: null } when there is no goal yet
+ *   GET ?course=en                                        { path }; with no saved goal the path is built from a
+ *                                                         SUGGESTED one (path.goal.suggested: true), never saved here
  *   PUT { course, action: "set_off", off: ["podcast"] }   switches
  *   PUT { course, action: "lessons_first" }               trim the optional types for TRIM_DAYS days
  *   PUT { course, action: "resume" }                      back to the full mix
  *   PUT { course, action: "set_daily_minutes", dailyMinutes: 15 }   one of 5, 10, 15, 20
+ *   PUT { course, action: "set_fix_off", off: true }      switch "Fix before it sticks" (weak spots, refreshers) off or on
  *   PUT { course, action: "set_rest_day", restDay: 3 }    0 (Sunday) to 6, or "none" for no rest day
  * Everything is scoped to the user id of the verified token.
  */
@@ -62,6 +64,7 @@ async function handle(request: Request, method: "GET" | "PUT"): Promise<Response
       else if (body?.action === "resume") patch = { pathTrimUntil: null };
       else if (body?.action === "set_daily_minutes") patch = { dailyMinutes: body.dailyMinutes };
       else if (body?.action === "set_rest_day") patch = { pathRestDay: body.restDay };
+      else if (body?.action === "set_fix_off") patch = { pathFixOff: body.off === true };
       else return json({ error: "Unknown action" }, 400);
       const checked = learnerProfilePatchSchema.safeParse(patch);
       if (!checked.success) return json({ error: "That choice cannot be saved." }, 400);
@@ -70,7 +73,7 @@ async function handle(request: Request, method: "GET" | "PUT"): Promise<Response
       }));
     }
     const data = await loadPathData(admin, userId, course, new Date());
-    if (!data) return json({ path: null });
+    // `null` only when the planner cannot plan (a target below the level); no saved goal now gets a suggested one.
     return json({ path: buildLearningPath({ ...data, startableOnly: true }) });
   } catch (error) {
     console.error(`[learning-path] ${method} failed: ${(error as Error).message}`);

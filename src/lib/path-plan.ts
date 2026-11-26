@@ -7,6 +7,10 @@ import {
   GOAL_BOOST,
   LESSON_FLOOR_SHARE,
   LESSON_FLOOR_SHARE_WEAK_LESSON_SKILL,
+  REFRESHER_COOLDOWN_DAYS,
+  REFRESHER_MIN_EVENTS,
+  REFRESHER_MIN_EVENTS_WEAK_SKILL,
+  REFRESHER_WINDOW_DAYS,
   REST_DAY,
   ROAD_DONE_STOPS,
   ROAD_UPCOMING_STOPS,
@@ -16,9 +20,13 @@ import {
   NO_REST_DAY,
   WEAK_BELOW_PCT,
   WEAK_SKILL_BOOST,
+  WEAK_SPOTS_MAX_MINUTES,
+  WEAK_SPOTS_MIN_ITEMS,
+  WEAK_SPOTS_SECONDS_PER_ITEM,
 } from "../data/path-config";
 import { LEVEL_ORDER, type GoalPlan, type GoalStatus } from "./learning-goal";
 import { DAILY_MINUTES, type Goal, type Interest } from "./learner-profile";
+import { categorySkill } from "../data/refresher-topics";
 import type { Skill } from "./profile-data";
 import { localDay } from "./local-day";
 
@@ -71,7 +79,11 @@ export function visibleStreaks(streaks: readonly StreakEntry[]): StreakEntry[] {
   return streaks.filter((s) => s.type !== "video" || s.days > 0 || s.weekMinutes > 0);
 }
 
-export type ItemRef = { kind: PathType; id: string; sceneIndex?: number };
+/**
+ * Where an item opens. `kind` is a PathType, or "review" for "Fix your weak spots" (the existing Review flow). A
+ * refresher is an ordinary lesson ref: it is an earlier lesson replayed.
+ */
+export type ItemRef = { kind: PathType | "review"; id: string; sceneIndex?: number };
 
 export type Candidate = {
   id: string;
@@ -95,7 +107,34 @@ export type ActivityEvent = {
   title?: string;
 };
 
-export type PathPrefs = { off: PathType[]; trimUntil: string | null };
+export type PathPrefs = {
+  off: PathType[];
+  trimUntil: string | null;
+  /** True: no "Fix before it sticks" card (the learner switched weak spots and refreshers off). */
+  fixOff?: boolean;
+};
+
+/** One weakness category the learner repeats, with the earlier COMPLETED lesson that trains it (null when none does). */
+export type WeakCategory = {
+  /** The taxonomy slug ("past-tense"). */
+  category: string;
+  /** Its plain label ("Past tense"). */
+  label: string;
+  /** Detections inside the refresher window. */
+  count: number;
+  lesson: Candidate | null;
+};
+
+/** What the learner got wrong lately (Review, calls), already read for this course by the data layer. */
+export type WeakInput = {
+  /** Review items due today or earlier. */
+  reviewDue: number;
+  /** Recent call mistakes that are not already one of those Review items. */
+  callMistakes: number;
+  categories: WeakCategory[];
+  /** The latest day an earlier lesson was replayed (a refresher done), or null. */
+  lastRefresherDay: string | null;
+};
 
 export type PathInput = {
   now: Date;
@@ -118,6 +157,10 @@ export type PathInput = {
   unit?: { title: string; subtitle: string; lessonsLeft: number };
   /** Lessons still to do per level, for the level steps on the road. */
   levelLessonsLeft?: Partial<Record<Level, number>>;
+  /** True when the goal was suggested from the learner's answers and level, not saved by them (v2). */
+  goalSuggested?: boolean;
+  /** Weak spots (v2). Left out, the path has neither "Fix your weak spots" nor a refresher. */
+  weak?: WeakInput;
 };
 
 export type MixEntry = { type: PathType; minutes: number; share: number; count: number };
@@ -130,6 +173,14 @@ export type PlannedItem = {
   state: "done" | "next" | "todo";
   ref: ItemRef | null;
 };
+export type FixCard = {
+  /** "Fix before it sticks · 7 min". */
+  overline: string;
+  /** "Two weak spots to tidy up", "One weak spot to tidy up". */
+  title: string;
+  minutes: number;
+  items: PlannedItem[];
+};
 export type DayPlan = {
   day: string;
   label: string;
@@ -141,7 +192,7 @@ export type WhyEntry = {
   type: PathType;
   headline: string;
   detail: string;
-  source: "planner" | "skills" | "goal" | "interests" | "level" | "recovery";
+  source: "planner" | "skills" | "goal" | "interests" | "level" | "recovery" | "weak";
 };
 export type RecoveryOption = {
   id: "lessons_first" | "move_date" | "add_minutes";
@@ -169,6 +220,14 @@ export type LearningPath = {
   asOf: string;
   course: "en" | "fr" | "es";
   goalLabel: string;
+  /**
+   * `suggested`: the goal was worked out from the learner's answers, not saved; Learn shows "Your path is ready" with
+   * "Looks good" and "Change target". `built`: the plain sentence of what it was built from.
+   */
+  goal: { suggested: boolean; built: string };
+  /** "Fix before it sticks": weak-spot items kept apart from Today's plan. Null when there is nothing to fix, or switched off. */
+  fix: FixCard | null;
+  fixOff: boolean;
   status: GoalStatus;
   /** The status in words, and one sentence under it (the goal planner's numbers, never a new calculation). */
   statusLine: string;
@@ -373,6 +432,126 @@ function streakOf(
   return { type, days: n, weekMinutes };
 }
 
+// ---------------------------------------------------------------- weak spots (v2)
+
+const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+
+const COUNT_WORDS = ["Zero", "One", "Two", "Three", "Four"];
+/** The card that gathers the weak-spot items; null when there are none (the card is then hidden). */
+export function fixCard(items: PlannedItem[]): FixCard | null {
+  if (items.length === 0) return null;
+  const minutes = items.reduce((s, i) => s + i.minutes, 0);
+  return {
+    overline: `Fix before it sticks ${MIDDLE_DOT} ${minutes} min`,
+    title: `${COUNT_WORDS[items.length] ?? items.length} weak ${items.length === 1 ? "spot" : "spots"} to tidy up`,
+    minutes,
+    items,
+  };
+}
+
+const GOAL_WORDS: Record<string, string> = {
+  travel: "travel",
+  work: "work",
+  school: "school",
+  family: "family",
+  exam: "an exam",
+  fun: "fun",
+};
+const joinWords = (xs: string[]) =>
+  xs.length <= 1 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
+/** "work, 20 min a day, placed at A2, interests in tech and football." (what the suggested goal was built from). */
+function builtFrom(input: PathInput): string {
+  const parts: string[] = [];
+  const g = input.profile.goal;
+  if (g) parts.push(GOAL_WORDS[g] ?? g);
+  parts.push(`${input.profile.dailyMinutes} min a day`);
+  parts.push(`placed at ${input.goalPlan.currentLevel}`);
+  if (input.profile.interests.length > 0)
+    parts.push(`interests in ${joinWords(input.profile.interests.slice(0, 3))}`);
+  return `Built from your answers: ${parts.join(", ")}.`;
+}
+const MIDDLE_DOT = "\u00B7";
+
+/** Review items due plus recent call mistakes. */
+function weakCount(input: PathInput): number {
+  return input.weak ? input.weak.reviewDue + input.weak.callMistakes : 0;
+}
+
+/** Minutes for the weak-spots review, from the count and the timing of one multiple-choice card. */
+export function weakSpotsMinutes(count: number): number {
+  return Math.min(
+    WEAK_SPOTS_MAX_MINUTES,
+    Math.max(1, Math.ceil((count * WEAK_SPOTS_SECONDS_PER_ITEM) / 60)),
+  );
+}
+
+function weakSpotsTitle(input: PathInput): string {
+  const w = input.weak!;
+  const n = w.reviewDue + w.callMistakes;
+  if (w.callMistakes > 0) return `${n} phrases from your recent calls and Review`;
+  return `${n} items due in Review`;
+}
+
+/** "Fix your weak spots": a short pass through Review, when there are enough items to be worth a visit. */
+function weakSpotsItem(input: PathInput): PlannedItem | null {
+  const n = weakCount(input);
+  if (n < WEAK_SPOTS_MIN_ITEMS) return null;
+  return {
+    type: "lesson",
+    id: "weakspots",
+    title: weakSpotsTitle(input),
+    subtitle: "Fix your weak spots",
+    minutes: weakSpotsMinutes(n),
+    state: "todo",
+    ref: { kind: "review", id: "weakspots" },
+  };
+}
+
+type RefresherPick = { item: PlannedItem; category: WeakCategory; reason: string };
+
+/**
+ * ONE earlier lesson that trains a category the learner keeps getting wrong: the category repeated
+ * REFRESHER_MIN_EVENTS times in the window, or came up at all while its skill (grammar or vocabulary) is weak.
+ * Never inside the cooldown after the last refresher the learner did.
+ */
+function refresherPick(input: PathInput, today: string): RefresherPick | null {
+  const w = input.weak;
+  if (!w) return null;
+  if (w.lastRefresherDay && dayNum(today) - dayNum(w.lastRefresherDay) < REFRESHER_COOLDOWN_DAYS)
+    return null;
+  const skillWeak = (skill: Skill) => {
+    const pct = input.skillPct[skill];
+    return typeof pct === "number" && pct < WEAK_BELOW_PCT;
+  };
+  const best = w.categories
+    .filter(
+      (c) =>
+        c.lesson !== null &&
+        (c.count >= REFRESHER_MIN_EVENTS ||
+          (c.count >= REFRESHER_MIN_EVENTS_WEAK_SKILL && skillWeak(categorySkill(c.category)))),
+    )
+    .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category))[0];
+  if (!best?.lesson) return null;
+  const topic = lowerFirst(best.label);
+  const reason =
+    best.count >= 2
+      ? `you mixed up ${topic} ${best.count} times`
+      : `${topic} tripped you up and ${SKILL_NAME[categorySkill(best.category)].toLowerCase()} is a weak spot`;
+  return {
+    category: best,
+    reason,
+    item: {
+      type: "lesson",
+      id: best.lesson.id,
+      title: `Refresher: ${best.label} (${best.lesson.level})`,
+      subtitle: cap(reason),
+      minutes: best.lesson.minutes,
+      state: "todo",
+      ref: best.lesson.ref,
+    },
+  };
+}
+
 // ---------------------------------------------------------------- the engine
 
 export function planPath(input: PathInput): LearningPath {
@@ -433,6 +612,18 @@ export function planPath(input: PathInput): LearningPath {
     }
   }
 
+  // v2: weak spots go in today's list only (once a day, never on the days ahead), only on a day the learner studies,
+  // and they spend part of today's minutes, so the lessons planned for today shrink to make room (never below one).
+  const todaySlot = plannable.find((p) => p.day === today);
+  const extras =
+    todaySlot && input.prefs.fixOff !== true
+      ? { weakspots: weakSpotsItem(input), refresher: refresherPick(input, today) }
+      : { weakspots: null, refresher: null };
+  if (todaySlot) {
+    const taken = (extras.weakspots?.minutes ?? 0) + (extras.refresher?.item.minutes ?? 0);
+    todaySlot.budget = Math.max(1, todaySlot.budget - taken);
+  }
+
   // Token-bucket spread: each day every type earns its share of what is left; an item is placed once its type has
   // earned half an item, and every day starts with a lesson while lessons remain.
   const credit: Record<PathType, number> = zeroByType();
@@ -479,13 +670,16 @@ export function planPath(input: PathInput): LearningPath {
   }
 
   const todayPlan = days.find((d) => d.day === today)!;
+  // The items are not in today's list: they have their own card. The minutes still count in the day (and the week).
+  const fixItems = [extras.weakspots, extras.refresher?.item].filter((e): e is PlannedItem => !!e);
+  for (const e of fixItems) todayPlan.minutes += e.minutes;
   const todayItems = todayPlan.items.map((i) => ({ ...i }));
   const firstTodo = todayItems.find((i) => i.state === "todo");
   if (firstTodo) firstTodo.state = "next";
 
   const status = input.goalPlan.status;
   const recovery = status === "behind" ? buildRecovery(input, trimmed) : [];
-  const why = buildWhy(input, trimmed, mix, pool);
+  const why = buildWhy(input, trimmed, mix, pool, extras);
   const upcomingItems = days
     .filter((d) => d.day >= today)
     .flatMap((d) => d.items.filter((i) => i.state !== "done"));
@@ -494,6 +688,9 @@ export function planPath(input: PathInput): LearningPath {
     asOf: input.now.toISOString(),
     course: input.course,
     goalLabel: input.goalLabel,
+    goal: { suggested: input.goalSuggested === true, built: builtFrom(input) },
+    fix: fixCard(fixItems),
+    fixOff: input.prefs.fixOff === true,
     status,
     statusLine: STATUS_LINE[status],
     statusDetail: statusDetail(input.goalPlan),
@@ -630,6 +827,7 @@ function buildWhy(
   trimmed: boolean,
   mix: MixEntry[],
   pool: Record<PathType, Candidate[]>,
+  extras: { weakspots: PlannedItem | null; refresher: RefresherPick | null },
 ): WhyEntry[] {
   const out: WhyEntry[] = [];
   const plan = input.goalPlan;
@@ -655,6 +853,28 @@ function buildWhy(
       headline: "Your goal needs every minute",
       detail: `${plan.requiredPerWeek} lessons a week fill all ${input.profile.dailyMinutes * studyDaysOf(input)} minutes, so the extras wait. Add minutes or move the date to make room.`,
       source: "planner",
+    });
+  }
+  if (extras.weakspots && input.weak) {
+    const { reviewDue, callMistakes } = input.weak;
+    const parts = [
+      reviewDue > 0 ? `${reviewDue} in Review` : "",
+      callMistakes > 0 ? `${callMistakes} from your recent calls` : "",
+    ].filter(Boolean);
+    out.push({
+      type: "lesson",
+      headline: "Fix your weak spots",
+      detail: `${weakCount(input)} items are waiting (${parts.join(" and ")}), so Today has a short review of about ${extras.weakspots.minutes} min. It shows once a day, and only when ${WEAK_SPOTS_MIN_ITEMS} or more are waiting.`,
+      source: "weak",
+    });
+  }
+  if (extras.refresher) {
+    const { category, reason } = extras.refresher;
+    out.push({
+      type: "lesson",
+      headline: `Refresher: ${category.label}`,
+      detail: `${cap(reason)} in the last ${REFRESHER_WINDOW_DAYS} days, so one short earlier lesson on it is back. One refresher at most every ${REFRESHER_COOLDOWN_DAYS} days.`,
+      source: "weak",
     });
   }
   if (trimmed) {

@@ -14,7 +14,8 @@ export type PathAction =
   | { action: "lessons_first" }
   | { action: "resume" }
   | { action: "set_daily_minutes"; dailyMinutes: number }
-  | { action: "set_rest_day"; restDay: number | "none" };
+  | { action: "set_rest_day"; restDay: number | "none" }
+  | { action: "set_fix_off"; off: boolean };
 
 export type PathLoad =
   | { kind: "loading" }
@@ -40,7 +41,9 @@ export function isPath(value: unknown): value is LearningPath {
     Array.isArray(p.recovery) &&
     Array.isArray(p.why) &&
     Array.isArray(p.streaks) &&
-    typeof p.dailyMinutes === "number"
+    typeof p.dailyMinutes === "number" &&
+    isObj(p.goal) &&
+    typeof (p.goal as { suggested?: unknown }).suggested === "boolean"
   );
 }
 

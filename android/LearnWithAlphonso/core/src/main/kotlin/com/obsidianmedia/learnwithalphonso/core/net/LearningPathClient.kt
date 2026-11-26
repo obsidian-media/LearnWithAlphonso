@@ -43,6 +43,10 @@ class LearningPathClient(private val http: ApiHttp) : PathApi {
                                 put("action", "set_daily_minutes")
                                 put("dailyMinutes", change.minutes)
                             }
+                            is LearningPathChange.SetFixOff -> {
+                                put("action", "set_fix_off")
+                                put("off", change.off)
+                            }
                             is LearningPathChange.SetRestDay -> {
                                 put("action", "set_rest_day")
                                 if (change.day == PathRestDay.NONE) put("restDay", "none") else put("restDay", change.day)

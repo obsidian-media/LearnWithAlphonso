@@ -410,6 +410,8 @@ export const learnerProfilePatchSchema = z
     pathTrimUntil: isoDate.nullable().optional(),
     /** The learner's rest day on the path: a weekday 0 (Sunday) to 6 (Saturday), or "none" for seven study days. */
     pathRestDay: pathRestDaySchema.optional(),
+    /** Learning path: true switches "Fix before it sticks" (weak spots and refreshers) off in Today. */
+    pathFixOff: z.boolean().optional(),
     /** Answers to remove (What Alphonso remembers lets a learner delete a goal line). Applied after the rest. */
     clear: z.array(z.enum(CLEARABLE)).max(CLEARABLE.length).optional(),
   })
@@ -466,6 +468,7 @@ export function parseLearnerProfile(raw: unknown): LearnerProfile {
   }
   const pathRestDay = pick(pathRestDaySchema, v.pathRestDay);
   if (pathRestDay !== undefined) out.pathRestDay = pathRestDay;
+  if (v.pathFixOff === true) out.pathFixOff = true;
   const pathTrimUntil = pick(isoDate, v.pathTrimUntil);
   if (pathTrimUntil) out.pathTrimUntil = pathTrimUntil;
   const completedAt = pick(isoTime, v.completedAt);
