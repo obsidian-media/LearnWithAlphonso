@@ -966,6 +966,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      hector_call_ends: {
+        Row: {
+          call_id: string;
+          claimed_at: string;
+          completed_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          call_id: string;
+          claimed_at?: string;
+          completed_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          call_id?: string;
+          claimed_at?: string;
+          completed_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       hector_turn_token_uses: {
         Row: {
           expires_at: string;
@@ -3597,6 +3618,7 @@ export type Database = {
       claim_ai_cost_alert_day: { Args: { p_day: string }; Returns: boolean };
       claim_call_recap: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
       claim_device_token: { Args: { _platform: string; _token: string }; Returns: undefined };
+      claim_hector_call: { Args: { _call_id: string; _user_id: string }; Returns: string };
       claim_referral: {
         Args: { _code: string };
         Returns: {
@@ -3619,6 +3641,7 @@ export type Database = {
           xp: number;
         }[];
       };
+      complete_hector_call: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
       confirm_display_name: { Args: { _name: string }; Returns: string };
       consume_ai_quota: {
         Args: { _kind: string };
@@ -4023,6 +4046,7 @@ export type Database = {
       };
       release_ai_cost_alert_day: { Args: { p_day: string }; Returns: undefined };
       release_call_recap: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
+      release_hector_call: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
       release_lesson_completion_slot: {
         Args: { _at: string; _user_id: string };
         Returns: undefined;
