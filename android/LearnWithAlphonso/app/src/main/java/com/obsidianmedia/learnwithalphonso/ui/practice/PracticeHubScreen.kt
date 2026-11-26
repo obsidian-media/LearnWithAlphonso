@@ -532,7 +532,7 @@ private fun DrillCard(title: String, detail: String, tag: String, onClick: () ->
 @Composable internal fun PracticeResultScreen(
     result: PracticeResult, room: String, course: String, seconds: Int, slip: Pair<String, String>?, context: PracticeResultContext, retry: () -> Unit, forward: () -> Unit,
     /** The call recap: it takes the slip's slot while pending or ready; with none (a short call, offline, an AI error) the slip shows as before. */
-    recap: CallRecapController.Ui? = null, onSpeakPhrase: (String) -> Unit = {}, onReviewRecap: () -> Unit = {}, onOpenMemory: () -> Unit = {},
+    recap: CallRecapController.Ui? = null, onSpeakPhrase: (String) -> Unit = {}, onReviewRecap: () -> Unit = {}, onOpenMemory: () -> Unit = {}, onRetryRecap: () -> Unit = {},
 ) {
     val ds = LocalAlphonsoTokens.current
     val largeText = androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.3f
@@ -558,8 +558,9 @@ private fun DrillCard(title: String, detail: String, tag: String, onClick: () ->
                 stats.forEach { (value, label) -> Box(Modifier.weight(1f)) { ResultStat(value, label) } }
             }
         }
-        val recapShowing = recap != null && recap.status != CallRecapController.Status.OFF
-        if (recapShowing) item { RecapSection(recap!!, onSpeakPhrase, onReviewRecap, onOpenMemory) }
+        // A failed recap shows "Try again" beside the slip; a pending or ready one takes the slip's slot.
+        val recapShowing = recap != null && recap.status != CallRecapController.Status.OFF && recap.status != CallRecapController.Status.FAILED
+        if (recap != null && recap.status != CallRecapController.Status.OFF) item { RecapSection(recap, onSpeakPhrase, onReviewRecap, onOpenMemory, onRetryRecap) }
         val shownSlip = if (recapShowing) null else result.slipToShow(slip)
         if (shownSlip != null) item {
             val slipShape = RoundedCornerShape(AlphonsoTokens.Radius.control)

@@ -1,5 +1,8 @@
 import { normaliseSpoken } from "./spoken-answer";
 
+/** A letters-only stand-in for "ñ" that survives the spoken normaliser's accent fold and punctuation strip. */
+const ENYE = "xqenyeqx";
+
 /**
  * Comparing a learner's written translation against the curated phrasings a
  * question accepts.
@@ -17,7 +20,11 @@ import { normaliseSpoken } from "./spoken-answer";
  * changing its mind for no visible reason.
  */
 export function normaliseWritten(input: string): string {
-  return normaliseSpoken(input);
+  // The spoken normaliser folds every accent, which is right for a transcript (speech recognition cannot hear a tilde)
+  // but wrong for typed Spanish: "ano" and "año" are different words. Protect the enye through the fold, then restore
+  // it. Speech keeps its tolerance (spoken-answer-es.ts); this is the written side only.
+  const protectedInput = input.normalize("NFC").replace(/ñ/gi, ENYE);
+  return normaliseSpoken(protectedInput).split(ENYE).join("ñ");
 }
 
 /**

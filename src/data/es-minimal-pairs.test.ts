@@ -90,4 +90,15 @@ describe("Spanish minimal pairs are spelling-choice questions", () => {
       expect(twinsAsAnswers, p.id).toBeGreaterThanOrEqual(20);
     }
   });
+  it("a masculine adjective answer (basto, vasto) never sits in a feminine sentence", () => {
+    // "La tela ... es muy basto y áspera" expected a masculine word after a feminine noun.
+    const rows = Object.values(MINIMAL_PAIR_ROWS)
+      .flat()
+      .filter((r) => r.answer === "basto" || r.answer === "vasto");
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r.sentence, r.sentence).not.toMatch(/^(La|Una|Esta|Esa|Las|Unas) /);
+      expect(r.sentence, r.sentence).not.toMatch(/ y \p{L}+as?\.$/u);
+    }
+  });
 });

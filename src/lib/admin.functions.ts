@@ -527,6 +527,15 @@ export const adminSetPublished = createServerFn({ method: "POST" })
         published: sharers.some((row) => row.published),
         unpublished: sharers.some((row) => !row.published),
       },
+      onCleanupFailed: async (failure) => {
+        // A draft is now public: write an ops_events row so the System health page and the owner alert see it.
+        const { recordOpsEvent } = await import("./ops-events.server");
+        await recordOpsEvent("publish_cleanup_failed", {
+          bucket: failure.bucket,
+          path: failure.paths[0] ?? null,
+          path_count: failure.paths.length,
+        });
+      },
       flip: async () => {
         const { data: changed, error } = await podcastWrite(
           context,

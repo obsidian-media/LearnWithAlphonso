@@ -22,6 +22,10 @@ export type Transcript = { role: "user" | "assistant"; content: string }[];
 export const callQualifiesForRecap = (turns: Transcript): boolean =>
   turns.filter((t) => t.role === "user").length >= RECAP_MIN_LEARNER_TURNS;
 
+/** One attempt's outcome. `retry` is true when a second try may work (offline, timeout, a server error, or the server saying
+ * the attempt failed and released the call); a short call, consent off or a quota refusal are not retryable. */
+export type RecapAttempt = { recap: RecapView | null; retry: boolean };
+
 /**
  * Asks for the recap of a finished call. null on anything but a clean answer (short call, offline, timeout, the AI or
  * its checks failing, consent off, over the limit): the result screen then simply keeps its slip. One attempt, no retry.
@@ -34,7 +38,20 @@ export async function fetchCallRecap(args: {
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
 }): Promise<RecapView | null> {
-  if (!callQualifiesForRecap(args.messages)) return null;
+  return (await fetchCallRecapAttempt(args)).recap;
+}
+
+/** As fetchCallRecap, but also says whether the screen should offer "Try again" (the call is not consumed by a failure). */
+export async function fetchCallRecapAttempt(args: {
+  callId: string;
+  messages: Transcript;
+  cefrLevel?: string;
+  scene?: string;
+  fetchImpl?: typeof fetch;
+  timeoutMs?: number;
+}): Promise<RecapAttempt> {
+  const none: RecapAttempt = { recap: null, retry: false };
+  if (!callQualifiesForRecap(args.messages)) return none;
   const doFetch = args.fetchImpl ?? fetch;
   try {
     const resp = await doFetch("/api/call-recap", {
@@ -48,14 +65,14 @@ export async function fetchCallRecap(args: {
       }),
       signal: AbortSignal.timeout(args.timeoutMs ?? RECAP_CLIENT_TIMEOUT_MS),
     });
-    if (!resp.ok) return null;
-    const body = (await resp.json()) as { recap?: RecapView | null };
+    if (!resp.ok) return { recap: null, retry: resp.status >= 500 && resp.status !== 503 };
+    const body = (await resp.json()) as { recap?: RecapView | null; retry?: boolean };
     const r = body.recap;
-    if (!r || !Array.isArray(r.corrections)) return null;
-    if (r.corrections.length === 0 && !r.phrase) return null;
-    return r;
+    if (!r || !Array.isArray(r.corrections)) return { recap: null, retry: body.retry === true };
+    if (r.corrections.length === 0 && !r.phrase) return none;
+    return { recap: r, retry: false };
   } catch {
-    return null;
+    return { recap: null, retry: true };
   }
 }
 

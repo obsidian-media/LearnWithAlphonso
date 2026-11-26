@@ -21,10 +21,16 @@ import { timedRoute } from "@/lib/stage-timer.server";
  * every AI route has (consent 403, quota 429, AI switched off 503, no session 401) answer with their usual status; the
  * clients hide the recap on any non-200.
  *
+ * A failed attempt never consumes the call: the claim is an expiring lease (practice_calls.recap_claimed_at, 2 minutes),
+ * the completed marker (recap_at) is set only by finish_call_recap together with the memory write, and a model or write
+ * failure releases the claim and answers `{ recap: null, retry: true }` so the client can offer "Try again".
+ *
  * The call's course and ownership come from the server's own practice_calls row, never from the request. The recap is
  * saved to the learner's memory (tutor_memory) only when they are Pro, decided here from RevenueCat.
  */
 const NONE = () => noStoreJson({ recap: null });
+/** The attempt failed in a way a second try may fix (model, memory write, a database hiccup): the client offers "Try again". */
+const RETRY = () => noStoreJson({ recap: null, retry: true });
 
 export const Route = createFileRoute("/api/call-recap")({
   server: {
@@ -70,82 +76,110 @@ export const Route = createFileRoute("/api/call-recap")({
           if (!row || !row.finished_at || row.recap_at || !isCourse(row.course)) return NONE();
           const course: Course = row.course;
 
-          // One recap per call: claimed before the AI call, so a second device or a reopened result cannot bill twice.
+          // One attempt at a time: an expiring claim before the AI call, so a second device or a reopened result cannot
+          // bill twice while one is running. It is released on failure and only recap_at (set by finish_call_recap) ends it.
           const claim = await timer.time("claim", async () =>
             admin.rpc("claim_call_recap", { _user_id: userId, _call_id: callId }),
           );
-          if (claim.error || claim.data !== true) return NONE();
-
-          const { generateCallRecap, issueRecapToken, proStateFor } =
-            await import("@/lib/call-recap.server");
-          const cefr = typeof body.cefrLevel === "string" ? body.cefrLevel.slice(0, 4) : undefined;
-          const scene = typeof body.scene === "string" ? body.scene.slice(0, 120) : undefined;
-          const recap = await timer.time("llm", () =>
-            generateCallRecap({
-              apiKey: key,
-              model: resolveLlmChatModel(),
-              userId,
-              course,
-              cefrLevel: cefr,
-              scene,
-              turns,
-              signal: AbortSignal.any([request.signal, AbortSignal.timeout(8000)]),
-            }),
-          );
-          if (!recap) return NONE();
-
-          // The same blocked-term check every model-written line passes; a blocked item is dropped, not shown.
-          const verdicts = await filterModelOutputs(recapStrings(recap), {
-            check: makeBlockedTermCheck(supabaseAdmin),
-            course,
-            route: "call-recap",
-          });
-          const kept = {
-            corrections: recap.corrections.filter((_, i) => !verdicts[i]),
-            phrase: recap.phrase && !verdicts[recap.corrections.length] ? recap.phrase : null,
+          if (claim.error) return RETRY();
+          if (claim.data !== true) return NONE();
+          const release = async () => {
+            try {
+              await admin.rpc("release_call_recap", { _user_id: userId, _call_id: callId });
+            } catch {
+              // The lease expires by itself.
+            }
           };
-          if (kept.corrections.length === 0 && !kept.phrase) return NONE();
+          const attempt = async () => {
+            const { generateCallRecap, issueRecapToken, proStateFor } =
+              await import("@/lib/call-recap.server");
+            const cefr =
+              typeof body.cefrLevel === "string" ? body.cefrLevel.slice(0, 4) : undefined;
+            const scene = typeof body.scene === "string" ? body.scene.slice(0, 120) : undefined;
+            const recap = await timer.time("llm", () =>
+              generateCallRecap({
+                apiKey: key,
+                model: resolveLlmChatModel(),
+                userId,
+                course,
+                cefrLevel: cefr,
+                scene,
+                turns,
+                signal: AbortSignal.any([request.signal, AbortSignal.timeout(8000)]),
+              }),
+            );
+            if (!recap) {
+              await release();
+              return RETRY();
+            }
 
-          // Topic labels become weakness events (what native recorded through analyze-weaknesses); Pro also keeps memory.
-          const pro = (await proStateFor(userId)) === "active";
-          const topics = [...new Set(kept.corrections.map((c) => c.topic))];
-          const memo = await timer.time("memory", async () =>
-            admin.rpc("remember_call_recap", {
-              _user_id: userId,
-              _course: course,
-              _call_id: callId,
-              _topics: topics,
-              _mistakes: kept.corrections.map((c) => ({
-                topic: c.topic,
-                // Only the corrected form is kept: never the learner's own words (they can hold names or details).
-                text: c.fixed,
-              })),
-              _save: pro,
-            }),
-          );
-          if (memo.error) console.error("[call-recap] memory write failed");
+            // The same blocked-term check every model-written line passes; a blocked item is dropped, not shown.
+            const verdicts = await filterModelOutputs(recapStrings(recap), {
+              check: makeBlockedTermCheck(supabaseAdmin),
+              course,
+              route: "call-recap",
+            });
+            const kept = {
+              corrections: recap.corrections.filter((_, i) => !verdicts[i]),
+              phrase: recap.phrase && !verdicts[recap.corrections.length] ? recap.phrase : null,
+            };
+            const nothingToShow = kept.corrections.length === 0 && !kept.phrase;
 
-          let token: string | null = null;
+            // Topic labels become weakness events (what native recorded through analyze-weaknesses); Pro also keeps memory.
+            const pro = (await proStateFor(userId)) === "active";
+            const topics = [...new Set(kept.corrections.map((c) => c.topic))];
+            const memo = await timer.time("memory", async () =>
+              admin.rpc("finish_call_recap", {
+                _user_id: userId,
+                _course: course,
+                _call_id: callId,
+                _topics: nothingToShow ? [] : topics,
+                _mistakes: (nothingToShow ? [] : kept.corrections).map((c) => ({
+                  topic: c.topic,
+                  // Only the corrected form is kept: never the learner's own words (they can hold names or details).
+                  text: c.fixed,
+                })),
+                _save: pro,
+              }),
+            );
+            if (memo.error) {
+              console.error("[call-recap] memory write failed");
+              await release();
+              return RETRY();
+            }
+            // Everything it had to say was filtered out: the call is completed with nothing written, and nothing shows.
+            if (nothingToShow) return NONE();
+
+            let token: string | null = null;
+            try {
+              token = issueRecapToken(userId, callId, course, kept);
+            } catch {
+              // No signing secret: the recap still shows, "Review these" does not.
+            }
+            return noStoreJson({
+              recap: {
+                corrections: kept.corrections.map((c) => ({
+                  said: c.said,
+                  fixed: c.fixed,
+                  why: c.why,
+                  topic: c.topic,
+                  label: topicLabel(course, c.topic),
+                })),
+                phrase: kept.phrase
+                  ? { text: kept.phrase.text, meaning: kept.phrase.meaning }
+                  : null,
+                reviewToken: token,
+                saved: pro && !memo.error,
+                reviewCount: kept.corrections.length + (kept.phrase ? 1 : 0),
+              },
+            });
+          };
           try {
-            token = issueRecapToken(userId, callId, course, kept);
+            return await attempt();
           } catch {
-            // No signing secret: the recap still shows, "Review these" does not.
+            await release();
+            return RETRY();
           }
-          return noStoreJson({
-            recap: {
-              corrections: kept.corrections.map((c) => ({
-                said: c.said,
-                fixed: c.fixed,
-                why: c.why,
-                topic: c.topic,
-                label: topicLabel(course, c.topic),
-              })),
-              phrase: kept.phrase ? { text: kept.phrase.text, meaning: kept.phrase.meaning } : null,
-              reviewToken: token,
-              saved: pro && !memo.error,
-              reviewCount: kept.corrections.length + (kept.phrase ? 1 : 0),
-            },
-          });
         }),
     },
   },

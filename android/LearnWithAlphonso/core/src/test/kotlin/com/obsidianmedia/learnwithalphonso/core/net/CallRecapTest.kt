@@ -69,6 +69,19 @@ class CallRecapTest {
     }
 
     @Test
+    fun `a failed attempt is a retry, nothing to show and a refusal are not`() = runTest {
+        val t = call(3)
+        assertEquals(AiConversationClient.RecapAttempt.Retry, client(ArrayList(), body = """{"recap":null,"retry":true}""").callRecapAttempt("c", t))
+        assertEquals(AiConversationClient.RecapAttempt.Retry, client(ArrayList(), HttpStatusCode.BadGateway, "{}").callRecapAttempt("c", t))
+        assertEquals(AiConversationClient.RecapAttempt.Empty, client(ArrayList(), body = """{"recap":null}""").callRecapAttempt("c", t))
+        assertEquals(AiConversationClient.RecapAttempt.Empty, client(ArrayList(), HttpStatusCode.Forbidden, "{}").callRecapAttempt("c", t))
+        assertEquals(AiConversationClient.RecapAttempt.Empty, client(ArrayList(), HttpStatusCode.TooManyRequests, "{}").callRecapAttempt("c", t))
+        assertTrue(client(ArrayList(), body = recapBody).callRecapAttempt("c", t) is AiConversationClient.RecapAttempt.Got)
+        assertTrue(CallRecap.retryRequested("""{"recap":null,"retry":true}"""))
+        assertFalse(CallRecap.retryRequested("""{"recap":null}"""))
+    }
+
+    @Test
     fun `review these sends the token back`() = runTest {
         val seen = ArrayList<Seen>()
         assertTrue(client(seen, body = """{"added":2}""").addRecapToReview("c1", "tok.sig"))

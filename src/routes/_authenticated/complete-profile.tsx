@@ -4,19 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { AfterSignIn } from "../../components/firstrun/AfterSignIn";
 import { FirstRunFlow } from "../../components/firstrun/FirstRunFlow";
 import { FirstRunScreen } from "../../components/firstrun/FirstRunParts";
-import {
-  browserFirstRunStore,
-  cleanAnswers,
-  skipCompleteProfileThisVisit,
-  type FirstRunDraft,
-} from "../../lib/first-run";
+import { browserFirstRunStore, cleanAnswers, type FirstRunDraft } from "../../lib/first-run";
 import {
   LEARNER_PROFILE_KEY,
   needsCompleteProfile,
   parseLearnerProfile,
   type LearnerProfile,
 } from "../../lib/learner-profile";
-import { saveLearnerProfile } from "../../lib/learner-profile-save";
+import { dismissCompleteProfile, saveLearnerProfile } from "../../lib/learner-profile-save";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { holdNamePrompt } from "../../lib/name-prompt-gate";
 import { isLearnerHandle } from "../../lib/name-onboarding";
@@ -30,7 +25,12 @@ export const Route = createFileRoute("/_authenticated/complete-profile")({
   head: () => ({ meta: [{ title: "Complete your profile — Alphonso" }] }),
 });
 
-type Loaded = { profile: LearnerProfile; prefill: FirstRunDraft; avatarSeed: string };
+type Loaded = {
+  profile: LearnerProfile;
+  prefill: FirstRunDraft;
+  avatarSeed: string;
+  userId: string | null;
+};
 
 /**
  * "Complete your profile": the first run once more for learners who signed up before it existed (or from Profile,
@@ -73,7 +73,13 @@ function CompleteProfile() {
       };
       delete (prefill as LearnerProfile).completedAt;
       delete (prefill as LearnerProfile).dismissedAt;
-      if (live) setLoaded({ profile, prefill, avatarSeed: me?.avatar_seed ?? "a" });
+      if (live)
+        setLoaded({
+          profile,
+          prefill,
+          avatarSeed: me?.avatar_seed ?? "a",
+          userId: data.user?.id ?? null,
+        });
     })();
     return () => {
       live = false;
@@ -110,9 +116,10 @@ function CompleteProfile() {
       prefill={loaded.prefill}
       onExit={async () => {
         if (!edit) {
-          // Skipped for this visit even if the save below fails, so the /learn gate cannot loop back here.
-          skipCompleteProfileThisVisit();
-          await saveLearnerProfile({ data: { patch: {}, mark: "dismissed" } }).catch(() => {});
+          // Held for this visit AND remembered on this device even if the server write fails, then retried on later
+          // visits: a failed write must not look like a saved Not now (the /learn gate would bring the screen back).
+          if (loaded.userId) await dismissCompleteProfile(loaded.userId);
+          else await saveLearnerProfile({ data: { patch: {}, mark: "dismissed" } }).catch(() => {});
         }
         navigate({ to: edit ? "/profile" : "/learn", replace: true });
       }}

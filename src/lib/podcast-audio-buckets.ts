@@ -7,6 +7,8 @@
  * before the row flips; unpublishing copies it back and then removes the public copy.
  */
 
+import { removeAfterFailedPublish, type CleanupReporter } from "./storage-cleanup";
+
 export const PUBLIC_AUDIO_BUCKET = "podcast-audio";
 export const DRAFT_AUDIO_BUCKET = "podcast-audio-drafts";
 
@@ -62,6 +64,8 @@ export async function copyAudio(
  *   unpublish: copy public -> draft, flip the row, remove the public copy.
  *
  * `flip` writes the row and must throw when it fails; if it does, a public copy made for a publish is removed again.
+ * That removal is checked: when it fails too, the draft is public, so the error thrown is `operator: cleanup_failed
+ * <bucket>/<path>` (see storage-cleanup.ts) and `onCleanupFailed` is told, instead of the flip error alone.
  * An object already in the target bucket and missing from the source (data written before drafts were private) is
  * accepted. A missing object everywhere is an error: a row must never be flipped over nothing.
  */
@@ -76,6 +80,8 @@ export async function moveAudioForPublishState(args: {
    * file must stay on a publish).
    */
   sharedWith?: { published: boolean; unpublished: boolean };
+  /** Told when the rollback removal failed (the admin function writes an ops_events row). */
+  onCleanupFailed?: CleanupReporter;
 }): Promise<void> {
   const { storage, path, publish, flip } = args;
   const shared = args.sharedWith ?? { published: false, unpublished: false };
@@ -94,7 +100,15 @@ export async function moveAudioForPublishState(args: {
     await flip();
   } catch (e) {
     // Undo what we added: a public copy of audio that did not get published must not stay.
-    if (copied && publish && !shared.published) await storage.from(target).remove([path]);
+    if (copied && publish && !shared.published) {
+      await removeAfterFailedPublish({
+        storage,
+        bucket: target,
+        paths: [path],
+        cause: e,
+        onCleanupFailed: args.onCleanupFailed,
+      });
+    }
     throw e;
   }
 

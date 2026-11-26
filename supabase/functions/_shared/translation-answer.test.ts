@@ -36,3 +36,12 @@ Deno.test("matchesAcceptableAnswer treats an empty submission as no answer", () 
 Deno.test("matchesAcceptableAnswer fails closed on an empty acceptable list", () => {
   assertEquals(matchesAcceptableAnswer("anything at all", []), false);
 });
+
+Deno.test("written Spanish keeps the enye: ano is not año, other accents still fold", () => {
+  const ANO = ["Tengo un año."];
+  assertEquals(matchesAcceptableAnswer("tengo un ano", ANO), false);
+  assertEquals(matchesAcceptableAnswer("TENGO UN AÑO", ANO), true);
+  assertEquals(matchesAcceptableAnswer("Tengo un año.", ANO), true);
+  assertEquals(matchesAcceptableAnswer("donde esta el niño", ["¿Dónde está el niño?"]), true);
+  assertEquals(normaliseWritten("¡El Niño!"), "el niño");
+});

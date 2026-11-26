@@ -141,6 +141,32 @@ afterEach(() => {
   delete process.env.LESSON_SESSION_SECRET;
 });
 
+/**
+ * `lesson_completions` behind an API that cuts every response at `cap` rows (PostgREST's max-rows), as a query chain:
+ * it answers each `.range(from, to)` with at most `cap` rows and the exact count, and records the ranges asked for.
+ */
+function cappedCompletions(rows: Record<string, unknown>[], cap: number) {
+  const ranges: [number, number][] = [];
+  let last: [number, number] = [0, 999];
+  const chain: Record<string, unknown> = {
+    select: () => chain,
+    eq: () => chain,
+    order: () => chain,
+    range: (from: number, to: number) => {
+      last = [from, to];
+      ranges.push(last);
+      return chain;
+    },
+    then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) =>
+      Promise.resolve({
+        data: rows.slice(last[0], Math.min(last[1] + 1, last[0] + cap)),
+        error: null,
+        count: rows.length,
+      }).then(resolve, reject),
+  };
+  return { chain, ranges };
+}
+
 describe("fetchProgress", () => {
   it("passes through existing rows unchanged when no seeding or refill is needed", async () => {
     const supabase = createSupabaseMock();
@@ -167,6 +193,50 @@ describe("fetchProgress", () => {
     expect(result.unlockedAchievements).toEqual(["first_lesson"]);
     // No 6th/7th/8th .from() call: no insert, upsert, or refill update needed.
     expect(supabase.from).toHaveBeenCalledTimes(5);
+  });
+
+  it("returns every completion even when the API cuts a response at its row cap", async () => {
+    const lessons = Array.from({ length: 8 }, (_, i) => ({
+      lesson_id: `u1l${i + 1}`,
+      correct: 7,
+      total: 8,
+    }));
+    const { chain, ranges } = cappedCompletions(lessons, 3);
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: { xp: 1, streak: 1, longest_streak: 1, hearts: 5, hearts_refill_at: null },
+        }),
+      ) // user_progress
+      .mockReturnValueOnce(chainable({ data: { xp: 1, cefr_level: "A1", league_tier: "bronze" } })) // language_progress
+      .mockReturnValueOnce(chain) // lesson_completions, page 1
+      .mockReturnValueOnce(chainable({ data: [] })) // activity_days
+      .mockReturnValueOnce(chainable({ data: [] })) // user_achievements
+      .mockReturnValue(chain); // lesson_completions, the next pages
+
+    const result = await fetchProgress({ context: ctx(supabase), data: { course: "en" } });
+
+    expect(result.completedLessons).toHaveLength(8);
+    expect(Object.keys(result.answersByLesson)).toHaveLength(8);
+    expect(ranges.map(([from]) => from)).toEqual([0, 3, 6]);
+  });
+
+  it("fails loudly, not with an empty map, when a page of completions cannot be read", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: { xp: 1, streak: 1, longest_streak: 1, hearts: 5, hearts_refill_at: null },
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: { xp: 1, cefr_level: "A1", league_tier: "bronze" } }))
+      .mockReturnValueOnce(chainable({ data: null, error: { message: "down" } }))
+      .mockReturnValueOnce(chainable({ data: [] }))
+      .mockReturnValueOnce(chainable({ data: [] }));
+    await expect(fetchProgress({ context: ctx(supabase), data: { course: "en" } })).rejects.toThrow(
+      /could not read lesson completions/,
+    );
   });
 
   it("seeds a first-time 'en' language_progress row from the legacy user_progress row", async () => {
@@ -1059,6 +1129,25 @@ describe("completeLessonRemote", () => {
     expect(upserts(calls.user_achievements)).toEqual([]);
     expect(error.mock.calls.flat().join(" ")).toContain("achievements_skipped");
     error.mockRestore();
+  });
+
+  it("counts every completion toward achievements even when the API cuts a response at its row cap", async () => {
+    const supabase = createSupabaseMock();
+    queueSnapshot(supabase, { hearts: 4, progressVersion: "v1", xp: 0, courseVersion: "v1" });
+    // Twelve perfect lessons are saved (this one included); the API returns at most 5 rows per response.
+    const twelve = Array.from({ length: 12 }, () => ({ correct: 8, total: 8 }));
+    const { chain, ranges } = cappedCompletions(twelve, 5);
+    supabase.from
+      .mockReturnValueOnce(chain) // lesson_completions re-read, page 1
+      .mockReturnValueOnce(chainable({ data: [] })) // user_achievements re-read
+      .mockReturnValue(chain); // lesson_completions, the next pages
+    adminTables({});
+
+    const result = await completePerfect(supabase);
+
+    expect(ranges.map(([from]) => from)).toEqual([0, 5, 10]);
+    // perfect_10 needs ten perfect lessons: reachable only if the read was not cut off at 5.
+    expect(result.newlyUnlocked).toEqual(expect.arrayContaining(["perfect_10"]));
   });
 
   it("takes the promotion count from saved promotion events when the stored counter fell behind", async () => {

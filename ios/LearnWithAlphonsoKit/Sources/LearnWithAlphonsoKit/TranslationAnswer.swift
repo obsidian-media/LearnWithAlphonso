@@ -17,8 +17,16 @@ import Foundation
 /// "is don't the same as do not" question, and two answers to it would mean a
 /// phrasing accepted when said and rejected when typed.
 public enum TranslationAnswer {
+    /// A letters-only stand-in for "ñ" that survives the spoken normaliser's accent fold and punctuation strip.
+    private static let enye = "xqenyeqx"
+
+    /// The spoken normaliser folds every accent, right for a transcript but wrong for typed Spanish: "ano" and "año"
+    /// are different words. The enye is protected through the fold and restored; speech keeps its tolerance.
     public static func normalise(_ input: String) -> String {
-        SpokenAnswer.normalise(input)
+        let protected = input.precomposedStringWithCanonicalMapping
+            .replacingOccurrences(of: "ñ", with: enye)
+            .replacingOccurrences(of: "Ñ", with: enye)
+        return SpokenAnswer.normalise(protected).replacingOccurrences(of: enye, with: "ñ")
     }
 
     /// Whether `submission` is one of the phrasings `acceptable` allows.

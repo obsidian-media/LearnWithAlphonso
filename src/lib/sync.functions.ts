@@ -18,6 +18,7 @@ import { gradeLessonAnswer } from "./grade-lesson-answer.server";
 import { resolveLessonSubmission } from "./lesson-version";
 import { localDay, streakBridge } from "./local-day";
 import { recordOpsEvent } from "./ops-events.server";
+import { readAllRows } from "./paged-read";
 import {
   MAX_HEARTS,
   XP_HEART_COST,
@@ -74,7 +75,16 @@ export const fetchProgress = createServerFn({ method: "GET" })
         .eq("user_id", userId)
         .eq("language", course)
         .maybeSingle(),
-      supabase.from("lesson_completions").select("*").eq("user_id", userId).eq("language", course),
+      // Every completion of this course, however many: one bare select stops at the API row cap without an error.
+      readAllRows((from, to) =>
+        supabase
+          .from("lesson_completions")
+          .select("lesson_id,correct,total", { count: "exact" })
+          .eq("user_id", userId)
+          .eq("language", course)
+          .order("id")
+          .range(from, to),
+      ),
       supabase
         .from("activity_days")
         .select("day,xp_earned")
@@ -125,6 +135,8 @@ export const fetchProgress = createServerFn({ method: "GET" })
     }
     const answers: Record<string, { correct: number; total: number }> = {};
     const completedLessons: string[] = [];
+    // A failed or partial read must not look like "nothing completed": that would show the learner an empty map.
+    if (comps.error) throw new Error("fetchProgress: could not read lesson completions");
     for (const c of comps.data ?? []) {
       completedLessons.push(c.lesson_id);
       answers[c.lesson_id] = { correct: c.correct, total: c.total };
@@ -842,7 +854,16 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // supabase/functions/complete-lesson/index.ts.
     const newlyUnlocked: string[] = [];
     const [compsRead, unlocksRead, promotionsRead] = await Promise.all([
-      supabase.from("lesson_completions").select("correct,total").eq("user_id", userId),
+      // Accuracy and the lesson counts behind the achievements: every completion across all courses, paged, so a heavy
+      // learner's totals are not cut off at the API row cap.
+      readAllRows((from, to) =>
+        supabase
+          .from("lesson_completions")
+          .select("correct,total", { count: "exact" })
+          .eq("user_id", userId)
+          .order("id")
+          .range(from, to),
+      ),
       supabase.from("user_achievements").select("achievement_id,progress").eq("user_id", userId),
       supabaseAdmin
         .from("friend_activity_events")

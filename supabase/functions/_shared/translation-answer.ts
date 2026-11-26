@@ -7,6 +7,9 @@
 // that file's vectors and CI's deno-tests job fails on divergence.
 import { normaliseSpoken } from "./spoken-answer.ts";
 
+/** A letters-only stand-in for "ñ" that survives the spoken normaliser's accent fold and punctuation strip. */
+const ENYE = "xqenyeqx";
+
 /**
  * The LOCAL half of translate grading: costs nothing, needs no network, and is
  * the floor rather than the verdict. What it accepts is correct; what it
@@ -19,7 +22,11 @@ import { normaliseSpoken } from "./spoken-answer.ts";
  * when said and rejected when typed.
  */
 export function normaliseWritten(input: string): string {
-  return normaliseSpoken(input);
+  // The spoken normaliser folds every accent, which is right for a transcript (speech recognition cannot hear a tilde)
+  // but wrong for typed Spanish: "ano" and "año" are different words. Protect the enye through the fold, then restore
+  // it. Speech keeps its tolerance (spoken-answer-es.ts); this is the written side only.
+  const protectedInput = input.normalize("NFC").replace(/ñ/gi, ENYE);
+  return normaliseSpoken(protectedInput).split(ENYE).join("ñ");
 }
 
 /**

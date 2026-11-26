@@ -189,7 +189,7 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     result?.let { r ->
         val recapUi by vm.recap.ui.collectAsState()
         PracticeResultScreen(r, scenario.id, course.code, vm.elapsedSeconds, vm.slip, context = PracticeResultContext.Scenario, retry = { vm.retryScenario(speak = false) }, forward = onBack,
-            recap = recapUi, onSpeakPhrase = vm::speakPhrase, onReviewRecap = vm.recap::addToReview, onOpenMemory = onOpenMemory)
+            recap = recapUi, onSpeakPhrase = vm::speakPhrase, onReviewRecap = vm.recap::addToReview, onOpenMemory = onOpenMemory, onRetryRecap = vm.recap::retry)
         return
     }
     val palette = LocalAlphonsoTokens.current
@@ -254,7 +254,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
             retry = { vm.restartScene(speak = false) },
             // Next scene needs a star: a scene with none shows Done, which leaves (a talk counts done from one star, #511).
             forward = { if (r.stars >= 1) vm.continueToNextScene(speak = false) else onBack() },
-            recap = recapUi, onSpeakPhrase = vm::speakPhrase, onReviewRecap = vm.recap::addToReview, onOpenMemory = onOpenMemory,
+            recap = recapUi, onSpeakPhrase = vm::speakPhrase, onReviewRecap = vm.recap::addToReview, onOpenMemory = onOpenMemory, onRetryRecap = vm.recap::retry,
         )
         return
     }

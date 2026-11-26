@@ -126,6 +126,61 @@ export function completeProfileSkippedThisVisit(): boolean {
   return completeProfileSkipped;
 }
 
+/**
+ * Not now must not look saved when it was not. The dismissal is written to this device FIRST (keyed by account, so a
+ * second account on the same browser is unaffected), and the server write is retried on later visits until it lands:
+ * without this a failed write (offline, a server error) left nothing behind, and the next launch sent the learner
+ * back to "Complete your profile" as if they had never said Not now.
+ */
+export const PENDING_DISMISSAL_KEY = "alphonso.complete-profile.dismissal-pending";
+
+type KeyValueStore = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+function deviceStorage(): KeyValueStore | null {
+  try {
+    return typeof window === "undefined" ? null : window.localStorage;
+  } catch {
+    return null;
+  }
+}
+function pendingIds(storage: KeyValueStore | null): string[] {
+  try {
+    const parsed: unknown = JSON.parse(storage?.getItem(PENDING_DISMISSAL_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+}
+export function rememberPendingDismissal(
+  userId: string,
+  storage: KeyValueStore | null = deviceStorage(),
+): void {
+  try {
+    const ids = pendingIds(storage);
+    if (!ids.includes(userId))
+      storage?.setItem(PENDING_DISMISSAL_KEY, JSON.stringify([...ids, userId]));
+  } catch {
+    // Storage full or blocked: the in-memory skip still holds for this visit.
+  }
+}
+export function hasPendingDismissal(
+  userId: string,
+  storage: KeyValueStore | null = deviceStorage(),
+): boolean {
+  return pendingIds(storage).includes(userId);
+}
+export function clearPendingDismissal(
+  userId: string,
+  storage: KeyValueStore | null = deviceStorage(),
+): void {
+  try {
+    const rest = pendingIds(storage).filter((id) => id !== userId);
+    if (rest.length === 0) storage?.removeItem(PENDING_DISMISSAL_KEY);
+    else storage?.setItem(PENDING_DISMISSAL_KEY, JSON.stringify(rest));
+  } catch {
+    // Nothing to clear if storage is unavailable.
+  }
+}
+
 /** The age screen's Continue. A device that ever chose Under 13 stays blocked, whatever is picked now. */
 export function chooseAge(store: FirstRunStore, choice: AgeChoice): "ok" | "blocked" {
   if (store.isBlocked()) return "blocked";

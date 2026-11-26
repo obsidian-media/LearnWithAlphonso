@@ -38,7 +38,7 @@ export const MINIMAL_PAIR_ROWS: Record<string, MinimalPairRow[]> = {
     "El ___ picotea el maíz en la granja.|pollo|poyo,pozo,polvo|chicken",
     "El abuelo descansa en el ___ junto a la puerta.|poyo|pollo,pozo,polvo|stone bench",
     "El desierto es muy ___ y no se ve el final.|vasto|basto,justo,nuevo|vast",
-    "La tela de este saco es muy ___ y áspera.|basto|vasto,justo,vacío|coarse",
+    "El tejido de este saco es muy ___ y áspero.|basto|vasto,justo,vacío|coarse",
     "El océano es muy ___ y no tiene fin.|vasto|basto,justo,nuevo|vast, huge",
     "Este paño es demasiado ___ para una camisa.|basto|vasto,justo,nuevo|coarse",
     "Subimos al ___ para ver el pueblo.|cerro|cero,perro,barro|hill",

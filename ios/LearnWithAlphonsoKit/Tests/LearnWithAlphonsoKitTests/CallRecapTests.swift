@@ -165,6 +165,30 @@ final class CallRecapRobustnessTests: XCTestCase {
         XCTAssertEqual(Set(recap.corrections.map(\.id)).count, 2, "a ForEach needs unique ids")
     }
 
+    func testAFailedAttemptIsARetryNothingToShowAndARefusalAreNot() async {
+        let t = call(learnerTurns: 3)
+        let flagged = await client(body: ["recap": NSNull(), "retry": true]).callRecapAttempt(callId: callId, transcript: t)
+        XCTAssertEqual(flagged, .retry)
+        let gateway = await client(status: 502, body: ["error": "x"]).callRecapAttempt(callId: callId, transcript: t)
+        XCTAssertEqual(gateway, .retry)
+        let none = await client(body: ["recap": NSNull()]).callRecapAttempt(callId: callId, transcript: t)
+        XCTAssertEqual(none, .empty)
+        for status in [403, 429, 503] {
+            let r = await client(status: status, body: ["error": "x"]).callRecapAttempt(callId: callId, transcript: t)
+            XCTAssertEqual(r, .empty, "status \(status)")
+        }
+        let got = await client(body: recapBody).callRecapAttempt(callId: callId, transcript: t)
+        guard case .got = got else { return XCTFail("a clean recap is .got") }
+        let short = await client(body: recapBody).callRecapAttempt(callId: callId, transcript: call(learnerTurns: 2))
+        XCTAssertEqual(short, .empty)
+    }
+
+    func testOfflineIsARetry() async {
+        let offline = AIConversationClient(baseURL: baseURL, accessToken: { "tok" }, requester: { _ in throw URLError(.notConnectedToInternet) })
+        let r = await offline.callRecapAttempt(callId: callId, transcript: call(learnerTurns: 3))
+        XCTAssertEqual(r, .retry)
+    }
+
     func testASlowRecapIsGivenUpOnAtTheTotalDeadline() async {
         let client = AIConversationClient(baseURL: URL(string: "https://x.example")!, accessToken: { "tok" }, requester: { _ in
             try await Task.sleep(nanoseconds: 5_000_000_000)

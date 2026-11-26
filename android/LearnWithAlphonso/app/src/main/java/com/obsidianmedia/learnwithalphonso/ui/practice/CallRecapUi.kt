@@ -43,11 +43,33 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.toTextStyle
  * plays just that phrase.
  */
 @Composable
-internal fun RecapSection(ui: CallRecapController.Ui, onSpeak: (String) -> Unit, onReview: () -> Unit, onOpenMemory: () -> Unit) {
+internal fun RecapSection(ui: CallRecapController.Ui, onSpeak: (String) -> Unit, onReview: () -> Unit, onOpenMemory: () -> Unit, onRetry: () -> Unit = {}) {
     when (ui.status) {
         CallRecapController.Status.OFF -> Unit
         CallRecapController.Status.PENDING -> RecapSkeleton()
         CallRecapController.Status.READY -> ui.recap?.let { RecapCard(it, ui, onSpeak, onReview, onOpenMemory) }
+        CallRecapController.Status.FAILED -> RecapRetry(onRetry)
+    }
+}
+
+/** The attempt failed and the call is not used up: a quiet card with "Try again", never an error screen. */
+@Composable
+private fun RecapRetry(onRetry: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Row(
+        Modifier.fillMaxWidth().testTag("recap-failed").clip(shape).background(ds.card).border(2.dp, ds.line, shape).padding(Space.s3),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text("From this call", style = Type.overline.toTextStyle(), color = ds.actionText)
+            Text("Alphonso could not write it up this time.", style = Type.caption.toTextStyle(), color = ds.inkSoft)
+        }
+        Box(
+            Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = Role.Button, onClickLabel = "Try again") { onRetry() }.padding(horizontal = Space.s3),
+            contentAlignment = Alignment.Center,
+        ) { Text("Try again", style = Type.headline.toTextStyle(), color = ds.choice) }
     }
 }
 

@@ -1,5 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import { skipCompleteProfileThisVisit } from "./first-run";
+import {
+  clearPendingDismissal,
+  hasPendingDismissal,
+  rememberPendingDismissal,
+  skipCompleteProfileThisVisit,
+} from "./first-run";
 import type { LearnerProfile } from "./learner-profile";
 import { saveLearnerProfile as saveOnServer } from "./learner-profile.functions";
 import type { LearnerProfileSaveInput } from "./learner-profile.server";
@@ -24,4 +29,33 @@ export async function saveLearnerProfile({
     // The gate double-checks with getUser() before redirecting, so a stale session cannot loop.
   }
   return saved;
+}
+
+/**
+ * Complete your profile's Not now. Remembered on this device before anything else, held for this visit, then written to
+ * the server. Returns whether the server has it: false means only this device knows, and `retryPendingDismissal`
+ * keeps trying on later visits, so the learner is not sent back to the screen they skipped.
+ */
+export async function dismissCompleteProfile(userId: string): Promise<boolean> {
+  rememberPendingDismissal(userId);
+  skipCompleteProfileThisVisit();
+  try {
+    await saveLearnerProfile({ data: { patch: {}, mark: "dismissed" } });
+    clearPendingDismissal(userId);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Finishes a Not now whose server write failed. No-op (no request) when nothing is pending for this account. */
+export async function retryPendingDismissal(userId: string): Promise<boolean> {
+  if (!hasPendingDismissal(userId)) return true;
+  try {
+    await saveOnServer({ data: { patch: {}, mark: "dismissed" } });
+    clearPendingDismissal(userId);
+    return true;
+  } catch {
+    return false;
+  }
 }

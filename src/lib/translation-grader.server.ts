@@ -144,6 +144,7 @@ const CONFUSABLE_WORDS: [string, string][] = [
   ["mon", "mont"],
   ["casa", "caza"],
   ["hola", "ola"],
+  ["ano", "año"],
   ["tuvo", "tubo"],
   ["desert", "dessert"],
   ["later", "latter"],

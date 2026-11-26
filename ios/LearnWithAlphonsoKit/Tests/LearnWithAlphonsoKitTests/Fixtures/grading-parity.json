@@ -1239,12 +1239,13 @@
       "expected": true
     },
     {
-      "id": "translate-es-n-tilde-folded",
+      "id": "translate-es-n-tilde-dropped-is-rejected",
       "kind": "translate",
       "course": "es",
       "acceptable": ["Hablo español."],
       "input": "hablo espanol",
-      "expected": true
+      "expected": false,
+      "note": "written Spanish keeps the enye, as fill-in already does (fill-n-tilde-folded-is-wrong); the AI grader may still forgive the slip"
     },
     {
       "id": "translate-es-n-tilde-uppercase",
@@ -1279,13 +1280,55 @@
       "expected": false
     },
     {
-      "id": "translate-es-ano-for-año-folds",
+      "id": "translate-es-ano-for-año-rejected",
       "kind": "translate",
       "course": "es",
       "acceptable": ["Tengo un año."],
       "input": "tengo un ano",
+      "expected": false,
+      "note": "Written Spanish keeps the enye: ano (anus) is a different word from año, so the local match refuses it and the AI grader decides; every runtime agrees"
+    },
+    {
+      "id": "translate-es-año-typed-with-enye",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Tengo un año."],
+      "input": "tengo un año",
+      "expected": true
+    },
+    {
+      "id": "translate-es-año-uppercase-and-decomposed",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Tengo un año."],
+      "input": "TENGO UN AN\u0303O",
       "expected": true,
-      "note": "ano/año collapse once accents are folded: a real meaning change the local match accepts; every runtime agrees"
+      "note": "capital enye, and the n + combining tilde spelling a phone keyboard can produce"
+    },
+    {
+      "id": "translate-es-other-accents-still-fold",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["¿Dónde está el niño?"],
+      "input": "donde esta el niño",
+      "expected": true,
+      "note": "only the enye is protected: acute accents and the inverted marks still fold"
+    },
+    {
+      "id": "translate-es-enye-dropped-in-niño",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["¿Dónde está el niño?"],
+      "input": "donde esta el nino",
+      "expected": false
+    },
+    {
+      "id": "translate-en-café-still-folds",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["We meet at the café."],
+      "input": "we meet at the cafe",
+      "expected": true
     },
     {
       "id": "translate-es-second-phrasing",
@@ -2313,6 +2356,15 @@
       "acceptable": ["I love dessert."],
       "input": "I love desert.",
       "expected": true
+    },
+    {
+      "id": "confusion-ano-for-año",
+      "kind": "confusion",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Tengo un año."],
+      "input": "tengo un ano",
+      "expected": true,
+      "note": "the model has been seen to wave a missing tilde through as a typo; this backstop refuses it"
     },
     {
       "id": "confusion-hola-for-ola",

@@ -9,6 +9,8 @@ const signOut = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { auth: { getSession, getUser, signOut } },
 }));
+const saveOnServer = vi.fn();
+vi.mock("@/lib/learner-profile.functions", () => ({ saveLearnerProfile: saveOnServer }));
 const invalidate = vi.fn();
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
@@ -35,6 +37,8 @@ beforeEach(() => {
   getUser.mockReset();
   invalidate.mockReset();
   signOut.mockReset();
+  saveOnServer.mockReset();
+  localStorage.clear();
   localStorage.removeItem("lwa.under13.v1");
 });
 
@@ -217,6 +221,37 @@ describe("_authenticated route guard", () => {
       typeof child.type === "function" ? child.type.name : child.type,
     );
     expect(types).toContain("PodcastAudio");
+  });
+
+  it("a Not now remembered on this device (its server write failed) is not sent back to the screen, and is retried", async () => {
+    const { rememberPendingDismissal, hasPendingDismissal } = await import("@/lib/first-run");
+    rememberPendingDismissal("u-pending");
+    getSession.mockResolvedValue(signedIn({ id: "u-pending", user_metadata: {} }));
+    getUser.mockResolvedValue({
+      data: { user: { id: "u-pending", user_metadata: {} } },
+      error: null,
+    });
+    saveOnServer.mockResolvedValue({ dismissedAt: "2026-11-26T00:00:00Z" });
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
+    ).resolves.toBeTruthy();
+    expect(saveOnServer).toHaveBeenCalledWith({ data: { patch: {}, mark: "dismissed" } });
+    await vi.waitFor(() => expect(hasPendingDismissal("u-pending")).toBe(false));
+  });
+
+  it("another account on the same device is still sent to Complete your profile", async () => {
+    const { rememberPendingDismissal } = await import("@/lib/first-run");
+    rememberPendingDismissal("someone-else");
+    getSession.mockResolvedValue(signedIn({ id: "u-new", user_metadata: {} }));
+    getUser.mockResolvedValue({ data: { user: { id: "u-new", user_metadata: {} } }, error: null });
+    try {
+      await Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never);
+      expect.unreachable("should redirect");
+    } catch (err) {
+      expect(isRedirect(err)).toBe(true);
+      expect((err as { options: { to: string } }).options.to).toBe("/complete-profile");
+    }
+    expect(saveOnServer).not.toHaveBeenCalled();
   });
 
   // Last on purpose: the skip is module state that lasts the visit.

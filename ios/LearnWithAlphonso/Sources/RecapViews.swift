@@ -10,7 +10,8 @@ import SwiftUI
 /// slot back. A call too short for a recap is `.off` from the start.
 @MainActor @Observable
 final class CallRecapModel {
-    enum Status { case off, pending, ready }
+    /// `failed`: the attempt did not work and the call is not used up, so "Try again" is offered next to the slip.
+    enum Status { case off, pending, ready, failed }
     enum Review { case idle, adding, added, failed }
 
     private(set) var status: Status = .off
@@ -21,17 +22,33 @@ final class CallRecapModel {
     /// True once a recap was asked for (even if it failed): the separate weakness analysis then stays quiet.
     var attempted: Bool { started }
     private var player: AVAudioPlayer?
+    private var lastArgs: (callId: String, transcript: [ChatMessage], cefrLevel: String?, scene: String?)?
 
-    /// One attempt per call; calling again for the same model does nothing.
+    /// One attempt per call; calling again for the same model does nothing (a failed one is retried with `retry`).
     func start(session: Session, callId: String, transcript: [ChatMessage], cefrLevel: String?, scene: String?) {
         guard !started, CallRecap.qualifies(transcript) else { return }
         started = true
+        lastArgs = (callId, transcript, cefrLevel, scene)
+        attempt(session: session)
+    }
+
+    /// "Try again" after a failed attempt: the server released the call, so one more attempt may succeed.
+    func retry(session: Session) {
+        guard status == .failed else { return }
+        attempt(session: session)
+    }
+
+    private func attempt(session: Session) {
+        guard let args = lastArgs else { return }
         status = .pending
         Task {
             let client = practiceClient(session)
-            let result = await client.callRecap(callId: callId, transcript: transcript, cefrLevel: cefrLevel, scene: scene)
-            recap = result
-            status = result == nil ? .off : .ready
+            let result = await client.callRecapAttempt(callId: args.callId, transcript: args.transcript, cefrLevel: args.cefrLevel, scene: args.scene)
+            switch result {
+            case .got(let r): recap = r; status = .ready
+            case .retry: recap = nil; status = .failed
+            case .empty: recap = nil; status = .off
+            }
         }
     }
 
@@ -97,8 +114,28 @@ struct RecapCardView: View {
         switch model.status {
         case .off: EmptyView()
         case .pending: skeleton
+        case .failed: retryCard
         case .ready: if let recap = model.recap { card(recap) }
         }
+    }
+
+    /// The attempt failed and the call is not used up: a quiet card with "Try again", never an error screen.
+    private var retryCard: some View {
+        HStack(spacing: AlphonsoDS.Space.s3) {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                Text("From this call").dsText(.overline).foregroundStyle(ds.actionText)
+                Text("Alphonso could not write it up this time.").dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            Spacer(minLength: 0)
+            Button("Try again") { model.retry(session: session) }
+                .dsText(.headline).foregroundStyle(ds.choice)
+                .frame(minHeight: AlphonsoDS.Space.minTouch)
+        }
+        .padding(AlphonsoDS.Space.s3)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+        .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 2))
+        .accessibilityElement(children: .contain)
     }
 
     private var skeleton: some View {

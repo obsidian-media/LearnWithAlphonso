@@ -37,3 +37,23 @@ describe("matchesAcceptableAnswer", () => {
     expect(matchesAcceptableAnswer("anything at all", [])).toBe(false);
   });
 });
+
+describe("written Spanish keeps the enye (speech keeps its tolerance)", () => {
+  const ANO = ["Tengo un año."];
+  it("año is not ano, in either direction, but is año however it is typed", () => {
+    expect(matchesAcceptableAnswer("tengo un ano", ANO)).toBe(false);
+    expect(matchesAcceptableAnswer("tengo un año", ANO)).toBe(true);
+    expect(matchesAcceptableAnswer("TENGO UN AÑO", ANO)).toBe(true);
+    expect(matchesAcceptableAnswer("Tengo un año.", ANO)).toBe(true);
+    expect(matchesAcceptableAnswer("Tengo un año.", ["Tengo un ano."])).toBe(false);
+  });
+  it("other accents and inverted marks still fold", () => {
+    expect(matchesAcceptableAnswer("donde esta el niño", ["¿Dónde está el niño?"])).toBe(true);
+    expect(matchesAcceptableAnswer("we meet at the cafe", ["We meet at the café."])).toBe(true);
+  });
+  it("normaliseWritten returns the enye, and the spoken normaliser still folds it", async () => {
+    expect(normaliseWritten("¡El Niño!")).toBe("el niño");
+    const { normaliseSpoken } = await import("./spoken-answer");
+    expect(normaliseSpoken("año")).toBe("ano");
+  });
+});

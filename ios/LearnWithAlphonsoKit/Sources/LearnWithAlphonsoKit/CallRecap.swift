@@ -52,6 +52,12 @@ public struct CallRecap: Equatable, Sendable {
     /// Calls shorter than this get no recap, and nothing is sent.
     public static let minLearnerTurns = 3
 
+    /// True when the server says the attempt failed and the call is not used up (`"retry": true`): the screen offers "Try again".
+    public static func retryRequested(_ data: Data) -> Bool {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
+        return (root["retry"] as? Bool) == true
+    }
+
     public static func qualifies(_ transcript: [ChatMessage]) -> Bool {
         transcript.filter { $0.role == "user" }.count >= minLearnerTurns
     }
@@ -82,6 +88,13 @@ public struct CallRecap: Equatable, Sendable {
             reviewCount: (recap["reviewCount"] as? Int) ?? (corrections.count + (phrase == nil ? 0 : 1))
         )
     }
+}
+
+/// One recap attempt's outcome: a recap, nothing to show, or a failure a second try may fix (the screen offers "Try again").
+public enum CallRecapAttempt: Equatable, Sendable {
+    case got(CallRecap)
+    case empty
+    case retry
 }
 
 /// What Alphonso remembers about a Pro learner, as the server listed it.

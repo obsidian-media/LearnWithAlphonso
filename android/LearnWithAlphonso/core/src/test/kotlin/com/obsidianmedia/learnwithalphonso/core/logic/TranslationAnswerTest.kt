@@ -37,6 +37,17 @@ class TranslationAnswerTest {
     }
 
     @Test
+    fun `written Spanish keeps the enye but other accents still fold`() {
+        val ano = listOf("Tengo un año.")
+        assertFalse(matches("tengo un ano", ano))
+        assertTrue(matches("TENGO UN AÑO", ano))
+        assertTrue(matches("Tengo un año.", ano))
+        assertTrue(matches("donde esta el niño", listOf("¿Dónde está el niño?")))
+        assertEquals("el niño", normalise("¡El Niño!"))
+        assertEquals("ano", SpokenAnswer.normalise("año")) // speech keeps its tolerance
+    }
+
+    @Test
     fun `fails closed on an empty acceptable list`() {
         assertFalse(matches("anything at all", emptyList()))
     }

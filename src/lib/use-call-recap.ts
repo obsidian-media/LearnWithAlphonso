@@ -4,7 +4,7 @@ import { authHeaders } from "./auth-headers";
 import {
   addRecapToReview,
   callQualifiesForRecap,
-  fetchCallRecap,
+  fetchCallRecapAttempt,
   type RecapView,
   type Transcript,
 } from "./call-recap-api";
@@ -20,9 +20,11 @@ import { voicePlayback } from "./voice-playback";
  * the slot. A call too short for a recap is "off" from the first render.
  */
 export type RecapController = {
-  status: "off" | "pending" | "ready";
+  /** "failed": the attempt did not work and the call is not used up, so "Try again" is offered. */
+  status: "off" | "pending" | "ready" | "failed";
   recap: RecapView | null;
   review: "idle" | "adding" | "added" | "failed";
+  onRetry: () => void;
   onReview: () => void;
   /** The phrase being spoken, if any. */
   speaking: string | null;
@@ -39,10 +41,12 @@ export function useCallRecap(args: {
 }): RecapController {
   const { callId, course } = args;
   const qualifies = callId !== null && callQualifiesForRecap(args.messages);
-  const [state, setState] = useState<{ done: boolean; recap: RecapView | null }>({
-    done: false,
-    recap: null,
-  });
+  const [state, setState] = useState<{
+    done: boolean;
+    recap: RecapView | null;
+    retry: boolean;
+  }>({ done: false, recap: null, retry: false });
+  const [attempt, setAttempt] = useState(0);
   const [review, setReview] = useState<RecapController["review"]>("idle");
   const [speaking, setSpeaking] = useState<string | null>(null);
   const speakRun = useRef(0);
@@ -52,19 +56,21 @@ export function useCallRecap(args: {
   useEffect(() => {
     if (!qualifies || !callId) return;
     let live = true;
-    setState({ done: false, recap: null });
+    setState({ done: false, recap: null, retry: false });
     setReview("idle");
     const a = argsRef.current;
-    void fetchCallRecap({
+    void fetchCallRecapAttempt({
       callId,
       messages: a.messages,
       cefrLevel: a.cefrLevel,
       scene: a.scene,
-    }).then((recap) => live && setState({ done: true, recap }));
+    }).then((r) => live && setState({ done: true, recap: r.recap, retry: r.retry }));
     return () => {
       live = false;
     };
-  }, [qualifies, callId]);
+  }, [qualifies, callId, attempt]);
+
+  const onRetry = useCallback(() => setAttempt((n) => n + 1), []);
 
   useEffect(
     () => () => {
@@ -125,6 +131,14 @@ export function useCallRecap(args: {
     [course],
   );
 
-  const status = !qualifies ? "off" : !state.done ? "pending" : state.recap ? "ready" : "off";
-  return { status, recap: state.recap, review, onReview, speaking, onSpeak };
+  const status = !qualifies
+    ? "off"
+    : !state.done
+      ? "pending"
+      : state.recap
+        ? "ready"
+        : state.retry
+          ? "failed"
+          : "off";
+  return { status, recap: state.recap, review, onRetry, onReview, speaking, onSpeak };
 }
