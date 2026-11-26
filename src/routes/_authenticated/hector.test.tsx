@@ -34,6 +34,11 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 const fetchProgress = vi.fn();
+// Which wording of the greeting is said is chosen by the test, not by the dice.
+vi.mock("@/lib/hector-greeting-context", () => ({
+  chooseGreetingVariant: () => 0,
+  rememberedTopic: async () => null,
+}));
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
 vi.mock("@/lib/leaderboard.functions", () => ({ getMyProfile: async () => null }));
 

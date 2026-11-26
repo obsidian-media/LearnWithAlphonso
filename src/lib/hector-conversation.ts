@@ -84,7 +84,10 @@ export function buildHectorSystemPrompt(course: Course, cefr: string): string {
     `${levelLine} Speak only ${language}.${VARIETY[course] ?? ""} ` +
     "Hold a natural spoken conversation. Keep replies short enough to say aloud, a sentence or two, " +
     "and end with a question or prompt that keeps the learner talking. Gently correct mistakes by " +
-    `modelling the right form rather than lecturing. ${explanationLine}
+    `modelling the right form rather than lecturing. ${explanationLine} ` +
+    `Always answer what the learner just said: pick up one specific thing from their last message before you move on, ` +
+    `never ignore it, never repeat a question you already asked, and never fall back on a fixed script. ` +
+    `If a background note lists their past mistakes or weak spots, steer the talk so they use one of them in a real sentence.
 
 ` +
     correctionInstruction(language)
@@ -102,21 +105,29 @@ export function buildHectorSystemPrompt(course: Course, cefr: string): string {
  * entry silently disappearing is better than it failing the upstream
  * call for the whole turn.
  */
+/** Both native clients lead the history with their own "[Background for you, the tutor..." turn. The server builds
+ * the learner's memory itself (hector-memory.server.ts), so a client-sent one is dropped: the model gets it once. */
+export const CLIENT_PRIMING_PREFIX = "[Background for you, the tutor";
+
 export function buildHectorMessages(
   history: TutorHistoryMessage[],
   text: string,
   systemPrompt: string,
   memory: ChatMessage | null = null,
 ): ChatMessage[] {
-  const priorTurns: ChatMessage[] = (Array.isArray(history) ? history : [])
-    .filter(
-      (m): m is ChatMessage =>
-        !!m &&
-        (m.role === "user" || m.role === "assistant") &&
-        typeof m.content === "string" &&
-        m.content.length > 0 &&
-        m.content.length <= MAX_MESSAGE_LENGTH,
-    )
+  const kept = (Array.isArray(history) ? history : []).filter(
+    (m): m is ChatMessage =>
+      !!m &&
+      (m.role === "user" || m.role === "assistant") &&
+      typeof m.content === "string" &&
+      m.content.length > 0 &&
+      m.content.length <= MAX_MESSAGE_LENGTH &&
+      !(m.role === "user" && m.content.startsWith(CLIENT_PRIMING_PREFIX)),
+  );
+  // Android sends the current turn both in `history` and as `text`: the model must see it once.
+  const last = kept[kept.length - 1];
+  if (last && last.role === "user" && last.content.trim() === text.trim()) kept.pop();
+  const priorTurns: ChatMessage[] = kept
     .slice(-MAX_HISTORY_MESSAGES)
     .map((m) => ({ role: m.role, content: m.content }));
 

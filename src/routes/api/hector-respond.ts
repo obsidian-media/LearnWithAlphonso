@@ -104,11 +104,18 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   }
 
   // Hector's memory (Pro only: this point is past the entitlement and consent gates; a free learner's is never read).
-  // Built from the learner's own rows, never taken from the request. Its load runs in parallel with the quota unit
-  // below, which is only spent after the entitlement check above.
+  // Built from the learner's own rows for THIS course, never taken from the request: what earlier calls saved
+  // (tutor_memory), the open weakness events and the weak spots from lessons and Review. Its load runs in parallel with
+  // the quota unit below, which is only spent after the entitlement check above; the course is read from the body that
+  // is already being parsed.
   const memoryPromise = timer.time("memory", async () => {
+    const parsed = await bodyPromise;
+    const raw = parsed.ok
+      ? (parsed.parsed as { course?: unknown; language?: unknown } | null)
+      : null;
+    const memoryCourse = resolveTutorCourse(raw?.course, raw?.language);
     const { loadMemoryPrimingMessage } = await import("@/lib/hector-memory.server");
-    return loadMemoryPrimingMessage(supabaseAdmin as never, userId);
+    return loadMemoryPrimingMessage(supabaseAdmin as never, userId, memoryCourse);
   });
   memoryPromise.catch(() => undefined); // a turn refused below never awaits it
 
@@ -160,6 +167,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
           model: resolveLlmChatModel(),
           messages: buildHectorMessages(boundTranscript(body.history), text, systemPrompt, memory),
           max_tokens: 512,
+          temperature: 0.8,
         },
         track: { userId, kind: "hector" },
       });
