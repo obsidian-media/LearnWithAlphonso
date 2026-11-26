@@ -12,8 +12,8 @@ name: Regenerate Supabase Types
 # tab (or `gh workflow run regenerate-supabase-types.yml`).
 #
 # Since ci.yml's `types-gen` / `types-push` jobs regenerate the file inside the migration's own PR, this normally finds
-# nothing to commit. It stays as the safety net: a stale PR that is merged anyway (types-gen is not a required check),
-# or production drifting from the migrations, still gets fixed on main.
+# nothing to commit. It stays as the safety net: types-gen ("Supabase types match the migrations") is a required check,
+# but production drifting from the migrations, or a change that reaches main without regenerating, still gets fixed on main.
 #
 # Required repo secrets:
 #   SUPABASE_ACCESS_TOKEN -- already configured (deploy-supabase uses it)
