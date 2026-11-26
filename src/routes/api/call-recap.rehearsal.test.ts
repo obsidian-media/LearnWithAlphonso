@@ -183,7 +183,32 @@ describe("a finished rehearsal call writes its run memory with the recap", () =>
   });
 });
 
-describe("a run under the finish rule is no run (review focus 5)", () => {
+describe("numbers never reach everyday memory from a rehearsal", () => {
+  it("a corrected form with a number is not in the memory lines (the 50k offer)", async () => {
+    await call();
+    const texts = (finishRpc()!.args._mistakes as { text: string }[]).map((m) => m.text);
+    expect(texts).toEqual(["I would like to talk about the salary"]);
+    expect(JSON.stringify(finishRpc()!.args)).not.toContain("50k");
+  });
+
+  it("other call kinds are unchanged: the same correction is kept for a scenario call", async () => {
+    h.callRow = {
+      course: "en",
+      finished_at: "x",
+      recap_at: null,
+      kind: "scenario",
+      item_key: "coffee",
+      replies: 3,
+    };
+    await call();
+    const finish = h.rpcs.find((r) => r.fn === "finish_call_recap")!;
+    expect((finish.args._mistakes as { text: string }[]).map((m) => m.text)).toContain(
+      "I agree with the 50k offer",
+    );
+  });
+});
+
+describe("a run under the finish rule is no run", () => {
   it("fewer replies than the rule: no AI call, no finish, no run row", async () => {
     h.callRow = { ...(h.callRow as object), replies: 3 };
     expect(await (await call()).json()).toEqual({ recap: null });

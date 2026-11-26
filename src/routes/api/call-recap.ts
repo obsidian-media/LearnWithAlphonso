@@ -12,7 +12,7 @@ import {
 } from "@/lib/call-recap";
 import { REHEARSAL_FINISH_MIN_REPLIES, isCallId } from "@/lib/practice-calls.server";
 import { isRehearsalId, isStage } from "@/lib/rehearsal-rules";
-import { buildRunMemory } from "@/lib/rehearsal-run-memory";
+import { buildRunMemory, hasNumber } from "@/lib/rehearsal-run-memory";
 import { timedRoute } from "@/lib/stage-timer.server";
 
 /**
@@ -166,7 +166,14 @@ export const Route = createFileRoute("/api/call-recap")({
               _course: course,
               _call_id: callId,
               _topics: nothingToShow ? [] : topics,
-              _mistakes: (nothingToShow ? [] : kept.corrections).map((c) => ({
+              // A rehearsal is full of real details (a salary, a date): its corrected forms with a number never reach
+              // everyday memory. Other call kinds are unchanged.
+              _mistakes: (nothingToShow
+                ? []
+                : runOf
+                  ? kept.corrections.filter((c) => !hasNumber(c.fixed))
+                  : kept.corrections
+              ).map((c) => ({
                 topic: c.topic,
                 // Only the corrected form is kept: never the learner's own words (they can hold names or details).
                 text: c.fixed,

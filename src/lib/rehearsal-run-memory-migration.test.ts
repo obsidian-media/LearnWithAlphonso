@@ -253,4 +253,29 @@ describe("closing a rehearsal (How did it go?)", () => {
       server(() => db.query(`SELECT * FROM public.move_rehearsal('${A}', '${R1}', '2027-01-15')`)),
     ).rejects.toThrow(/rehearsal_not_found/);
   });
+
+  it("a learner cannot move or close ANOTHER learner's active rehearsal", async () => {
+    const R2 = "00000000-0000-4000-8000-0000000000d2"; // B's, still active from the test above
+    await expect(
+      server(() => db.query(`SELECT * FROM public.move_rehearsal('${A}', '${R2}', '2027-03-01')`)),
+    ).rejects.toThrow(/rehearsal_not_found/);
+    await expect(
+      server(() =>
+        db.query(
+          `SELECT * FROM public.close_rehearsal('${A}', '${R2}', '{"choice":"well"}'::jsonb, 'Rehearsed a work meeting: it went well')`,
+        ),
+      ),
+    ).rejects.toThrow(/rehearsal_not_found/);
+    const row = (
+      await db.query<{ status: string; event_date: string; closed_at: string | null }>(
+        `SELECT status, event_date::text, closed_at::text FROM public.rehearsals WHERE id = '${R2}'`,
+      )
+    ).rows[0]!;
+    expect(row).toEqual({ status: "active", event_date: "2027-01-15", closed_at: null });
+    expect(
+      await n(
+        `SELECT count(*)::text n FROM public.tutor_memory WHERE memory_key = 'rehearsal:${R2}'`,
+      ),
+    ).toBe(0);
+  });
 });

@@ -23,6 +23,8 @@ const h = vi.hoisted(() => ({
   freeUsed: false,
   freeReadError: false,
   deleted: [] as unknown[],
+  deletedTables: [] as string[],
+  store: null as unknown,
   deleteRows: [{ id: "x" }] as unknown[],
 }));
 
@@ -45,7 +47,17 @@ vi.mock("@/integrations/supabase/client.server", () => {
     const resolve = () => {
       if (ops.some((o) => o.m === "delete")) {
         h.deleted.push(ops);
+        h.deletedTables.push(table);
         return { data: h.deleteRows, error: null };
+      }
+      // A recording store: a rehearsals read returns the stored row only when the query filters by BOTH its id and its
+      // owner, as the real database would, so a query that drops the user_id filter reads someone else's row.
+      if (table === "rehearsals" && h.store) {
+        const eq = (col: string) => ops.find((o) => o.m === "eq" && o.args[0] === col)?.args[1];
+        const row = h.store as { id: string; user_id: string };
+        const idOk = eq("id") === undefined || eq("id") === row.id;
+        const ownerOk = eq("user_id") === undefined || eq("user_id") === row.user_id;
+        return { data: idOk && ownerOk ? row : null, error: null };
       }
       if (table === "rehearsal_free_used")
         return {
@@ -148,6 +160,8 @@ beforeEach(() => {
   h.freeUsed = false;
   h.freeReadError = false;
   h.deleted = [];
+  h.deletedTables = [];
+  h.store = null;
   h.deleteRows = [{ id: "x" }];
   h.authorize.mockResolvedValue({ ok: true, userId: "u1", supabase: {}, chargeQuota: h.charge });
   h.charge.mockResolvedValue(null);
@@ -371,13 +385,23 @@ describe("adjust, cancel and delete", () => {
 
   it("delete removes only the caller's own row; someone else's is 404", async () => {
     expect((await post({ action: "delete", id: ID })).status).toBe(200);
-    const ops = h.deleted[0] as Op[];
+    const ops = h.deleted[h.deletedTables.indexOf("rehearsals")] as Op[];
     expect(ops.filter((o) => o.m === "eq").map((o) => o.args)).toEqual([
       ["id", ID],
       ["user_id", "u1"],
     ]);
     h.deleteRows = [];
     expect((await post({ action: "delete", id: OTHER_ID })).status).toBe(404);
+  });
+
+  it("delete also removes the rehearsal's own memory line, for this learner only", async () => {
+    expect((await post({ action: "delete", id: ID })).status).toBe(200);
+    const at = h.deletedTables.indexOf("tutor_memory");
+    expect(at).toBeGreaterThanOrEqual(0);
+    expect((h.deleted[at] as Op[]).filter((o) => o.m === "eq").map((o) => o.args)).toEqual([
+      ["user_id", "u1"],
+      ["memory_key", `rehearsal:${ID}`],
+    ]);
   });
 
   it("an unknown action or bad JSON is 400", async () => {
@@ -484,10 +508,19 @@ describe("outcome (How did it go?)", () => {
     expect((await outcome({ choice: "ok" })).status).toBe(409);
   });
 
-  it("someone else's or an unknown rehearsal is 404", async () => {
+  it("an unknown rehearsal is 404", async () => {
     h.active = null;
     expect((await outcome({ choice: "well" })).status).toBe(404);
     expect(h.rpcs).toEqual([]);
+  });
+
+  it("someone else's rehearsal is 404: the read is filtered by the caller (the store holds it for u2)", async () => {
+    h.store = { ...rowFor({}), user_id: "u2" };
+    expect((await outcome({ choice: "well" })).status).toBe(404);
+    expect(h.rpcs).toEqual([]);
+    // The same store read for its owner finds it, so the 404 above is the ownership filter, not the mock.
+    h.store = { ...rowFor({}), user_id: "u1" };
+    expect((await outcome({ choice: "well" })).status).toBe(200);
   });
 
   it("an unknown choice or a bad id is 400", async () => {

@@ -126,6 +126,14 @@ async function handlePost(
       const { toRehearsal } = await import("@/lib/rehearsals.server");
       return noStoreJson({ rehearsal: toRehearsal(data as never) });
     }
+    // The one memory line "How did it go?" left for it goes first (its key is `rehearsal:<id>`; scoped to the caller,
+    // so it is a no-op for an id that is not theirs). A failure here leaves the rehearsal in place to be retried.
+    const memory = await admin
+      .from("tutor_memory")
+      .delete()
+      .eq("user_id", auth.userId)
+      .eq("memory_key", `rehearsal:${body.id}`);
+    if (memory.error) return noStoreJson({ error: "failed" }, { status: 500 });
     // The learner's own row only. The free marker is a different table and stays.
     const { data, error } = await admin
       .from("rehearsals")

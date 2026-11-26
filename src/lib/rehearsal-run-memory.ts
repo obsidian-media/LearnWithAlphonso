@@ -42,6 +42,9 @@ export function parseRehearsalMoments(content: string, labels: readonly string[]
   return { shown, wentWell };
 }
 
+/** A corrected form with a number in it (a salary, a date, an address) is never kept in memory. */
+export const hasNumber = (s: string): boolean => /\d/.test(s);
+
 const capped = (items: string[]): string[] =>
   items
     .map((s) => s.trim())
@@ -57,7 +60,7 @@ export function buildRunMemory(args: {
   const forms: string[] = [];
   for (const c of args.corrections) {
     const f = c.fixed.trim();
-    if (/\d/.test(f) || forms.includes(f)) continue;
+    if (hasNumber(f) || forms.includes(f)) continue;
     forms.push(f);
   }
   return {

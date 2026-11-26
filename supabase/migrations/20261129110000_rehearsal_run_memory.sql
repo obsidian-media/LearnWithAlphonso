@@ -1,4 +1,4 @@
--- Rehearsals, slice 2: what a finished run teaches the tutor, and "How did it go?".
+-- Rehearsals: what a finished run teaches the tutor, and "How did it go?".
 --
 -- finish_rehearsal_recap: the rehearsal twin of finish_call_recap (20261128170000). In ONE transaction it completes
 -- the call's recap (weakness events and memory lines, through finish_call_recap) and writes the run's rehearsal_runs
