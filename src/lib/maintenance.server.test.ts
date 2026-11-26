@@ -13,6 +13,7 @@ import {
 import type { EmailMessage } from "./report-notify.server";
 import { costConfig } from "./ai-cost-config";
 import type { AiCostSweepDeps } from "./ai-cost-sweep.server";
+import type { TrialReminderDeps } from "./trial-reminder.server";
 
 type Row = Record<string, unknown>;
 
@@ -475,6 +476,63 @@ describe("handleMaintenance", () => {
       erasures: { erased: 0, stillPending: 0, expired: 0 },
     });
     expect(body).not.toContain("token-a");
+  });
+
+  describe("the trial reminder step", () => {
+    const reminder = (over: Partial<TrialReminderDeps> = {}): TrialReminderDeps => ({
+      enabled: true,
+      now: () => new Date("2026-11-26T10:00:00Z"),
+      store: {
+        markChecked: async () => {},
+        candidates: async () => [],
+        claim: async () => true,
+        release: async () => {},
+      },
+      readTrial: async () => null,
+      planFor: async () => ({ period: null, price: null }),
+      emailOf: async () => null,
+      countryOf: async () => null,
+      sleep: async () => {},
+      sendEmail: async () => {},
+      from: "Alphonso <a@example.com>",
+      ...over,
+    });
+
+    it("is part of the pass and its counts are reported", async () => {
+      process.env.REPORT_NOTIFY_SECRET = SECRET;
+      const { deps } = makeDeps({}, { trialReminders: reminder() });
+      const res = await handleMaintenance(req(SECRET), async () => deps);
+      expect((await res.json()).trialReminders).toEqual({
+        status: "done",
+        checked: 0,
+        sent: 0,
+        failed: 0,
+      });
+    });
+
+    it("a failing reminder step is named in failures and does not stop the pass", async () => {
+      process.env.REPORT_NOTIFY_SECRET = SECRET;
+      const { deps } = makeDeps(
+        {},
+        {
+          trialReminders: reminder({
+            store: {
+              candidates: async () => {
+                throw new Error("db down");
+              },
+              markChecked: async () => {},
+              claim: async () => true,
+              release: async () => {},
+            },
+          }),
+        },
+      );
+      const res = await handleMaintenance(req(SECRET), async () => deps);
+      const body = await res.json();
+      expect(res.status).toBe(500);
+      expect(body.failures).toEqual(["trial-reminders"]);
+      expect(body.erasures).not.toBeNull();
+    });
   });
 
   describe("the spend breaker's failures reach the pass's status", () => {

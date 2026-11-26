@@ -685,6 +685,13 @@ describe("GDPR export table coverage", () => {
     // Both are RLS-on, service-role only, and go with the account through ON DELETE CASCADE.
     "staff_roles",
     "staff_notes",
+    // trial_reminders and trial_reminder_checked (20261128150000_trial_reminders.sql) are server-only operational
+    // markers for the trial-ending reminder email: "this account was reminded" and "this account's trial state was last
+    // read at T". Nothing the learner typed or did; the trial date is RevenueCat's own record, which the learner can
+    // already see in their subscription. RLS on, no policy, no grant to `authenticated`, so the caller-scoped export
+    // would return empty anyway. Both go with the account through user_id REFERENCES auth.users ON DELETE CASCADE.
+    "trial_reminders",
+    "trial_reminder_checked",
   ]);
 
   it("exports every table that has a user_id column", () => {
