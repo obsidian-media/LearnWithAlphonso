@@ -1,6 +1,6 @@
 // The two reads/writes get-season-status makes about a finished week, apart from the HTTP handling so a test can
 // drive them with a fake client. The ranking itself is the database's (resolve_season_cohort, migration
-// 20261128150000): placements and resolved_at are written in ONE transaction, so a failed insert can never leave the
+// 20261128180000): placements and resolved_at are written in ONE transaction, so a failed insert can never leave the
 // cohort marked resolved. season-math.ts stays the reference the database ranking is tested against.
 
 type RpcClient = {

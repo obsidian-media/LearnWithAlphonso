@@ -44,7 +44,7 @@ export const MAX_ACTIVITY_SECONDS = 900;
 
 /**
  * What a saved lesson adds to the Profile data, sent INSIDE the completion's own transaction (apply_lesson_completion
- * reads it from `_next.profile`, migration 20261128160000) instead of as two separate calls afterwards whose failures
+ * reads it from `_next.profile`, migration 20261128190000) instead of as two separate calls afterwards whose failures
  * were swallowed. Keys are the database's (snake case).
  */
 export function lessonProfilePayload(lesson: {

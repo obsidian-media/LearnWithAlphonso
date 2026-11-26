@@ -602,7 +602,7 @@ describe("completeLessonRemote", () => {
       }),
     );
 
-    // The lesson's learning time and skill results ride inside the completion's transaction (20261128160000); there
+    // The lesson's learning time and skill results ride inside the completion's transaction (20261128190000); there
     // are no later add_learning_seconds / add_skill_results calls whose failures nobody saw.
     const onceArgs = adminRpc.mock.calls.find(
       (c) => c[0] === "apply_lesson_completion_once",

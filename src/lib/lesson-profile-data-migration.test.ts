@@ -4,7 +4,7 @@ import type { PGlite } from "@electric-sql/pglite";
 import { afterEach, describe, expect, it } from "vitest";
 import { buildFullSchema, MIGRATIONS_DIR } from "./__testutils__/full-schema";
 
-const FILE = "20261128160000_lesson_profile_data_in_transaction.sql";
+const FILE = "20261128190000_lesson_profile_data_in_transaction.sql";
 const U1 = "00000000-0000-4000-8000-0000000000a1";
 const TODAY = "2026-11-20";
 

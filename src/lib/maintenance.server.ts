@@ -32,7 +32,7 @@ import {
  *   6. The AI cost log: rolls raw rows older than 90 days into the daily summary, and once a day emails the owner when
  *      yesterday's estimated spend crossed a threshold (src/lib/ai-cost-sweep.server.ts).
  *   8. Settles every finished season cohort and the last weeks' weekly challenge rewards in the database
- *      (resolve_closed_season_cohorts, settle_closed_weekly_challenges; migration 20261128150000). Both used to happen
+ *      (resolve_closed_season_cohorts, settle_closed_weekly_challenges; migration 20261128180000). Both used to happen
  *      only when a learner opened a screen the right week, so nobody who did not came out settled. Idempotent.
  *   7. Operational events: emails the owner when a server-side failure event crosses its hourly threshold, once per
  *      event per 24 hours (src/lib/ops-alert-sweep.server.ts).
