@@ -61,7 +61,7 @@ import { getWeaknessTrend } from "@/lib/weakness-trend.functions";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import { supabase } from "@/integrations/supabase/client";
 import { chooseGreetingVariant, rememberedTopic } from "@/lib/hector-greeting-context";
-import { createHectorCallEnd } from "@/lib/hector-call-end";
+import { createHectorCallEnd, retryPendingHectorCallEnds } from "@/lib/hector-call-end";
 
 export const Route = createFileRoute("/_authenticated/hector")({
   component: HectorPage,
@@ -384,6 +384,10 @@ function HectorConversation({
 
   // The call ends when the learner leaves the screen or closes the tab: what it taught Hector about them is saved
   // once, for the next call (/api/hector-call-end; Pro only, decided on the server).
+  // A save that failed on an earlier visit is sent again, with its own call id.
+  useEffect(() => {
+    void retryPendingHectorCallEnds();
+  }, []);
   const cefrRef = useRef(cefrLevel);
   cefrRef.current = cefrLevel;
   useEffect(() => {

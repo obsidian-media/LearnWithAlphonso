@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("./auth-headers", () => ({ authHeaders: async () => ({ Authorization: "Bearer t" }) }));
+vi.mock("./auth-headers", () => ({
+  authHeaders: async () => ({ Authorization: "Bearer t" }),
+  currentUserId: async () => "u1",
+}));
 import {
   GREETING_VARIANTS,
   buildHectorGreeting,

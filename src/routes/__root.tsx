@@ -9,6 +9,10 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import {
+  forgetHectorCallEndsOnAuthChange,
+  retryPendingHectorCallEnds,
+} from "@/lib/hector-call-end";
 import { MotionConfig } from "framer-motion";
 
 import appCss from "../styles.css?url";
@@ -171,6 +175,7 @@ function RootComponent() {
   const suspended = useAccountStatus((s) => s.suspended);
   useEffect(() => {
     void track("app_open");
+    void retryPendingHectorCallEnds();
     dismissBootSplash();
   }, []);
   // iOS Safari lets only an audio element a tap has played start sound later, after a fetch: so the first tap anywhere
@@ -242,6 +247,8 @@ function AuthSync() {
     void load();
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      // An unsent Hector call holds the last account's words: it goes with the sign-out or the account switch.
+      forgetHectorCallEndsOnAuthChange(event, session?.user?.id, currentUserId);
       if (event === "SIGNED_IN") {
         const id = session?.user?.id;
         if (id && id === currentUserId) return;

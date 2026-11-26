@@ -97,6 +97,8 @@ export const SERVICE_SCOPED_EXPORT_TABLES = [
   // Each lesson session's stored result (20261125110000), kept so a repeated save returns the same answer.
   { table: "lesson_session_redemptions", column: "user_id" },
   { table: "hearts_pro_status", column: "user_id" },
+  // Which Hector calls were already saved (20261128200000): the learner's id and a call id, nothing else. No client read.
+  { table: "hector_call_ends", column: "user_id" },
   // The learner's own restrictions and gifted Pro periods (20261113100000). Never staff_notes or the action record.
   { table: "user_restrictions", column: "user_id" },
   { table: "pro_grants", column: "user_id" },

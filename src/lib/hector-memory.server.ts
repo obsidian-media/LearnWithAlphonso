@@ -1,6 +1,7 @@
 import { openMemoryCategories, type WeaknessEventRow } from "./profile-overview";
 import { WEAKNESS_TAXONOMY } from "./weakness-detection.server";
 import { topicLabel } from "./call-recap";
+import { hectorTopicLabel } from "./hector-greeting";
 import type { Course } from "../data/courses";
 import type { ChatMessage } from "./hector-conversation";
 
@@ -18,6 +19,8 @@ const MAX_TOPICS = 3;
 const MAX_MISTAKES = 3;
 const MAX_PHRASES = 2;
 const MAX_WEAK_ITEMS = 3;
+/** The most recent weakness events read: bounds the query, and old events stop steering the prompt. */
+const MAX_EVENTS = 50;
 const SNIPPET = 90;
 
 export type MemoryParts = {
@@ -28,9 +31,9 @@ export type MemoryParts = {
 };
 
 /** Open categories, most open first, kept only when they are one of our taxonomy labels. */
-export function memoryTopics(events: WeaknessEventRow[]): string[] {
+export function memoryTopics(events: WeaknessEventRow[], course: Course): string[] {
   return openMemoryCategories(events)
-    .filter((c) => TAXONOMY.has(c))
+    .filter((c) => TAXONOMY.has(c) && hectorTopicLabel(course, c) !== null)
     .slice(0, MAX_TOPICS);
 }
 
@@ -115,7 +118,11 @@ export async function loadMemoryPrimingMessage(
   const t = (name: string) => (db as { from: (n: string) => Builder }).from(name);
   const [events, memory, weak] = await Promise.all([
     read<WeaknessEventRow>("weakness_events", () =>
-      t("weakness_events").select("category,event_type,created_at").eq("user_id", userId),
+      t("weakness_events")
+        .select("category,event_type,created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(MAX_EVENTS),
     ),
     read<{ kind: string; memory_key: string; text: string; detail: string | null }>(
       "tutor_memory",
@@ -147,7 +154,7 @@ export async function loadMemoryPrimingMessage(
     .filter((r) => r.kind === "phrase")
     .map((r) => ({ text: r.text, meaning: r.detail }));
   return buildMemoryPrimingMessage({
-    topics: memoryTopics(events),
+    topics: memoryTopics(events, course),
     mistakes,
     phrases,
     weakItems: weak.flatMap((w) => (w.weakness_display ? [w.weakness_display] : [])),
