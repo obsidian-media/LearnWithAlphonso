@@ -1,16 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const auth = vi.hoisted(() => ({ userId: "u1" as string | null | "throw" }));
 vi.mock("./auth-headers", () => ({
   authHeaders: async () => ({ Authorization: "Bearer t" }),
-  currentUserId: async () => "u1",
+  currentUserId: async () => {
+    if (auth.userId === "throw") throw new Error("session unavailable");
+    return auth.userId;
+  },
 }));
 
-const { createHectorCallEnd, retryPendingHectorCallEnds, PENDING_KEY, MAX_ATTEMPTS, MAX_AGE_MS } =
-  await import("./hector-call-end");
+const {
+  createHectorCallEnd,
+  retryPendingHectorCallEnds,
+  forgetHectorCallEndsOnAuthChange,
+  PENDING_KEY,
+  MAX_ATTEMPTS,
+  MAX_AGE_MS,
+} = await import("./hector-call-end");
 
 const store = new Map<string, string>();
 beforeEach(() => {
   store.clear();
+  auth.userId = "u1";
   vi.stubGlobal("window", {
     localStorage: {
       getItem: (k: string) => store.get(k) ?? null,
@@ -97,7 +108,11 @@ describe("a failed Hector call save is kept and retried with the same call id", 
     expect(pending()).toHaveLength(0);
   });
 
-  it("drops a receipt older than 48 hours without sending it", async () => {
+  it("keeps a receipt for 24 hours, not longer", () => {
+    expect(MAX_AGE_MS).toBe(24 * 60 * 60 * 1000);
+  });
+
+  it("drops a receipt older than 24 hours without sending it", async () => {
     const f = vi.fn(async () =>
       json({ saved: false, reason: "no_recap" }),
     ) as unknown as typeof fetch;
@@ -108,5 +123,61 @@ describe("a failed Hector call save is kept and retried with the same call id", 
     await retryPendingHectorCallEnds(f);
     expect(f).toHaveBeenCalledTimes(1);
     expect(pending()).toHaveLength(0);
+  });
+
+  it("stores no receipt when the account cannot be told (never an empty user id), and still sends once", async () => {
+    auth.userId = "throw";
+    const f = vi.fn(async () =>
+      json({ saved: false, reason: "no_recap" }),
+    ) as unknown as typeof fetch;
+    await newEnd(f)();
+    expect(f).toHaveBeenCalledTimes(1);
+    expect(store.get(PENDING_KEY)).toBeUndefined();
+    auth.userId = null;
+    await createHectorCallEnd({
+      callId: "call-2",
+      course: "es",
+      getTurns: () => turns,
+      getCefr: () => "",
+      fetchImpl: f,
+    })();
+    expect(store.get(PENDING_KEY)).toBeUndefined();
+  });
+
+  it("sign-out wipes every receipt, and so does another account signing in", async () => {
+    const f = vi.fn(async () =>
+      json({ saved: false, reason: "no_recap" }),
+    ) as unknown as typeof fetch;
+    await newEnd(f)();
+    expect(pending()).toHaveLength(1);
+    forgetHectorCallEndsOnAuthChange("SIGNED_IN", "u1", "u1"); // a tab regaining focus: same account
+    forgetHectorCallEndsOnAuthChange("USER_UPDATED", "u1", "u1");
+    expect(pending()).toHaveLength(1);
+    forgetHectorCallEndsOnAuthChange("SIGNED_OUT", undefined, "u1");
+    expect(store.get(PENDING_KEY)).toBeUndefined();
+
+    await newEnd(f)();
+    expect(pending()).toHaveLength(1);
+    forgetHectorCallEndsOnAuthChange("SIGNED_IN", "u2", "u1");
+    expect(store.get(PENDING_KEY)).toBeUndefined();
+  });
+
+  it("another account's receipt is dropped, not sent, when this account retries", async () => {
+    const f = vi.fn(async () =>
+      json({ saved: false, reason: "no_recap" }),
+    ) as unknown as typeof fetch;
+    await newEnd(f)();
+    auth.userId = "u2";
+    await retryPendingHectorCallEnds(f);
+    expect(f).toHaveBeenCalledTimes(1);
+    expect(store.get(PENDING_KEY)).toBeUndefined();
+  });
+
+  it("in_progress (another request holds the call) is retried later", async () => {
+    const f = vi.fn(async () =>
+      json({ saved: false, reason: "in_progress" }),
+    ) as unknown as typeof fetch;
+    await newEnd(f)();
+    expect(pending()).toHaveLength(1);
   });
 });

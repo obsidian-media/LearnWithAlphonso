@@ -64,26 +64,41 @@ export const Route = createFileRoute("/api/hector-call-end")({
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const admin = supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient;
-          // One write per call, claimed atomically BEFORE any spend: two concurrent requests, a retry, a second tab
-          // or a pagehide plus an unmount must not charge, ask the model or write twice. A conflict on the primary key
-          // means the call was already taken. Any other error fails CLOSED (nothing is charged, the client may retry).
-          const claim = await admin
-            .from("hector_call_ends")
-            .insert({ user_id: userId, call_id: callId });
-          if (claim.error) {
-            if (claim.error.code === "23505") return NOT_SAVED("already_saved");
-            log("hector_call_end_failed", { stage: "claim", code: claim.error.code ?? null });
+          // One write per call, claimed atomically BEFORE any spend (claim_hector_call, a 2 minute lease): two
+          // concurrent requests, a retry, a second tab or a pagehide plus an unmount must not charge, ask the model
+          // or write twice. 'done' means the call was already saved; 'busy' means another request holds a live
+          // claim (the client retries later); a claim whose holder died is taken over after the lease. Any error
+          // fails CLOSED: nothing is charged and the client may retry.
+          const claim = await admin.rpc("claim_hector_call", {
+            _user_id: userId,
+            _call_id: callId,
+          });
+          if (
+            claim.error ||
+            (claim.data !== "claimed" && claim.data !== "done" && claim.data !== "busy")
+          ) {
+            log("hector_call_end_failed", { stage: "claim", code: claim.error?.code ?? null });
             return noStoreJson({ error: "claim_failed" }, { status: 503 });
           }
+          if (claim.data === "done") return NOT_SAVED("already_saved");
+          if (claim.data === "busy") return NOT_SAVED("in_progress");
           // Give the claim back only when the call failed before anything was written and a retry is safe.
           const release = async () => {
-            const { error } = await admin
-              .from("hector_call_ends")
-              .delete()
-              .eq("user_id", userId)
-              .eq("call_id", callId);
+            const { error } = await admin.rpc("release_hector_call", {
+              _user_id: userId,
+              _call_id: callId,
+            });
             if (error)
               log("hector_call_end_failed", { stage: "release", code: error.code ?? null });
+          };
+          // Only a completed call is "already saved".
+          const complete = async () => {
+            const { error } = await admin.rpc("complete_hector_call", {
+              _user_id: userId,
+              _call_id: callId,
+            });
+            if (error)
+              log("hector_call_end_failed", { stage: "complete", code: error.code ?? null });
           };
 
           try {
@@ -118,7 +133,10 @@ export const Route = createFileRoute("/api/hector-call-end")({
               route: "hector-call-end",
             });
             const kept = recap.corrections.filter((_, i) => !verdicts[i]);
-            if (kept.length === 0) return NOT_SAVED("nothing_to_keep");
+            if (kept.length === 0) {
+              await complete();
+              return NOT_SAVED("nothing_to_keep");
+            }
 
             const memo = await timer.time("memory", async () =>
               admin.rpc("remember_call_recap", {
@@ -136,6 +154,7 @@ export const Route = createFileRoute("/api/hector-call-end")({
               await release();
               return NOT_SAVED("write_failed");
             }
+            await complete();
             log("hector_call_end_saved", { lines: kept.length });
             return noStoreJson({ saved: true, lines: kept.length });
           } catch (e) {

@@ -12,7 +12,8 @@ import { boundTranscript } from "./chat-transcript-limits";
  * in localStorage. It is removed only when the server gave a final answer (saved, already saved, or an intentional
  * skip); a network error, a 5xx, a 401 or a retryable reason keeps it, and the next Hector visit or app load sends it
  * again with the SAME callId (the server's per-call claim makes that safe), at most MAX_ATTEMPTS times within
- * MAX_AGE_MS.
+ * MAX_AGE_MS (24 hours). The receipt holds the transcript, so it is wiped on sign-out and when another account signs in
+ * (forgetHectorCallEndsOnAuthChange), and it is never stored without knowing whose it is.
  */
 export type CallTurn = { role: "user" | "assistant"; content: string };
 
@@ -21,7 +22,7 @@ export const hectorCallQualifies = (turns: CallTurn[]): boolean =>
 
 export const PENDING_KEY = "hector.callEnd.pending";
 export const MAX_ATTEMPTS = 3;
-export const MAX_AGE_MS = 48 * 60 * 60 * 1000;
+export const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const MAX_RECEIPTS = 5;
 
 type Receipt = {
@@ -37,7 +38,12 @@ type Receipt = {
 /** The server's answers that end the matter: nothing to retry. */
 const FINAL_REASONS = new Set(["already_saved", "short_call", "not_pro", "nothing_to_keep"]);
 /** Answers with `saved: false` that a later attempt can turn into a save. */
-const RETRY_REASONS = new Set(["write_failed", "no_recap", "entitlement_unavailable"]);
+const RETRY_REASONS = new Set([
+  "write_failed",
+  "no_recap",
+  "entitlement_unavailable",
+  "in_progress", // another request holds the call's claim; if it fails the claim is released
+]);
 
 function load(): Receipt[] {
   try {
@@ -60,6 +66,22 @@ function put(receipt: Receipt) {
 }
 function drop(callId: string) {
   store(load().filter((r) => r.callId !== callId));
+}
+
+/** Forgets every unsent call on this device. */
+export function clearPendingHectorCallEnds() {
+  store([]);
+}
+
+/** The auth listener's hook: wipe on SIGNED_OUT, and on SIGNED_IN as an account other than the one loaded. */
+export function forgetHectorCallEndsOnAuthChange(
+  event: string,
+  newUserId: string | undefined,
+  loadedUserId: string | null | undefined,
+) {
+  const switched =
+    event === "SIGNED_IN" && !!newUserId && !!loadedUserId && newUserId !== loadedUserId;
+  if (event === "SIGNED_OUT" || switched) clearPendingHectorCallEnds();
 }
 
 /** true: final, forget it. false: keep the receipt and try again later. */
@@ -123,6 +145,8 @@ export function createHectorCallEnd(args: {
       attempts: 1,
       createdAt: Date.now(),
     };
+    // Without an account there is no one to keep it for (and nothing to save): send it once, store nothing.
+    if (!userId) return send(receipt, doFetch);
     // Kept BEFORE the request: closing the tab mid-request must not lose the call.
     put(receipt);
     const done = await send(receipt, doFetch);
@@ -146,7 +170,10 @@ export function retryPendingHectorCallEnds(fetchImpl?: typeof fetch): Promise<vo
           drop(r.callId);
           continue;
         }
-        if (r.userId !== me) continue; // another account's call: it waits for that account
+        if (r.userId !== me) {
+          drop(r.callId); // another account's call has no business on this account's device storage
+          continue;
+        }
         put({ ...r, attempts: r.attempts + 1 });
         if (await send(r, doFetch)) drop(r.callId);
       }
