@@ -10,7 +10,7 @@ import LearnWithAlphonsoKit
 /// completed lesson; nothing here can ask for a reward.
 ///
 /// A new learner who got a code but whose link did not open the app can type or paste it in "Got an invite code?" (the
-/// manual fallback while `/?ref=` is not an app link; see ReferralLink).
+/// manual fallback for a link that did not open the app; see ReferralLink).
 struct ReferralInviteView: View {
     let session: Session
 

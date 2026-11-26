@@ -8,9 +8,11 @@
  *   bun run scripts/video-tool.ts publish   --slug en-x [--confirm]
  *   bun run scripts/video-tool.ts unpublish --slug en-x [--confirm]
  *
- * `add` uploads the mp4, the poster and the WebVTT captions to the public `videos` bucket and upserts the `videos` row
- * UNPUBLISHED. `publish` is a separate step: it refuses a video without captions or with a missing object. Without
- * --confirm every command prints what it WOULD do and touches nothing.
+ * `add` uploads the mp4, the poster and the WebVTT captions to the PRIVATE `video-drafts` bucket and upserts the
+ * `videos` row UNPUBLISHED (any public copy left from an earlier publish is removed). `publish` is a separate step: it
+ * refuses a video without captions or with a missing object, copies the three objects into the public `videos` bucket,
+ * then flips the row. `unpublish` copies them back to `video-drafts` and removes the public copies
+ * (src/lib/video-buckets.ts). Without --confirm every command prints what it WOULD do and touches nothing.
  *
  * Credentials: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from the environment, or, when unset, read from the owner's
  * ~/.alphonso-secrets/podcast.env (only those two names are picked out of it; nothing is printed). The service-role key
@@ -39,12 +41,16 @@ import {
   pickEnv,
   publishProblems,
   validateVideoDraft,
-  VIDEO_BUCKET,
   VIDEO_COURSES,
   videoStoragePaths,
   type StoredVideo,
   type VideoDraft,
 } from "../src/lib/video-authoring";
+import {
+  DRAFT_VIDEO_BUCKET,
+  moveVideoForPublishState,
+  PUBLIC_VIDEO_BUCKET,
+} from "../src/lib/video-buckets";
 import { LEVELS } from "../src/data/levels";
 
 const FLAG_SPEC = {
@@ -169,7 +175,7 @@ async function cmdAdd(flags: CliFlags) {
   const paths = videoStoragePaths(draft.course!, slug);
   if (flags.confirm !== true) {
     console.log(
-      `Dry run. Would upload ${video.length} bytes to ${VIDEO_BUCKET}/${paths.video}, the poster to ${paths.poster} and the captions to ${paths.captions},`,
+      `Dry run. Would upload ${video.length} bytes to ${DRAFT_VIDEO_BUCKET}/${paths.video}, the poster to ${paths.poster} and the captions to ${paths.captions},`,
     );
     console.log(
       `  and upsert video "${slug}" (${draft.durationSeconds}s, course=${course}, level=${levelId ?? "none"}, tags=[${tags.join(", ")}], practice=${practice ? `${practice.kind}:${practice.id}` : "none"}, UNPUBLISHED).`,
@@ -186,7 +192,7 @@ async function cmdAdd(flags: CliFlags) {
   ];
   for (const [objectPath, body, contentType] of uploads) {
     const { error } = await db.storage
-      .from(VIDEO_BUCKET)
+      .from(DRAFT_VIDEO_BUCKET)
       .upload(objectPath, body, { contentType, upsert: true });
     if (error) fail(`upload of ${objectPath} failed: ${error.message}. No row was written.`);
   }
@@ -196,6 +202,15 @@ async function cmdAdd(flags: CliFlags) {
     console.error(`Error: the uploads succeeded but the database upsert failed: ${error.message}`);
     console.error(`Orphaned objects: ${paths.video}, ${paths.poster}, ${paths.captions}`);
     process.exit(1);
+  }
+  // `add` always leaves the row unpublished, so a public copy from an earlier publish must not stay reachable.
+  const stale = await db.storage
+    .from(PUBLIC_VIDEO_BUCKET)
+    .remove([paths.video, paths.poster, paths.captions]);
+  if (stale.error) {
+    console.error(
+      `Warning: could not remove any old public copies of "${slug}": ${stale.error.message}. Remove ${PUBLIC_VIDEO_BUCKET}/${paths.video}, ${paths.poster} and ${paths.captions} by hand.`,
+    );
   }
   console.log(`Added "${title}" (${draft.durationSeconds}s). It is NOT published yet.`);
   console.log(`Publish it with: publish --slug ${slug} --confirm`);
@@ -220,12 +235,19 @@ async function cmdPublish(flags: CliFlags, publish: boolean) {
   const db = supabase();
   const row = await loadVideo(db, slug);
 
+  const objectPaths = [row.video_path, row.poster_path, row.captions_path].filter(
+    (p): p is string => Boolean(p),
+  );
   if (publish) {
-    const { data: listed, error: listError } = await db.storage
-      .from(VIDEO_BUCKET)
-      .list(row.course, { limit: 1000 });
-    if (listError) fail(`could not list the bucket: ${listError.message}`);
-    const existing = (listed ?? []).map((o: { name: string }) => `${row.course}/${o.name}`);
+    // The files are in the drafts bucket (or, for a video from before drafts were private, already in the public one).
+    const existing: string[] = [];
+    for (const bucket of [DRAFT_VIDEO_BUCKET, PUBLIC_VIDEO_BUCKET]) {
+      const { data: listed, error: listError } = await db.storage
+        .from(bucket)
+        .list(row.course, { limit: 1000 });
+      if (listError) fail(`could not list the ${bucket} bucket: ${listError.message}`);
+      existing.push(...(listed ?? []).map((o: { name: string }) => `${row.course}/${o.name}`));
+    }
     const problems = publishProblems(row, existing);
     if (problems.length > 0) {
       for (const problem of problems) console.error(`  [ERROR] ${problem}`);
@@ -241,14 +263,25 @@ async function cmdPublish(flags: CliFlags, publish: boolean) {
     console.log("Re-run with --confirm to write it.");
     return;
   }
-  const { error } = await db
-    .from("videos")
-    .update({ published: publish, published_at: publish ? new Date().toISOString() : null })
-    .eq("slug", slug);
-  if (error) fail(`${publish ? "publish" : "unpublish"} failed: ${error.message}`);
+  // Public copies first on a publish, the row second, the old copies last: see moveVideoForPublishState.
+  try {
+    await moveVideoForPublishState({
+      storage: db.storage,
+      paths: objectPaths,
+      publish,
+      flip: async () => {
+        const { error } = await db
+          .from("videos")
+          .update({ published: publish, published_at: publish ? new Date().toISOString() : null })
+          .eq("slug", slug);
+        if (error) throw new Error(`${publish ? "publish" : "unpublish"} failed: ${error.message}`);
+      },
+    });
+  } catch (e) {
+    fail(e instanceof Error ? e.message : String(e));
+  }
   console.log(`${publish ? "Published" : "Unpublished"} "${slug}".`);
-  if (!publish)
-    console.log("The files stay in the public bucket: unpublishing hides the row, not the file.");
+  if (!publish) console.log("Its files are back in the private video-drafts bucket.");
 }
 
 const USAGE = `usage:
