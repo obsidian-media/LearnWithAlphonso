@@ -6,7 +6,8 @@ import {
   WEAK_SPOTS_MIN_ITEMS,
 } from "@/data/path-config";
 import { REFRESHER_UNIT_PATTERNS } from "@/data/refresher-topics";
-import { LEVEL_ORDER, planGoal, suggestGoal, MAX_GOAL_DAYS } from "./learning-goal";
+import { LEVEL_ORDER, planGoal, MAX_GOAL_DAYS } from "./learning-goal";
+import { suggestGoal } from "./suggest-goal";
 import { lessonsByLevel } from "./learning-goal.server";
 import { buildLearningPath, type PathData } from "./learning-path-data";
 import { RECAP_TOPICS } from "./call-recap";
