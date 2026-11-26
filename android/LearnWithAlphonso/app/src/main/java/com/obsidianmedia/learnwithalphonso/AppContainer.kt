@@ -289,6 +289,12 @@ class AppContainer(context: Context) {
         client = { if (session.currentAccessToken() != null) progressClient else null },
         prefs = prefs,
         scope = appScope,
+        retryDelaysMs = listOf(30_000L, 120_000L, 600_000L),
+        onFailure = { stage, error ->
+            // Never the token or the response body: the class name is enough to tell a refusal from no network.
+            android.util.Log.w("PushRegistrar", "push registration failed at $stage: ${error::class.java.simpleName}")
+            CrashReporting.captureNonFatal("push_registration_$stage", error)
+        },
     )
 
     /** The "Please update" gate (AppUpdateGate). Release builds only: a local debug build's versionCode is 1. */

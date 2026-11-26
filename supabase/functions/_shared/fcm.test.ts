@@ -101,6 +101,8 @@ Deno.test("sendFcmToTokens counts sends, marks only UNREGISTERED as stale, ignor
 
   assertEquals(result.sent, 1);
   assertEquals(result.stale.sort(), ["id-tok-404-unreg", "id-tok-unreg"]);
+  // A bare 404, a 500 and a thrown fetch are failures to deliver, not dead tokens: counted, never silent.
+  assertEquals(result.failed, 3);
 
   const first = JSON.parse(bodies[0]).message;
   assertEquals(first.notification, { title: "Nudged", body: "A friend nudged you" });

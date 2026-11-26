@@ -10,7 +10,8 @@
 // gamification-design.md section 2.
 import { createClient } from "@supabase/supabase-js";
 import { suspendedResponseIfBanned } from "../_shared/account-status.ts";
-import { weekStartFor, rankCohort, computePromotions } from "./season-math.ts";
+import { weekStartFor, rankCohort } from "./season-math.ts";
+import { latestDivision, settleCohort } from "./resolve.ts";
 
 const COHORT_CAP = 30;
 
@@ -70,42 +71,15 @@ export async function handleRequest(req: Request): Promise<Response> {
       const cohortId = prevMembership.cohort_id;
       const cohortDivision = (prevMembership as any).season_cohorts.division;
 
-      // Atomically claim the right to resolve this cohort -- guards
-      // against two concurrent callers (two members of the same
-      // cohort both triggering resolution) double-processing it.
-      const { data: claimed } = await admin
-        .from("season_cohorts")
-        .update({ resolved_at: new Date().toISOString() })
-        .eq("id", cohortId)
-        .is("resolved_at", null)
-        .select("id")
-        .maybeSingle();
-
-      if (claimed) {
-        const { data: xpRows } = await admin.rpc("get_cohort_weekly_xp", {
-          _cohort_id: cohortId,
-          _week_start: prevWeekStart,
-        });
-        const members = (xpRows ?? []).map((r: { user_id: string; xp: number }) => ({ userId: r.user_id, xp: r.xp }));
-        const ranked = rankCohort(members);
-        const promotions = computePromotions(ranked, cohortDivision);
-
-        await admin.from("season_placements").insert(
-          promotions.map((p) => {
-            const r = ranked.find((x) => x.userId === p.userId)!;
-            return {
-              user_id: p.userId,
-              week_start: prevWeekStart,
-              division: p.newDivision,
-              rank_in_cohort: r.rank,
-              cohort_size: ranked.length,
-            };
-          }),
-        );
+      // The database ranks the cohort, writes every placement and sets resolved_at in ONE transaction (and locks the
+      // cohort, so two members opening the screen at once settle it once). If it fails nothing was written and the
+      // cohort stays unresolved for the next open or the next maintenance sweep.
+      try {
+        await settleCohort(admin as never, cohortId);
+      } catch (e) {
+        console.error("[get-season-status]", e instanceof Error ? e.message : "settle failed");
       }
-      // Whether this call claimed the resolution or another concurrent
-      // call already did, the placement row now exists (or will very
-      // shortly) -- re-read it for this user specifically.
+      // Settled by this call, the sweep or a concurrent caller: re-read this user's placement.
       const { data: placement } = await admin
         .from("season_placements")
         .select("division, rank_in_cohort, cohort_size")
@@ -116,11 +90,14 @@ export async function handleRequest(req: Request): Promise<Response> {
         lastWeekResult = { division: placement.division, rankInCohort: placement.rank_in_cohort, cohortSize: placement.cohort_size };
         currentDivision = placement.division;
       } else {
-        currentDivision = cohortDivision;
+        // Not settled (a failure above): keep what the learner earned before, else Division 1.
+        currentDivision = await latestDivision(admin as never, userId).catch(() => cohortDivision);
       }
     }
-    // else: no previous cohort at all (brand-new user) -- stays at
-    // default Division 1, nothing to resolve.
+    else {
+      // No cohort last week (they skipped it): start from the division of their latest placement, else Division 1.
+      currentDivision = await latestDivision(admin as never, userId).catch(() => 1);
+    }
   }
 
   // Ensure a current-week cohort at currentDivision -- room-or-create,

@@ -113,6 +113,8 @@ export type FcmSendResult = {
   sent: number;
   /** device_tokens ids whose token FCM reported as dead; the caller prunes them. */
   stale: string[];
+  /** Sends that failed for a reason that is NOT a dead token (an outage, a 5xx, a refused request, a network error). */
+  failed: number;
 };
 
 /**
@@ -137,6 +139,7 @@ export async function sendFcmToTokens(
 
   const stale: string[] = [];
   let sent = 0;
+  let failed = 0;
   await Promise.all(rows.map(async (row) => {
     try {
       const res = await deps.fetch(url, {
@@ -161,11 +164,13 @@ export async function sendFcmToTokens(
       }
       const text = await res.text().catch(() => "");
       if (text.includes("UNREGISTERED")) stale.push(row.id);
+      else failed++;
     } catch {
-      // Best-effort -- never fail the caller over one device.
+      // Best-effort -- never fail the caller over one device, but count it so the failure is visible.
+      failed++;
     }
   }));
-  return { sent, stale };
+  return { sent, stale, failed };
 }
 
 /** Reads the two secrets; null when either is missing or the JSON is malformed. */

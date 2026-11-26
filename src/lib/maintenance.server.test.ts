@@ -532,6 +532,40 @@ describe("handleMaintenance", () => {
       expect(res.status).toBe(500);
       expect(body.failures).toEqual(["trial-reminders"]);
       expect(body.erasures).not.toBeNull();
+  describe("the database settlements run in every pass", () => {
+    const run = async (
+      rpc: (fn: string) => Promise<{ data: unknown; error: { message: string } | null }>,
+    ) => {
+      process.env.REPORT_NOTIFY_SECRET = SECRET;
+      const { deps } = makeDeps({}, { settle: { rpc: rpc as never } });
+      const res = await handleMaintenance(req(SECRET), async () => deps);
+      return { status: res.status, body: await res.json() };
+    };
+
+    it("settles the closed season cohorts and last weeks' challenge rewards, and reports the counts", async () => {
+      const calls: string[] = [];
+      const { status, body } = await run(async (fn) => {
+        calls.push(fn);
+        return { data: fn === "resolve_closed_season_cohorts" ? 3 : 7, error: null };
+      });
+      expect(status).toBe(200);
+      expect(calls).toEqual(["resolve_closed_season_cohorts", "settle_closed_weekly_challenges"]);
+      expect(body).toMatchObject({ ok: true, seasonsSettled: 3, challengesPaid: 7 });
+    });
+
+    it("a refused settlement is a failure of the pass, not a quiet zero, and the other still runs", async () => {
+      const { status, body } = await run(async (fn) =>
+        fn === "resolve_closed_season_cohorts"
+          ? { data: null, error: { message: "permission denied" } }
+          : { data: 2, error: null },
+      );
+      expect(status).toBe(500);
+      expect(body).toMatchObject({
+        ok: false,
+        failures: ["season-cohorts"],
+        seasonsSettled: null,
+        challengesPaid: 2,
+      });
     });
   });
 

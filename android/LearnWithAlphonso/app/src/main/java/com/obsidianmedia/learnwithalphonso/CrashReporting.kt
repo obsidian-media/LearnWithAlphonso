@@ -50,6 +50,16 @@ object CrashReporting {
         options.beforeBreadcrumb = SentryOptions.BeforeBreadcrumbCallback { crumb, _ -> if (FirstRunDevice.isBlocked) null else scrub(crumb) }
     }
 
+    /**
+     * A handled failure worth seeing (the push registration that never completes): sent as a non-fatal event with the
+     * stage as a tag. Same rules as a crash: release builds only, never on an Under 13 device, scrubbed before sending
+     * ([scrub]). Never throws.
+     */
+    fun captureNonFatal(stage: String, error: Throwable) {
+        if (BuildConfig.DEBUG || FirstRunDevice.isBlocked) return
+        runCatching { Sentry.captureException(error) { scope -> scope.setTag("stage", stage) } }
+    }
+
     /** Under 13 was just chosen: close the client so nothing queued is sent. */
     fun stop() {
         runCatching { Sentry.close() }

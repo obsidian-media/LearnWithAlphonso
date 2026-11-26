@@ -3450,6 +3450,10 @@ export type Database = {
       _lock_buddy_users: { Args: { _x: string; _y: string }; Returns: undefined };
       _my_team_id: { Args: Record<PropertyKey, never>; Returns: string };
       _new_join_code: { Args: Record<PropertyKey, never>; Returns: string };
+      _pay_weekly_challenge: {
+        Args: { _language: string; _template_id: string; _user_id: string; _week_start: string };
+        Returns: boolean;
+      };
       _random_team_name: { Args: Record<PropertyKey, never>; Returns: string };
       _reset_failing_public_names: {
         Args: { _approved_names: number; _approved_teams: number };
@@ -4074,6 +4078,8 @@ export type Database = {
           reason: string;
         }[];
       };
+      resolve_closed_season_cohorts: { Args: Record<PropertyKey, never>; Returns: number };
+      resolve_season_cohort: { Args: { _cohort_id: string }; Returns: boolean };
       restore_hearts_if_due: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -4118,6 +4124,7 @@ export type Database = {
       set_cefr_level: { Args: { _language: string; _level: string }; Returns: undefined };
       set_learner_time_zone: { Args: { _time_zone: string; _user_id: string }; Returns: string };
       set_my_time_zone: { Args: { _time_zone: string }; Returns: string };
+      settle_closed_weekly_challenges: { Args: Record<PropertyKey, never>; Returns: number };
       settle_lesson_hearts: {
         Args: {
           _enforce: boolean;

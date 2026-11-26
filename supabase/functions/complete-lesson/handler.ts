@@ -55,7 +55,7 @@ import { AiConsentReadError, hasAiConsentOrThrow } from "../_shared/ai-consent.t
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 import { makeTranslateCostLogger } from "../_shared/ai-cost-log.ts";
 import { OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS, recordOpsEvent } from "../_shared/ops-events.ts";
-import { recordLessonProfileData } from "../_shared/profile-data.ts";
+import { lessonProfilePayload } from "../_shared/profile-data.ts";
 import { makeTranslateQuotaCheck, proLookupWith } from "../_shared/ai-quota.ts";
 
 const SRC = "edge:complete-lesson";
@@ -790,6 +790,12 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       total: bestTotal,
       best_xp: bestXp,
       day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
+      // Booked in the same transaction as the lesson (it used to be two later calls whose failures were ignored).
+      profile: lessonProfilePayload({
+        sessionIssuedAtMs: sessionIssuedAt,
+        nowMs: now.getTime(),
+        graded,
+      }),
     },
     _missed_question_ids: missedQuestionIds,
     _activity_events: activityEvents,
@@ -837,13 +843,6 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     if (slotTaken) await deps.releaseCompletionSlot(admin, userId, slotAtIso);
     return jsonResponse({ error: "Could not save lesson completion; retry" }, 503);
   }
-
-  // Profile data: the lesson's time and each answer's result by this server's own grading. Never fails the save.
-  await recordLessonProfileData(admin, userId, {
-    sessionIssuedAtMs: sessionIssuedAt,
-    nowMs: now.getTime(),
-    graded,
-  });
 
   const settled = await settleLessonHearts(
     deps,
