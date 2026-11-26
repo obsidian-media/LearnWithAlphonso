@@ -283,6 +283,6 @@ describe("practice-call memory is free for everyone", () => {
       response: Response.json({ error: "ai-consent-required" }, { status: 403 }),
     });
     expect((await call({ callId: CALL, messages: msgs })).status).toBe(403);
-    expect(h.rpcs.find((r) => r.fn === "remember_call_recap")).toBeUndefined();
+    expect(h.rpcs.find((r) => r.fn === "finish_call_recap")).toBeUndefined();
   });
 });

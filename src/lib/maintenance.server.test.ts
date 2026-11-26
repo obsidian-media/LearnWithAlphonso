@@ -532,6 +532,9 @@ describe("handleMaintenance", () => {
       expect(res.status).toBe(500);
       expect(body.failures).toEqual(["trial-reminders"]);
       expect(body.erasures).not.toBeNull();
+    });
+  });
+
   describe("the database settlements run in every pass", () => {
     const run = async (
       rpc: (fn: string) => Promise<{ data: unknown; error: { message: string } | null }>,
