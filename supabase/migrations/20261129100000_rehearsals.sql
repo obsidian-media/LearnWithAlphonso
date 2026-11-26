@@ -13,7 +13,8 @@
 -- Runs are ordinary practice_calls rows with kind 'rehearsal' and item_key '<rehearsal id>:<stage>', so stars, recap
 -- and memory work unchanged. The kind CHECKs on practice_calls and practice_stars are widened to allow it.
 --
--- Clients may SELECT their own rows, and DELETE their own rehearsal. Every write goes through the server.
+-- Clients may only SELECT their own rows. Every write, deleting a rehearsal included, goes through the server
+-- (/api/rehearsal), so a client can never remove rows by itself or touch the free-rehearsal marker.
 --
 -- Rollback: DROP TABLE public.rehearsal_runs; DROP TABLE public.rehearsals; DROP TABLE public.rehearsal_free_used;
 --           DROP FUNCTION public.rehearsal_text_array_ok(text[]);
@@ -56,10 +57,8 @@ CREATE UNIQUE INDEX rehearsals_one_active_idx ON public.rehearsals (user_id, cou
 ALTER TABLE public.rehearsals ENABLE ROW LEVEL SECURITY;
 CREATE POLICY rehearsals_select_own ON public.rehearsals
   FOR SELECT TO authenticated USING ((SELECT auth.uid()) = user_id);
-CREATE POLICY rehearsals_delete_own ON public.rehearsals
-  FOR DELETE TO authenticated USING ((SELECT auth.uid()) = user_id);
 REVOKE ALL ON public.rehearsals FROM PUBLIC, anon, authenticated;
-GRANT SELECT, DELETE ON public.rehearsals TO authenticated;
+GRANT SELECT ON public.rehearsals TO authenticated;
 GRANT ALL ON public.rehearsals TO service_role;
 
 CREATE TABLE public.rehearsal_runs (

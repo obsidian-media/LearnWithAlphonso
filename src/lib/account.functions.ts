@@ -43,7 +43,7 @@ export const USER_ID_EXPORT_TABLES = [
   // Practice stars and each call's server-held tally (20261107032021); own-row SELECT.
   "practice_calls",
   "practice_stars",
-  // Rehearsals (20261128220000): the learner's own plan, what each run taught the tutor, and the one-free-rehearsal marker.
+  // Rehearsals (20261129100000): the learner's own plan, what each run taught the tutor, and the one-free-rehearsal marker.
   "rehearsals",
   "rehearsal_runs",
   "rehearsal_free_used",

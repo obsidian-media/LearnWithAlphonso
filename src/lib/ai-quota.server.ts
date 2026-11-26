@@ -55,7 +55,7 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   // conversation turns (chat) a learner practises with. 5 a minute. 20261119100000_call_recap_memory.sql.
   recap: 30,
   // The one short call that writes a rehearsal's brief (/api/rehearsal create and adjust): 5 a day and 5 a minute, its
-  // own budget so it never spends conversation turns. 20261128220000_rehearsals.sql.
+  // own budget so it never spends conversation turns. 20261129100000_rehearsals.sql.
   rehearsal_brief: 5,
 };
 

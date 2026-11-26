@@ -112,3 +112,38 @@ export function validateIntake(raw: {
     value: { course: raw.course, eventKind: raw.eventKind, eventDate, counterpart, worries },
   };
 }
+
+// ---------------------------------------------------------------- what the screens say (the app's UI is English)
+
+export const EVENT_KIND_LABELS: Record<EventKind, string> = {
+  interview: "Job interview",
+  meeting: "Work meeting",
+  presentation: "Presentation",
+  appointment: "Appointment",
+  housing: "Landlord or housing",
+  first_day: "First day at work",
+  other: "Something else",
+};
+
+/** The example in the "Who will you be talking to?" field, per kind. */
+export const COUNTERPART_PLACEHOLDERS: Record<EventKind, string> = {
+  interview: "e.g. a hiring manager at a hospital",
+  meeting: "e.g. my team lead and two colleagues",
+  presentation: "e.g. a small group of coworkers",
+  appointment: "e.g. a receptionist at a bank",
+  housing: "e.g. a landlord showing a flat",
+  first_day: "e.g. my new manager and the team",
+  other: "e.g. the person I need to speak to",
+};
+
+export const STAGE_LABELS: Record<Stage, string> = {
+  warmup: "Warm-up",
+  conversation: "The real conversation",
+  hard_moments: "The hard moments",
+};
+
+export const STAGE_BLURBS: Record<Stage, string> = {
+  warmup: "The key phrases, in short exchanges.",
+  conversation: "The whole conversation, start to finish.",
+  hard_moments: "The tough question, a misunderstanding, being interrupted.",
+};

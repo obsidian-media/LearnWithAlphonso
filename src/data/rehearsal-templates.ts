@@ -184,3 +184,27 @@ const ES: CourseTemplates = {
 };
 
 export const REHEARSAL_TEMPLATES: Record<Course, CourseTemplates> = { en: EN, fr: FR, es: ES };
+
+/**
+ * The fixed first line the call screen shows before the learner speaks, per course and stage. It is a prompt to the
+ * learner, written by us (not the model, and never sent to it): the partner answers once the learner has started.
+ */
+export const REHEARSAL_OPENERS: Record<Course, Record<Stage, string>> = {
+  en: {
+    warmup: "Let's warm up. Say hello and tell me what you are getting ready for.",
+    conversation: "Start whenever you are ready. Greet me the way you would on the day.",
+    hard_moments:
+      "Let's practise the tricky moments. Start with a greeting and I will take it from there.",
+  },
+  fr: {
+    warmup: "Échauffons-nous. Dites bonjour et expliquez-moi pour quoi vous vous préparez.",
+    conversation: "Commencez quand vous voulez. Saluez-moi comme vous le feriez le jour J.",
+    hard_moments:
+      "Travaillons les moments délicats. Commencez par une salutation, je m'occupe du reste.",
+  },
+  es: {
+    warmup: "Vamos a calentar. Salude y cuénteme para qué se está preparando.",
+    conversation: "Empiece cuando quiera. Salúdeme como lo haría el día de la cita.",
+    hard_moments: "Practiquemos los momentos difíciles. Empiece con un saludo y yo sigo.",
+  },
+};

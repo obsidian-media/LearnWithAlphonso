@@ -1,4 +1,5 @@
 import { postChat } from "../../lib/chat-request";
+import { SCENARIO_SOURCE, chatRequestBody, type CallSource } from "../../lib/call-source";
 import { track } from "@/lib/analytics";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -112,17 +113,24 @@ type Msg = {
   verdict?: ReturnType<typeof parseVerdict>;
 };
 
-function ConverseChatPage({
+export function ConverseChatPage({
   scenario,
   course,
   mode,
   onRetry,
+  source = SCENARIO_SOURCE,
+  backTo = "/converse",
 }: {
   scenario: LocalizedScenario;
   course: Course;
   mode: PracticeModeSearch["mode"];
   onRetry: () => void;
+  /** Default: the scenario's own prompt. A rehearsal run names its rehearsal and stage instead. */
+  source?: CallSource;
+  /** Where Back, Finish with no reply, and the result's forward button go. */
+  backTo?: "/converse" | "/rehearse";
 }) {
+  const isRehearsal = source.kind === "rehearsal";
   const consent = useAiConsent();
   const navigate = useNavigate();
   // Practice stars: every reply of this call carries its id to /api/chat, which records the judged reply; hanging
@@ -131,8 +139,9 @@ function ConverseChatPage({
   const [unscored, setUnscored] = useState(false);
   const [startedAt] = useState(() => Date.now());
   useEffect(() => {
-    void track("practice_call_started", { scenario_id: scenario.id });
-  }, [scenario.id]);
+    // A rehearsal's telemetry is counts only and is added with the rest of the feature, not per call here.
+    if (!isRehearsal) void track("practice_call_started", { scenario_id: scenario.id });
+  }, [scenario.id, isRehearsal]);
   const [ending, setEnding] = useState(false);
   const [result, setResult] = useState<{ result: Result; seconds: number } | null>(null);
   const [messages, setMessages] = useState<Msg[]>([
@@ -253,15 +262,18 @@ function ConverseChatPage({
       setSending(true);
       try {
         const resp = await postChat(
-          {
+          chatRequestBody({
+            source,
             systemPrompt: scenario.systemPrompt,
             cefrLevel,
             course,
             callId,
-            // Only role/content -- confidence is this app's own UI
-            // metadata, not part of the chat wire format.
-            messages: next.map(({ role, content }) => ({ role, content })),
-          },
+            // Only role/content -- confidence is this app's own UI metadata, not part of the chat wire format. A
+            // rehearsal's fixed opening line is a prompt to the learner, not something the partner said.
+            messages: next
+              .filter((m) => !(isRehearsal && m.opener))
+              .map(({ role, content }) => ({ role, content })),
+          }),
           await authHeaders(),
         );
         if (!resp.ok) {
@@ -276,11 +288,13 @@ function ConverseChatPage({
           throw new Error(
             resp.status === 429
               ? t || "Daily limit reached — try again tomorrow."
-              : resp.status === 402
-                ? "AI credits exhausted. Add credits to keep chatting."
-                : resp.status === 502
-                  ? "Your partner didn't answer. Try saying it again."
-                  : t || "Something went wrong.",
+              : resp.status === 402 && isRehearsal
+                ? "You have used all the runs of your free rehearsal. More rehearsals are part of Alphonso Pro."
+                : resp.status === 402
+                  ? "AI credits exhausted. Add credits to keep chatting."
+                  : resp.status === 502
+                    ? "Your partner didn't answer. Try saying it again."
+                    : t || "Something went wrong.",
           );
         }
         const data = (await resp.json()) as { content?: string; verdict?: unknown };
@@ -296,7 +310,18 @@ function ConverseChatPage({
         setSending(false);
       }
     },
-    [messages, scenario.systemPrompt, cefrLevel, course, callId, sending, speak, consent],
+    [
+      messages,
+      scenario.systemPrompt,
+      cefrLevel,
+      course,
+      callId,
+      sending,
+      speak,
+      consent,
+      source,
+      isRehearsal,
+    ],
   );
 
   // The capture flow lives in useSpeechCapture so the speaking question type
@@ -366,14 +391,14 @@ function ConverseChatPage({
     messages: messages.map(({ role, content }) => ({ role, content })),
     course,
     cefrLevel: cefrLevel ?? undefined,
-    scene: scenario.id,
+    scene: isRehearsal ? undefined : scenario.id,
   });
   /** Hang up or finish: with no reply there is nothing to score, so straight back to Practice. */
   const endCall = useCallback(async () => {
     if (ending) return;
     skipReply();
     if (learnerReplies === 0) {
-      void navigate({ to: "/converse" });
+      void navigate({ to: backTo });
       return;
     }
     setEnding(true);
@@ -384,9 +409,20 @@ function ConverseChatPage({
       setUnscored(true);
       return;
     }
-    void track("practice_call_completed", { scenario_id: scenario.id, stars: scored.stars });
+    if (!isRehearsal)
+      void track("practice_call_completed", { scenario_id: scenario.id, stars: scored.stars });
     setResult({ result: scored, seconds: Math.round((Date.now() - startedAt) / 1000) });
-  }, [ending, learnerReplies, navigate, callId, startedAt, scenario.id, skipReply]);
+  }, [
+    ending,
+    learnerReplies,
+    navigate,
+    callId,
+    startedAt,
+    scenario.id,
+    skipReply,
+    backTo,
+    isRehearsal,
+  ]);
 
   const hint = (
     <div className="px-5">
@@ -552,7 +588,7 @@ function ConverseChatPage({
   const classicHeader = (
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ds-line bg-ds-card/90 px-5 py-3.5 backdrop-blur-md">
       <Link
-        to="/converse"
+        to={backTo}
         aria-label="Back"
         className="grid size-9 place-items-center rounded-full border border-ds-line bg-ds-card text-ds-ink-soft transition-colors hover:text-ds-ink"
       >
@@ -647,12 +683,12 @@ function ConverseChatPage({
           recap={recap}
           result={result.result}
           course={course}
-          room={roomUrl(scenario.id)}
+          room={roomUrl(isRehearsal ? "room-light" : scenario.id)}
           seconds={result.seconds}
           slip={firstSlip(messages)}
           campaign={null}
           onRetry={onRetry}
-          onForward={() => void navigate({ to: "/converse" })}
+          onForward={() => void navigate({ to: backTo })}
         />
       </LessonFrame>
     );
@@ -673,7 +709,7 @@ function ConverseChatPage({
         <PracticeCall
           title={scenario.title}
           heading={`Call: ${scenario.title}`}
-          scenarioId={scenario.id}
+          scenarioId={isRehearsal ? null : scenario.id}
           avatar={{
             phase: avatarPhase,
             replyText: spoken,
@@ -709,7 +745,7 @@ function ConverseChatPage({
           ttsOn={ttsOn}
           onToggleTts={() => setTtsOn((v) => !v)}
           error={error ?? captureError}
-          endTo="/converse"
+          endTo={backTo}
           onEnd={() => void endCall()}
           messages={messages}
           reducedMotion={reducedMotion}

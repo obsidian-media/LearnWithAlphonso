@@ -9,11 +9,14 @@ import {
   parseBrief,
   type RehearsalBrief,
 } from "./rehearsal-brief";
+import type { Rehearsal, RehearsalSummary } from "./rehearsal-api";
 import type { EventKind, Intake } from "./rehearsal-rules";
+
+export type { Rehearsal, RehearsalSummary } from "./rehearsal-api";
 
 /**
  * The server half of Rehearsals: reading a learner's rehearsals, and writing a brief. The writes that must be atomic
- * (create with the free marker, adjust, cancel) are SECURITY DEFINER functions in 20261128220000_rehearsals.sql.
+ * (create with the free marker, adjust, cancel) are SECURITY DEFINER functions in 20261129100000_rehearsals.sql.
  * `db` is the service-role client, typed loosely because the new tables are not in types.ts until it is regenerated.
  */
 export type Db = SupabaseClient;
@@ -34,36 +37,6 @@ export type RehearsalRow = {
   created_at: string;
   closed_at: string | null;
 };
-
-/** What the clients receive: the learner's own rehearsal, camel case. */
-export type Rehearsal = {
-  id: string;
-  course: Course;
-  eventKind: EventKind;
-  eventDate: string | null;
-  counterpart: string;
-  worries: string | null;
-  brief: RehearsalBrief;
-  status: RehearsalRow["status"];
-  free: boolean;
-  outcome: unknown;
-  createdAt: string;
-  closedAt: string | null;
-};
-
-/** A closed rehearsal in the history list: no brief, no words of the learner's. */
-export type RehearsalSummary = Pick<
-  Rehearsal,
-  | "id"
-  | "course"
-  | "eventKind"
-  | "eventDate"
-  | "status"
-  | "free"
-  | "outcome"
-  | "createdAt"
-  | "closedAt"
->;
 
 export function toRehearsal(row: RehearsalRow): Rehearsal {
   return {

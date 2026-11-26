@@ -5,14 +5,14 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { checkNewTableGrants } from "./migration-grants";
 
 /**
- * The Rehearsals tables (20261128220000_rehearsals.sql), EXECUTED in a real Postgres (PGlite) as seeded users: the
+ * The Rehearsals tables (20261129100000_rehearsals.sql), EXECUTED in a real Postgres (PGlite) as seeded users: the
  * cascade on account delete, that the free-used marker outlives the rehearsal, that clients cannot write, the call
  * kind and the array caps.
  */
 const read = (file: string) =>
   readFileSync(path.join(process.cwd(), "supabase/migrations", file), "utf8");
 const PRACTICE_STARS = read("20261107032021_practice_stars.sql");
-const MIGRATION = read("20261128220000_rehearsals.sql");
+const MIGRATION = read("20261129100000_rehearsals.sql");
 
 const A = "00000000-0000-4000-8000-0000000000a1";
 const B = "00000000-0000-4000-8000-0000000000b2";
@@ -79,7 +79,7 @@ describe("rows go with the account, the free marker goes only with the account",
         `INSERT INTO public.rehearsal_runs (rehearsal_id, user_id, stage) VALUES ('${R1}', '${A}', 'conversation')`,
       ),
     );
-    await asUser(A, () => db.query(`DELETE FROM public.rehearsals WHERE id = '${R1}'`));
+    await server(() => db.query(`DELETE FROM public.rehearsals WHERE id = '${R1}'`));
     expect(await n(`SELECT count(*)::text n FROM public.rehearsals`)).toBe(0);
     expect(await n(`SELECT count(*)::text n FROM public.rehearsal_runs`)).toBe(0); // runs go with it
     expect(await n(`SELECT count(*)::text n FROM public.rehearsal_free_used`)).toBe(1);
@@ -139,8 +139,10 @@ describe("what a learner can touch", () => {
     );
   });
 
-  it("cannot delete someone else's rehearsal", async () => {
-    await asUser(C, () => db.query(`DELETE FROM public.rehearsals WHERE id = '${R1}'`));
+  it("cannot delete a rehearsal, its own included: deleting goes through the server", async () => {
+    await expect(
+      asUser(A, () => db.query(`DELETE FROM public.rehearsals WHERE id = '${R1}'`)),
+    ).rejects.toThrow(/permission denied/);
     expect(await n(`SELECT count(*)::text n FROM public.rehearsals WHERE id = '${R1}'`)).toBe(1);
   });
 });
@@ -255,7 +257,7 @@ describe("the rehearsal RPCs", () => {
   });
 
   it("deleting the free rehearsal, then creating a free one again, is refused (Review focus 3)", async () => {
-    await asUser(U, () => db.query(`DELETE FROM public.rehearsals WHERE user_id = '${U}'`));
+    await server(() => db.query(`DELETE FROM public.rehearsals WHERE user_id = '${U}'`));
     expect(await n(`SELECT count(*)::text n FROM public.rehearsals WHERE user_id = '${U}'`)).toBe(
       0,
     );
