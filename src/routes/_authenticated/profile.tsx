@@ -185,9 +185,7 @@ function ProfilePage() {
                       }}
                     />
                     <HectorNoticed o={o} pro={pro.state === "pro"} />
-                    {pro.state !== "loading" && pro.state !== "error" && (
-                      <MemoryCard o={o} pro={pro.state === "pro"} />
-                    )}
+                    <MemoryCard />
                     <OverviewRows onSettings={goToSettings} />
                   </>
                 )}

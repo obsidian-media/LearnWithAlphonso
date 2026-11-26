@@ -26,7 +26,9 @@ import { timedRoute } from "@/lib/stage-timer.server";
  * failure releases the claim and answers `{ recap: null, retry: true }` so the client can offer "Try again".
  *
  * The call's course and ownership come from the server's own practice_calls row, never from the request. The recap is
- * saved to the learner's memory (tutor_memory) only when they are Pro, decided here from RevenueCat.
+ * saved to the learner's memory (tutor_memory) for every learner (free for everyone, owner decision 2026-11-26),
+ * behind the same consent, switch and quota gates as the recap itself. Hector's memory stays a Pro feature
+ * (hector-call-end.ts, hector-respond.ts).
  */
 const NONE = () => noStoreJson({ recap: null });
 /** The attempt failed in a way a second try may fix (model, memory write, a database hiccup): the client offers "Try again". */
@@ -91,8 +93,7 @@ export const Route = createFileRoute("/api/call-recap")({
             }
           };
           const attempt = async () => {
-            const { generateCallRecap, issueRecapToken, proStateFor } =
-              await import("@/lib/call-recap.server");
+            const { generateCallRecap, issueRecapToken } = await import("@/lib/call-recap.server");
             const cefr =
               typeof body.cefrLevel === "string" ? body.cefrLevel.slice(0, 4) : undefined;
             const scene = typeof body.scene === "string" ? body.scene.slice(0, 120) : undefined;
@@ -125,8 +126,7 @@ export const Route = createFileRoute("/api/call-recap")({
             };
             const nothingToShow = kept.corrections.length === 0 && !kept.phrase;
 
-            // Topic labels become weakness events (what native recorded through analyze-weaknesses); Pro also keeps memory.
-            const pro = (await proStateFor(userId)) === "active";
+            // Topic labels become weakness events (what native recorded through analyze-weaknesses); memory lines are kept too.
             const topics = [...new Set(kept.corrections.map((c) => c.topic))];
             const memo = await timer.time("memory", async () =>
               admin.rpc("finish_call_recap", {
@@ -139,7 +139,7 @@ export const Route = createFileRoute("/api/call-recap")({
                   // Only the corrected form is kept: never the learner's own words (they can hold names or details).
                   text: c.fixed,
                 })),
-                _save: pro,
+                _save: true,
               }),
             );
             if (memo.error) {
@@ -169,7 +169,7 @@ export const Route = createFileRoute("/api/call-recap")({
                   ? { text: kept.phrase.text, meaning: kept.phrase.meaning }
                   : null,
                 reviewToken: token,
-                saved: pro && !memo.error,
+                saved: !memo.error,
                 reviewCount: kept.corrections.length + (kept.phrase ? 1 : 0),
               },
             });

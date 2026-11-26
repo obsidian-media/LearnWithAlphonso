@@ -6,16 +6,17 @@ import { topicLabel } from "@/lib/call-recap";
 import { saveLearnerProfileFor } from "@/lib/learner-profile.server";
 
 /**
- * What Alphonso remembers (Pro). Every read and write is scoped to the user id from the verified token.
+ * What Alphonso remembers (free for every signed-in learner, owner decision 2026-11-26). Every read and write is scoped
+ * to the user id from the verified token.
  *
- *   GET                       the learner's memory lines and their goals. PRO ONLY, checked here from RevenueCat:
- *                             403 not-entitled for anyone else, 503 when the entitlement cannot be read.
+ *   GET                       the learner's memory lines and their goals.
  *   DELETE { id }             removes one line, and with it the matching weakness events and review items.
  *   DELETE { events: true }   removes only the learner's weakness events (topic labels); any signed-in learner.
  *   DELETE { all: true }      forget everything: every line, every weakness event, every weakness review item and
  *                             recap review item (one transaction), then the goals on this page.
  *
- * Deleting is open to every signed-in learner, Pro or not: a lapsed subscriber can always remove what was kept.
+ * Reading and deleting are open to every signed-in learner: what Alphonso kept is the learner's to read and remove.
+ * (Hector's memory is a separate Pro feature; this page never gates on it.)
  * Lessons, stars, streak, XP and the learner's own saved words are never touched.
  */
 type Admin = (typeof import("@/integrations/supabase/client.server"))["supabaseAdmin"];
@@ -48,10 +49,6 @@ export const Route = createFileRoute("/api/tutor-memory")({
         const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
         const auth = await authenticate(request, admin);
         if (typeof auth !== "string") return auth;
-        const { proStateFor } = await import("@/lib/call-recap.server");
-        const pro = await proStateFor(auth);
-        if (pro === "unavailable") return json({ error: "entitlement-unavailable" }, 503);
-        if (pro !== "active") return json({ error: "not-entitled" }, 403);
 
         const [rows, user] = await Promise.all([
           (admin as unknown as import("@supabase/supabase-js").SupabaseClient)

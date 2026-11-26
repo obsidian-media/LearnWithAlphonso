@@ -245,36 +245,44 @@ describe("the recap", () => {
       phrase: { text: "Hola", meaning: "Hello" },
       reviewToken: "tok",
       reviewCount: 2,
-      saved: false,
+      saved: true,
     });
     expect(JSON.stringify(body)).not.toContain('"wrong"');
   });
 });
 
-describe("Pro gating is decided on the server", () => {
+describe("practice-call memory is free for everyone", () => {
   const memoryCall = () => h.rpcs.find((r) => r.fn === "finish_call_recap")!;
-  it("a free learner: events recorded, memory NOT saved", async () => {
+  it("a free learner: events recorded and memory saved", async () => {
     h.pro.mockResolvedValue("inactive");
-    await call({ callId: CALL, messages: msgs, pro: true });
-    expect(memoryCall().args).toMatchObject({ _save: false, _topics: ["ser-estar"] });
+    const body = (await (await call({ callId: CALL, messages: msgs })).json()) as {
+      recap: { saved: boolean };
+    };
+    expect(memoryCall().args).toMatchObject({
+      _save: true,
+      _topics: ["ser-estar"],
+      _user_id: "u1",
+      _course: "es",
+    });
+    expect(body.recap.saved).toBe(true);
   });
-  it("an unreadable entitlement is not Pro", async () => {
+  it("saving never depends on the entitlement: unreadable or never asked", async () => {
     h.pro.mockResolvedValue("unavailable");
-    await call({ callId: CALL, messages: msgs });
-    expect(memoryCall().args._save).toBe(false);
+    await call({ callId: CALL, messages: msgs, pro: false });
+    expect(memoryCall().args._save).toBe(true);
+    expect(h.pro).not.toHaveBeenCalled();
   });
   it("memory keeps only the corrected form, never the learner's own words", async () => {
-    h.pro.mockResolvedValue("active");
     await call({ callId: CALL, messages: msgs });
     expect(memoryCall().args._mistakes).toEqual([{ topic: "ser-estar", text: "Estoy cansado" }]);
     expect(JSON.stringify(memoryCall().args)).not.toContain("Soy cansado");
   });
-  it("a Pro learner: memory saved", async () => {
-    h.pro.mockResolvedValue("active");
-    const body = (await (await call({ callId: CALL, messages: msgs })).json()) as {
-      recap: { saved: boolean };
-    };
-    expect(memoryCall().args).toMatchObject({ _save: true, _user_id: "u1", _course: "es" });
-    expect(body.recap.saved).toBe(true);
+  it("the consent, switch and quota gates still stop it before anything is saved", async () => {
+    h.authorize.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "ai-consent-required" }, { status: 403 }),
+    });
+    expect((await call({ callId: CALL, messages: msgs })).status).toBe(403);
+    expect(h.rpcs.find((r) => r.fn === "remember_call_recap")).toBeUndefined();
   });
 });

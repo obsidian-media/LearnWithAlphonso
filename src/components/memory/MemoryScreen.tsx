@@ -12,9 +12,9 @@ import {
 } from "@/lib/tutor-memory-view";
 
 /**
- * What Alphonso remembers (approved mock: r15-recap, screens 2, 2b and 3). Pro learners read, fix and delete every
- * line; a free learner sees the same page locked, built only from their own weak spots. Presentation only: the
- * server decides who is Pro and what is deleted (src/routes/api/tutor-memory.ts).
+ * What Alphonso remembers (approved mock: r15-recap, screens 2, 2b and 3). Every learner reads, fixes and deletes
+ * every line (free since 2026-11-26). The locked view below is only for a server that still answers not-entitled (an
+ * older deployment); the server decides what is deleted (src/routes/api/tutor-memory.ts).
  */
 export type MemoryView =
   | { kind: "loading" }
@@ -249,7 +249,7 @@ export function MemoryScreen({ view, actions }: { view: MemoryView; actions: Mem
         <>
           <Hero
             title="What Alphonso remembers"
-            line="With Pro, Alphonso keeps notes between calls and you can read, fix and delete every line."
+            line="Alphonso keeps notes between calls and you can read, fix and delete every line."
           />
           <h2 className="mt-2 ds-type-headline font-extrabold text-ds-ink">He could remember</h2>
           <ul className="grid gap-[7px]" data-memory-locked="">

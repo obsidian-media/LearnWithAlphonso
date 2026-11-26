@@ -177,7 +177,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -
                     DsDivider()
                     RowButton("Terms of Use") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") }
                     DsDivider()
-                    RowButton("What Alphonso remembers", subtitle = "Pro. Read, fix and delete his notes.", onClick = onOpenMemory)
+                    RowButton("What Alphonso remembers", subtitle = "Read, fix and delete his notes.", onClick = onOpenMemory)
                     DsDivider()
                     RowButton(SupportCopy.ENTRY_TITLE, subtitle = SupportCopy.ENTRY_SUBTITLE, onClick = onOpenHelp)
                     DsDivider()

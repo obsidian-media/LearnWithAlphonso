@@ -93,7 +93,7 @@ describe("the recap takes the slip's slot and gives it back", () => {
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(c.onRetry).toHaveBeenCalledTimes(1);
   });
-  it("no 'saved' line for a free learner", () => {
+  it("no 'saved' line when the notes could not be saved", () => {
     show(ctl({ recap: { ...recapData, saved: false } }));
     expect(screen.queryByText(/What Alphonso remembers/)).toBeNull();
   });

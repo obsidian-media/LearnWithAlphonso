@@ -285,7 +285,10 @@ describe("Terms route: Alphonso Pro", () => {
     expect(text).toMatch(/a year on the yearly plan/);
     expect(text).toMatch(/Hector, the AI voice tutor/);
     expect(text).toMatch(/unlimited hearts/);
-    expect(text).toMatch(/What Alphonso remembers/);
+    // Practice-call memory is free (2026-11-26): it is listed with what stays free, not with what Pro gives.
+    expect(text).toMatch(
+      /What Alphonso remembers \(short notes kept from your practice calls\) stay free/,
+    );
     expect(text).toMatch(/larger monthly allowance/);
     expect(text).not.toMatch(/Everything else in the app is free/);
     expect(text).not.toMatch(/one free trial per person/);

@@ -8,7 +8,7 @@ export type RecapView = {
   corrections: { said: string; fixed: string; why: string; topic: string; label: string | null }[];
   phrase: { text: string; meaning: string } | null;
   reviewToken: string | null;
-  /** True when this recap was kept in What Alphonso remembers (a Pro learner). */
+  /** True when this recap was kept in What Alphonso remembers (every learner; false only if the save failed). */
   saved: boolean;
   reviewCount: number;
 };

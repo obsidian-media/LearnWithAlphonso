@@ -98,29 +98,25 @@ beforeEach(() => {
   ];
 });
 
-describe("GET is Pro only, on the server", () => {
-  it("403 for a learner who is not Pro, and nothing is read", async () => {
+describe("GET is open to every signed-in learner", () => {
+  it("200 for a learner who is not Pro, with their lines, labels and goals", async () => {
     h.pro.mockResolvedValue("inactive");
     const res = await handlers.GET!(req("GET"));
-    expect(res.status).toBe(403);
-    expect(await res.json()).toEqual({ error: "not-entitled" });
-  });
-  it("503 when the entitlement cannot be read (never treated as Pro)", async () => {
-    h.pro.mockResolvedValue("unavailable");
-    expect((await handlers.GET!(req("GET"))).status).toBe(503);
-  });
-  it("401 without a session", async () => {
-    h.user = null;
-    expect((await handlers.GET!(req("GET"))).status).toBe(401);
-  });
-  it("200 for Pro with lines, labels and the goals from the account", async () => {
-    h.pro.mockResolvedValue("active");
-    const body = (await (await handlers.GET!(req("GET"))).json()) as Record<string, unknown>;
-    expect(body).toMatchObject({
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
       mistakes: [{ id: ID, label: "Ser or estar", seenCount: 4 }],
       phrases: [{ id: "p1", text: "Hola", meaning: "Hello" }],
       goals: { goal: "travel", dailyMinutes: 10, interests: ["food"] },
     });
+  });
+  it("never asks about the entitlement, so an unreadable one cannot block it", async () => {
+    h.pro.mockResolvedValue("unavailable");
+    expect((await handlers.GET!(req("GET"))).status).toBe(200);
+    expect(h.pro).not.toHaveBeenCalled();
+  });
+  it("401 without a session", async () => {
+    h.user = null;
+    expect((await handlers.GET!(req("GET"))).status).toBe(401);
   });
 });
 

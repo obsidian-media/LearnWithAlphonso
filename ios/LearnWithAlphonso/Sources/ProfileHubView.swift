@@ -131,7 +131,7 @@ extension ProfileHubView {
                     if m.hector != nil {
                         ProfileWeakAndHectorSection(model: m, showWeak: false, showHector: true, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
                     }
-                    ProfileMemoryCard(isPro: entitlementStore.isPro, topics: Array(m.weak.top.prefix(2).map(\.display)), session: session, action: { destination = .memory })
+                    ProfileMemoryCard(session: session, action: { destination = .memory })
                     ProfileRowCard(icon: .target, tint: ds.choiceTint, ink: ds.choice, title: "Edit your answers",
                                    subtitle: "Goal, level, daily time, interests", action: onEditAnswers)
                     row(.settings, title: "Settings", subtitle: "Theme and account", icon: .settings, tint: ds.rightTint, ink: ds.right)
