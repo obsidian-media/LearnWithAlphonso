@@ -207,7 +207,7 @@ describe("Hector's call", () => {
     expect(hector).not.toMatch(/\.toolbar\(\.hidden, for: \.tabBar\)/);
     expect(hector).toMatch(/if let onClose \{ onClose\(\) \} else \{ callEnded = true \}/);
     expect(hector).toMatch(
-      /conversationStore: conversationStore,\s*streakDays: streakDays,\s*onClose: onClose/,
+      /conversationStore: conversationStore,\s*streakDays: streakDays,\s*contentStore: contentStore,\s*onClose: onClose/,
     );
   });
   it("says on the call when the microphone is off or would not start, as the classic screen does", () => {

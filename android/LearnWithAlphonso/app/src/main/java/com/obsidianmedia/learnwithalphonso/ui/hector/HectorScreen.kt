@@ -3,6 +3,8 @@ package com.obsidianmedia.learnwithalphonso.ui.hector
 import androidx.compose.foundation.border
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.core.firstrun.PlacementOffer
+import com.obsidianmedia.learnwithalphonso.ui.learn.PlacementOfferCard
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
@@ -368,14 +370,14 @@ class HectorViewModel(
 }
 
 @Composable
-fun HectorTab(container: AppContainer) {
+fun HectorTab(container: AppContainer, onOpenPlacement: (Course) -> Unit = {}) {
     val entitlement by container.entitlements.state.collectAsState()
     // A purchase or restore started from the paywall: when Pro lands, Hector's welcome shows before the conversation.
     var acted by rememberSaveable { mutableStateOf(false) }
     when {
         !entitlement.isPro -> ProPaywallScreen(container, onPurchaseStarted = { acted = true })
         acted -> ProWelcomeScreen(container, onCall = { acted = false })
-        else -> HectorConversation(container)
+        else -> HectorConversation(container, onOpenPlacement)
     }
 }
 
@@ -443,7 +445,7 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
 }
 
 @Composable
-private fun HectorConversation(container: AppContainer) {
+private fun HectorConversation(container: AppContainer, onOpenPlacement: (Course) -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val playback = remember { container.newPlayback() }
     // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
@@ -458,6 +460,15 @@ private fun HectorConversation(container: AppContainer) {
     val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
     // Hanging up stops the session; "Call again" starts it again. Hector is a tab, so there is no screen to leave.
     var callEnded by rememberSaveable { mutableStateOf(false) }
+    // The placement offer after a call (PlacementOffer in the core): "some" and "confident" learners who have not taken it.
+    var offerDismissed by remember(course) { mutableStateOf(container.prefs.getBoolean(PlacementOffer.dismissKey(course.code), false)) }
+    var firstRunLevel by remember { mutableStateOf<String?>(null) }
+    var placementTaken by remember(course) { mutableStateOf(true) }
+    LaunchedEffect(callEnded, course) {
+        if (!callEnded) return@LaunchedEffect
+        firstRunLevel = runCatching { container.learnerProfileClient.fetch().answers.level }.getOrNull()
+        placementTaken = runCatching { container.progressClient.fetchPlacementTakenAt(course.code) }.fold(onSuccess = { it != null }, onFailure = { true })
+    }
     DisposableEffect(Unit) { onDispose { Speech.get(context).stop(); vm.onLeave() } }
 
     AiConsentGate(container) {
@@ -485,6 +496,15 @@ private fun HectorConversation(container: AppContainer) {
                 Column(Modifier.fillMaxSize().background(ds.surface), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text("Call ended", style = TitleType, color = ds.ink)
                     AlphonsoPrimaryButton("Call again", onClick = { callEnded = false; vm.greet() })
+                    PlacementOfferCard(
+                        PlacementOffer.style(firstRunLevel, placementTaken, offerDismissed, PlacementOffer.Surface.HECTOR_END),
+                        onStart = { onOpenPlacement(course) },
+                        onNotNow = {
+                            container.prefs.edit().putBoolean(PlacementOffer.dismissKey(course.code), true).apply()
+                            offerDismissed = true
+                        },
+                        modifier = Modifier.padding(16.dp),
+                    )
                 }
             } else {
                 PracticeCallScreen(

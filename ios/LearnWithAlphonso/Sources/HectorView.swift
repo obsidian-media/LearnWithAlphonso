@@ -15,6 +15,8 @@ struct HectorView: View {
     var onClose: (() -> Void)? = nil
     /// The learner's streak as the Learn tab shows it, for the suggestion chips ("Keep my 12-day streak").
     var streakDays: Int = 0
+    /// Lets the call-ended screen open the placement test. Nil (the lesson sheet) means no placement offer.
+    var contentStore: ContentStore? = nil
 
     /// Pro just landed: the paywall stays up for Hector's welcome before the conversation replaces it.
     @State private var showingWelcome = false
@@ -31,6 +33,7 @@ struct HectorView: View {
                         course: activeCourse.course,
                         conversationStore: conversationStore,
                         streakDays: streakDays,
+                        contentStore: contentStore,
                         onClose: onClose
                     )
                     // A course switch is a fresh Hector
@@ -61,6 +64,7 @@ private struct HectorConversationView: View {
     let course: Course
     let conversationStore: ConversationStore
     let streakDays: Int
+    let contentStore: ContentStore?
     /// Set when Hector is a sheet (from lesson complete): hanging up closes it, since the call hides its Done button.
     let onClose: (() -> Void)?
 
@@ -99,6 +103,11 @@ private struct HectorConversationView: View {
     private let replyVerdict = AvatarReplyVerdict()
     /// Hanging up stops the session; "Call again" starts it again. Hector is a tab, so there is no screen to leave.
     @State private var callEnded = false
+    /// The placement offer after a call: for "some" and "confident" learners who have not taken it (PlacementOffer).
+    @State private var firstRunLevel: String?
+    @State private var placementTaken = true
+    @State private var offerDismissed = false
+    @State private var showingPlacement = false
     /// @State, not `let`: a View struct is re-created on every render, and a
     /// `let UUID()` minted a new session id each time.
     @State private var sessionID = UUID().uuidString
@@ -401,17 +410,48 @@ private struct HectorConversationView: View {
         if let onClose { onClose() } else { callEnded = true }
     }
 
+    private var offersPlacement: Bool {
+        contentStore != nil && PlacementOffer.style(
+            level: firstRunLevel, placementTaken: placementTaken, dismissed: offerDismissed, surface: .hectorEnd) == .prominent
+    }
+
     private var callEndedView: some View {
-        DSEmptyState(
-            art: "Hector-happy", title: "Call ended",
-            actionTitle: "Call again",
-            action: {
-                callEnded = false
-                voice.appeared()
-                openerCue += 1
-            })
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VStack(spacing: AlphonsoDS.Space.s4) {
+            DSEmptyState(
+                art: "Hector-happy", title: "Call ended",
+                actionTitle: "Call again",
+                action: {
+                    callEnded = false
+                    voice.appeared()
+                    openerCue += 1
+                })
+            if offersPlacement {
+                PlacementOfferCard(
+                    onStart: { showingPlacement = true },
+                    onNotNow: {
+                        PlacementOfferLoader.dismiss(courseCode: course.translationCourseCode)
+                        offerDismissed = true
+                    })
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .task(id: course.translationCourseCode) {
+            let code = course.translationCourseCode
+            offerDismissed = PlacementOfferLoader.isDismissed(courseCode: code)
+            firstRunLevel = await PlacementOfferLoader.firstRunLevel(session: session)
+            let taken = await PlacementOfferLoader.placementTaken(session: session, courseCode: code)
+            guard !Task.isCancelled else { return }
+            placementTaken = taken
+        }
+        .fullScreenCover(isPresented: $showingPlacement) {
+            if let contentStore {
+                PlacementView(contentStore: contentStore, session: session, course: course) {
+                    showingPlacement = false
+                    placementTaken = true
+                }
+            }
+        }
     }
 
     /// The hands-free switch, with its once-per-device safety note.

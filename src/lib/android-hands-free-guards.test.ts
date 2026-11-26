@@ -320,6 +320,6 @@ describe("Practice is free and Hector stays Pro", () => {
   it("keeps Hector's own gate in front of its call", () => {
     const hector = code(HECTOR);
     expect(hector).toContain("!entitlement.isPro -> ProPaywallScreen(container");
-    expect(hector).toContain("else -> HectorConversation(container)");
+    expect(hector).toContain("else -> HectorConversation(container, onOpenPlacement)");
   });
 });

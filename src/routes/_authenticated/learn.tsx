@@ -27,6 +27,13 @@ import { learnMap, type MapUnit } from "../../lib/learn-map";
 import { lessonsInLearningOrder } from "../../lib/lesson-unlock";
 import { vocabForLesson } from "../../data/vocab";
 import { LearnMap } from "../../components/LearnMap";
+import { PlacementOfferCard } from "../../components/PlacementOffer";
+import {
+  dismissOffer,
+  isOfferDismissed,
+  placementOffer,
+  readFirstRunLevel,
+} from "../../lib/placement-offer";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -182,6 +189,25 @@ function LearnPage() {
   const buyHeartWithXp = useServerFn(buyHeartWithXpRemote);
   const placed = !hydrated || Boolean(placementTakenAt);
   const curriculum = getCourse(course).curriculum;
+  const [firstRunLevel, setFirstRunLevel] = useState<string | null>(null);
+  const [offerDismissed, setOfferDismissed] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    setOfferDismissed(isOfferDismissed(course));
+    void readFirstRunLevel().then((l) => {
+      if (alive) setFirstRunLevel(l);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [course]);
+  // `placed` is true until the progress is loaded, so the card never flashes for a learner who has placed.
+  const offerStyle = placementOffer({
+    level: firstRunLevel,
+    placementTaken: placed,
+    dismissed: offerDismissed,
+    surface: "learn",
+  });
   const outOfHearts = hydrated && hearts <= 0;
   const [showHeartsModal, setShowHeartsModal] = useState(false);
   const [dueCount, setDueCount] = useState(0);
@@ -385,6 +411,17 @@ function LearnPage() {
           ))}
         </div>
 
+        {offerStyle !== "none" && (
+          <PlacementOfferCard
+            style={offerStyle}
+            className="mb-4"
+            onNotNow={() => {
+              dismissOffer(course);
+              setOfferDismissed(true);
+            }}
+          />
+        )}
+
         {climb && (
           <LearnMap
             map={climb}
@@ -411,27 +448,6 @@ function LearnPage() {
         <div className="my-4">
           <ForYouRail course={course} dueCount={dueCount} />
         </div>
-
-        {!placed && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 rounded-2xl border border-ds-action/30 bg-ds-action/10 p-4"
-          >
-            <p className="font-display text-base font-semibold text-ds-ink">
-              Not sure where to start?
-            </p>
-            <p className="mt-1 text-xs text-ds-ink-soft/80">
-              Take a quick placement test and we&apos;ll set your CEFR level for you.
-            </p>
-            <Link
-              to="/placement"
-              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ds-brand px-4 text-xs font-semibold text-ds-card"
-            >
-              Take the placement test
-            </Link>
-          </motion.div>
-        )}
 
         <div className="mb-3 flex items-center justify-between gap-3" data-learn-units-header="">
           <div className="min-w-0">

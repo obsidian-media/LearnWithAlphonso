@@ -41,6 +41,13 @@ import { useProStatus, type ProStatus } from "../../lib/use-pro-status";
 import { useHandsFreeCapture } from "../../lib/use-hands-free";
 import { HECTOR_TUNING } from "../../lib/hands-free-loop";
 import { PracticeCall } from "../../components/PracticeCall";
+import { PlacementOfferCard } from "../../components/PlacementOffer";
+import {
+  dismissOffer,
+  isOfferDismissed,
+  placementOffer,
+  readFirstRunLevel,
+} from "../../lib/placement-offer";
 import { HECTOR_KIT } from "../../lib/avatar/layers";
 import type { AvatarMode, VoicePhase } from "../../lib/avatar/machine";
 import { useStoredAvatarPreference } from "../../lib/avatar/preference";
@@ -257,6 +264,29 @@ function HectorConversation({
   // the call never flashes up for a frame.
   const showCall = useStoredAvatarPreference();
   const reducedMotion = useReducedMotion() ?? false;
+  // After the call: the placement test is offered to learners who know "some" or are "confident" and have not taken
+  // it (not true beginners), unless they said "Not now" for this course.
+  const navigate = useNavigate();
+  const hydrated = useProgress((s) => s.hydrated);
+  const placementTakenAt = useProgress((s) => s.placementTakenAt);
+  const [firstRunLevel, setFirstRunLevel] = useState<string | null>(null);
+  const [callEnded, setCallEnded] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    void readFirstRunLevel().then((l) => {
+      if (alive) setFirstRunLevel(l);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const offersPlacement =
+    placementOffer({
+      level: firstRunLevel,
+      placementTaken: !hydrated || Boolean(placementTakenAt),
+      dismissed: isOfferDismissed(course),
+      surface: "hector-end",
+    }) === "prominent";
 
   /** Talking over Hector cuts him off, as on a call: his greeting or a reply. */
   const interrupt = skipReply;
@@ -693,6 +723,23 @@ function HectorConversation({
           ? { kind: "speaking" }
           : { kind: "idle" };
 
+  if (callEnded && offersPlacement) {
+    return (
+      <MobileFrame>
+        <div className="space-y-4 px-6 pt-10" data-hector-call-ended="">
+          <h1 className="font-display text-3xl font-extrabold text-ds-ink">Call ended</h1>
+          <PlacementOfferCard
+            style="prominent"
+            onNotNow={() => {
+              dismissOffer(course);
+              void navigate({ to: "/learn" });
+            }}
+          />
+        </div>
+      </MobileFrame>
+    );
+  }
+
   if (showCall) {
     const last = messages[messages.length - 1];
     const lastReply = [...messages].reverse().find((m) => m.role === "assistant");
@@ -745,6 +792,7 @@ function HectorConversation({
           getStream={getStream}
           error={error ?? captureError}
           endTo="/learn"
+          onEnd={offersPlacement ? () => setCallEnded(true) : undefined}
           messages={messages}
           reducedMotion={reducedMotion}
           handsFree={handsFreeCall}
