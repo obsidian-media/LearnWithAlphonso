@@ -44,6 +44,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import com.obsidianmedia.learnwithalphonso.core.firstrun.PlacementOffer
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -215,7 +217,13 @@ fun LearnScreen(
     var showFreezeShop by rememberSaveable { mutableStateOf(false) }
     fun toggleForYou(which: String) { forYouOpen = if (forYouOpen == which) "" else which }
     // Items before the unit rows: status, rail, units header, jump button, plus the ones that come and go (the climbing map is one).
-    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = state.placementTaken == false)
+    // The placement offer (PlacementOffer in the core): prominent for "some" and "confident" learners, the small card for
+    // everyone else and after "Not now", nothing once placed or while that is still unknown.
+    var offerDismissed by remember(state.course) { mutableStateOf(container.prefs.getBoolean(PlacementOffer.dismissKey(state.course.code), false)) }
+    val firstRunLevel by produceState<String?>(null) { value = runCatching { container.learnerProfileClient.fetch().answers.level }.getOrNull() }
+    val offerStyle = if (state.placementTaken == null) PlacementOffer.Style.NONE
+        else PlacementOffer.style(firstRunLevel, placementTaken = state.placementTaken == true, dismissed = offerDismissed, surface = PlacementOffer.Surface.LEARN)
+    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = offerStyle != PlacementOffer.Style.NONE)
     val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
     // No scroll on first show: the status row and the climbing map are the top of the screen. "Jump to current" is the way down.
     Column(Modifier.fillMaxSize().background(ds.surface)) {
@@ -233,6 +241,15 @@ fun LearnScreen(
             // and unkeyed items shifting index is the one way a lazy list can show a row twice.
             // The slim status row (streak with its protected mark, hearts, XP, league). The streak pill opens the freeze shop.
             item(key = "header") { StatusHeader(progress, showFreezeShop = showFreezeShop, onToggleFreezeShop = { showFreezeShop = !showFreezeShop }, onBuyStreakFreeze = vm::buyStreakFreeze) }
+            // The placement offer comes first, above the map, so it is never below the fold.
+            if (offerStyle != PlacementOffer.Style.NONE) {
+                item(key = "placement") {
+                    PlacementOfferCard(offerStyle, onStart = { onOpenPlacement(state.course) }, onNotNow = {
+                        container.prefs.edit().putBoolean(PlacementOffer.dismissKey(state.course.code), true).apply()
+                        offerDismissed = true
+                    })
+                }
+            }
             // The climbing map replaces the old hero: this level's unit as a climb, with the start sheet for the next lesson.
             // "Unit N of M" counts the units of the level on screen. Continue lesson only when the next lesson is the course-wide one.
             climb?.let { c ->
@@ -268,15 +285,6 @@ fun LearnScreen(
                         "path" -> com.obsidianmedia.learnwithalphonso.ui.path.PathCard(pathVm, onOpenRoad = onOpenPath, onBuild = onBuildPath, onOpenRef = onOpenPathRef)
                         "team" -> teamMission?.let { TeamMissionCard(it) }
                         "weekly" -> ChallengesCard(state.challenges, state.claimedChallengeIds, onClaim = vm::claimChallenge)
-                    }
-                }
-            }
-            if (state.placementTaken == false) {
-                item(key = "placement") {
-                    DsCard(spacing = AlphonsoTokens.Space.s2) {
-                        Text("Find your level", style = HeadlineType, color = ds.ink)
-                        Text("A five-minute placement test picks the right band for you. No hearts lost.", style = FootnoteType, color = ds.inkSoft)
-                        DsCompactButton("Take the placement test", { onOpenPlacement(state.course) }, primary = true)
                     }
                 }
             }

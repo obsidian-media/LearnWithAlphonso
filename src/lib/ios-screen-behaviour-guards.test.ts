@@ -74,9 +74,9 @@ describe("The placement banner waits for onboarding", () => {
   const browser = read(`${APP}/LessonBrowserView.swift`);
   const root = read(`${APP}/RootView.swift`);
   it("shows only once onboarding has settled", () => {
-    expect(browser).toContain(
-      "isVisible: onboardingSettled && !isCheckingPlacement && !placementTaken",
-    );
+    // The offer (prominent or small) is decided only once onboarding has settled and placement has been checked.
+    expect(browser).toContain("style: onboardingSettled && !isCheckingPlacement");
+    expect(browser).toContain("placementTaken: placementTaken");
   });
   it("RootView settles after checkOnboarding and resets on an account change", () => {
     expect(root).toContain("onboardingSettled: onboardingChecked && onboarding == nil");

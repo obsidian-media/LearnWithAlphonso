@@ -44,6 +44,10 @@ struct LessonBrowserView: View {
     @State private var challenges: [WeeklyChallenge] = []
     @State private var isCheckingPlacement = true
     @State private var placementTaken = false
+    /// The first-run level and whether the learner said "Not now" for this course: they decide how the placement offer
+    /// looks (PlacementOffer in the Kit). Learn shows it first, above the map.
+    @State private var firstRunLevel: String?
+    @State private var offerDismissed = false
     /// What the placement state above was last checked for (course and onboarding state), so re-appearing
     /// does not flash the banner. Finishing onboarding changes it, which re-checks placement.
     @State private var placementCheckedKey: String?
@@ -404,6 +408,18 @@ struct LessonBrowserView: View {
                     .listRowBackground(Color.clear)
                 }
 
+                // The placement offer, first on the page (not under the map): a prominent card for learners who know
+                // "some" or are "confident", the small card for everyone else (and after "Not now"). Nothing once placed.
+                PlacementBannerSection(
+                    style: onboardingSettled && !isCheckingPlacement
+                        ? PlacementOffer.style(level: firstRunLevel, placementTaken: placementTaken, dismissed: offerDismissed, surface: .learn)
+                        : .none,
+                    onStart: { showingPlacementTest = true },
+                    onNotNow: {
+                        PlacementOfferLoader.dismiss(courseCode: course.code)
+                        offerDismissed = true
+                    })
+
                 // The one map: the climbing map for the learner's unit in the band on screen (Path B). It replaces the
                 // old hero, never sits beside it. Its nodes and the start sheet open lessons through `openedLesson`.
                 if let climb = climbMap {
@@ -456,8 +472,6 @@ struct LessonBrowserView: View {
                 // account's default course only) -- mirrors learn.tsx's
                 // own persistent "Take the placement test" banner
                 // exactly. See PlacementView.swift's doc comment.
-                PlacementBannerSection(isVisible: onboardingSettled && !isCheckingPlacement && !placementTaken) { showingPlacementTest = true }
-
                 LearnUnitsHeader(selectedLevel: $selectedLevel, done: levelDoneCount, total: levelLessonCount)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
                     .listRowSeparator(.hidden)
@@ -562,6 +576,10 @@ struct LessonBrowserView: View {
                 await made.load()
             }
             .task(id: "\(course.code)-\(onboardingSettled)") { await checkPlacement() }
+            .task(id: course.code) {
+                offerDismissed = PlacementOfferLoader.isDismissed(courseCode: course.code)
+                firstRunLevel = await PlacementOfferLoader.firstRunLevel(session: session)
+            }
             .fullScreenCover(isPresented: $showingPlacementTest) {
                 PlacementView(contentStore: contentStore, session: session, course: course) {
                     showingPlacementTest = false
@@ -861,13 +879,19 @@ private struct WeeklyChallengesSection: View {
 /// that this course's placement genuinely hasn't been taken.
 private struct PlacementBannerSection: View {
     @Environment(\.alphonsoDS) private var ds
-    let isVisible: Bool
-    let onTap: () -> Void
+    let style: PlacementOffer.Style
+    let onStart: () -> Void
+    let onNotNow: () -> Void
 
     var body: some View {
-        if isVisible {
+        if style == .prominent {
+            PlacementOfferCard(onStart: onStart, onNotNow: onNotNow)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+        } else if style == .quiet {
             Section {
-                Button(action: onTap) {
+                Button(action: onStart) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Not sure where to start?")
                             .dsText(.footnote)
