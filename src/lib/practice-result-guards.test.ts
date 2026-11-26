@@ -87,9 +87,7 @@ describe("Next scene on the result screen carries what Continue did", () => {
     expect(code(`${ANDROID}/PracticeScreens.kt`)).toContain(
       "context = PracticeResultContext.Scenario",
     );
-    expect(code("src/components/practice/ConverseCall.tsx")).toContain(
-      "campaign={null}",
-    );
+    expect(code("src/components/practice/ConverseCall.tsx")).toContain("campaign={null}");
   });
 });
 
