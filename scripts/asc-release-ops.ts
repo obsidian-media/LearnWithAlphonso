@@ -17,12 +17,16 @@
  *   asc-release-ops.ts submit-beta-review 51 [--apply] # external Beta App Review for that exact build; refuses
  *                                                     # unless it is READY_FOR_BETA_SUBMISSION with What to Test
  *                                                     # and review contact set. Read-only without --apply.
+ *   asc-release-ops.ts add-to-external-groups 74 [--apply] # adds that exact build to every EXTERNAL TestFlight
+ *                                                     # group (testers are notified); refuses unless its external
+ *                                                     # Beta App Review is approved. Read-only without --apply.
  *
  * Env: APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_P8_BASE64; for beta-review-info also
  * DEMO_ACCOUNT_EMAIL, REVIEW_CONTACT_EMAIL, REVIEW_CONTACT_PHONE, REVIEW_DEMO_CODE_URL.
  * Prints no secret: the demo email, the contact details and the code URL are never logged.
  * Nothing here submits an App Store version for review. `submit-beta-review --apply` is the one command that
- * submits (TestFlight external Beta App Review, one named build); nothing here adds a build to a TestFlight group.
+ * submits (TestFlight external Beta App Review, one named build); `add-to-external-groups --apply` is the one command
+ * that adds a build to TestFlight groups (external groups only, one named build, only once it is beta-approved).
  */
 import { ascErrorSummary } from "../src/lib/app-store/asc-error-summary";
 import { createSign } from "node:crypto";
@@ -335,6 +339,45 @@ async function submissionCheck(): Promise<void> {
   if (failed > 0) process.exitCode = 1;
 }
 
+/** Adds one named, beta-approved build to every external TestFlight group. Read-only without --apply. */
+async function addToExternalGroups(): Promise<void> {
+  const build = findBuild(await listBuilds(), Number(arg)); // the exact build, never "the latest"
+  const detail = await api(`/builds/${build.id}/buildBetaDetail`);
+  if (!detail.ok) throw new Error(`read beta detail failed: ${detail.status}`);
+  const state = String(dataOf<Resource>(detail).attributes?.externalBuildState);
+  console.log(`build ${build.attributes.version}: external=${state}`);
+  if (state !== "BETA_APPROVED" && state !== "IN_BETA_TESTING") {
+    throw new Error(`refusing: external Beta App Review is not approved (external=${state})`);
+  }
+  const groups = await api(`/apps/${APP_ID}/betaGroups?limit=50`);
+  if (!groups.ok) throw new Error(`read beta groups failed: ${groups.status}`);
+  for (const g of dataOf<Resource[]>(groups)) {
+    const a = g.attributes ?? {};
+    if (a.isInternalGroup) continue;
+    const members = await api(`/betaGroups/${g.id}/builds?limit=200&fields[builds]=version`);
+    if (!members.ok) throw new Error(`read group "${String(a.name)}" failed: ${members.status}`);
+    const has = dataOf<{ id: string }[]>(members).some((b) => b.id === build.id);
+    if (has) {
+      console.log(`  group "${String(a.name)}": already has build ${build.attributes.version}`);
+      continue;
+    }
+    if (!APPLY) {
+      console.log(`  group "${String(a.name)}": would add build ${build.attributes.version}`);
+      continue;
+    }
+    const r = await api(`/betaGroups/${g.id}/relationships/builds`, "POST", {
+      data: [{ type: "builds", id: build.id }],
+    });
+    console.log(
+      r.ok
+        ? `  group "${String(a.name)}": added build ${build.attributes.version}`
+        : `  group "${String(a.name)}": FAILED ${r.status} ${ascErrorSummary(r.json)}`,
+    );
+    if (!r.ok) process.exitCode = 1;
+  }
+  if (!APPLY) console.log("Nothing was changed (re-run with apply to add).");
+}
+
 /** Read-only: prints exactly what App Store Connect says about one build. Never writes. */
 async function betaStatus(): Promise<void> {
   const build = findBuild(await listBuilds(), Number(arg));
@@ -635,6 +678,8 @@ async function main() {
     await betaStatus();
   } else if (cmd === "submit-beta-review") {
     await submitBetaReview();
+  } else if (cmd === "add-to-external-groups") {
+    await addToExternalGroups();
   } else {
     console.log("Usage: see the header of this file");
     process.exit(1);

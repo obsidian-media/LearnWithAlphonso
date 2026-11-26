@@ -105,10 +105,37 @@ describe("asc-release-ops testflight", () => {
     expect(status).not.toMatch(/"(PATCH|POST|DELETE)"/);
   });
 
-  it("never adds a build to a group, anywhere in the script", () => {
-    expect(src).not.toMatch(
+  it("adds a build to a group only in add-to-external-groups, never anywhere else in the script", () => {
+    const start = src.indexOf("async function addToExternalGroups");
+    const end = src.indexOf(
+      "/** Read-only: prints exactly what App Store Connect says about one build.",
+    );
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    const outside = src.slice(0, start) + src.slice(end);
+    expect(outside).not.toMatch(
       /buildBetaNotifications|relationships\/builds|relationships\/betaGroups|\/betaGroups[`"],\s*"POST"/,
     );
+  });
+
+  it("add-to-external-groups writes only with --apply, only after beta approval, and skips internal groups", () => {
+    const fn = src.slice(
+      src.indexOf("async function addToExternalGroups"),
+      src.indexOf("/** Read-only: prints exactly what App Store Connect says about one build."),
+    );
+    const post = fn.indexOf('relationships/builds`, "POST"');
+    expect(post).toBeGreaterThan(0);
+    // The approval refusal and the internal-group skip come before any write.
+    expect(fn.indexOf('state !== "BETA_APPROVED"')).toBeGreaterThan(0);
+    expect(fn.indexOf('state !== "BETA_APPROVED"')).toBeLessThan(post);
+    expect(fn.indexOf("if (a.isInternalGroup) continue;")).toBeGreaterThan(0);
+    expect(fn.indexOf("if (a.isInternalGroup) continue;")).toBeLessThan(post);
+    // The write sits after the read-only early continue.
+    expect(fn.indexOf("if (!APPLY) {")).toBeGreaterThan(0);
+    expect(fn.indexOf("if (!APPLY) {")).toBeLessThan(post);
+    // Exactly one group write, and no buildBetaNotifications.
+    expect(fn.match(/"POST"/g)?.length).toBe(1);
+    expect(fn).not.toMatch(/buildBetaNotifications/);
   });
 
   it("the testflight command never submits a build for Beta App Review", () => {
