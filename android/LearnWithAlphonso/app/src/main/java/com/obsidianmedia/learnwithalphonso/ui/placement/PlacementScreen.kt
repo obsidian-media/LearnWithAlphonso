@@ -81,7 +81,7 @@ fun PlacementScreen(container: AppContainer, course: Course, onFinished: () -> U
         }
         val q = state.currentQuestion
         when {
-            state.done -> Results(state, onFinished, vm::restart)
+            state.done -> Results(state, onFinished, vm::restart, vm::retrySave)
             q == null -> Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 DsEmptyState("No placement questions are available for this course right now.", null, artAsset = "poses/alphonso-thinking-temple.webp")
                 AlphonsoPrimaryButton("Back to Learn", onClick = onFinished, modifier = Modifier.padding(top = 12.dp))
@@ -159,7 +159,7 @@ private fun LevelMarkers(markers: List<BandMarker>) {
 }
 
 @Composable
-private fun Results(state: PlacementUiState, onFinished: () -> Unit, onRetake: () -> Unit) {
+private fun Results(state: PlacementUiState, onFinished: () -> Unit, onRetake: () -> Unit, onRetrySave: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val meta = LEVEL_META[state.level]
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
@@ -175,6 +175,11 @@ private fun Results(state: PlacementUiState, onFinished: () -> Unit, onRetake: (
         if (state.skippedLevels.isNotEmpty()) {
             Text("Fast-tracked past ${state.skippedLevels.joinToString(", ")} after strong answers.", style = CaptionType, color = ds.inkSoft, textAlign = TextAlign.Center)
         }
+        if (state.saveState == SaveState.Failed) {
+            Text("We couldn't save your level. Check your connection and try again.", style = FootnoteType, color = ds.ink, textAlign = TextAlign.Center)
+            DsCompactButton("Try saving again", onRetrySave)
+        }
+        if (state.saveState == SaveState.Saving) Text("Saving your level…", style = CaptionType, color = ds.inkSoft)
         AlphonsoPrimaryButton("Start learning at ${state.level}", onClick = onFinished)
         DsCompactButton("Retake the test", onRetake)
     }

@@ -121,6 +121,8 @@ export async function loadMemoryPrimingMessage(
       t("weakness_events")
         .select("category,event_type,created_at")
         .eq("user_id", userId)
+        // This course's weak spots only: a French learner's priming never names an English grammar topic.
+        .eq("course", course)
         .order("created_at", { ascending: false })
         .limit(MAX_EVENTS),
     ),

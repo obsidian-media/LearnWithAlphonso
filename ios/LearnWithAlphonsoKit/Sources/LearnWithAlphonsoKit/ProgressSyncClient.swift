@@ -1325,11 +1325,16 @@ public final class ProgressSyncClient: Sendable {
     /// hundred rows at most, no need for a DB view). See that file's doc
     /// comment for why `openCount` is `max(0, detected - resolved)` rather
     /// than a simple "not yet resolved" flag.
-    public func fetchWeaknessTrend() async throws -> [WeaknessTrendEntry] {
-        var request = restRequest(path: "weakness_events", query: [
+    ///
+    /// `course` scopes the read to one course's events (a French learner's Hector must not hear English grammar
+    /// topics); nil reads every course, which the achievements trend wants.
+    public func fetchWeaknessTrend(course: String? = nil) async throws -> [WeaknessTrendEntry] {
+        var query = [
             URLQueryItem(name: "select", value: "category,event_type,created_at"),
             URLQueryItem(name: "order", value: "created_at.asc"),
-        ])
+        ]
+        if let course { query.append(URLQueryItem(name: "course", value: "eq.\(course)")) }
+        var request = restRequest(path: "weakness_events", query: query)
         request.httpMethod = "GET"
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)

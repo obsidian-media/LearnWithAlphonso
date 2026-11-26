@@ -48,6 +48,10 @@ struct PlacementView: View {
     @State private var picked: String?
     @State private var answers: [Bool] = []
     @State private var done = false
+    /// Whether the result reached the server; `.failed` shows "couldn't save, try again" on the results screen.
+    private enum SaveState { case idle, saving, saved, failed }
+    @State private var saveState: SaveState = .idle
+    @State private var saveTask: Task<Void, Never>?
 
     init(contentStore: ContentStore, session: Session, course: Course, onFinished: @escaping () -> Void = {}) {
         self.contentStore = contentStore
@@ -308,6 +312,19 @@ struct PlacementView: View {
                     .foregroundStyle(ds.inkSoft)
                     .multilineTextAlignment(.center)
             }
+            if saveState == .failed {
+                Text("We couldn't save your level. Check your connection and try again.")
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.ink)
+                    .multilineTextAlignment(.center)
+                Button("Try saving again") { saveResult(level: level, score: correct) }
+                    .dsText(.caption)
+                    .foregroundStyle(ds.choice)
+            } else if saveState == .saving {
+                Text("Saving your level…")
+                    .dsText(.caption)
+                    .foregroundStyle(ds.inkSoft)
+            }
             Button("Start learning at \(level)") { onFinished() }
                 .buttonStyle(.dsButton(.primary))
             Button("Retake the test") { restart() }
@@ -331,6 +348,8 @@ struct PlacementView: View {
         step = 0
         picked = nil
         done = false
+        saveTask?.cancel()
+        saveState = .idle
     }
 
     /// Mirrors placement.tsx's `submit()` exactly -- see that function's
@@ -369,12 +388,27 @@ struct PlacementView: View {
         done = true
         let level = attempt.level
         let score = finalAnswers.filter { $0 }.count
-        guard let accessToken = session.accessToken else { return }
-        Task {
+        saveResult(level: level, score: score)
+    }
+
+    /// Awaited with a bounded retry (PlacementSave); the results screen shows how it went.
+    private func saveResult(level: String, score: Int) {
+        guard let accessToken = session.accessToken else {
+            saveState = .failed
+            return
+        }
+        saveTask?.cancel()
+        saveState = .saving
+        let courseCode = course.code
+        saveTask = Task {
             let client = ProgressSyncClient(
                 supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken
             )
-            try? await client.savePlacementResult(course: course.code, level: level, score: score)
+            let ok = await PlacementSave.run {
+                try await client.savePlacementResult(course: courseCode, level: level, score: score)
+            }
+            if Task.isCancelled { return }
+            saveState = ok ? .saved : .failed
         }
     }
 

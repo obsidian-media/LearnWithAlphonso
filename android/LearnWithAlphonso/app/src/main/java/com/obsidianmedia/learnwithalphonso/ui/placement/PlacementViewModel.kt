@@ -41,6 +41,12 @@ val LEVEL_META: Map<String, Pair<String, String>> = mapOf(
     "C1" to ("Advanced" to "Idiom, register, academic precision."),
 )
 
+enum class SaveState { Idle, Saving, Saved, Failed }
+
+/** Tries in all, the first included, and the waits before the second and third. */
+const val PLACEMENT_SAVE_ATTEMPTS = 3
+val PLACEMENT_SAVE_DELAYS_MS: List<Long> = listOf(600L, 1800L)
+
 data class PlacementUiState(
     val bandPool: Map<String, List<PlacementQuestion>> = emptyMap(),
     val shown: List<PlacementQuestion> = emptyList(),
@@ -56,6 +62,8 @@ data class PlacementUiState(
     /** True while the current band is a skipped one the exam went back to: always the last band it asks. */
     val revisiting: Boolean = false,
     val done: Boolean = false,
+    /** Whether the result reached the server; [SaveState.Failed] shows "couldn't save, try again" on the results screen. */
+    val saveState: SaveState = SaveState.Idle,
 ) {
     val currentQuestion: PlacementQuestion? get() = shown.getOrNull(step)
     val total: Int get() = shown.size
@@ -87,6 +95,8 @@ class PlacementViewModel(
     private val random: Random = Random.Default,
     /** The account's AI consent: the server grader is asked only when the learner allowed it. */
     private val hasAiConsent: () -> Boolean,
+    /** Waits between save tries; a test passes zeros. */
+    private val saveDelaysMs: List<Long> = PLACEMENT_SAVE_DELAYS_MS,
 ) : ViewModel() {
     private val _state = MutableStateFlow(freshAttempt())
     val state: StateFlow<PlacementUiState> = _state.asStateFlow()
@@ -103,6 +113,7 @@ class PlacementViewModel(
 
     fun restart() {
         attemptToken++
+        saveJob?.cancel()
         _state.value = freshAttempt()
     }
 
@@ -157,9 +168,38 @@ class PlacementViewModel(
         }
     }
 
+    private var saveJob: Job? = null
+
     private suspend fun finish() {
         val s = _state.value
-        runCatching { client.savePlacementResult(course.code, s.level, s.correctTotal) }
+        save(s.level, s.correctTotal)
+    }
+
+    /** The results screen's "Try saving again". */
+    fun retrySave() {
+        val s = _state.value
+        if (!s.done || s.saveState == SaveState.Saving) return
+        saveJob = viewModelScope.launch { save(s.level, s.correctTotal) }
+    }
+
+    /** Awaits the save with a bounded retry and records how it went; a CancellationException is never swallowed. */
+    private suspend fun save(level: String, score: Int) {
+        val token = attemptToken
+        _state.update { it.copy(saveState = SaveState.Saving) }
+        var ok = false
+        for (attempt in 0 until PLACEMENT_SAVE_ATTEMPTS) {
+            try {
+                client.savePlacementResult(course.code, level, score)
+                ok = true
+                break
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (attempt < PLACEMENT_SAVE_ATTEMPTS - 1) kotlinx.coroutines.delay(saveDelaysMs.getOrElse(attempt) { saveDelaysMs.lastOrNull() ?: 0L })
+            }
+        }
+        if (attemptToken != token) return
+        _state.update { it.copy(saveState = if (ok) SaveState.Saved else SaveState.Failed) }
     }
 }
 

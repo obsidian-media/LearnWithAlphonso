@@ -3376,6 +3376,7 @@ export type Database = {
       weakness_events: {
         Row: {
           category: string;
+          course: string;
           created_at: string;
           event_type: string;
           id: string;
@@ -3383,6 +3384,7 @@ export type Database = {
         };
         Insert: {
           category: string;
+          course?: string;
           created_at?: string;
           event_type: string;
           id?: string;
@@ -3390,6 +3392,7 @@ export type Database = {
         };
         Update: {
           category?: string;
+          course?: string;
           created_at?: string;
           event_type?: string;
           id?: string;

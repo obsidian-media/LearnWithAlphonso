@@ -6,7 +6,7 @@ import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.serv
 import type { Json } from "@/integrations/supabase/types";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
-import { getCourse } from "../data/courses";
+import { getCourse, COURSES } from "../data/courses";
 import {
   LEAGUES,
   computeLeaguePromotion,
@@ -984,9 +984,18 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         }));
         if (transcriptMessages.length > 0) {
           const { detectAndRecordWeaknesses } = await import("./weakness-detection.server");
+          const { currentCefrLevel } = await import("./learner-level.server");
+          const level = await currentCefrLevel(
+            supabaseAdmin as unknown as Parameters<typeof currentCefrLevel>[0],
+            userId,
+            course,
+          );
           await detectAndRecordWeaknesses({
             userId,
-            sourceDescription: "set of English lesson questions the learner got wrong",
+            sourceDescription:
+              course === "en"
+                ? "set of English lesson questions the learner got wrong"
+                : `set of ${COURSES.find((c) => c.id === course)?.targetLanguage ?? "target-language"} lesson questions the learner got wrong (write the question, its choices and the display text in ${COURSES.find((c) => c.id === course)?.targetLanguage ?? "target-language"}; write the explanation in English)`,
             transcriptMessages,
             llmApiKey,
             llmModel: resolveLlmChatModel(),
@@ -1008,7 +1017,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
                 user_id: userId,
                 item_key: weaknessItemKey,
                 lesson_id: "weakness",
-                level: "A1",
+                level,
                 language: course,
                 ease: 2.5,
                 interval_days: 0,
@@ -1027,7 +1036,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
             adminInsertEvent: async (category) => {
               await supabaseAdmin
                 .from("weakness_events")
-                .insert({ user_id: userId, category, event_type: "detected" });
+                .insert({ user_id: userId, category, event_type: "detected", course });
             },
           });
         }

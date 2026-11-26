@@ -23,6 +23,7 @@ import { canSpeak, speak } from "../../lib/speech";
 import { isPlacementAnswerCorrect } from "../../data/placement-grading";
 import { fetchProgress, savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
+import { savePlacementWithRetry } from "../../lib/placement-save";
 import { LEVELS, type Level } from "../../data/levels";
 
 export const Route = createFileRoute("/_authenticated/placement")({
@@ -117,6 +118,9 @@ function PlacementPage() {
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [done, setDone] = useState(false);
   const [skippedLevels, setSkippedLevels] = useState<Level[]>([]);
+  // Whether the result reached the server. "failed" shows the retry line on the result screen.
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
+  const pendingSave = useRef<{ level: Level; score: number; course: Course } | null>(null);
   // Imperative tally across band transitions, not itself rendered --
   // see submit()'s band-complete branch and resolveBand in placement.ts.
   const correctByLevelRef = useRef<Record<Level, number>>(emptyTally().correctByLevel);
@@ -129,6 +133,18 @@ function PlacementPage() {
     setPicked(null);
     setDone(false);
     setSkippedLevels([]);
+    setSaveState("idle");
+    pendingSave.current = null;
+  }
+
+  /** Saves the result, awaited with a bounded retry; the screen shows how it went. */
+  async function persist(result: { level: Level; score: number; course: Course }) {
+    pendingSave.current = result;
+    setSaveState("saving");
+    const ok = await savePlacementWithRetry(() => savePlacement({ data: result }));
+    // A retake started meanwhile owns the state now.
+    if (pendingSave.current !== result) return;
+    setSaveState(ok ? "saved" : "failed");
   }
 
   useEffect(() => {
@@ -181,7 +197,7 @@ function PlacementPage() {
       placementScore: score,
       placementTakenAt: new Date().toISOString(),
     });
-    void savePlacement({ data: { level, score, course } }).catch(() => {});
+    void persist({ level, score, course });
   }
 
   function submit() {
@@ -295,6 +311,26 @@ function PlacementPage() {
           {skippedLevels.length > 0 && (
             <p className="mt-1.5 max-w-[280px] ds-type-caption text-ds-ink-soft">
               Fast-tracked past {skippedLevels.join(", ")} after strong answers.
+            </p>
+          )}
+          {saveState === "failed" && (
+            <div
+              role="alert"
+              className="mt-4 max-w-[300px] rounded-[var(--ds-radius-control)] border border-ds-line bg-ds-card px-4 py-3 ds-type-footnote text-ds-ink"
+            >
+              <p>We couldn&apos;t save your level. Check your connection and try again.</p>
+              <button
+                type="button"
+                onClick={() => pendingSave.current && void persist(pendingSave.current)}
+                className="mt-2 min-h-11 font-extrabold text-ds-choice underline underline-offset-4"
+              >
+                Try saving again
+              </button>
+            </div>
+          )}
+          {saveState === "saving" && (
+            <p role="status" className="mt-4 ds-type-caption text-ds-ink-soft">
+              Saving your level…
             </p>
           )}
           <button

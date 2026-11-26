@@ -14,14 +14,31 @@ const supabaseSelectChain = {
 };
 const supabaseFrom = vi.fn(() => supabaseSelectChain);
 
+// The learner's level in the course, as language_progress says (the review item is written at it, not at A1).
+const level = vi.hoisted(() => ({ byCourse: {} as Record<string, string> }));
+const levelRead = (courseFilter: { v?: string }) => {
+  const q: Record<string, unknown> = {};
+  q.select = () => q;
+  q.eq = (col: string, val: string) => {
+    if (col === "language") courseFilter.v = val;
+    return q;
+  };
+  q.maybeSingle = async () => ({
+    data: level.byCourse[courseFilter.v ?? ""]
+      ? { cefr_level: level.byCourse[courseFilter.v!] }
+      : null,
+  });
+  return q;
+};
 const reviewItemsInsert = vi.fn();
 const weaknessEventsInsert = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     rpc: blockedRpc,
-    from: (table: string) => ({
-      insert: table === "weakness_events" ? weaknessEventsInsert : reviewItemsInsert,
-    }),
+    from: (table: string) =>
+      table === "language_progress"
+        ? levelRead({})
+        : { insert: table === "weakness_events" ? weaknessEventsInsert : reviewItemsInsert },
   },
 }));
 
@@ -54,6 +71,7 @@ const WEAKNESS_JSON = JSON.stringify([
 const originalFetch = global.fetch;
 
 beforeEach(() => {
+  level.byCourse = {};
   authorizeAiRequest.mockReset();
   blockedRpc.mockClear();
   authorizeAiRequest.mockResolvedValue({
@@ -126,7 +144,32 @@ describe("POST /api/analyze-weaknesses", () => {
       user_id: "user-1",
       category: "past-tense",
       event_type: "detected",
+      course: "en",
     });
+  });
+
+  it("writes the event and the review item for the course of the conversation, at the learner's level there", async () => {
+    level.byCourse = { fr: "B1", en: "A2" };
+    await handler({
+      request: req({
+        course: "fr",
+        messages: [{ role: "user", content: "Je suis allé au parc hier." }],
+      }),
+    });
+    expect(weaknessEventsInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ course: "fr", event_type: "detected" }),
+    );
+    expect(reviewItemsInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ language: "fr", level: "B1" }),
+    );
+  });
+
+  it("falls back to A1 when the learner has no level row for the course", async () => {
+    level.byCourse = {};
+    await handler({
+      request: req({ messages: [{ role: "user", content: "I go to the park yesterday." }] }),
+    });
+    expect(reviewItemsInsert).toHaveBeenCalledWith(expect.objectContaining({ level: "A1" }));
   });
 
   it("rejects when the token doesn't resolve to a real user", async () => {

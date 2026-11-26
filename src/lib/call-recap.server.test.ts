@@ -115,6 +115,19 @@ describe("addRecapToReview", () => {
   const run = (db: unknown, remember: boolean) =>
     addRecapToReview(db as never, { userId: "u1", callId: CALL, course: "es", recap, remember });
 
+  it("writes the rows at the learner's level in the course, not at A1", async () => {
+    const m = make();
+    await addRecapToReview(m.db as never, {
+      userId: "u1",
+      callId: CALL,
+      course: "es",
+      recap,
+      remember: false,
+      level: "B1",
+    });
+    expect(m.upserts[0]!.rows.map((r) => r.level)).toEqual(["B1", "B1"]);
+  });
+
   it("writes one row per item with stable keys, ignoring duplicates so a second tap adds nothing", async () => {
     const m = make();
     expect(await run(m.db, false)).toEqual({ added: 2 });

@@ -30,10 +30,22 @@ export const Route = createFileRoute("/api/call-recap-review")({
         const { verifyRecapToken, addRecapToReview } = await import("@/lib/call-recap.server");
         const claim = verifyRecapToken(body.reviewToken, userId, body.callId);
         if (!claim) return json({ error: "invalid-token" }, 400);
+        const { currentCefrLevel } = await import("@/lib/learner-level.server");
         const remember = Boolean(claim.recap.phrase);
         const out = await addRecapToReview(
           supabaseAdmin as unknown as Parameters<typeof addRecapToReview>[0],
-          { userId, callId: body.callId, course: claim.course, recap: claim.recap, remember },
+          {
+            userId,
+            callId: body.callId,
+            course: claim.course,
+            recap: claim.recap,
+            remember,
+            level: await currentCefrLevel(
+              supabaseAdmin as unknown as Parameters<typeof currentCefrLevel>[0],
+              userId,
+              claim.course,
+            ),
+          },
         );
         if ("error" in out) return json({ error: "Could not add these. Try again." }, 500);
         return json({ added: out.added });

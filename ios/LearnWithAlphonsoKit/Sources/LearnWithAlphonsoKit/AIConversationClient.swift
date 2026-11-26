@@ -381,7 +381,7 @@ public final class AIConversationClient: Sendable {
               let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
               let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let profile = root["profile"] as? [String: Any] else { return nil }
-        let goals = TutorMemory.Goals(goal: profile["goal"] as? String, dailyMinutes: profile["dailyMinutes"] as? Int, interests: [])
+        let goals = TutorMemory.Goals(goal: profile["goal"] as? String, dailyMinutes: profile["dailyMinutes"] as? Int, interests: (profile["interests"] as? [Any])?.compactMap { $0 as? String } ?? [])
         let lines = TutorMemory(mistakes: [], phrases: [], goals: goals).goalLines
         return lines.isEmpty ? nil : lines.map(\.title).joined(separator: ", ")
     }

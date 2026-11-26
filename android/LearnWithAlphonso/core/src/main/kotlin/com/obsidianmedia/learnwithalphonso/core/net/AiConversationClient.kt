@@ -194,7 +194,7 @@ class AiConversationClient(private val http: ApiHttp) {
         val response = http.get("api/learner-profile")
         if (response.status.value !in 200..299) return@runCatching null
         val profile = json.parseToJsonElement(response.bodyAsText()).jsonObject["profile"]?.jsonObject ?: return@runCatching null
-        val goals = TutorMemory.Goals(profile.str("goal"), profile["dailyMinutes"]?.jsonPrimitive?.intOrNull, emptyList())
+        val goals = TutorMemory.Goals(profile.str("goal"), profile["dailyMinutes"]?.jsonPrimitive?.intOrNull, runCatching { profile["interests"]!!.jsonArray.mapNotNull { it.jsonPrimitive.contentOrNull } }.getOrDefault(emptyList()))
         TutorMemory(emptyList(), emptyList(), goals).goalLines.map { it.title }.joinToString(", ").ifEmpty { null }
     }.getOrNull()
 

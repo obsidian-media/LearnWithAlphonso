@@ -1232,6 +1232,15 @@ describe("completeLessonRemote", () => {
 
     try {
       const supabase = createSupabaseMock();
+      // The learner is at B2 in this course: the review question written for the miss is B2, and the weakness event
+      // names the course, so a French learner's weak spots never mix with an English learner's.
+      const adminCalls: Record<string, { method: string; args: unknown[] }[]> = {};
+      supabaseAdminFrom.mockImplementation((t: string) =>
+        chainable(
+          { data: t === "language_progress" ? { cefr_level: "B2" } : null, error: null },
+          (adminCalls[t] ??= []),
+        ),
+      );
       // The model-written question passes the blocked-term check (ai_output_blocked) before it is stored.
       supabase.rpc.mockResolvedValue({ data: [false], error: null });
       supabase.from
@@ -1270,6 +1279,14 @@ describe("completeLessonRemote", () => {
       const adminTables = supabaseAdminFrom.mock.calls.map((c) => c[0]);
       expect(adminTables).toContain("review_items");
       expect(adminTables).toContain("weakness_events");
+      const inserted = (t: string) =>
+        adminCalls[t]?.filter((c) => c.method === "insert").map((c) => c.args[0]);
+      expect(inserted("weakness_events")).toEqual([
+        expect.objectContaining({ category: "past-tense", event_type: "detected", course: "en" }),
+      ]);
+      expect(inserted("review_items")).toEqual([
+        expect.objectContaining({ source: "weakness", language: "en", level: "B2" }),
+      ]);
     } finally {
       global.fetch = originalFetch;
       if (originalKey === undefined) delete process.env.OPENROUTER_API_KEY;

@@ -63,7 +63,8 @@ export const Route = createFileRoute("/api/hector-greeting")({
           db
             .from("weakness_events")
             .select("category,event_type,created_at")
-            .eq("user_id", user.id),
+            .eq("user_id", user.id)
+            .eq("course", course),
         ]);
         if (memory.error || events.error) {
           console.warn(
