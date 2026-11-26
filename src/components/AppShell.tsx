@@ -345,7 +345,9 @@ export function DesktopRail({ labelled }: { labelled: boolean }) {
 function mainColumnClass(tier: ViewportTier, withPanel: boolean): string {
   if (!hasPanel(tier)) return "w-full max-w-[760px]";
   if (!withPanel) return "w-full max-w-[880px]";
-  return tier === "wide" ? "w-[720px] shrink-0" : "min-w-0 flex-1";
+  // Shrinkable in both tiers: 720 is a CAP in the wide tier, not a width. A fixed 720 beside the 336 panel and the 248
+  // rail needs 1392px and overflowed a 1280 window (src/components/shell/desktop-layout.ts).
+  return tier === "wide" ? "min-w-0 flex-1 max-w-[720px]" : "min-w-0 flex-1";
 }
 
 function DesktopFrame({

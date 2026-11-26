@@ -46,7 +46,7 @@ class ReferralInviteViewModelTest {
     fun `the invite link is built from the learner's own code`() = runBlocking {
         val v = vm(server())
         awaitTrue("loaded") { !v.state.value.isLoading }
-        assertEquals("https://learn.alphonsoecosystem.app/?ref=29d081151d67", v.state.value.link)
+        assertEquals("https://learn.alphonsoecosystem.app/r/29d081151d67", v.state.value.link)
     }
 
     @Test
@@ -55,7 +55,7 @@ class ReferralInviteViewModelTest {
         awaitTrue("loaded") { !v.state.value.isLoading }
         val text = v.state.value.shareText!!
         assertTrue(text.startsWith(ReferralCopy.SHARE_TEXT))
-        assertTrue(text.endsWith("https://learn.alphonsoecosystem.app/?ref=29d081151d67"))
+        assertTrue(text.endsWith("https://learn.alphonsoecosystem.app/r/29d081151d67"))
     }
 
     @Test

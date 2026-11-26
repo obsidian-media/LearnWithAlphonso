@@ -301,6 +301,22 @@ function LibraryTabs({ tab, onChange }: { tab: LibraryTab; onChange: (tab: Libra
  * empty or all-other-course list draws no shelf. The Continue card resumes `continueListening` (the most recently
  * touched episode still in progress, else the next new one in that series).
  */
+/** True only when the browser is certain it has no network; follows the browser's online and offline events. */
+function useOffline(): boolean {
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    const sync = () => setOffline(typeof navigator !== "undefined" && navigator.onLine === false);
+    sync();
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+    };
+  }, []);
+  return offline;
+}
+
 export function ListenLibraryView({
   library,
   videos,
@@ -338,6 +354,7 @@ export function ListenLibraryView({
     setTabState(next);
   };
   const play = usePodcastPlayer((s) => s.play);
+  const offline = useOffline();
 
   const shelves = useMemo(
     () => buildShelves(library.folders, library.episodes, library.progress, course),
@@ -558,10 +575,16 @@ export function ListenLibraryView({
               videosError
             ) : videos ? (
               watchShelf(videos, course).length === 0 ? (
+                // An empty list while offline means "could not load", not "none published": say so, in the words
+                // the goal and path cards use.
                 <DsEmptyState
                   art={mascotArt("emptyState").src}
-                  title="No videos yet"
-                  message="Alphonso videos appear here as they are published."
+                  title={offline ? "You're offline" : "No videos yet"}
+                  message={
+                    offline
+                      ? "Connect to load the videos."
+                      : "Alphonso videos appear here as they are published."
+                  }
                 />
               ) : (
                 <WatchShelf

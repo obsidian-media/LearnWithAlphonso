@@ -64,6 +64,7 @@ import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiTutorMemoryRouteImport } from './routes/api/tutor-memory'
+import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_authenticated/campaign_.$campaignId'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
 import { Route as AuthenticatedInviteCodeRouteImport } from './routes/_authenticated/invite.$code'
@@ -361,6 +362,11 @@ const ApiTutorMemoryRoute = ApiTutorMemoryRouteImport.update({
   path: '/api/tutor-memory',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RCodeRoute = RCodeRouteImport.update({
+  id: '/r/$code',
+  path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCampaignCampaignIdRoute =
   AuthenticatedCampaignCampaignIdRouteImport.update({
     id: '/campaign_/$campaignId',
@@ -527,6 +533,7 @@ export interface FileRoutesByFullPath {
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/tutor-memory': typeof ApiTutorMemoryRoute
+  '/r/$code': typeof RCodeRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$code': typeof AuthenticatedInviteCodeRoute
@@ -603,6 +610,7 @@ export interface FileRoutesByTo {
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/tutor-memory': typeof ApiTutorMemoryRoute
+  '/r/$code': typeof RCodeRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$code': typeof AuthenticatedInviteCodeRoute
@@ -681,6 +689,7 @@ export interface FileRoutesById {
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
   '/api/tutor-memory': typeof ApiTutorMemoryRoute
+  '/r/$code': typeof RCodeRoute
   '/_authenticated/campaign_/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/_authenticated/converse_/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/_authenticated/invite/$code': typeof AuthenticatedInviteCodeRoute
@@ -759,6 +768,7 @@ export interface FileRouteTypes {
     | '/api/subscription-login'
     | '/api/tts'
     | '/api/tutor-memory'
+    | '/r/$code'
     | '/campaign/$campaignId'
     | '/converse/$scenarioId'
     | '/invite/$code'
@@ -835,6 +845,7 @@ export interface FileRouteTypes {
     | '/api/subscription-login'
     | '/api/tts'
     | '/api/tutor-memory'
+    | '/r/$code'
     | '/campaign/$campaignId'
     | '/converse/$scenarioId'
     | '/invite/$code'
@@ -912,6 +923,7 @@ export interface FileRouteTypes {
     | '/api/subscription-login'
     | '/api/tts'
     | '/api/tutor-memory'
+    | '/r/$code'
     | '/_authenticated/campaign_/$campaignId'
     | '/_authenticated/converse_/$scenarioId'
     | '/_authenticated/invite/$code'
@@ -974,6 +986,7 @@ export interface RootRouteChildren {
   ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
   ApiTtsRoute: typeof ApiTtsRoute
   ApiTutorMemoryRoute: typeof ApiTutorMemoryRoute
+  RCodeRoute: typeof RCodeRoute
   ApiInternalMaintenanceRoute: typeof ApiInternalMaintenanceRoute
   ApiInternalReportNotifyRoute: typeof ApiInternalReportNotifyRoute
   ApiInternalSupportNotifyRoute: typeof ApiInternalSupportNotifyRoute
@@ -1369,6 +1382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTutorMemoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/r/$code': {
+      id: '/r/$code'
+      path: '/r/$code'
+      fullPath: '/r/$code'
+      preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/campaign_/$campaignId': {
       id: '/_authenticated/campaign_/$campaignId'
       path: '/campaign/$campaignId'
@@ -1631,6 +1651,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,
   ApiTtsRoute: ApiTtsRoute,
   ApiTutorMemoryRoute: ApiTutorMemoryRoute,
+  RCodeRoute: RCodeRoute,
   ApiInternalMaintenanceRoute: ApiInternalMaintenanceRoute,
   ApiInternalReportNotifyRoute: ApiInternalReportNotifyRoute,
   ApiInternalSupportNotifyRoute: ApiInternalSupportNotifyRoute,
@@ -1641,13 +1662,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

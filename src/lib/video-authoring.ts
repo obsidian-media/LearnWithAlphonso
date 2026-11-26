@@ -180,7 +180,7 @@ export function publishProblems(row: StoredVideo, existingObjects: readonly stri
     ["captions", row.captions_path],
   ] as const) {
     if (path && !existingObjects.includes(path))
-      problems.push(`the ${label} file ${path} is not in the ${VIDEO_BUCKET} bucket.`);
+      problems.push(`the ${label} file ${path} is not in the video-drafts or videos bucket.`);
   }
   return problems;
 }

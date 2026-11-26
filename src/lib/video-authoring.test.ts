@@ -149,7 +149,7 @@ describe("publishProblems", () => {
   });
   it("refuses a missing object, naming which", () => {
     const text = publishProblems(row, ["en/en-x.mp4", "en/en-x.en.vtt"]).join("|");
-    expect(text).toMatch(/poster file en\/en-x.jpg is not in the videos bucket/);
+    expect(text).toMatch(/poster file en\/en-x.jpg is not in the video-drafts or videos bucket/);
   });
 });
 

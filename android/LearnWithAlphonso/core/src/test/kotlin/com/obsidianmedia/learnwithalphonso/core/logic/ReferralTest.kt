@@ -23,12 +23,12 @@ class ReferralTest {
 
     @Test
     fun `the invite link is built from the learner's code`() {
-        assertEquals("https://learn.alphonsoecosystem.app/?ref=29d081151d67", ReferralLink.link(base, "29d081151d67"))
+        assertEquals("https://learn.alphonsoecosystem.app/r/29d081151d67", ReferralLink.link(base, "29d081151d67"))
     }
 
     @Test
     fun `the link trims trailing slashes and encodes base64 characters`() {
-        assertEquals("https://learn.alphonsoecosystem.app/?ref=a%2Bb%2Fc%3D", ReferralLink.link("$base/", "a+b/c="))
+        assertEquals("https://learn.alphonsoecosystem.app/r/a%2Bb%2Fc%3D", ReferralLink.link("$base/", "a+b/c="))
     }
 
     @Test
@@ -48,6 +48,29 @@ class ReferralTest {
         assertNull(ReferralLink.codeFromUrl("https://learn.alphonsoecosystem.app/?ref=a"))
         assertNull(ReferralLink.codeFromUrl("https://learn.alphonsoecosystem.app/?ref=a%20b%3Cscript%3E"))
         assertNull(ReferralLink.codeFromUrl("not a url"))
+    }
+
+    @Test
+    fun `the share link path yields the code on both hosts, and the older query link still works`() {
+        for (host in listOf("learnwithalphonso.com", "learn.alphonsoecosystem.app")) {
+            assertEquals("29d081151d67", ReferralLink.codeFromUrl("https://$host/r/29d081151d67"), host)
+            assertEquals("29d081151d67", ReferralLink.codeFromUrl("https://$host/r/29d081151d67/"), host)
+        }
+        assertEquals("29d081151d67", ReferralLink.codeFromUrl("https://learnwithalphonso.com/?ref=29d081151d67"))
+        assertEquals("a+b/c=", ReferralLink.codeFromSharePath("/r/a+b%2Fc%3D"))
+    }
+
+    @Test
+    fun `the share path rejects junk, other hosts and other paths`() {
+        assertNull(ReferralLink.codeFromUrl("https://evil.example/r/29d081151d67"))
+        assertNull(ReferralLink.codeFromUrl("http://learnwithalphonso.com/r/29d081151d67"))
+        assertNull(ReferralLink.codeFromUrl("https://learnwithalphonso.com/r/a"))
+        assertNull(ReferralLink.codeFromUrl("https://learnwithalphonso.com/r/"))
+        assertNull(ReferralLink.codeFromUrl("https://learnwithalphonso.com/r/29d081151d67/extra"))
+        assertNull(ReferralLink.codeFromUrl("https://learnwithalphonso.com/x/29d081151d67"))
+        assertNull(ReferralLink.codeFromUrl("https://learnwithalphonso.com/r/a%20b%3Cscript%3E"))
+        assertNull(ReferralLink.codeFromSharePath(null))
+        assertNull(ReferralLink.codeFromSharePath("/invite/29d081151d67"))
     }
 
     @Test
