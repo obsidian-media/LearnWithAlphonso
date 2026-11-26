@@ -324,4 +324,17 @@ class LearnViewModelTest {
         v.refresh().join()
         assertEquals(false, v.state.value.weeklyLoadFailed)
     }
+
+    @Test
+    fun `a double tap on Claim sends one RPC`() = runBlocking {
+        val s = server()
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore()) { 1_790_726_400_000L }
+        v.initialLoad.join()
+        val quest = v.state.value.quests.first { it.claimable }
+        val first = v.claimQuest(quest)
+        val second = v.claimQuest(quest) // the same stale quest, tapped again before the screen updated
+        first.join()
+        second.join()
+        assertEquals(1, s.seen.count { it.path.endsWith("claim_weekly_quest") })
+    }
 }

@@ -148,7 +148,23 @@ class LearnViewModel(
      */
     fun claimQuest(quest: WeeklyQuest): Job {
         val course = _state.value.course
+        // A second tap while the first claim is out, or on a quest already claimed, sends nothing.
+        if (_state.value.quests.firstOrNull { it.id == quest.id }?.claimed == true) return COMPLETED
+        if (!claimingQuestIds.add(quest.id)) return COMPLETED
         return viewModelScope.launch {
+            try {
+                claimQuestNow(quest, course)
+            } finally {
+                claimingQuestIds.remove(quest.id)
+            }
+        }
+    }
+
+    /** Quest ids with a claim in flight (main thread only). */
+    private val claimingQuestIds = mutableSetOf<String>()
+
+    private suspend fun claimQuestNow(quest: WeeklyQuest, course: Course) {
+        run {
             val outcome = runCatching { client.claimWeeklyQuest(quest.id, course.code, mondayDateString(0, nowMillis())) }.getOrNull()
             when {
                 // Only a real failure to reach the server; a refusal from it (below) is never this message.
