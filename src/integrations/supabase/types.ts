@@ -3817,6 +3817,30 @@ export type Database = {
           xp: number;
         }[];
       };
+      close_rehearsal: {
+        Args: { _id: string; _memory_text: string; _outcome: Json; _user_id: string };
+        Returns: {
+          brief: NonNullable<Json>;
+          closed_at: string | null;
+          counterpart: string;
+          course: string;
+          created_at: string;
+          event_date: string | null;
+          event_kind: string;
+          free: boolean;
+          id: string;
+          outcome: Json | null;
+          status: string;
+          user_id: string;
+          worries: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "rehearsals";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       complete_hector_call: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
       confirm_display_name: { Args: { _name: string }; Returns: string };
       consume_ai_quota: {
@@ -3932,6 +3956,20 @@ export type Database = {
           best_before: number;
           call_stars: number;
         }[];
+      };
+      finish_rehearsal_recap: {
+        Args: {
+          _call_id: string;
+          _corrections: string[];
+          _course: string;
+          _mistakes: Json;
+          _moments: string[];
+          _save: boolean;
+          _topics: string[];
+          _user_id: string;
+          _went_well: string[];
+        };
+        Returns: number;
       };
       forget_tutor_memory: { Args: { _user_id: string }; Returns: Json };
       generate_learner_handle: { Args: Record<PropertyKey, never>; Returns: string };
@@ -4206,6 +4244,30 @@ export type Database = {
       moderation_contextual_terms: { Args: Record<PropertyKey, never>; Returns: string[] };
       moderation_edge_patterns: { Args: Record<PropertyKey, never>; Returns: string[] };
       moderation_fold: { Args: { input: string }; Returns: string };
+      move_rehearsal: {
+        Args: { _event_date: string; _id: string; _user_id: string };
+        Returns: {
+          brief: NonNullable<Json>;
+          closed_at: string | null;
+          counterpart: string;
+          course: string;
+          created_at: string;
+          event_date: string | null;
+          event_kind: string;
+          free: boolean;
+          id: string;
+          outcome: Json | null;
+          status: string;
+          user_id: string;
+          worries: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "rehearsals";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       my_ai_cost_month: {
         Args: Record<PropertyKey, never>;
         Returns: {
