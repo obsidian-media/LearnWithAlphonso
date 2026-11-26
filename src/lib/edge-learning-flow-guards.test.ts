@@ -39,6 +39,6 @@ describe("complete-lesson version mismatch", () => {
     expect(src).not.toContain("Invalid lesson completion payload");
   });
   it("still passes account consent to the grader", () => {
-    expect(src).toMatch(/deriveAnswerCorrectness\([^)]*, ai\)/);
+    expect(src).toMatch(/deriveAnswerCorrectness\([^)]*[,\s]ai(,\s*variantGoal)?,?\s*\)/);
   });
 });
