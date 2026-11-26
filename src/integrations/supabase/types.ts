@@ -2969,18 +2969,18 @@ export type Database = {
         };
         Relationships: [];
       };
-      trial_reminder_scan: {
+      trial_reminder_checked: {
         Row: {
-          id: boolean;
-          last_scan_at: string;
+          checked_at: string;
+          user_id: string;
         };
         Insert: {
-          id?: boolean;
-          last_scan_at?: string;
+          checked_at: string;
+          user_id: string;
         };
         Update: {
-          id?: boolean;
-          last_scan_at?: string;
+          checked_at?: string;
+          user_id?: string;
         };
         Relationships: [];
       };
@@ -4515,6 +4515,12 @@ export type Database = {
         Returns: string;
       };
       team_name_problem: { Args: { _name: string }; Returns: string };
+      trial_reminder_candidates: {
+        Args: { p_active_since: string; p_checked_before: string; p_limit: number };
+        Returns: {
+          user_id: string;
+        }[];
+      };
       trip_ai_spend_breaker: { Args: { p_limit_micro: number }; Returns: Json };
       weekly_xp: { Args: { _user_id: string; _week_start: string }; Returns: number };
     };
