@@ -236,6 +236,84 @@ export async function getSubscriberSummary(
   }
 }
 
+/** One learner's running Pro trial, read from RevenueCat's v1 subscriber (the trial reminder). */
+export type TrialRead = {
+  productId: string;
+  trialEndsAt: Date;
+  store: string | null;
+  willNotRenew: boolean;
+  billingIssue: boolean;
+  managementUrl: string | null;
+};
+
+/**
+ * The learner's running free trial under one RevenueCat id, or null when there is none. Throws when RevenueCat cannot
+ * be read, so the caller leaves the learner for the next scan instead of treating an outage as "no trial". Sandbox and
+ * Test Store purchases are ignored unless the account is a listed tester, so reviewers' trials never trigger mail.
+ */
+export async function getTrialSubscription(
+  config: RevenueCatConfig,
+  appUserId: string,
+  fetchImpl: typeof fetch = fetch,
+  accountId: string = appUserId,
+): Promise<TrialRead | null> {
+  const res = await fetchImpl(
+    `${REVENUECAT_API_HOST}/v1/subscribers/${encodeURIComponent(appUserId)}`,
+    {
+      headers: { Authorization: `Bearer ${config.secretApiKey}` },
+      signal: AbortSignal.timeout(5000),
+    },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`RevenueCat subscriber read failed (HTTP ${res.status})`);
+  const body = (await res.json()) as {
+    subscriber?: {
+      subscriptions?: Record<
+        string,
+        {
+          period_type?: string;
+          expires_date?: string | null;
+          store?: string;
+          is_sandbox?: boolean;
+          unsubscribe_detected_at?: string | null;
+          billing_issues_detected_at?: string | null;
+        }
+      >;
+      management_url?: string | null;
+    };
+  };
+  const tester = config.testPurchaseUserIds?.includes(accountId) === true;
+  for (const [productId, sub] of Object.entries(body?.subscriber?.subscriptions ?? {})) {
+    if (sub?.period_type !== "trial" || typeof sub.expires_date !== "string") continue;
+    if (!tester && (sub.is_sandbox === true || sub.store === "test_store")) continue;
+    const ends = new Date(sub.expires_date);
+    if (Number.isNaN(ends.getTime())) continue;
+    const store = storeOf(sub.store);
+    return {
+      productId,
+      trialEndsAt: ends,
+      store,
+      willNotRenew: !!sub.unsubscribe_detected_at,
+      billingIssue: !!sub.billing_issues_detected_at,
+      managementUrl: store === "web" ? httpsUrlOrNull(body.subscriber?.management_url) : null,
+    };
+  }
+  return null;
+}
+
+/** getTrialSubscription across every id the account's purchases can be under; the first trial found wins. */
+export async function getAccountTrialSubscription(
+  config: RevenueCatConfig,
+  userId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<TrialRead | null> {
+  for (const id of accountAppUserIds(config, userId)) {
+    const trial = await getTrialSubscription(config, id, fetchImpl, userId);
+    if (trial) return trial;
+  }
+  return null;
+}
+
 export type AccountSubscriberSummary = SubscriberSummary & {
   /**
    * The id the apps and the web checkout should give RevenueCat: the subscription identifier, unless this account's

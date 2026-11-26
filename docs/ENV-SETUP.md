@@ -55,6 +55,7 @@ first.
 | `AI_COST_ALERT_DAILY_TOTAL_USD`, `AI_COST_ALERT_DAILY_USER_USD`, `AI_COST_USD_PER_CAD`, `AI_COST_HEAVY_PRICE_CAD`, `AI_COST_HEAVY_SHARE` | O | cost dashboard/alerts |
 | `AI_MONTHLY_CAP_FREE_USD`, `AI_MONTHLY_CAP_PRO_USD`, `AI_MONTHLY_CAP_WARN_PERCENT`, `AI_MONTHLY_CAP_ENABLED` | O | per-learner monthly AI-cost cap (defaults in `ai-monthly-cap.ts`) |
 | `REPORT_NOTIFY_FROM`, `SUPPORT_NOTIFY_FROM` | O | email "from" addresses, sent through Resend (`RESEND_API_KEY`). Code defaults are `Alphonso Reports <reports@hello.learnwithalphonso.com>` (`report-notify.server.ts`) and `Learn with Alphonso Support team <support@hello.learnwithalphonso.com>` (`support-notify.server.ts`); the cost-alert and ops-alert sweeps have **no** default for `SUPPORT_NOTIFY_FROM` and skip the email with a log line when it is unset. Both variables are SET on the Vercel web Production environment (coordinator read-back 2026-11-22, names only; not re-readable from the agent API, which answers 403). The admin project does not read them |
+| `TRIAL_REMINDER_ENABLED`, `TRIAL_REMINDER_FROM` | O | trial-ending reminder email (OPEN-ITEMS 94). **Off unless `TRIAL_REMINDER_ENABLED` is `true`.** Sender defaults to `SUPPORT_NOTIFY_FROM`; `TRIAL_REMINDER_FROM` overrides. Runs inside `/api/internal/maintenance` |
 | `SENTRY_DSN`, `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY`, `VITE_TURNSTILE_SITE_KEY` | O | monitoring / analytics / captcha |
 | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | O (build) | source-map upload in `vite.config.ts`; all three or the plugin is off |
 
