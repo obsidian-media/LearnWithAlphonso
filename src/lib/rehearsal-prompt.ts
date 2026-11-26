@@ -1,0 +1,71 @@
+import type { Course } from "@/data/course-meta";
+import type { Level } from "@/data/levels";
+import { REHEARSAL_TEMPLATES } from "@/data/rehearsal-templates";
+import type { RehearsalBrief } from "./rehearsal-brief";
+import { fencedData } from "./rehearsal-fence";
+import type { EventKind, RunMemory, Stage } from "./rehearsal-rules";
+
+export type { RunMemory } from "./rehearsal-rules";
+
+/**
+ * The system prompt of one rehearsal stage, built on the server from a vetted template per course and stage
+ * (src/data/rehearsal-templates.ts), the rehearsal's brief and the memory of earlier runs. The app never sends prompt
+ * text: /api/chat takes `{rehearsal: {id, stage}}` and builds this itself.
+ *
+ * Layout: the template's role lines, the level, ONE fenced data block, then the template's behaviour, the opener rule,
+ * the general-only rule (appointment, housing), the AI-honesty rule and the closing reminder. Everything outside the
+ * block is fixed text chosen by (course, stage, event kind, level, whether there is memory); everything derived from
+ * the learner (the brief, the memory) is inside the block as quoted values, so a brief that says "ignore previous
+ * instructions" is only ever data. The server appends the verdict instruction and SAFETY_PREAMBLE after this.
+ */
+export function buildRehearsalPrompt(input: {
+  course: Course;
+  stage: Stage;
+  level: Level;
+  brief: RehearsalBrief;
+  runs: RunMemory[];
+  eventKind: EventKind;
+}): string {
+  const t = REHEARSAL_TEMPLATES[input.course];
+  const { brief, stage } = input;
+
+  const lastRun = [...input.runs].sort((a, b) => a.finishedAt.localeCompare(b.finishedAt)).at(-1);
+  const lastCorrection = lastRun?.corrections[0];
+  const handled = new Set(input.runs.flatMap((r) => r.wentWell));
+  const pending = brief.hardMoments.filter((m) => !handled.has(m.label));
+  const retry = pending[0];
+  const hasMemory = Boolean(lastCorrection) || (input.runs.length > 0 && Boolean(retry));
+
+  const fields: [string, string][] = [
+    ["setting", brief.setting],
+    ["counterpart_role", brief.persona.role],
+    ["counterpart_tone", brief.persona.tone],
+  ];
+  if (stage === "warmup") {
+    brief.keyPhrases.forEach((p, i) => fields.push([`key_phrase_${i + 1}`, p]));
+  } else if (stage === "conversation") {
+    brief.coreExchanges.forEach((e, i) => fields.push([`core_exchange_${i + 1}`, e]));
+  } else {
+    // The hard moments the learner has not yet handled well; all of them once every one has been.
+    const chosen = pending.length > 0 ? pending : brief.hardMoments;
+    chosen.forEach((m, i) => fields.push([`hard_moment_${i + 1}`, `${m.label}: ${m.prompt}`]));
+  }
+  if (input.runs.length > 0) {
+    fields.push(["runs_so_far", String(input.runs.length)]);
+    if (lastCorrection) fields.push(["last_correction", lastCorrection]);
+    if (retry && input.runs.length > 0) fields.push(["retry_moment", retry.label]);
+  }
+
+  const parts = [
+    t.stages[stage].role(t.event[input.eventKind]),
+    t.level(input.level),
+    fencedData(fields),
+    t.dataNote,
+    t.stages[stage].behaviour,
+    hasMemory ? t.withMemory : t.firstRun,
+    ...(input.eventKind === "appointment" || input.eventKind === "housing" ? [t.generalOnly] : []),
+    t.aiHonesty,
+    t.closing,
+  ];
+  return parts.join("\n\n");
+}

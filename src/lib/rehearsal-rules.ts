@@ -28,6 +28,18 @@ export const INTAKE_TEXT_MAX = 200;
 /** The free rehearsal is capped at this many runs in total, so its cost is bounded. */
 export const FREE_REHEARSAL_MAX_RUNS = 12;
 
+/**
+ * What one finished run taught the tutor (a rehearsal_runs row): moment labels and corrected forms only, never the
+ * learner's own words.
+ */
+export type RunMemory = {
+  stage: Stage;
+  finishedAt: string;
+  momentsShown: string[];
+  wentWell: string[];
+  corrections: string[];
+};
+
 export type CreateDecision = "ok_free" | "ok_pro" | "paywall" | "retry";
 
 /**
