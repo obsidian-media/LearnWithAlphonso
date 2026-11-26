@@ -1,5 +1,5 @@
 {
-  "$comment": "One answer-grading fixture set, run by web (vitest), Deno, iOS (Swift Kit) and Android (JVM core). Each case has kind, input and expected. runtimes (optional) lists where a case applies: absent means all four of web, deno, ios, android; typo-verdict and confusion exist only on web and deno. divergent (optional) maps a runtime to the verdict it produces TODAY when that differs from expected; the suites assert the recorded value, so fixing a runtime turns its case red until the marker is removed. Do not edit the iOS copy under ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures: a guard test fails when it differs from this file.",
+  "$comment": "One answer-grading fixture set, run by web (vitest), Deno, iOS (Swift Kit) and Android (JVM core). Each case has kind, input and expected. runtimes (optional) lists where a case applies: absent means all four of web, deno, ios, android; typo-verdict and confusion exist only on web and deno. Every runtime a case applies to must produce `expected`; there is no per-runtime exception. Do not edit the native copies (ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures and android/LearnWithAlphonso/core/src/test/resources) by hand: copy this file over them, because guard tests fail when they differ.",
   "version": 1,
   "cases": [
     {
@@ -120,12 +120,7 @@
       "kind": "fill",
       "answer": "i am here",
       "input": "i  am   here",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "fill-straight-apostrophe",
@@ -139,36 +134,21 @@
       "kind": "fill",
       "answer": "don't go",
       "input": "don\u2019t go",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "fill-curly-apostrophe-in-key",
       "kind": "fill",
       "answer": "l\u2019ami",
       "input": "l'ami",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "fill-spaces-hugging-apostrophe",
       "kind": "fill",
       "answer": "l'ami",
       "input": "l ' ami",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "fill-no-break-space-outer",
@@ -182,12 +162,7 @@
       "kind": "fill",
       "answer": "je suis",
       "input": "je\u00a0suis",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "fill-accent-matters-e",
@@ -271,11 +246,7 @@
       "kind": "fill",
       "answer": "café",
       "input": "cafe\u0301",
-      "expected": true,
-      "divergent": {
-        "android": false
-      },
-      "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
+      "expected": true
     },
     {
       "id": "reorder-exact",
@@ -331,12 +302,7 @@
       "kind": "reorder",
       "answer": "i am here",
       "input": "i  am   here",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "reorder-straight-apostrophe",
@@ -350,36 +316,21 @@
       "kind": "reorder",
       "answer": "don't go",
       "input": "don\u2019t go",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "reorder-curly-apostrophe-in-key",
       "kind": "reorder",
       "answer": "l\u2019ami",
       "input": "l'ami",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "reorder-spaces-hugging-apostrophe",
       "kind": "reorder",
       "answer": "l'ami",
       "input": "l ' ami",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "reorder-no-break-space-outer",
@@ -393,12 +344,7 @@
       "kind": "reorder",
       "answer": "je suis",
       "input": "je\u00a0suis",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "reorder-accent-matters-e",
@@ -482,11 +428,7 @@
       "kind": "reorder",
       "answer": "café",
       "input": "cafe\u0301",
-      "expected": true,
-      "divergent": {
-        "android": false
-      },
-      "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
+      "expected": true
     },
     {
       "id": "listening-exact",
@@ -542,12 +484,7 @@
       "kind": "listening",
       "answer": "i am here",
       "input": "i  am   here",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "listening-straight-apostrophe",
@@ -561,36 +498,21 @@
       "kind": "listening",
       "answer": "don't go",
       "input": "don\u2019t go",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "listening-curly-apostrophe-in-key",
       "kind": "listening",
       "answer": "l\u2019ami",
       "input": "l'ami",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "listening-spaces-hugging-apostrophe",
       "kind": "listening",
       "answer": "l'ami",
       "input": "l ' ami",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "listening-no-break-space-outer",
@@ -604,12 +526,7 @@
       "kind": "listening",
       "answer": "je suis",
       "input": "je\u00a0suis",
-      "expected": true,
-      "divergent": {
-        "ios": false,
-        "android": false
-      },
-      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+      "expected": true
     },
     {
       "id": "listening-accent-matters-e",
@@ -693,11 +610,7 @@
       "kind": "listening",
       "answer": "café",
       "input": "cafe\u0301",
-      "expected": true,
-      "divergent": {
-        "android": false
-      },
-      "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
+      "expected": true
     },
     {
       "id": "speak-en-exact",
@@ -2431,6 +2344,195 @@
       "runtimes": ["web", "deno"],
       "acceptable": ["I have a cat."],
       "input": "I have a cat.",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-different-word-after-apostrophe",
+      "kind": "fill",
+      "answer": "l'ami",
+      "input": "l'amie",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-different-word-after-curly-apostrophe",
+      "kind": "fill",
+      "answer": "l\u2019ami",
+      "input": "l\u2019amie",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-missing-apostrophe",
+      "kind": "fill",
+      "answer": "don't go",
+      "input": "dont go",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-apostrophe-typed-as-space",
+      "kind": "fill",
+      "answer": "don't go",
+      "input": "don t go",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-extra-word",
+      "kind": "fill",
+      "answer": "i am here",
+      "input": "i am here now",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-missing-word",
+      "kind": "fill",
+      "answer": "i am here",
+      "input": "i am",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-accent-dropped",
+      "kind": "fill",
+      "answer": "caf\u00e9",
+      "input": "cafe",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-accent-added",
+      "kind": "fill",
+      "answer": "cafe",
+      "input": "caf\u00e9",
+      "expected": false
+    },
+    {
+      "id": "fill-negative-wrong-accent",
+      "kind": "fill",
+      "answer": "caf\u00e9",
+      "input": "caf\u00e8",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-different-word-after-apostrophe",
+      "kind": "reorder",
+      "answer": "l'ami",
+      "input": "l'amie",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-different-word-after-curly-apostrophe",
+      "kind": "reorder",
+      "answer": "l\u2019ami",
+      "input": "l\u2019amie",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-missing-apostrophe",
+      "kind": "reorder",
+      "answer": "don't go",
+      "input": "dont go",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-apostrophe-typed-as-space",
+      "kind": "reorder",
+      "answer": "don't go",
+      "input": "don t go",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-extra-word",
+      "kind": "reorder",
+      "answer": "i am here",
+      "input": "i am here now",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-missing-word",
+      "kind": "reorder",
+      "answer": "i am here",
+      "input": "i am",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-accent-dropped",
+      "kind": "reorder",
+      "answer": "caf\u00e9",
+      "input": "cafe",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-accent-added",
+      "kind": "reorder",
+      "answer": "cafe",
+      "input": "caf\u00e9",
+      "expected": false
+    },
+    {
+      "id": "reorder-negative-wrong-accent",
+      "kind": "reorder",
+      "answer": "caf\u00e9",
+      "input": "caf\u00e8",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-different-word-after-apostrophe",
+      "kind": "listening",
+      "answer": "l'ami",
+      "input": "l'amie",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-different-word-after-curly-apostrophe",
+      "kind": "listening",
+      "answer": "l\u2019ami",
+      "input": "l\u2019amie",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-missing-apostrophe",
+      "kind": "listening",
+      "answer": "don't go",
+      "input": "dont go",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-apostrophe-typed-as-space",
+      "kind": "listening",
+      "answer": "don't go",
+      "input": "don t go",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-extra-word",
+      "kind": "listening",
+      "answer": "i am here",
+      "input": "i am here now",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-missing-word",
+      "kind": "listening",
+      "answer": "i am here",
+      "input": "i am",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-accent-dropped",
+      "kind": "listening",
+      "answer": "caf\u00e9",
+      "input": "cafe",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-accent-added",
+      "kind": "listening",
+      "answer": "cafe",
+      "input": "caf\u00e9",
+      "expected": false
+    },
+    {
+      "id": "listening-negative-wrong-accent",
+      "kind": "listening",
+      "answer": "caf\u00e9",
+      "input": "caf\u00e8",
       "expected": false
     }
   ]

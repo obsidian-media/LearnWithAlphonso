@@ -1,8 +1,8 @@
 import Foundation
 
 /// Whether `picked` is the correct answer to `question` -- multiple choice
-/// requires an exact choice match, fill-in-blank and reorder are both
-/// case-insensitive and trim whitespace (for reorder, `picked` is the
+/// requires an exact choice match, fill-in-blank, reorder and listening all use
+/// `normaliseFillAnswer` (the web's rules: curly apostrophes, spaces, case) (for reorder, `picked` is the
 /// tapped tokens already joined into one space-separated string -- see
 /// LessonPlayerView/ReviewQueueView's reorder UI). Client-side only, for
 /// immediate visual feedback and offline-optimistic grading; the server
@@ -17,16 +17,13 @@ public func isAnswerCorrect(_ question: Question, picked: String?, course: Cours
     case .multipleChoice(let q):
         return q.choices.indices.contains(q.answer) && q.choices[q.answer] == picked
     case .fillInBlank(let q):
-        return picked.trimmingCharacters(in: .whitespaces).lowercased()
-            == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
+        return fillAnswersMatch(picked, q.answer)
     case .reorder(let q):
-        return picked.trimmingCharacters(in: .whitespaces).lowercased()
-            == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
+        return fillAnswersMatch(picked, q.answer)
     case .listening(let q):
         // `answer` is the choice text, so this is the same comparison
         // fill-in-blank uses rather than an index lookup.
-        return picked.trimmingCharacters(in: .whitespaces).lowercased()
-            == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
+        return fillAnswersMatch(picked, q.answer)
     case .translate(let q):
         // Local-only on device, and deliberately so. The AI half of translate
         // grading runs server-side (/api/grade-translation, and grade-review

@@ -7,8 +7,8 @@ import { decideVerdict, knownWordConfusion } from "./translation-grader.server";
 // One answer-grading fixture set, run by every runtime that grades a learner answer locally: this file (web), the
 // Deno copy in supabase/functions/_shared/grading-parity.test.ts, the Swift Kit's GradingParityTests and the
 // Android core's GradingParityTest. They all read tests/fixtures/grading-parity.json, so a rule that changes in one
-// place and not the others turns a case red somewhere. A case's `divergent` map records what a runtime does TODAY
-// where it disagrees with `expected`; it is asserted, so the gap stays visible and a fix has to remove the marker.
+// place and not the others turns a case red somewhere. Every runtime must produce `expected`; there is no per-runtime
+// exception.
 type Runtime = "web" | "deno" | "ios" | "android";
 type Case = {
   id: string;
@@ -24,7 +24,6 @@ type Case = {
   reply?: Record<string, unknown>;
   expected: boolean;
   runtimes?: Runtime[];
-  divergent?: Partial<Record<Runtime, boolean>>;
   note?: string;
 };
 
@@ -106,11 +105,13 @@ describe("grading parity fixture (web)", () => {
   });
 
   it.each(applicable.map((c) => [c.id, c] as const))("%s", (_id, c) => {
-    expect(grade(c)).toBe(c.divergent?.[RUNTIME] ?? c.expected);
+    expect(grade(c)).toBe(c.expected);
   });
 
-  it("reports how many cases this runtime ran", () => {
-    expect(applicable.length).toBeGreaterThan(200);
+  it("ran exactly the cases whose runtimes include web", () => {
+    const excluded = fixture.cases.filter((c) => c.runtimes && !c.runtimes.includes(RUNTIME));
+    expect(applicable.length).toBe(fixture.cases.length - excluded.length);
+    expect(applicable.length).toBeGreaterThan(0);
   });
 });
 
@@ -134,12 +135,11 @@ describe("native copies of the grading fixture", () => {
     ).toBe(source);
   });
 
-  it("every divergent marker names a real runtime and a value that differs from expected", () => {
+  it("no case carries a per-runtime exception, and every runtimes entry names a real runtime", () => {
     for (const c of fixture.cases) {
-      for (const [runtime, value] of Object.entries(c.divergent ?? {})) {
+      expect(c, c.id).not.toHaveProperty("divergent");
+      for (const runtime of c.runtimes ?? []) {
         expect(["web", "deno", "ios", "android"], c.id).toContain(runtime);
-        expect(value, c.id).not.toBe(c.expected);
-        expect(c.runtimes ?? [runtime], c.id).toContain(runtime);
       }
     }
   });

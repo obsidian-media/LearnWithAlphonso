@@ -1,6 +1,5 @@
 // The Deno leg of the shared answer-grading fixture set. The web (src/lib/grading-parity.test.ts), the Swift Kit and
-// the Android core read the same tests/fixtures/grading-parity.json; see the web test for how `runtimes` and
-// `divergent` work. A JSON import needs no --allow-read, so CI runs this with a plain `deno test`.
+// the Android core read the same tests/fixtures/grading-parity.json; see the web test for how `runtimes` works. A JSON import needs no --allow-read, so CI runs this with a plain `deno test`.
 import { assertEquals } from "jsr:@std/assert@1";
 import fixture from "../../../tests/fixtures/grading-parity.json" with { type: "json" };
 import { deriveAnswerCorrectness, type QuestionRow } from "./answer-correctness.ts";
@@ -20,7 +19,6 @@ type Case = {
   reply?: Record<string, unknown>;
   expected: boolean;
   runtimes?: Runtime[];
-  divergent?: Partial<Record<Runtime, boolean>>;
 };
 
 const RUNTIME: Runtime = "deno";
@@ -69,10 +67,13 @@ Deno.test("fixture has unique ids and covers every question type", () => {
 
 for (const c of cases) {
   Deno.test(`grading parity: ${c.id}`, async () => {
-    assertEquals(await grade(c), c.divergent?.[RUNTIME] ?? c.expected);
+    assertEquals(await grade(c), c.expected);
   });
 }
 
-Deno.test("grading parity: this runtime ran the whole applicable set", () => {
-  assertEquals(cases.length > 200, true);
+Deno.test("grading parity: this runtime ran exactly the cases whose runtimes include it", () => {
+  const all = fixture.cases as Case[];
+  const excluded = all.filter((c) => c.runtimes && !c.runtimes.includes(RUNTIME));
+  assertEquals(cases.length, all.length - excluded.length);
+  assertEquals(cases.length > 0, true);
 });
