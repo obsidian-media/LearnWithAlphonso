@@ -1,4 +1,5 @@
 import { llmChatCompletion } from "./llm-chat.server";
+import { isRealWord } from "./grader-words";
 /**
  * The AI half of translate grading: asked only about submissions the curated
  * `acceptableAnswers` list has already rejected.
@@ -300,14 +301,23 @@ function allowedEdits(word: string, intended: string, twice: boolean): boolean {
  * (doubled or undoubled ones included), one swap of neighbouring letters, or one consonant confusion (b/v, d/t, c/k,
  * c/s, s/z, g/j, c/q). Two such slips are allowed when the intended word has 8 letters or more. A vowel
  * substitution is never a typo: it is another word (wrote/write, drank/drink, estoy/estay), as is any other
- * substitution (taken/token, wanted/wasted, lived/liked, comes/comen).
+ * substitution (taken/token, wanted/wasted, lived/liked, comes/comen). A word that is itself a real word of the
+ * course's language (`isRealWord`: world for word, though for through) is a different word, never a slip, whatever
+ * the model labelled it.
  */
 function narrowTypoOf(
   word: string,
   known: Set<string>,
   names: Set<string> = new Set(),
+  course: GraderCourse = "en",
 ): string | null {
-  if (word.length < 5 || known.has(word) || CONFUSABLE_SET.has(word) || names.has(word))
+  if (
+    word.length < 5 ||
+    known.has(word) ||
+    CONFUSABLE_SET.has(word) ||
+    names.has(word) ||
+    isRealWord(word, course)
+  )
     return null;
   let found: string | null = null;
   for (const k of known) {
@@ -321,11 +331,15 @@ function narrowTypoOf(
 type TypoPair = { written: string; near: string };
 
 /** The submission's words that are narrow typos, each with the word it was meant to be. */
-function typoPairs(submission: string, acceptableAnswers: string[]): TypoPair[] {
+function typoPairs(
+  submission: string,
+  acceptableAnswers: string[],
+  course: GraderCourse = "en",
+): TypoPair[] {
   const known = wordsOf(acceptableAnswers.join(" "));
   const names = namesIn(submission, known);
   return [...wordsOf(submission)].flatMap((w) => {
-    const near = narrowTypoOf(w, known, names);
+    const near = narrowTypoOf(w, known, names, course);
     return near ? [{ written: w, near }] : [];
   });
 }
@@ -440,6 +454,7 @@ export function decideVerdict(
   content: string,
   acceptableAnswers: string[] = [],
   submission = "",
+  course: GraderCourse = "en",
 ): AiTranslationVerdict | null {
   const start = content.indexOf("{");
   const end = content.lastIndexOf("}");
@@ -459,7 +474,7 @@ export function decideVerdict(
     // A flagged item that explicitly says it is about spelling and names a typo of a known word (the model sometimes
     // files a misspelling under `missing` or `grammar` instead of `spelling`) is not a reason to reject. Anything
     // about tense, mood, negation, meaning or a missing element stays, and so do real-word confusions.
-    const pairs = typoPairs(submission, acceptableAnswers);
+    const pairs = typoPairs(submission, acceptableAnswers, course);
     const knownWords = wordsOf(acceptableAnswers.join(" "));
     const names = namesIn(submission, knownWords);
     // The spelling remarks are trusted only for an answer that is otherwise exactly an accepted one.
@@ -492,7 +507,7 @@ export function decideVerdict(
       const written = typeof e.written === "string" ? e.written.trim() : "";
       if (!written) return [];
       const intended = typeof e.intended === "string" ? e.intended.trim() : "";
-      const near = trusted ? narrowTypoOf(written.toLowerCase(), knownWords, names) : null;
+      const near = trusted ? narrowTypoOf(written.toLowerCase(), knownWords, names, course) : null;
       const flaggedReal = e.written_is_real_word === true;
       if (near && (flaggedReal || !intended || near === intended.toLowerCase())) return [];
       return [
@@ -587,6 +602,7 @@ export async function gradeTranslationWithAi(args: {
       data.choices?.[0]?.message?.content ?? "",
       args.acceptableAnswers,
       args.submission,
+      args.course ?? "en",
     );
   } catch {
     return null;
