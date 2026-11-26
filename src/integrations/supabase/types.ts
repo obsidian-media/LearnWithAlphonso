@@ -2969,6 +2969,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      trial_reminder_scan: {
+        Row: {
+          id: boolean;
+          last_scan_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          last_scan_at?: string;
+        };
+        Update: {
+          id?: boolean;
+          last_scan_at?: string;
+        };
+        Relationships: [];
+      };
+      trial_reminders: {
+        Row: {
+          claimed_at: string;
+          trial_ends_at: string;
+          user_id: string;
+        };
+        Insert: {
+          claimed_at?: string;
+          trial_ends_at: string;
+          user_id: string;
+        };
+        Update: {
+          claimed_at?: string;
+          trial_ends_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       tutor_memory: {
         Row: {
           call_id: string | null;
