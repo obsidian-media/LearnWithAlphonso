@@ -4,14 +4,14 @@ import { PGlite } from "@electric-sql/pglite";
 import { beforeEach, describe, expect, it } from "vitest";
 
 const MIGRATIONS = path.join(process.cwd(), "supabase/migrations");
-const FILE = "20261128130000_trial_reminders.sql";
+const FILE = "20261128150000_trial_reminders.sql";
 const migration = readFileSync(path.join(MIGRATIONS, FILE), "utf8");
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
 describe("trial reminders migration ordering", () => {
   const files = readdirSync(MIGRATIONS).filter((f) => f.endsWith(".sql"));
-  it("sorts after the podcast drafts migration on main and has no duplicate version", () => {
-    expect(FILE.slice(0, 14) > "20261128120000").toBe(true);
+  it("sorts after the video drafts migration on main and has no duplicate version", () => {
+    expect(FILE.slice(0, 14) > "20261128140000").toBe(true);
     const versions = files.map((f) => f.slice(0, 14));
     expect(new Set(versions).size).toBe(versions.length);
   });
