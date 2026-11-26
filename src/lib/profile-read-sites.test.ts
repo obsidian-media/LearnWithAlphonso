@@ -33,6 +33,7 @@ const EXPECTED_SITES: Record<string, number> = {
   "src/lib/staff-support.server.ts": 2, // support inbox: display names of the assignee and staff authors on one ticket, and the learner's own name with users.read (service role)
   "src/lib/support-chat-runtime.server.ts": 1, // Help chat: display name of the staff author of a reply, reduced to a first name before it leaves the server (service role)
   "src/lib/support-notify.server.ts": 1, // reply notice: the staff author's display name, reduced to a first name for the notice label (service role)
+  "src/lib/trial-reminder.server.ts": 1, // trial reminder: the learner's own country code only, to decide whether RevenueCat's price applies to them (service role)
   "src/lib/staff-user-facts.server.ts": 1, // staff console learner page: display names of one learner and note authors (service role)
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+DisplayIdentity.swift": 2, // own GET + avatar_seed PATCH (the name goes through confirm_display_name)
   // 3 = own theme GET + PATCH, plus the PATCH shape quoted in the file's doc comment (line 13).
