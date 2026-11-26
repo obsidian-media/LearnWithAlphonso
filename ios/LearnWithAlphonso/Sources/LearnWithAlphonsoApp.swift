@@ -152,8 +152,8 @@ struct LearnWithAlphonsoApp: App {
                     if let code = FriendInviteLink.code(from: url) {
                         pendingInvite.code = code
                     } else {
-                        // A referral link (/?ref=<code>) that reached the app: kept until the account exists. Today the
-                        // site's app-link association covers /invite/ only, so this waits on that infra (see ReferralLink).
+                        // A referral link (/r/<code>, or the older /?ref=<code>) that reached the app: kept until the account exists. The
+                        // site's app-link association covers /invite/* and /r/* (see ReferralLink).
                         ReferralPending.capture(ReferralLink.code(from: url), store: UserDefaultsReferralStore())
                     }
                 }

@@ -39,7 +39,7 @@ data class ReferralInviteState(
 /**
  * The Invite screen's state. It only DISPLAYS and CLAIMS: whether anything is granted is decided on the server after the
  * friend's first completed lesson. A new learner whose link did not open the app types or pastes the code ("Got an invite
- * code?"), the manual fallback while `/?ref=` is not an app link. Port of ReferralInviteView.swift.
+ * code?"), the manual fallback for a link that did not open the app. Port of ReferralInviteView.swift.
  */
 class ReferralInviteViewModel(
     private val client: ProgressSyncClient,

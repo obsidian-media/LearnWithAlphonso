@@ -73,7 +73,7 @@ describe("Invite friends screen", () => {
       expect(el).not.toBeNull();
       return el!.textContent!;
     });
-    expect(link).toBe(`${window.location.origin}/?ref=AbCd1234`);
+    expect(link).toBe(`${window.location.origin}/r/AbCd1234`);
     fireEvent.click(screen.getByRole("button", { name: REFERRAL_COPY.copy }));
     await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith(link));
     expect(await screen.findByRole("button", { name: REFERRAL_COPY.copied })).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe("Invite friends screen", () => {
     fireEvent.click(await screen.findByRole("button", { name: REFERRAL_COPY.share }));
     await waitFor(() =>
       expect(share).toHaveBeenCalledWith(
-        expect.objectContaining({ url: `${window.location.origin}/?ref=AbCd1234` }),
+        expect.objectContaining({ url: `${window.location.origin}/r/AbCd1234` }),
       ),
     );
   });

@@ -4,6 +4,8 @@ import {
   REFERRAL_MONTHLY_CAP,
   REFERRAL_STORAGE_KEY,
   captureRef,
+  captureRefCode,
+  parseRefCode,
   capReached,
   claimIsFinal,
   claimPendingRef,
@@ -42,6 +44,28 @@ describe("capturing a ?ref= code", () => {
 
   it("puts back the + that a query string turns into a space", () => {
     expect(parseRefParam("?ref=ab+cd/ef")).toBe("ab+cd/ef");
+  });
+
+  it("keeps a code from the /r/<code> share link in the same slot ?ref= uses, and the claim path reads it", async () => {
+    const s = memoryStore();
+    captureRefCode("29d081151d67", s, 1000);
+    expect(readPendingRef(s, 2000)).toBe("29d081151d67");
+    const claim = vi.fn(async (): Promise<ClaimResult> => ({ ok: true }));
+    expect(await claimPendingRef(s, claim, 2000)).toBe("claimed");
+    expect(claim).toHaveBeenCalledWith("29d081151d67");
+  });
+
+  it("ignores a junk code from the share link and keeps the first code", () => {
+    const s = memoryStore();
+    for (const junk of ["", "a", "<script>", "a".repeat(33), "has space!", null, undefined]) {
+      captureRefCode(junk, s, 1000);
+    }
+    expect(readPendingRef(s, 1000)).toBeNull();
+    captureRefCode("FirstCode1", s, 1000);
+    captureRefCode("SecondCode2", s, 2000);
+    expect(readPendingRef(s, 3000)).toBe("FirstCode1");
+    expect(parseRefCode("ab%2Bc")).toBeNull();
+    expect(parseRefCode(" ab+cd ")).toBe("ab+cd");
   });
 
   it("keeps the first code: a later link never replaces it", () => {
@@ -130,7 +154,7 @@ describe("the Invite screen's numbers", () => {
   const NOW = Date.UTC(2026, 10, 17, 12);
   it("builds the link", () => {
     expect(referralLink("https://learnwithalphonso.com/", "ab+c/d=")).toBe(
-      "https://learnwithalphonso.com/?ref=ab%2Bc%2Fd%3D",
+      "https://learnwithalphonso.com/r/ab%2Bc%2Fd%3D",
     );
   });
 

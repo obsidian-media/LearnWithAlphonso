@@ -6,7 +6,9 @@ describe("apple-app-site-association", () => {
     const aasa = appleAppSiteAssociation();
     expect(aasa.applinks.details[0].appIDs).toEqual([IOS_APP_ID]);
     expect(IOS_APP_ID.endsWith(".com.obsidianmedia.learnwithalphonso")).toBe(true);
-    expect(aasa.applinks.details[0].components).toEqual([{ "/": "/invite/*" }]);
+    expect(aasa.applinks.details[0].components).toEqual([{ "/": "/invite/*" }, { "/": "/r/*" }]);
+    // The root path must never be an app link: it would catch every link to the home page.
+    expect(JSON.stringify(aasa)).not.toContain('"/":"/"');
   });
 
   it("is served as JSON by the route", async () => {
