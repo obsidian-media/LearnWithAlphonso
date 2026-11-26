@@ -2007,120 +2007,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      rehearsal_free_used: {
-        Row: {
-          used_at: string;
-          user_id: string;
-        };
-        Insert: {
-          used_at?: string;
-          user_id: string;
-        };
-        Update: {
-          used_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
-      rehearsal_runs: {
-        Row: {
-          corrections: string[];
-          finished_at: string;
-          id: string;
-          moments_shown: string[];
-          practice_call_id: string | null;
-          rehearsal_id: string;
-          stage: string;
-          user_id: string;
-          went_well: string[];
-        };
-        Insert: {
-          corrections?: string[];
-          finished_at?: string;
-          id?: string;
-          moments_shown?: string[];
-          practice_call_id?: string | null;
-          rehearsal_id: string;
-          stage: string;
-          user_id: string;
-          went_well?: string[];
-        };
-        Update: {
-          corrections?: string[];
-          finished_at?: string;
-          id?: string;
-          moments_shown?: string[];
-          practice_call_id?: string | null;
-          rehearsal_id?: string;
-          stage?: string;
-          user_id?: string;
-          went_well?: string[];
-        };
-        Relationships: [
-          {
-            foreignKeyName: "rehearsal_runs_practice_call_id_fkey";
-            columns: ["practice_call_id"];
-            isOneToOne: false;
-            referencedRelation: "practice_calls";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "rehearsal_runs_rehearsal_id_fkey";
-            columns: ["rehearsal_id"];
-            isOneToOne: false;
-            referencedRelation: "rehearsals";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      rehearsals: {
-        Row: {
-          brief: NonNullable<Json>;
-          closed_at: string | null;
-          counterpart: string;
-          course: string;
-          created_at: string;
-          event_date: string | null;
-          event_kind: string;
-          free: boolean;
-          id: string;
-          outcome: Json | null;
-          status: string;
-          user_id: string;
-          worries: string | null;
-        };
-        Insert: {
-          brief: NonNullable<Json>;
-          closed_at?: string | null;
-          counterpart: string;
-          course: string;
-          created_at?: string;
-          event_date?: string | null;
-          event_kind: string;
-          free: boolean;
-          id?: string;
-          outcome?: Json | null;
-          status?: string;
-          user_id: string;
-          worries?: string | null;
-        };
-        Update: {
-          brief?: NonNullable<Json>;
-          closed_at?: string | null;
-          counterpart?: string;
-          course?: string;
-          created_at?: string;
-          event_date?: string | null;
-          event_kind?: string;
-          free?: boolean;
-          id?: string;
-          outcome?: Json | null;
-          status?: string;
-          user_id?: string;
-          worries?: string | null;
-        };
-        Relationships: [];
-      };
       revenuecat_erasure_pending: {
         Row: {
           app_user_id: string;
@@ -3624,38 +3510,6 @@ export type Database = {
       };
       add_skill_results: { Args: { _results: Json; _user_id: string }; Returns: number };
       add_speech_seconds: { Args: { _seconds: number; _user_id: string }; Returns: string };
-      adjust_rehearsal: {
-        Args: {
-          _brief: Json;
-          _counterpart: string;
-          _event_date: string;
-          _event_kind: string;
-          _id: string;
-          _user_id: string;
-          _worries: string;
-        };
-        Returns: {
-          brief: NonNullable<Json>;
-          closed_at: string | null;
-          counterpart: string;
-          course: string;
-          created_at: string;
-          event_date: string | null;
-          event_kind: string;
-          free: boolean;
-          id: string;
-          outcome: Json | null;
-          status: string;
-          user_id: string;
-          worries: string | null;
-        };
-        SetofOptions: {
-          from: "*";
-          to: "rehearsals";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
       admin_ai_cost: { Args: { p_days: number; p_heavy_micro: number }; Returns: Json };
       admin_ai_cost_capped: { Args: { p_free_micro: number; p_pro_micro: number }; Returns: Json };
       admin_numbers_growth: { Args: { p_days: number }; Returns: Json };
@@ -3767,30 +3621,6 @@ export type Database = {
           status: string;
         }[];
       };
-      cancel_rehearsal: {
-        Args: { _id: string; _user_id: string };
-        Returns: {
-          brief: NonNullable<Json>;
-          closed_at: string | null;
-          counterpart: string;
-          course: string;
-          created_at: string;
-          event_date: string | null;
-          event_kind: string;
-          free: boolean;
-          id: string;
-          outcome: Json | null;
-          status: string;
-          user_id: string;
-          worries: string | null;
-        };
-        SetofOptions: {
-          from: "*";
-          to: "rehearsals";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
       claim_ai_cost_alert_day: { Args: { p_day: string }; Returns: boolean };
       claim_call_recap: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
       claim_device_token: { Args: { _platform: string; _token: string }; Returns: undefined };
@@ -3855,39 +3685,6 @@ export type Database = {
           ok: boolean;
           reason: string;
         }[];
-      };
-      create_rehearsal: {
-        Args: {
-          _brief: Json;
-          _counterpart: string;
-          _course: string;
-          _event_date: string;
-          _event_kind: string;
-          _free: boolean;
-          _user_id: string;
-          _worries: string;
-        };
-        Returns: {
-          brief: NonNullable<Json>;
-          closed_at: string | null;
-          counterpart: string;
-          course: string;
-          created_at: string;
-          event_date: string | null;
-          event_kind: string;
-          free: boolean;
-          id: string;
-          outcome: Json | null;
-          status: string;
-          user_id: string;
-          worries: string | null;
-        };
-        SetofOptions: {
-          from: "*";
-          to: "rehearsals";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
       };
       create_team: {
         Args: { _member_cap?: number; _name: string; _visibility?: string };
@@ -4253,7 +4050,6 @@ export type Database = {
         Args: { p_campaign: string; p_landed_at: string; p_medium: string; p_source: string };
         Returns: string;
       };
-      rehearsal_text_array_ok: { Args: { items: string[] }; Returns: boolean };
       release_ai_cost_alert_day: { Args: { p_day: string }; Returns: undefined };
       release_call_recap: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
       release_hector_call: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
