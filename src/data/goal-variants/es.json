@@ -1,1 +1,1974 @@
-{}
+{
+  "esa2p10l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Quisiera una habitación para dos personas, por favor.",
+        "choices": [
+          "Quisiera una habitación para tres personas, por favor.",
+          "Quisiera una habitación para dos personas, por favor.",
+          "Quisiera una mesa para dos personas, por favor.",
+          "Quisiera una habitación para dos noches, por favor."
+        ],
+        "answer": "Quisiera una habitación para dos personas, por favor.",
+        "explanation": "\"Quisiera una habitación para dos personas, por favor.\" means \"I would like a room for two people, please\". \"Quisiera\" is a polite way to ask for something, and the other choices change the thing or the number."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Quisiera una sala para seis personas, por favor.",
+        "choices": [
+          "Quisiera una sala para cinco personas, por favor.",
+          "Quisiera una sala para siete personas, por favor.",
+          "Quisiera una mesa para seis personas, por favor.",
+          "Quisiera una sala para seis personas, por favor."
+        ],
+        "answer": "Quisiera una sala para seis personas, por favor.",
+        "explanation": "\"Quisiera una sala para seis personas, por favor.\" means \"I would like a room for six people, please\". \"Quisiera\" is a polite way to ask for something, and the other choices change the thing or the number."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Quisiera este libro por tres semanas, por favor.",
+        "choices": [
+          "Quisiera este libro por tres semanas, por favor.",
+          "Quisiera este libro por dos semanas, por favor.",
+          "Quisiera este libro por tres días, por favor.",
+          "Quisiera ese libro por tres semanas, por favor."
+        ],
+        "answer": "Quisiera este libro por tres semanas, por favor.",
+        "explanation": "\"Quisiera este libro por tres semanas, por favor.\" means \"I would like this book for three weeks, please\". \"Quisiera\" is a polite way to ask for something, and the other choices change the thing or the number."
+      }
+    }
+  },
+  "esa2p10l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "Politely ask the hotel restaurant server whether they have vegetarian choices on the menu.",
+        "acceptableAnswers": [
+          "¿Tienen opciones vegetarianas en el menú?",
+          "¿Hay opciones vegetarianas en el menú?",
+          "¿Tienen platos vegetarianos en el menú?",
+          "¿Tienen algo vegetariano en el menú?"
+        ],
+        "explanation": "\"¿Tienen opciones vegetarianas en el menú?\" means \"Do you have vegetarian choices on the menu?\" \"Tienen\" is a polite way to ask whether a place offers something, using the ustedes form."
+      },
+      "work": {
+        "prompt": "At a business lunch, politely ask the server whether they have gluten-free choices.",
+        "acceptableAnswers": [
+          "¿Tienen opciones sin gluten?",
+          "¿Hay opciones sin gluten?",
+          "¿Tienen platos sin gluten?",
+          "¿Tienen algo sin gluten?"
+        ],
+        "explanation": "\"¿Tienen opciones sin gluten?\" means \"Do you have gluten-free choices?\" \"Tienen\" is a polite way to ask whether a place offers something, using the ustedes form."
+      },
+      "school": {
+        "prompt": "At the school cafeteria, politely ask the server whether they have healthy choices.",
+        "acceptableAnswers": [
+          "¿Tienen opciones saludables?",
+          "¿Hay opciones saludables?",
+          "¿Tienen platos saludables?",
+          "¿Tienen algo saludable?"
+        ],
+        "explanation": "\"¿Tienen opciones saludables?\" means \"Do you have healthy choices?\" \"Tienen\" is a polite way to ask whether a place offers something, using the ustedes form."
+      }
+    }
+  },
+  "esa2p10l3": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "¿Me trae el menú, por favor?",
+        "explanation": "\"¿Me trae el menú, por favor?\" means \"Can you bring me the menu, please\". \"Me trae\" is a polite way to ask a server for something, using usted."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "¿Me trae otro café, por favor?",
+        "explanation": "\"¿Me trae otro café, por favor?\" means \"Can you bring me another coffee, please\". \"Me trae\" is a polite way to ask a server for something, using usted."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "¿Me trae un vaso de agua, por favor?",
+        "explanation": "\"¿Me trae un vaso de agua, por favor?\" means \"Can you bring me a glass of water, please\". \"Me trae\" is a polite way to ask a server for something, using usted."
+      }
+    }
+  },
+  "esa2p11l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Tell the hotel receptionist that you have a headache and a fever.",
+        "acceptableAnswers": [
+          "Tengo dolor de cabeza y fiebre.",
+          "Tengo fiebre y dolor de cabeza.",
+          "Me duele la cabeza y tengo fiebre.",
+          "Tengo un dolor de cabeza y fiebre."
+        ],
+        "explanation": "\"Tengo dolor de cabeza y fiebre.\" means \"I have a headache and a fever\". \"Tengo\" with a noun says what you have, and \"me duele\" or \"dolor de\" names where it hurts."
+      },
+      "work": {
+        "prompt": "Tell your boss that you have a headache and a cough.",
+        "acceptableAnswers": [
+          "Tengo dolor de cabeza y tos.",
+          "Tengo tos y dolor de cabeza.",
+          "Me duele la cabeza y tengo tos.",
+          "Tengo un dolor de cabeza y tos."
+        ],
+        "explanation": "\"Tengo dolor de cabeza y tos.\" means \"I have a headache and a cough\". \"Tengo\" with a noun says what you have, and \"me duele\" or \"dolor de\" names where it hurts."
+      },
+      "school": {
+        "prompt": "Tell your teacher that you have a stomachache and a fever.",
+        "acceptableAnswers": [
+          "Tengo dolor de estómago y fiebre.",
+          "Tengo fiebre y dolor de estómago.",
+          "Me duele el estómago y tengo fiebre.",
+          "Tengo un dolor de estómago y fiebre."
+        ],
+        "explanation": "\"Tengo dolor de estómago y fiebre.\" means \"I have a stomachache and a fever\". \"Tengo\" with a noun says what you have, and \"me duele\" or \"dolor de\" names where it hurts."
+      }
+    }
+  },
+  "esa2p12l1": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "¿Dónde está la recepción?",
+        "explanation": "\"¿Dónde está la recepción?\" means \"Where is the reception desk\". \"Dónde está\" asks where one thing is, and the article agrees with the noun."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "¿Dónde está la sala de reuniones?",
+        "explanation": "\"¿Dónde está la sala de reuniones?\" means \"Where is the meeting room\". \"Dónde está\" asks where one thing is, and the article agrees with the noun."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "¿Dónde está la biblioteca?",
+        "explanation": "\"¿Dónde está la biblioteca?\" means \"Where is the library\". \"Dónde está\" asks where one thing is, and the article agrees with the noun."
+      }
+    }
+  },
+  "esa2p13l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Mañana voy a la playa con mi amiga.",
+        "choices": [
+          "Mañana voy a la playa con mi hermana.",
+          "Mañana voy a la plaza con mi amiga.",
+          "Hoy voy a la playa con mi amiga.",
+          "Mañana voy a la playa con mi amiga."
+        ],
+        "answer": "Mañana voy a la playa con mi amiga.",
+        "explanation": "\"Mañana voy a la playa con mi amiga.\" means \"Tomorrow I am going to the beach with my friend\". \"Mañana voy\" says where you are going tomorrow, and the other choices change the day, the place or the person."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Mañana voy al banco con mi colega.",
+        "choices": [
+          "Mañana voy al banco con mi jefe.",
+          "Mañana voy al museo con mi colega.",
+          "Hoy voy al banco con mi colega.",
+          "Mañana voy al banco con mi colega."
+        ],
+        "answer": "Mañana voy al banco con mi colega.",
+        "explanation": "\"Mañana voy al banco con mi colega.\" means \"Tomorrow I am going to the bank with my colleague\". \"Mañana voy\" says where you are going tomorrow, and the other choices change the day, the place or the person."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Mañana voy al parque con mi amiga.",
+        "choices": [
+          "Mañana voy al parque con mi prima.",
+          "Mañana voy al museo con mi amiga.",
+          "Hoy voy al parque con mi amiga.",
+          "Mañana voy al parque con mi amiga."
+        ],
+        "answer": "Mañana voy al parque con mi amiga.",
+        "explanation": "\"Mañana voy al parque con mi amiga.\" means \"Tomorrow I am going to the park with my friend\". \"Mañana voy\" says where you are going tomorrow, and the other choices change the day, the place or the person."
+      }
+    }
+  },
+  "esa2p13l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Voy al museo y a la plaza",
+        "explanation": "\"Voy al museo y a la plaza\" means \"I am going to the museum and the square\". \"voy a\" says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Voy al banco y a la oficina",
+        "explanation": "\"Voy al banco y a la oficina\" means \"I am going to the bank and the office\". \"voy a\" says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Voy a la biblioteca y a la cafetería",
+        "explanation": "\"Voy a la biblioteca y a la cafetería\" means \"I am going to the library and the cafeteria\". \"voy a\" says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you are going to the market tomorrow.",
+        "acceptableAnswers": [
+          "Mañana voy al mercado.",
+          "Voy al mercado mañana.",
+          "Mañana yo voy al mercado.",
+          "Mañana iré al mercado."
+        ],
+        "explanation": "\"Mañana voy al mercado.\" means \"Tomorrow I am going to the market\". \"voy a\" plus a place says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+      },
+      "work": {
+        "prompt": "Say that you are going to the post office tomorrow.",
+        "acceptableAnswers": [
+          "Mañana voy al correo.",
+          "Voy al correo mañana.",
+          "Mañana yo voy al correo.",
+          "Mañana voy a la oficina de correos."
+        ],
+        "explanation": "\"Mañana voy al correo.\" means \"Tomorrow I am going to the post office\". \"voy a\" plus a place says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+      },
+      "school": {
+        "prompt": "Say that you are going to the cafeteria tomorrow.",
+        "acceptableAnswers": [
+          "Mañana voy a la cafetería.",
+          "Voy a la cafetería mañana.",
+          "Mañana yo voy a la cafetería.",
+          "Mañana iré a la cafetería."
+        ],
+        "explanation": "\"Mañana voy a la cafetería.\" means \"Tomorrow I am going to the cafeteria\". \"voy a\" plus a place says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+      }
+    }
+  },
+  "esa2p14l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you need your cell phone charger for the trip.",
+        "acceptableAnswers": [
+          "Necesito el cargador de mi celular para el viaje.",
+          "Yo necesito el cargador de mi celular para el viaje.",
+          "Necesito el cargador para mi celular durante el viaje.",
+          "Me hace falta el cargador de mi celular para el viaje."
+        ],
+        "explanation": "\"Necesito el cargador de mi celular para el viaje.\" means \"I need my cell phone charger for the trip\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: el cargador de mi celular."
+      },
+      "work": {
+        "prompt": "Say that you need the charger for your laptop.",
+        "acceptableAnswers": [
+          "Necesito el cargador de mi computadora.",
+          "Yo necesito el cargador de mi computadora.",
+          "Necesito el cargador para mi computadora.",
+          "Me hace falta el cargador de mi computadora."
+        ],
+        "explanation": "\"Necesito el cargador de mi computadora.\" means \"I need the charger for my laptop\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: el cargador de mi celular."
+      },
+      "school": {
+        "prompt": "Say that you need the charger for your tablet.",
+        "acceptableAnswers": [
+          "Necesito el cargador de mi tableta.",
+          "Yo necesito el cargador de mi tableta.",
+          "Necesito el cargador para mi tableta.",
+          "Me hace falta el cargador de mi tableta."
+        ],
+        "explanation": "\"Necesito el cargador de mi tableta.\" means \"I need the charger for my tablet\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: el cargador de mi celular."
+      }
+    }
+  },
+  "esa2p15l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Visito un museo una vez a la semana",
+        "explanation": "\"Visito un museo una vez a la semana\" means \"I visit a museum once a week\". \"una vez a la semana\" means once a week, and the verb ends in -o with yo."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Tengo una reunión una vez a la semana",
+        "explanation": "\"Tengo una reunión una vez a la semana\" means \"I have a meeting once a week\". \"una vez a la semana\" means once a week, and the verb ends in -o with yo."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Voy a la biblioteca una vez a la semana",
+        "explanation": "\"Voy a la biblioteca una vez a la semana\" means \"I go to the library once a week\". \"una vez a la semana\" means once a week, and the verb ends in -o with yo."
+      }
+    }
+  },
+  "esa2p16l1": {
+    "esa2p16q0": {
+      "travel": {
+        "prompt": "Yo ___ (ir) a visitar el museo mañana.",
+        "choices": [
+          "voy",
+          "vas",
+          "va",
+          "van"
+        ],
+        "answer": 0,
+        "explanation": "With \"yo\", the verb \"ir\" is \"voy\" before \"a\" and an infinitive. Yo voy a visitar el museo mañana. (I am going to visit the museum tomorrow)"
+      },
+      "work": {
+        "prompt": "Yo ___ (ir) a escribir el informe esta noche.",
+        "choices": [
+          "voy",
+          "vas",
+          "va",
+          "van"
+        ],
+        "answer": 0,
+        "explanation": "With \"yo\", the verb \"ir\" is \"voy\" before \"a\" and an infinitive. Yo voy a escribir el informe esta noche. (I am going to write the report tonight)"
+      },
+      "school": {
+        "prompt": "Yo ___ (ir) a estudiar en la biblioteca esta noche.",
+        "choices": [
+          "voy",
+          "vas",
+          "va",
+          "van"
+        ],
+        "answer": 0,
+        "explanation": "With \"yo\", the verb \"ir\" is \"voy\" before \"a\" and an infinitive. Yo voy a estudiar en la biblioteca esta noche. (I am going to study at the library tonight)"
+      }
+    },
+    "esa2p16q2": {
+      "travel": {
+        "prompt": "Ella ___ (ir) a viajar a Cancún mañana.",
+        "choices": [
+          "vas",
+          "voy",
+          "va",
+          "van"
+        ],
+        "answer": 2,
+        "explanation": "With \"ella\", the verb \"ir\" is \"va\" before \"a\" and an infinitive. Ella va a viajar a Cancún mañana. (She is going to travel to Cancún tomorrow)"
+      },
+      "work": {
+        "prompt": "Ella ___ (ir) a presentar el proyecto mañana.",
+        "choices": [
+          "vas",
+          "voy",
+          "va",
+          "van"
+        ],
+        "answer": 2,
+        "explanation": "With \"ella\", the verb \"ir\" is \"va\" before \"a\" and an infinitive. Ella va a presentar el proyecto mañana. (She is going to present the project tomorrow)"
+      },
+      "school": {
+        "prompt": "Ella ___ (ir) a presentar su tarea mañana.",
+        "choices": [
+          "vas",
+          "voy",
+          "va",
+          "van"
+        ],
+        "answer": 2,
+        "explanation": "With \"ella\", the verb \"ir\" is \"va\" before \"a\" and an infinitive. Ella va a presentar su tarea mañana. (She is going to present her homework tomorrow)"
+      }
+    },
+    "esa2p16q3": {
+      "travel": {
+        "prompt": "Nosotros ___ (ir) a comer en el hotel.",
+        "bank": [
+          "voy",
+          "vamos",
+          "van",
+          "va"
+        ],
+        "answer": "vamos",
+        "explanation": "With \"nosotros\", the verb \"ir\" is \"vamos\" before \"a\" and an infinitive. Nosotros vamos a comer en el hotel. (We are going to eat at the hotel)"
+      },
+      "work": {
+        "prompt": "Nosotros ___ (ir) a comer con el cliente.",
+        "bank": [
+          "voy",
+          "vamos",
+          "van",
+          "va"
+        ],
+        "answer": "vamos",
+        "explanation": "With \"nosotros\", the verb \"ir\" is \"vamos\" before \"a\" and an infinitive. Nosotros vamos a comer con el cliente. (We are going to eat with the client)"
+      },
+      "school": {
+        "prompt": "Nosotros ___ (ir) a comer en la cafetería.",
+        "bank": [
+          "voy",
+          "vamos",
+          "van",
+          "va"
+        ],
+        "answer": "vamos",
+        "explanation": "With \"nosotros\", the verb \"ir\" is \"vamos\" before \"a\" and an infinitive. Nosotros vamos a comer en la cafetería. (We are going to eat in the cafeteria)"
+      }
+    }
+  },
+  "esa2p16l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Vamos a cenar en el hotel esta noche",
+        "explanation": "\"Vamos a cenar en el hotel esta noche\" means \"We are going to have dinner at the hotel tonight\". \"Vamos a\" plus an infinitive says what we are going to do."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Vamos a cenar con el cliente esta noche",
+        "explanation": "\"Vamos a cenar con el cliente esta noche\" means \"We are going to have dinner with the client tonight\". \"Vamos a\" plus an infinitive says what we are going to do."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Vamos a estudiar en la biblioteca esta noche",
+        "explanation": "\"Vamos a estudiar en la biblioteca esta noche\" means \"We are going to study at the library tonight\". \"Vamos a\" plus an infinitive says what we are going to do."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you are going to visit the museum with a friend tomorrow.",
+        "acceptableAnswers": [
+          "Mañana voy a visitar el museo con un amigo.",
+          "Voy a visitar el museo con un amigo mañana.",
+          "Mañana yo voy a visitar el museo con un amigo.",
+          "Mañana visitaré el museo con un amigo."
+        ],
+        "explanation": "\"Mañana voy a visitar el museo con un amigo.\" means \"Tomorrow I am going to visit the museum with a friend\". \"voy a\" plus an infinitive is the near future, and \"con\" joins who you do it with."
+      },
+      "work": {
+        "prompt": "Say that you are going to see a client tomorrow.",
+        "acceptableAnswers": [
+          "Mañana voy a ver a un cliente.",
+          "Voy a ver a un cliente mañana.",
+          "Mañana yo voy a ver a un cliente.",
+          "Mañana veré a un cliente."
+        ],
+        "explanation": "\"Mañana voy a ver a un cliente.\" means \"Tomorrow I am going to see a client\". \"voy a\" plus an infinitive is the near future, and \"con\" joins who you do it with."
+      },
+      "school": {
+        "prompt": "Say that you are going to study with a classmate (a girl) tomorrow.",
+        "acceptableAnswers": [
+          "Mañana voy a estudiar con mi compañera de clase.",
+          "Voy a estudiar con mi compañera de clase mañana.",
+          "Mañana yo voy a estudiar con mi compañera de clase.",
+          "Mañana estudiaré con mi compañera de clase."
+        ],
+        "explanation": "\"Mañana voy a estudiar con mi compañera de clase.\" means \"Tomorrow I am going to study with a classmate\". \"voy a\" plus an infinitive is the near future, and \"con\" joins who you do it with."
+      }
+    }
+  },
+  "esa2p16l3": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Mañana vamos a cenar en el hotel.",
+        "choices": [
+          "Hoy vamos a cenar en el hotel.",
+          "Mañana vamos a cenar en la playa.",
+          "Mañana vamos a comer en el hotel.",
+          "Mañana vamos a cenar en el hotel."
+        ],
+        "answer": "Mañana vamos a cenar en el hotel.",
+        "explanation": "\"Mañana vamos a cenar en el hotel.\" means \"Tomorrow we are going to have dinner at the hotel\". \"Mañana vamos a\" says what we will do tomorrow, and the other choices change the day, the verb or the place."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Mañana vamos a cenar con el cliente.",
+        "choices": [
+          "Mañana vamos a cenar con el jefe.",
+          "Mañana vamos a cenar con el cliente.",
+          "Mañana vamos a comer con el cliente.",
+          "Hoy vamos a cenar con el cliente."
+        ],
+        "answer": "Mañana vamos a cenar con el cliente.",
+        "explanation": "\"Mañana vamos a cenar con el cliente.\" means \"Tomorrow we are going to have dinner with the client\". \"Mañana vamos a\" says what we will do tomorrow, and the other choices change the day, the verb or the place."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Mañana vamos a estudiar en la biblioteca.",
+        "choices": [
+          "Mañana vamos a estudiar en la cafetería.",
+          "Mañana vamos a comer en la biblioteca.",
+          "Hoy vamos a estudiar en la biblioteca.",
+          "Mañana vamos a estudiar en la biblioteca."
+        ],
+        "answer": "Mañana vamos a estudiar en la biblioteca.",
+        "explanation": "\"Mañana vamos a estudiar en la biblioteca.\" means \"Tomorrow we are going to study at the library\". \"Mañana vamos a\" says what we will do tomorrow, and the other choices change the day, the verb or the place."
+      }
+    }
+  },
+  "esa2p1l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you want a room with a view.",
+        "acceptableAnswers": [
+          "Quiero una habitación con vista.",
+          "Yo quiero una habitación con vista.",
+          "Quisiera una habitación con vista.",
+          "Me gustaría una habitación con vista."
+        ],
+        "explanation": "\"Quiero una habitación con vista.\" means \"I want a room with a view\". \"Quiero\" is \"querer\" with yo, and \"con\" joins what comes with it."
+      },
+      "work": {
+        "prompt": "Say that you want a coffee with milk before the meeting.",
+        "acceptableAnswers": [
+          "Quiero un café con leche antes de la reunión.",
+          "Yo quiero un café con leche antes de la reunión.",
+          "Antes de la reunión quiero un café con leche.",
+          "Quisiera un café con leche antes de la reunión."
+        ],
+        "explanation": "\"Quiero un café con leche antes de la reunión.\" means \"I want a coffee with milk before the meeting\". \"Quiero\" is \"querer\" with yo, and \"con\" joins what comes with it."
+      },
+      "school": {
+        "prompt": "Say that you want a sandwich with cheese for lunch.",
+        "acceptableAnswers": [
+          "Quiero un sándwich con queso para el almuerzo.",
+          "Yo quiero un sándwich con queso para el almuerzo.",
+          "Para el almuerzo quiero un sándwich con queso.",
+          "Quisiera un sándwich con queso para el almuerzo."
+        ],
+        "explanation": "\"Quiero un sándwich con queso para el almuerzo.\" means \"I want a cheese sandwich for lunch\". \"Quiero\" is \"querer\" with yo, and \"con\" joins what comes with it."
+      }
+    }
+  },
+  "esa2p1l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you want chicken with rice for dinner at the hotel.",
+        "acceptableAnswers": [
+          "Quiero pollo con arroz para la cena en el hotel.",
+          "Yo quiero pollo con arroz para la cena en el hotel.",
+          "Para la cena en el hotel quiero pollo con arroz.",
+          "Quisiera pollo con arroz para la cena en el hotel."
+        ],
+        "explanation": "\"Quiero pollo con arroz para la cena en el hotel.\" means \"I want chicken with rice for dinner at the hotel\". \"para\" says when or for what something is meant, and \"con\" joins what comes with it."
+      },
+      "work": {
+        "prompt": "Say that you want chicken with rice for lunch at the office.",
+        "acceptableAnswers": [
+          "Quiero pollo con arroz para el almuerzo en la oficina.",
+          "Yo quiero pollo con arroz para el almuerzo en la oficina.",
+          "Para el almuerzo en la oficina quiero pollo con arroz.",
+          "Quisiera pollo con arroz para el almuerzo en la oficina."
+        ],
+        "explanation": "\"Quiero pollo con arroz para el almuerzo en la oficina.\" means \"I want chicken with rice for lunch at the office\". \"para\" says when or for what something is meant, and \"con\" joins what comes with it."
+      },
+      "school": {
+        "prompt": "Say that you want chicken with rice for lunch at school.",
+        "acceptableAnswers": [
+          "Quiero pollo con arroz para el almuerzo en la escuela.",
+          "Yo quiero pollo con arroz para el almuerzo en la escuela.",
+          "Para el almuerzo en la escuela quiero pollo con arroz.",
+          "Quisiera pollo con arroz para el almuerzo en la escuela."
+        ],
+        "explanation": "\"Quiero pollo con arroz para el almuerzo en la escuela.\" means \"I want chicken with rice for lunch at school\". \"para\" says when or for what something is meant, and \"con\" joins what comes with it."
+      }
+    }
+  },
+  "esa2p20l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Me gusta caminar por la ciudad los domingos",
+        "explanation": "\"Me gusta caminar por la ciudad los domingos\" means \"I like walking around the city on Sundays\". \"Me gusta\" is followed by an infinitive, and \"los domingos\" means on Sundays."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Me gusta descansar de la oficina los domingos",
+        "explanation": "\"Me gusta descansar de la oficina los domingos\" means \"I like resting from the office on Sundays\". \"Me gusta\" is followed by an infinitive, and \"los domingos\" means on Sundays."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Me gusta estudiar en la biblioteca los domingos",
+        "explanation": "\"Me gusta estudiar en la biblioteca los domingos\" means \"I like studying at the library on Sundays\". \"Me gusta\" is followed by an infinitive, and \"los domingos\" means on Sundays."
+      }
+    }
+  },
+  "esa2p23l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Necesito cambiar dinero en el aeropuerto.",
+        "choices": [
+          "Necesito cambiar dinero en el aeropuerto.",
+          "Necesito sacar dinero en el aeropuerto.",
+          "Necesito cambiar dinero en el hotel.",
+          "Necesito cambiar dinero en el banco."
+        ],
+        "answer": "Necesito cambiar dinero en el aeropuerto.",
+        "explanation": "\"Necesito cambiar dinero en el aeropuerto.\" means \"I need to exchange money at the airport\". \"Necesito\" says what you need to do, and the other choices change the action or the place."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Necesito depositar dinero en el banco.",
+        "choices": [
+          "Necesito sacar dinero en el banco.",
+          "Necesito depositar dinero en la oficina.",
+          "Necesito depositar dinero en el banco.",
+          "Necesito depositar cheques en el banco."
+        ],
+        "answer": "Necesito depositar dinero en el banco.",
+        "explanation": "\"Necesito depositar dinero en el banco.\" means \"I need to deposit money at the bank\". \"Necesito\" says what you need to do, and the other choices change the action or the place."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Necesito pagar la matrícula en el banco.",
+        "choices": [
+          "Necesito pagar la matrícula en la escuela.",
+          "Necesito pagar la matrícula en el banco.",
+          "Necesito pagar el almuerzo en el banco.",
+          "Necesito cobrar la matrícula en el banco."
+        ],
+        "answer": "Necesito pagar la matrícula en el banco.",
+        "explanation": "\"Necesito pagar la matrícula en el banco.\" means \"I need to pay the tuition at the bank\". \"Necesito\" says what you need to do, and the other choices change the action or the place."
+      }
+    }
+  },
+  "esa2p23l4": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you will mail a postcard tomorrow.",
+        "acceptableAnswers": [
+          "Voy a enviar una postal mañana.",
+          "Mañana voy a enviar una postal.",
+          "Voy a mandar una postal mañana.",
+          "Enviaré una postal mañana."
+        ],
+        "explanation": "\"Voy a enviar una postal mañana.\" means \"I am going to mail a postcard tomorrow\". \"voy a\" plus an infinitive is the near future, and \"enviar\" takes the thing directly."
+      },
+      "work": {
+        "prompt": "Say that you will send a package to a client tomorrow.",
+        "acceptableAnswers": [
+          "Voy a enviar un paquete a un cliente mañana.",
+          "Mañana voy a enviar un paquete a un cliente.",
+          "Voy a mandar un paquete a un cliente mañana.",
+          "Enviaré un paquete a un cliente mañana."
+        ],
+        "explanation": "\"Voy a enviar un paquete a un cliente mañana.\" means \"I am going to send a package to a client tomorrow\". \"voy a\" plus an infinitive is the near future, and \"enviar\" takes the thing directly."
+      },
+      "school": {
+        "prompt": "Say that you will send a letter to your teacher tomorrow.",
+        "acceptableAnswers": [
+          "Voy a enviar una carta a mi maestra mañana.",
+          "Mañana voy a enviar una carta a mi maestra.",
+          "Voy a mandar una carta a mi maestra mañana.",
+          "Enviaré una carta a mi maestra mañana."
+        ],
+        "explanation": "\"Voy a enviar una carta a mi maestra mañana.\" means \"I am going to send a letter to my teacher tomorrow\". \"voy a\" plus an infinitive is the near future, and \"enviar\" takes the thing directly."
+      }
+    }
+  },
+  "esa2p25l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Visito el museo desde las nueve hasta las cinco.",
+        "choices": [
+          "Visito el museo desde las nueve hasta las seis.",
+          "Visito el museo desde las nueve hasta las cinco.",
+          "Visito el museo desde las ocho hasta las cinco.",
+          "Visito el mercado desde las nueve hasta las cinco."
+        ],
+        "answer": "Visito el museo desde las nueve hasta las cinco.",
+        "explanation": "\"Visito el museo desde las nueve hasta las cinco.\" means \"I visit the museum from nine to five\". \"desde\" and \"hasta\" gives the start and the end of a time, and the other choices change one hour or the activity."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Trabajo desde las ocho hasta las cuatro.",
+        "choices": [
+          "Trabajo desde las ocho hasta las cinco.",
+          "Trabajo desde las ocho hasta las cuatro.",
+          "Trabajo desde las siete hasta las cuatro.",
+          "Estudio desde las ocho hasta las cuatro."
+        ],
+        "answer": "Trabajo desde las ocho hasta las cuatro.",
+        "explanation": "\"Trabajo desde las ocho hasta las cuatro.\" means \"I work from eight to four\". \"desde\" and \"hasta\" gives the start and the end of a time, and the other choices change one hour or the activity."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Estudio desde las ocho hasta las tres.",
+        "choices": [
+          "Estudio desde las ocho hasta las tres.",
+          "Estudio desde las ocho hasta las cuatro.",
+          "Estudio desde las nueve hasta las tres.",
+          "Trabajo desde las ocho hasta las tres."
+        ],
+        "answer": "Estudio desde las ocho hasta las tres.",
+        "explanation": "\"Estudio desde las ocho hasta las tres.\" means \"I study from eight to three\". \"desde\" and \"hasta\" gives the start and the end of a time, and the other choices change one hour or the activity."
+      }
+    }
+  },
+  "esa2p25l3": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Visito esta ciudad desde hace dos años",
+        "explanation": "\"Visito esta ciudad desde hace dos años\" means \"I have been visiting this city for two years\". \"desde hace\" plus a length of time says how long something has been going on."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Trabajo en esta oficina desde hace dos años",
+        "explanation": "\"Trabajo en esta oficina desde hace dos años\" means \"I have worked in this office for two years\". \"desde hace\" plus a length of time says how long something has been going on."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Estudio en esta escuela desde hace dos años",
+        "explanation": "\"Estudio en esta escuela desde hace dos años\" means \"I have studied at this school for two years\". \"desde hace\" plus a length of time says how long something has been going on."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you need the tickets by Friday.",
+        "acceptableAnswers": [
+          "Necesito los boletos para el viernes.",
+          "Yo necesito los boletos para el viernes.",
+          "Para el viernes necesito los boletos.",
+          "Necesito tener los boletos para el viernes."
+        ],
+        "explanation": "\"Necesito los boletos para el viernes.\" means \"I need the tickets by Friday\". \"para el viernes\" says the deadline, and \"necesito\" takes the thing directly."
+      },
+      "work": {
+        "prompt": "Say that you need the contract by Friday.",
+        "acceptableAnswers": [
+          "Necesito el contrato para el viernes.",
+          "Yo necesito el contrato para el viernes.",
+          "Para el viernes necesito el contrato.",
+          "Necesito tener el contrato para el viernes."
+        ],
+        "explanation": "\"Necesito el contrato para el viernes.\" means \"I need the contract by Friday\". \"para el viernes\" says the deadline, and \"necesito\" takes the thing directly."
+      },
+      "school": {
+        "prompt": "Say that you need the book by Friday.",
+        "acceptableAnswers": [
+          "Necesito el libro para el viernes.",
+          "Yo necesito el libro para el viernes.",
+          "Para el viernes necesito el libro.",
+          "Necesito tener el libro para el viernes."
+        ],
+        "explanation": "\"Necesito el libro para el viernes.\" means \"I need the book by Friday\". \"para el viernes\" says the deadline, and \"necesito\" takes the thing directly."
+      }
+    }
+  },
+  "esa2p27l2": {
+    "esa2p27q8": {
+      "travel": {
+        "prompt": "Ask what time the bus to the airport leaves.",
+        "acceptableAnswers": [
+          "¿A qué hora sale el autobús al aeropuerto?",
+          "¿A qué hora sale el autobús hacia el aeropuerto?",
+          "¿A qué hora parte el autobús al aeropuerto?",
+          "¿A qué hora sale el bus al aeropuerto?"
+        ],
+        "explanation": "\"¿A qué hora sale el autobús al aeropuerto?\" means \"What time does the bus to the airport leave?\" \"A qué hora sale\" asks at what time something leaves, and the verb agrees with the thing."
+      },
+      "work": {
+        "prompt": "Ask what time the bus to the office leaves.",
+        "acceptableAnswers": [
+          "¿A qué hora sale el autobús a la oficina?",
+          "¿A qué hora sale el autobús hacia la oficina?",
+          "¿A qué hora parte el autobús a la oficina?",
+          "¿A qué hora sale el bus a la oficina?"
+        ],
+        "explanation": "\"¿A qué hora sale el autobús a la oficina?\" means \"What time does the bus to the office leave?\" \"A qué hora sale\" asks at what time something leaves, and the verb agrees with the thing."
+      },
+      "school": {
+        "prompt": "Ask what time the school bus leaves.",
+        "acceptableAnswers": [
+          "¿A qué hora sale el autobús escolar?",
+          "¿A qué hora parte el autobús escolar?",
+          "¿A qué hora sale el bus escolar?",
+          "¿A qué hora sale el autobús de la escuela?"
+        ],
+        "explanation": "\"¿A qué hora sale el autobús escolar?\" means \"What time does the school bus leave?\" \"A qué hora sale\" asks at what time something leaves, and the verb agrees with the thing."
+      }
+    }
+  },
+  "esa2p2l1": {
+    "esa2p2q0": {
+      "travel": {
+        "prompt": "Ayer yo ___ (hablar) con la recepcionista del hotel.",
+        "bank": [
+          "hablaron",
+          "habló",
+          "hablé",
+          "hablaste"
+        ],
+        "answer": "hablé",
+        "explanation": "A regular -ar verb ends in -é with \"yo\" in the preterite: \"hablé\". Ayer yo hablé con la recepcionista del hotel. (Yesterday I spoke with the hotel receptionist)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (hablar) con mi jefe.",
+        "bank": [
+          "hablaron",
+          "habló",
+          "hablé",
+          "hablaste"
+        ],
+        "answer": "hablé",
+        "explanation": "A regular -ar verb ends in -é with \"yo\" in the preterite: \"hablé\". Ayer yo hablé con mi jefe. (Yesterday I spoke with my boss)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (hablar) con mi maestra.",
+        "bank": [
+          "hablaron",
+          "habló",
+          "hablé",
+          "hablaste"
+        ],
+        "answer": "hablé",
+        "explanation": "A regular -ar verb ends in -é with \"yo\" in the preterite: \"hablé\". Ayer yo hablé con mi maestra. (Yesterday I spoke with my teacher)"
+      }
+    },
+    "esa2p2q1": {
+      "travel": {
+        "prompt": "Ayer yo ___ (comer) en un restaurante de Cancún.",
+        "choices": [
+          "comió",
+          "comimos",
+          "comí",
+          "comiste"
+        ],
+        "answer": 2,
+        "explanation": "A regular -er verb ends in -í with \"yo\" in the preterite: \"comí\". Ayer yo comí en un restaurante de Cancún. (Yesterday I ate at a restaurant in Cancún)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (comer) con mis compañeros de trabajo.",
+        "choices": [
+          "comió",
+          "comimos",
+          "comí",
+          "comiste"
+        ],
+        "answer": 2,
+        "explanation": "A regular -er verb ends in -í with \"yo\" in the preterite: \"comí\". Ayer yo comí con mis compañeros de trabajo. (Yesterday I ate with my coworkers)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (comer) en la cafetería de la escuela.",
+        "choices": [
+          "comió",
+          "comimos",
+          "comí",
+          "comiste"
+        ],
+        "answer": 2,
+        "explanation": "A regular -er verb ends in -í with \"yo\" in the preterite: \"comí\". Ayer yo comí en la cafetería de la escuela. (Yesterday I ate in the school cafeteria)"
+      }
+    },
+    "esa2p2q3": {
+      "travel": {
+        "prompt": "Ayer yo ___ (ir) al aeropuerto.",
+        "choices": [
+          "fui",
+          "fuiste",
+          "fueron",
+          "fuimos"
+        ],
+        "answer": 0,
+        "explanation": "\"ir\" and \"ser\" share one preterite form with \"yo\": \"fui\". Ayer yo fui al aeropuerto. (Yesterday I went to the airport)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (ir) a la oficina.",
+        "choices": [
+          "fui",
+          "fuiste",
+          "fueron",
+          "fuimos"
+        ],
+        "answer": 0,
+        "explanation": "\"ir\" and \"ser\" share one preterite form with \"yo\": \"fui\". Ayer yo fui a la oficina. (Yesterday I went to the office)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (ir) a la biblioteca.",
+        "choices": [
+          "fui",
+          "fuiste",
+          "fueron",
+          "fuimos"
+        ],
+        "answer": 0,
+        "explanation": "\"ir\" and \"ser\" share one preterite form with \"yo\": \"fui\". Ayer yo fui a la biblioteca. (Yesterday I went to the library)"
+      }
+    },
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Ayer yo compré un boleto en la estación.",
+        "choices": [
+          "Ayer yo compré un boleto en el mercado.",
+          "Ayer yo compré un boleto en la estación.",
+          "Ayer yo compré un mapa en la estación.",
+          "Ayer yo vendí un boleto en la estación."
+        ],
+        "answer": "Ayer yo compré un boleto en la estación.",
+        "explanation": "\"Ayer yo compré un boleto en la estación.\" means \"Yesterday I bought a ticket at the station\". The preterite \"compré\" tells what you bought, and the other choices change the verb, the thing or the place."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Ayer yo compré papel en la oficina.",
+        "choices": [
+          "Ayer yo compré papel en la tienda.",
+          "Ayer yo compré tinta en la oficina.",
+          "Ayer yo vendí papel en la oficina.",
+          "Ayer yo compré papel en la oficina."
+        ],
+        "answer": "Ayer yo compré papel en la oficina.",
+        "explanation": "\"Ayer yo compré papel en la oficina.\" means \"Yesterday I bought paper at the office\". The preterite \"compré\" tells what you bought, and the other choices change the verb, the thing or the place."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Ayer yo compré un libro en la librería.",
+        "choices": [
+          "Ayer yo compré un cuaderno en la librería.",
+          "Ayer yo compré un libro en la tienda.",
+          "Ayer yo compré un libro en la librería.",
+          "Ayer yo vendí un libro en la librería."
+        ],
+        "answer": "Ayer yo compré un libro en la librería.",
+        "explanation": "\"Ayer yo compré un libro en la librería.\" means \"Yesterday I bought a book at the bookstore\". The preterite \"compré\" tells what you bought, and the other choices change the verb, the thing or the place."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that yesterday you walked around the city.",
+        "acceptableAnswers": [
+          "Ayer yo caminé por la ciudad.",
+          "Ayer caminé por la ciudad.",
+          "Caminé por la ciudad ayer.",
+          "Ayer yo di un paseo por la ciudad."
+        ],
+        "explanation": "\"Ayer yo caminé por la ciudad.\" means \"Yesterday I walked around the city\". The preterite tells what you did and finished, and the yo form of a regular -ar verb ends in -é."
+      },
+      "work": {
+        "prompt": "Say that yesterday you worked at the office.",
+        "acceptableAnswers": [
+          "Ayer yo trabajé en la oficina.",
+          "Ayer trabajé en la oficina.",
+          "Trabajé en la oficina ayer.",
+          "Ayer yo estuve trabajando en la oficina."
+        ],
+        "explanation": "\"Ayer yo trabajé en la oficina.\" means \"Yesterday I worked at the office\". The preterite tells what you did and finished, and the yo form of a regular -ar verb ends in -é."
+      },
+      "school": {
+        "prompt": "Say that yesterday you studied at the library.",
+        "acceptableAnswers": [
+          "Ayer yo estudié en la biblioteca.",
+          "Ayer estudié en la biblioteca.",
+          "Estudié en la biblioteca ayer.",
+          "Ayer yo estuve estudiando en la biblioteca."
+        ],
+        "explanation": "\"Ayer yo estudié en la biblioteca.\" means \"Yesterday I studied at the library\". The preterite tells what you did and finished, and the yo form of a regular -ar verb ends in -é."
+      }
+    }
+  },
+  "esa2p2l2": {
+    "esa2p2q5": {
+      "travel": {
+        "prompt": "Ayer yo ___ (tener) un problema con mi maleta.",
+        "choices": [
+          "tuvo",
+          "tuvimos",
+          "tuve",
+          "tuviste"
+        ],
+        "answer": 2,
+        "explanation": "\"tener\" has an irregular preterite stem, tuv-: \"tuve\". Ayer yo tuve un problema con mi maleta. (Yesterday I had a problem with my suitcase)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (tener) una llamada con un cliente.",
+        "choices": [
+          "tuvo",
+          "tuvimos",
+          "tuve",
+          "tuviste"
+        ],
+        "answer": 2,
+        "explanation": "\"tener\" has an irregular preterite stem, tuv-: \"tuve\". Ayer yo tuve una llamada con un cliente. (Yesterday I had a call with a client)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (tener) una clase de matemáticas.",
+        "choices": [
+          "tuvo",
+          "tuvimos",
+          "tuve",
+          "tuviste"
+        ],
+        "answer": 2,
+        "explanation": "\"tener\" has an irregular preterite stem, tuv-: \"tuve\". Ayer yo tuve una clase de matemáticas. (Yesterday I had a math class)"
+      }
+    },
+    "esa2p2q6": {
+      "travel": {
+        "prompt": "Ayer yo ___ (hacer) mi maleta.",
+        "bank": [
+          "hice",
+          "hizo",
+          "hicimos",
+          "hicieron"
+        ],
+        "answer": "hice",
+        "explanation": "\"hacer\" has an irregular preterite stem, hic-: \"hice\". Ayer yo hice mi maleta. (Yesterday I packed my suitcase)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (hacer) un informe para mi jefe.",
+        "bank": [
+          "hice",
+          "hizo",
+          "hicimos",
+          "hicieron"
+        ],
+        "answer": "hice",
+        "explanation": "\"hacer\" has an irregular preterite stem, hic-: \"hice\". Ayer yo hice un informe para mi jefe. (Yesterday I made a report for my boss)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (hacer) la tarea de inglés.",
+        "bank": [
+          "hice",
+          "hizo",
+          "hicimos",
+          "hicieron"
+        ],
+        "answer": "hice",
+        "explanation": "\"hacer\" has an irregular preterite stem, hic-: \"hice\". Ayer yo hice la tarea de inglés. (Yesterday I did the English homework)"
+      }
+    },
+    "esa2p2q7": {
+      "travel": {
+        "prompt": "Ayer yo ___ (ver) el mar desde el hotel.",
+        "choices": [
+          "vi",
+          "viste",
+          "vieron",
+          "vimos"
+        ],
+        "answer": 0,
+        "explanation": "The preterite of \"ver\" with \"yo\" is \"vi\", and a one-syllable form has no written accent. Ayer yo vi el mar desde el hotel. (Yesterday I saw the sea from the hotel)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (ver) a mi jefe en la oficina.",
+        "choices": [
+          "vi",
+          "viste",
+          "vieron",
+          "vimos"
+        ],
+        "answer": 0,
+        "explanation": "The preterite of \"ver\" with \"yo\" is \"vi\", and a one-syllable form has no written accent. Ayer yo vi a mi jefe en la oficina. (Yesterday I saw my boss at the office)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (ver) a mis amigos en la escuela.",
+        "choices": [
+          "vi",
+          "viste",
+          "vieron",
+          "vimos"
+        ],
+        "answer": 0,
+        "explanation": "The preterite of \"ver\" with \"yo\" is \"vi\", and a one-syllable form has no written accent. Ayer yo vi a mis amigos en la escuela. (Yesterday I saw my friends at school)"
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that yesterday you came to the hotel with a friend.",
+        "acceptableAnswers": [
+          "Ayer yo vine al hotel con un amigo.",
+          "Ayer vine al hotel con un amigo.",
+          "Vine al hotel con un amigo ayer.",
+          "Ayer yo llegué al hotel con un amigo."
+        ],
+        "explanation": "\"Ayer yo vine al hotel con un amigo.\" means \"Yesterday I came to the hotel with a friend\". \"vine\" is the irregular preterite of \"venir\" with yo, and \"con\" joins who came along."
+      },
+      "work": {
+        "prompt": "Say that yesterday you came to the meeting with a colleague.",
+        "acceptableAnswers": [
+          "Ayer yo vine a la reunión con un colega.",
+          "Ayer vine a la reunión con un colega.",
+          "Vine a la reunión con un colega ayer.",
+          "Ayer yo llegué a la reunión con un colega."
+        ],
+        "explanation": "\"Ayer yo vine a la reunión con un colega.\" means \"Yesterday I came to the meeting with a colleague\". \"vine\" is the irregular preterite of \"venir\" with yo, and \"con\" joins who came along."
+      },
+      "school": {
+        "prompt": "Say that yesterday you came to school with a friend.",
+        "acceptableAnswers": [
+          "Ayer yo vine a la escuela con un amigo.",
+          "Ayer vine a la escuela con un amigo.",
+          "Vine a la escuela con un amigo ayer.",
+          "Ayer yo llegué a la escuela con un amigo."
+        ],
+        "explanation": "\"Ayer yo vine a la escuela con un amigo.\" means \"Yesterday I came to school with a friend\". \"vine\" is the irregular preterite of \"venir\" with yo, and \"con\" joins who came along."
+      }
+    }
+  },
+  "esa2p2l3": {
+    "esa2p2q10": {
+      "travel": {
+        "prompt": "Ayer yo ___ (poder) visitar el museo.",
+        "choices": [
+          "pudo",
+          "pudimos",
+          "pude",
+          "pudiste"
+        ],
+        "answer": 2,
+        "explanation": "\"poder\" has an irregular preterite stem, pud-: \"pude\". Ayer yo pude visitar el museo. (Yesterday I was able to visit the museum)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (poder) terminar el informe.",
+        "choices": [
+          "pudo",
+          "pudimos",
+          "pude",
+          "pudiste"
+        ],
+        "answer": 2,
+        "explanation": "\"poder\" has an irregular preterite stem, pud-: \"pude\". Ayer yo pude terminar el informe. (Yesterday I was able to finish the report)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (poder) terminar la tarea.",
+        "choices": [
+          "pudo",
+          "pudimos",
+          "pude",
+          "pudiste"
+        ],
+        "answer": 2,
+        "explanation": "\"poder\" has an irregular preterite stem, pud-: \"pude\". Ayer yo pude terminar la tarea. (Yesterday I was able to finish the homework)"
+      }
+    },
+    "esa2p2q14": {
+      "travel": {
+        "prompt": "Ayer yo ___ (traer) mi pasaporte al aeropuerto.",
+        "choices": [
+          "trajo",
+          "trajimos",
+          "traje",
+          "trajiste"
+        ],
+        "answer": 2,
+        "explanation": "\"traer\" has an irregular preterite stem, traj-: \"traje\". Ayer yo traje mi pasaporte al aeropuerto. (Yesterday I brought my passport to the airport)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (traer) mi computadora a la oficina.",
+        "choices": [
+          "trajo",
+          "trajimos",
+          "traje",
+          "trajiste"
+        ],
+        "answer": 2,
+        "explanation": "\"traer\" has an irregular preterite stem, traj-: \"traje\". Ayer yo traje mi computadora a la oficina. (Yesterday I brought my computer to the office)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (traer) mi mochila a la escuela.",
+        "choices": [
+          "trajo",
+          "trajimos",
+          "traje",
+          "trajiste"
+        ],
+        "answer": 2,
+        "explanation": "\"traer\" has an irregular preterite stem, traj-: \"traje\". Ayer yo traje mi mochila a la escuela. (Yesterday I brought my backpack to school)"
+      }
+    }
+  },
+  "esa2p2l4": {
+    "esa2p2q16": {
+      "travel": {
+        "prompt": "Ayer yo ___ (llegar) al aeropuerto a tiempo.",
+        "choices": [
+          "llegué",
+          "llegaste",
+          "llegaron",
+          "llegamos"
+        ],
+        "answer": 0,
+        "explanation": "\"llegar\" adds a u before -é in the yo preterite to keep the hard g sound: \"llegué\". Ayer yo llegué al aeropuerto a tiempo. (Yesterday I arrived at the airport on time)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (llegar) a la oficina a tiempo.",
+        "choices": [
+          "llegué",
+          "llegaste",
+          "llegaron",
+          "llegamos"
+        ],
+        "answer": 0,
+        "explanation": "\"llegar\" adds a u before -é in the yo preterite to keep the hard g sound: \"llegué\". Ayer yo llegué a la oficina a tiempo. (Yesterday I arrived at the office on time)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (llegar) a la escuela a tiempo.",
+        "choices": [
+          "llegué",
+          "llegaste",
+          "llegaron",
+          "llegamos"
+        ],
+        "answer": 0,
+        "explanation": "\"llegar\" adds a u before -é in the yo preterite to keep the hard g sound: \"llegué\". Ayer yo llegué a la escuela a tiempo. (Yesterday I arrived at school on time)"
+      }
+    },
+    "esa2p2q19": {
+      "travel": {
+        "prompt": "Ayer yo ___ (leer) un mapa de la ciudad.",
+        "bank": [
+          "leíste",
+          "leyeron",
+          "leí",
+          "leyó"
+        ],
+        "answer": "leí",
+        "explanation": "\"leer\" takes a written accent in the yo preterite: \"leí\". Ayer yo leí un mapa de la ciudad. (Yesterday I read a map of the city)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (leer) un contrato.",
+        "bank": [
+          "leíste",
+          "leyeron",
+          "leí",
+          "leyó"
+        ],
+        "answer": "leí",
+        "explanation": "\"leer\" takes a written accent in the yo preterite: \"leí\". Ayer yo leí un contrato. (Yesterday I read a contract)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (leer) un libro de historia.",
+        "bank": [
+          "leíste",
+          "leyeron",
+          "leí",
+          "leyó"
+        ],
+        "answer": "leí",
+        "explanation": "\"leer\" takes a written accent in the yo preterite: \"leí\". Ayer yo leí un libro de historia. (Yesterday I read a history book)"
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that yesterday you started your trip.",
+        "acceptableAnswers": [
+          "Ayer yo empecé mi viaje.",
+          "Ayer empecé mi viaje.",
+          "Empecé mi viaje ayer.",
+          "Ayer yo comencé mi viaje."
+        ],
+        "explanation": "\"Ayer yo empecé mi viaje.\" means \"Yesterday I started my trip\". \"empecé\" is the yo preterite of \"empezar\", where z becomes c before -é."
+      },
+      "work": {
+        "prompt": "Say that yesterday you started the project.",
+        "acceptableAnswers": [
+          "Ayer yo empecé el proyecto.",
+          "Ayer empecé el proyecto.",
+          "Empecé el proyecto ayer.",
+          "Ayer yo comencé el proyecto."
+        ],
+        "explanation": "\"Ayer yo empecé el proyecto.\" means \"Yesterday I started the project\". \"empecé\" is the yo preterite of \"empezar\", where z becomes c before -é."
+      },
+      "school": {
+        "prompt": "Say that yesterday you started your essay.",
+        "acceptableAnswers": [
+          "Ayer yo empecé mi redacción.",
+          "Ayer empecé mi redacción.",
+          "Empecé mi redacción ayer.",
+          "Ayer yo comencé mi redacción."
+        ],
+        "explanation": "\"Ayer yo empecé mi redacción.\" means \"Yesterday I started my essay\". \"empecé\" is the yo preterite of \"empezar\", where z becomes c before -é."
+      }
+    }
+  },
+  "esa2p2l5": {
+    "esa2p2q20": {
+      "travel": {
+        "prompt": "Ayer yo ___ (escribir) una postal.",
+        "bank": [
+          "escribimos",
+          "escribieron",
+          "escribió",
+          "escribí"
+        ],
+        "answer": "escribí",
+        "explanation": "A regular -ir verb ends in -í with \"yo\" in the preterite: \"escribí\". Ayer yo escribí una postal. (Yesterday I wrote a postcard)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (escribir) un correo a mi cliente.",
+        "bank": [
+          "escribimos",
+          "escribieron",
+          "escribió",
+          "escribí"
+        ],
+        "answer": "escribí",
+        "explanation": "A regular -ir verb ends in -í with \"yo\" in the preterite: \"escribí\". Ayer yo escribí un correo a mi cliente. (Yesterday I wrote an email to my client)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (escribir) una redacción.",
+        "bank": [
+          "escribimos",
+          "escribieron",
+          "escribió",
+          "escribí"
+        ],
+        "answer": "escribí",
+        "explanation": "A regular -ir verb ends in -í with \"yo\" in the preterite: \"escribí\". Ayer yo escribí una redacción. (Yesterday I wrote an essay)"
+      }
+    },
+    "esa2p2q24": {
+      "travel": {
+        "prompt": "Ayer yo ___ (comprar) un recuerdo.",
+        "bank": [
+          "compramos",
+          "compré",
+          "compraron",
+          "compró"
+        ],
+        "answer": "compré",
+        "explanation": "A regular -ar verb ends in -é with \"yo\" in the preterite: \"compré\". Ayer yo compré un recuerdo. (Yesterday I bought a souvenir)"
+      },
+      "work": {
+        "prompt": "Ayer yo ___ (comprar) una impresora nueva.",
+        "bank": [
+          "compramos",
+          "compré",
+          "compraron",
+          "compró"
+        ],
+        "answer": "compré",
+        "explanation": "A regular -ar verb ends in -é with \"yo\" in the preterite: \"compré\". Ayer yo compré una impresora nueva. (Yesterday I bought a new printer)"
+      },
+      "school": {
+        "prompt": "Ayer yo ___ (comprar) un cuaderno.",
+        "bank": [
+          "compramos",
+          "compré",
+          "compraron",
+          "compró"
+        ],
+        "answer": "compré",
+        "explanation": "A regular -ar verb ends in -é with \"yo\" in the preterite: \"compré\". Ayer yo compré un cuaderno. (Yesterday I bought a notebook)"
+      }
+    }
+  },
+  "esa2p3l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "El museo está cerca de la catedral.",
+        "choices": [
+          "El museo está lejos de la catedral.",
+          "El museo está cerca de la estación.",
+          "El hotel está cerca de la catedral.",
+          "El museo está cerca de la catedral."
+        ],
+        "answer": "El museo está cerca de la catedral.",
+        "explanation": "\"El museo está cerca de la catedral.\" means \"The museum is near the cathedral\". \"cerca de\" means near, and the other choices change the distance word or the place."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "La oficina está cerca del banco.",
+        "choices": [
+          "La oficina está lejos del banco.",
+          "La oficina está cerca del museo.",
+          "La oficina está cerca del banco.",
+          "La tienda está cerca del banco."
+        ],
+        "answer": "La oficina está cerca del banco.",
+        "explanation": "\"La oficina está cerca del banco.\" means \"The office is near the bank\". \"cerca de\" means near, and the other choices change the distance word or the place."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "La biblioteca está cerca del parque.",
+        "choices": [
+          "La biblioteca está lejos del parque.",
+          "La biblioteca está cerca del lago.",
+          "La tienda está cerca del parque.",
+          "La biblioteca está cerca del parque."
+        ],
+        "answer": "La biblioteca está cerca del parque.",
+        "explanation": "\"La biblioteca está cerca del parque.\" means \"The library is near the park\". \"cerca de\" means near, and the other choices change the distance word or the place."
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "El hotel está en la esquina",
+        "explanation": "\"El hotel está en la esquina\" means \"The hotel is on the corner\". \"en la esquina\" means on the corner, and \"está\" says where something is."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "La oficina está en la esquina",
+        "explanation": "\"La oficina está en la esquina\" means \"The office is on the corner\". \"en la esquina\" means on the corner, and \"está\" says where something is."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "La escuela está en la esquina",
+        "explanation": "\"La escuela está en la esquina\" means \"The school is on the corner\". \"en la esquina\" means on the corner, and \"está\" says where something is."
+      }
+    }
+  },
+  "esa2p3l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the hotel is near the beach.",
+        "acceptableAnswers": [
+          "El hotel está cerca de la playa.",
+          "El hotel queda cerca de la playa.",
+          "El hotel se encuentra cerca de la playa.",
+          "La playa está cerca del hotel."
+        ],
+        "explanation": "\"El hotel está cerca de la playa.\" means \"The hotel is near the beach\". \"cerca de\" means near, and \"de\" joins with \"el\" to make \"del\"."
+      },
+      "work": {
+        "prompt": "Say that the office is near the station.",
+        "acceptableAnswers": [
+          "La oficina está cerca de la estación.",
+          "La oficina queda cerca de la estación.",
+          "La oficina se encuentra cerca de la estación.",
+          "La estación está cerca de la oficina."
+        ],
+        "explanation": "\"La oficina está cerca de la estación.\" means \"The office is near the station\". \"cerca de\" means near, and \"de\" joins with \"el\" to make \"del\"."
+      },
+      "school": {
+        "prompt": "Say that the school is near the park.",
+        "acceptableAnswers": [
+          "La escuela está cerca del parque.",
+          "La escuela queda cerca del parque.",
+          "La escuela se encuentra cerca del parque.",
+          "El parque está cerca de la escuela."
+        ],
+        "explanation": "\"La escuela está cerca del parque.\" means \"The school is near the park\". \"cerca de\" means near, and \"de\" joins with \"el\" to make \"del\"."
+      }
+    }
+  },
+  "esa2p4l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the new hotel is very pretty.",
+        "acceptableAnswers": [
+          "El hotel nuevo es muy bonito.",
+          "El hotel nuevo es muy lindo.",
+          "El nuevo hotel es muy bonito.",
+          "El nuevo hotel es muy lindo."
+        ],
+        "explanation": "\"El hotel nuevo es muy bonito.\" means \"The new hotel is very pretty\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"bonito\" for a masculine noun."
+      },
+      "work": {
+        "prompt": "Say that the new manager is very friendly.",
+        "acceptableAnswers": [
+          "El gerente nuevo es muy amable.",
+          "El gerente nuevo es muy simpático.",
+          "El nuevo gerente es muy amable.",
+          "El nuevo gerente es muy simpático."
+        ],
+        "explanation": "\"El gerente nuevo es muy amable.\" means \"The new manager is very friendly\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"bonito\" for a masculine noun."
+      },
+      "school": {
+        "prompt": "Say that the new teacher is very nice.",
+        "acceptableAnswers": [
+          "El maestro nuevo es muy simpático.",
+          "El maestro nuevo es muy amable.",
+          "El nuevo maestro es muy simpático.",
+          "El nuevo maestro es muy amable."
+        ],
+        "explanation": "\"El maestro nuevo es muy simpático.\" means \"The new teacher is very nice\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"bonito\" for a masculine noun."
+      }
+    }
+  },
+  "esa2p4l4": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the tourists (women) are tired.",
+        "acceptableAnswers": [
+          "Las turistas están cansadas.",
+          "Las turistas se sienten cansadas.",
+          "Las turistas están muy cansadas.",
+          "Están cansadas las turistas."
+        ],
+        "explanation": "\"Las turistas están cansadas.\" means \"The tourists are tired\". In the plural a feminine adjective ends in -as: \"cansadas\" goes with \"las turistas\"."
+      },
+      "work": {
+        "prompt": "Say that the employees (women) are tired.",
+        "acceptableAnswers": [
+          "Las empleadas están cansadas.",
+          "Las empleadas se sienten cansadas.",
+          "Las empleadas están muy cansadas.",
+          "Están cansadas las empleadas."
+        ],
+        "explanation": "\"Las empleadas están cansadas.\" means \"The employees are tired\". In the plural a feminine adjective ends in -as: \"cansadas\" goes with \"las turistas\"."
+      },
+      "school": {
+        "prompt": "Say that the students (girls) are tired.",
+        "acceptableAnswers": [
+          "Las estudiantes están cansadas.",
+          "Las estudiantes se sienten cansadas.",
+          "Las estudiantes están muy cansadas.",
+          "Están cansadas las estudiantes."
+        ],
+        "explanation": "\"Las estudiantes están cansadas.\" means \"The students are tired\". In the plural a feminine adjective ends in -as: \"cansadas\" goes with \"las turistas\"."
+      }
+    }
+  },
+  "esa2p5l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Mi hotel es más grande que tu hotel.",
+        "choices": [
+          "Mi hotel es más grande que tu hotel.",
+          "Mi hotel es menos grande que tu hotel.",
+          "Mi hotel es más caro que tu hotel.",
+          "Mi hostal es más grande que tu hotel."
+        ],
+        "answer": "Mi hotel es más grande que tu hotel.",
+        "explanation": "\"Mi hotel es más grande que tu hotel.\" means \"My hotel is bigger than your hotel\". \"más\" with \"que\" compares two things, and the other choices change the comparison or the noun."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Mi oficina es más grande que tu oficina.",
+        "choices": [
+          "Mi oficina es menos grande que tu oficina.",
+          "Mi oficina es más cara que tu oficina.",
+          "Mi tienda es más grande que tu oficina.",
+          "Mi oficina es más grande que tu oficina."
+        ],
+        "answer": "Mi oficina es más grande que tu oficina.",
+        "explanation": "\"Mi oficina es más grande que tu oficina.\" means \"My office is bigger than your office\". \"más\" with \"que\" compares two things, and the other choices change the comparison or the noun."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Mi escuela es más grande que tu escuela.",
+        "choices": [
+          "Mi escuela es menos grande que tu escuela.",
+          "Mi escuela es más cara que tu escuela.",
+          "Mi escuela es más grande que tu escuela.",
+          "Mi clase es más grande que tu escuela."
+        ],
+        "answer": "Mi escuela es más grande que tu escuela.",
+        "explanation": "\"Mi escuela es más grande que tu escuela.\" means \"My school is bigger than your school\". \"más\" with \"que\" compares two things, and the other choices change the comparison or the noun."
+      }
+    }
+  },
+  "esa2p5l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Esta ruta es más corta que la otra",
+        "explanation": "\"Esta ruta es más corta que la otra\" means \"This route is shorter than the other one\". \"más\" with \"que\" compares two things, and the adjective agrees with the first noun."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Este informe es más corto que el otro",
+        "explanation": "\"Este informe es más corto que el otro\" means \"This report is shorter than the other one\". \"más\" with \"que\" compares two things, and the adjective agrees with the first noun."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Esta tarea es más corta que la otra",
+        "explanation": "\"Esta tarea es más corta que la otra\" means \"This homework is shorter than the other one\". \"más\" with \"que\" compares two things, and the adjective agrees with the first noun."
+      }
+    }
+  },
+  "esa2p5l4": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that this hotel is more expensive than the other one.",
+        "acceptableAnswers": [
+          "Este hotel es más caro que el otro.",
+          "Este hotel cuesta más que el otro.",
+          "Este hotel es más costoso que el otro.",
+          "El otro hotel es menos caro que este."
+        ],
+        "explanation": "\"Este hotel es más caro que el otro.\" means \"This hotel is more expensive than the other one\". \"más\" with \"que\" compares two things, and the adjective agrees with the first noun: \"cara\" with a feminine word."
+      },
+      "work": {
+        "prompt": "Say that this printer is more expensive than the other one.",
+        "acceptableAnswers": [
+          "Esta impresora es más cara que la otra.",
+          "Esta impresora cuesta más que la otra.",
+          "Esta impresora es más costosa que la otra.",
+          "La otra impresora es menos cara que esta."
+        ],
+        "explanation": "\"Esta impresora es más cara que la otra.\" means \"This printer is more expensive than the other one\". \"más\" with \"que\" compares two things, and the adjective agrees with the first noun: \"cara\" with a feminine word."
+      },
+      "school": {
+        "prompt": "Say that this textbook is more expensive than the other one.",
+        "acceptableAnswers": [
+          "Este libro es más caro que el otro.",
+          "Este libro cuesta más que el otro.",
+          "Este libro es más costoso que el otro.",
+          "El otro libro es menos caro que este."
+        ],
+        "explanation": "\"Este libro es más caro que el otro.\" means \"This textbook is more expensive than the other one\". \"más\" with \"que\" compares two things, and the adjective agrees with the first noun: \"cara\" with a feminine word."
+      }
+    }
+  },
+  "esa2p6l1": {
+    "esa2p6q0": {
+      "travel": {
+        "prompt": "Tú ___ (hablar) muy bien español con los turistas.",
+        "bank": [
+          "habla",
+          "hablan",
+          "hablamos",
+          "hablas"
+        ],
+        "answer": "hablas",
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"hablas\". Tú hablas muy bien español con los turistas. (You speak Spanish very well with the tourists)"
+      },
+      "work": {
+        "prompt": "Tú ___ (hablar) muy bien español con los clientes.",
+        "bank": [
+          "habla",
+          "hablan",
+          "hablamos",
+          "hablas"
+        ],
+        "answer": "hablas",
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"hablas\". Tú hablas muy bien español con los clientes. (You speak Spanish very well with the clients)"
+      },
+      "school": {
+        "prompt": "Tú ___ (hablar) muy bien español en clase.",
+        "bank": [
+          "habla",
+          "hablan",
+          "hablamos",
+          "hablas"
+        ],
+        "answer": "hablas",
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"hablas\". Tú hablas muy bien español en clase. (You speak Spanish very well in class)"
+      }
+    },
+    "esa2p6q3": {
+      "travel": {
+        "prompt": "Tú ___ (tener) los boletos del tren.",
+        "choices": [
+          "tienes",
+          "tengo",
+          "tienen",
+          "tenemos"
+        ],
+        "answer": 0,
+        "explanation": "\"tener\" changes its stem with \"tú\": e becomes ie, so \"tienes\". Tú tienes los boletos del tren. (You have the train tickets)"
+      },
+      "work": {
+        "prompt": "Tú ___ (tener) la llave de la oficina.",
+        "choices": [
+          "tienes",
+          "tengo",
+          "tienen",
+          "tenemos"
+        ],
+        "answer": 0,
+        "explanation": "\"tener\" changes its stem with \"tú\": e becomes ie, so \"tienes\". Tú tienes la llave de la oficina. (You have the office key)"
+      },
+      "school": {
+        "prompt": "Tú ___ (tener) mi cuaderno.",
+        "choices": [
+          "tienes",
+          "tengo",
+          "tienen",
+          "tenemos"
+        ],
+        "answer": 0,
+        "explanation": "\"tener\" changes its stem with \"tú\": e becomes ie, so \"tienes\". Tú tienes mi cuaderno. (You have my notebook)"
+      }
+    }
+  },
+  "esa2p6l2": {
+    "esa2p6q7": {
+      "travel": {
+        "prompt": "Tú ___ (hacer) las reservaciones del viaje.",
+        "choices": [
+          "haces",
+          "hago",
+          "hacen",
+          "hacemos"
+        ],
+        "answer": 0,
+        "explanation": "With \"tú\", a regular -er verb ends in -es, and \"hacer\" follows that pattern: \"haces\". Tú haces las reservaciones del viaje. (You make the trip reservations)"
+      },
+      "work": {
+        "prompt": "Tú ___ (hacer) el informe de ventas.",
+        "choices": [
+          "haces",
+          "hago",
+          "hacen",
+          "hacemos"
+        ],
+        "answer": 0,
+        "explanation": "With \"tú\", a regular -er verb ends in -es, and \"hacer\" follows that pattern: \"haces\". Tú haces el informe de ventas. (You make the sales report)"
+      },
+      "school": {
+        "prompt": "Tú ___ (hacer) la tarea de ciencias.",
+        "choices": [
+          "haces",
+          "hago",
+          "hacen",
+          "hacemos"
+        ],
+        "answer": 0,
+        "explanation": "With \"tú\", a regular -er verb ends in -es, and \"hacer\" follows that pattern: \"haces\". Tú haces la tarea de ciencias. (You do the science homework)"
+      }
+    }
+  },
+  "esa2p6l3": {
+    "esa2p6q11": {
+      "travel": {
+        "prompt": "Tú ___ (tomar) el metro al aeropuerto.",
+        "bank": [
+          "tomas",
+          "toma",
+          "toman",
+          "tomo"
+        ],
+        "answer": "tomas",
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"tomas\". Tú tomas el metro al aeropuerto. (You take the subway to the airport)"
+      },
+      "work": {
+        "prompt": "Tú ___ (tomar) el metro para ir a la oficina.",
+        "bank": [
+          "tomas",
+          "toma",
+          "toman",
+          "tomo"
+        ],
+        "answer": "tomas",
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"tomas\". Tú tomas el metro para ir a la oficina. (You take the subway to go to the office)"
+      },
+      "school": {
+        "prompt": "Tú ___ (tomar) el autobús escolar.",
+        "bank": [
+          "tomas",
+          "toma",
+          "toman",
+          "tomo"
+        ],
+        "answer": "tomas",
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"tomas\". Tú tomas el autobús escolar. (You take the school bus)"
+      }
+    },
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Tú vienes a mi hotel mañana.",
+        "choices": [
+          "Tú vienes a mi hotel hoy.",
+          "Tú vas a mi hotel mañana.",
+          "Tú vienes a mi hotel mañana.",
+          "Tú vienes a tu hotel mañana."
+        ],
+        "answer": "Tú vienes a mi hotel mañana.",
+        "explanation": "\"Tú vienes a mi hotel mañana.\" means \"You are coming to my hotel tomorrow\". \"Tú vienes\" is the tú form of \"venir\", and the other choices change the time, the verb or the owner."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Tú vienes a mi oficina mañana.",
+        "choices": [
+          "Tú vienes a mi oficina mañana.",
+          "Tú vienes a mi oficina hoy.",
+          "Tú vas a mi oficina mañana.",
+          "Tú vienes a tu oficina mañana."
+        ],
+        "answer": "Tú vienes a mi oficina mañana.",
+        "explanation": "\"Tú vienes a mi oficina mañana.\" means \"You are coming to my office tomorrow\". \"Tú vienes\" is the tú form of \"venir\", and the other choices change the time, the verb or the owner."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Tú vienes a mi escuela mañana.",
+        "choices": [
+          "Tú vienes a mi escuela hoy.",
+          "Tú vas a mi escuela mañana.",
+          "Tú vienes a mi escuela mañana.",
+          "Tú vienes a tu escuela mañana."
+        ],
+        "answer": "Tú vienes a mi escuela mañana.",
+        "explanation": "\"Tú vienes a mi escuela mañana.\" means \"You are coming to my school tomorrow\". \"Tú vienes\" is the tú form of \"venir\", and the other choices change the time, the verb or the owner."
+      }
+    }
+  },
+  "esa2p6l5": {
+    "esa2p6q21": {
+      "travel": {
+        "prompt": "Tú ___ (estudiar) español antes del viaje.",
+        "choices": [
+          "estudia",
+          "estudiamos",
+          "estudias",
+          "estudio"
+        ],
+        "answer": 2,
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"estudias\". Tú estudias español antes del viaje. (You study Spanish before the trip)"
+      },
+      "work": {
+        "prompt": "Tú ___ (estudiar) español para tu trabajo.",
+        "choices": [
+          "estudia",
+          "estudiamos",
+          "estudias",
+          "estudio"
+        ],
+        "answer": 2,
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"estudias\". Tú estudias español para tu trabajo. (You study Spanish for your job)"
+      },
+      "school": {
+        "prompt": "Tú ___ (estudiar) español en la escuela.",
+        "choices": [
+          "estudia",
+          "estudiamos",
+          "estudias",
+          "estudio"
+        ],
+        "answer": 2,
+        "explanation": "With \"tú\", a regular -ar verb ends in -as: \"estudias\". Tú estudias español en la escuela. (You study Spanish at school)"
+      }
+    }
+  },
+  "esa2p7l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you want to buy a souvenir.",
+        "acceptableAnswers": [
+          "Quiero comprar un recuerdo.",
+          "Yo quiero comprar un recuerdo.",
+          "Quisiera comprar un recuerdo.",
+          "Quiero comprar un souvenir."
+        ],
+        "explanation": "\"Quiero comprar un recuerdo.\" means \"I want to buy a souvenir\". \"Quiero\" plus an infinitive says what you want to do, and \"un\" or \"una\" agrees with the noun."
+      },
+      "work": {
+        "prompt": "Say that you want to buy a new laptop.",
+        "acceptableAnswers": [
+          "Quiero comprar una computadora portátil nueva.",
+          "Yo quiero comprar una computadora portátil nueva.",
+          "Quisiera comprar una computadora portátil nueva.",
+          "Quiero comprar una laptop nueva."
+        ],
+        "explanation": "\"Quiero comprar una computadora portátil nueva.\" means \"I want to buy a new laptop\". \"Quiero\" plus an infinitive says what you want to do, and \"un\" or \"una\" agrees with the noun."
+      },
+      "school": {
+        "prompt": "Say that you want to buy a backpack.",
+        "acceptableAnswers": [
+          "Quiero comprar una mochila.",
+          "Yo quiero comprar una mochila.",
+          "Quisiera comprar una mochila.",
+          "Me gustaría comprar una mochila."
+        ],
+        "explanation": "\"Quiero comprar una mochila.\" means \"I want to buy a backpack\". \"Quiero\" plus an infinitive says what you want to do, and \"un\" or \"una\" agrees with the noun."
+      }
+    }
+  },
+  "esa2p7l4": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Quiero pagar el hotel con tarjeta.",
+        "explanation": "\"Quiero pagar el hotel con tarjeta.\" means \"I want to pay for the hotel by card\". \"pagar con\" says how you pay, and \"quiero\" takes the thing you pay for."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Quiero pagar la factura con tarjeta.",
+        "explanation": "\"Quiero pagar la factura con tarjeta.\" means \"I want to pay the invoice by card\". \"pagar con\" says how you pay, and \"quiero\" takes the thing you pay for."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Quiero pagar el almuerzo con tarjeta.",
+        "explanation": "\"Quiero pagar el almuerzo con tarjeta.\" means \"I want to pay for lunch by card\". \"pagar con\" says how you pay, and \"quiero\" takes the thing you pay for."
+      }
+    }
+  },
+  "esa2p8l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you want to visit the museum tomorrow.",
+        "acceptableAnswers": [
+          "Quiero visitar el museo mañana.",
+          "Yo quiero visitar el museo mañana.",
+          "Mañana quiero visitar el museo.",
+          "Quisiera visitar el museo mañana."
+        ],
+        "explanation": "\"Quiero visitar el museo mañana.\" means \"I want to visit the museum tomorrow\". After \"quiero\" the next verb stays in the infinitive: quiero terminar, quiero estudiar."
+      },
+      "work": {
+        "prompt": "Say that you want to finish the report tonight.",
+        "acceptableAnswers": [
+          "Quiero terminar el informe esta noche.",
+          "Yo quiero terminar el informe esta noche.",
+          "Esta noche quiero terminar el informe.",
+          "Quisiera terminar el informe esta noche."
+        ],
+        "explanation": "\"Quiero terminar el informe esta noche.\" means \"I want to finish the report tonight\". After \"quiero\" the next verb stays in the infinitive: quiero terminar, quiero estudiar."
+      },
+      "school": {
+        "prompt": "Say that you want to study at the library tonight.",
+        "acceptableAnswers": [
+          "Quiero estudiar en la biblioteca esta noche.",
+          "Yo quiero estudiar en la biblioteca esta noche.",
+          "Esta noche quiero estudiar en la biblioteca.",
+          "Quisiera estudiar en la biblioteca esta noche."
+        ],
+        "explanation": "\"Quiero estudiar en la biblioteca esta noche.\" means \"I want to study at the library tonight\". After \"quiero\" the next verb stays in the infinitive: quiero terminar, quiero estudiar."
+      }
+    }
+  },
+  "esa2p9l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Hoy hace mucho calor en la playa.",
+        "choices": [
+          "Hoy hace mucho frío en la playa.",
+          "Hoy hace mucho calor en la playa.",
+          "Hoy hace mucho viento en la playa.",
+          "Hoy hace mucho calor en la montaña."
+        ],
+        "answer": "Hoy hace mucho calor en la playa.",
+        "explanation": "\"Hoy hace mucho calor en la playa.\" means \"Today it is very hot at the beach\". \"Hace\" describes the weather, and the other choices change the weather word or the place."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Hoy hace mucho frío en la oficina.",
+        "choices": [
+          "Hoy hace mucho calor en la oficina.",
+          "Hoy hace mucho frío en la calle.",
+          "Hoy hace mucho viento en la oficina.",
+          "Hoy hace mucho frío en la oficina."
+        ],
+        "answer": "Hoy hace mucho frío en la oficina.",
+        "explanation": "\"Hoy hace mucho frío en la oficina.\" means \"Today it is very cold in the office\". \"Hace\" describes the weather, and the other choices change the weather word or the place."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Hoy hace mucho frío en la escuela.",
+        "choices": [
+          "Hoy hace mucho calor en la escuela.",
+          "Hoy hace mucho frío en la escuela.",
+          "Hoy hace mucho viento en la escuela.",
+          "Hoy hace mucho frío en la clase."
+        ],
+        "answer": "Hoy hace mucho frío en la escuela.",
+        "explanation": "\"Hoy hace mucho frío en la escuela.\" means \"Today it is very cold at school\". \"Hace\" describes the weather, and the other choices change the weather word or the place."
+      }
+    }
+  },
+  "esa2p9l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that it is raining a lot in the city right now.",
+        "acceptableAnswers": [
+          "Está lloviendo mucho en la ciudad ahora.",
+          "Ahora está lloviendo mucho en la ciudad.",
+          "Está lloviendo mucho en la ciudad en este momento.",
+          "En la ciudad está lloviendo mucho ahora."
+        ],
+        "explanation": "\"Está lloviendo mucho en la ciudad ahora.\" means \"It is raining a lot in the city right now\". \"Está lloviendo\" is the present progressive: \"estar\" plus the -ndo form of the verb."
+      },
+      "work": {
+        "prompt": "Say that it is raining a lot outside the office right now.",
+        "acceptableAnswers": [
+          "Está lloviendo mucho afuera de la oficina ahora.",
+          "Ahora está lloviendo mucho afuera de la oficina.",
+          "Está lloviendo mucho afuera de la oficina en este momento.",
+          "Afuera de la oficina está lloviendo mucho ahora."
+        ],
+        "explanation": "\"Está lloviendo mucho afuera de la oficina ahora.\" means \"It is raining a lot outside the office right now\". \"Está lloviendo\" is the present progressive: \"estar\" plus the -ndo form of the verb."
+      },
+      "school": {
+        "prompt": "Say that it is raining a lot at school right now.",
+        "acceptableAnswers": [
+          "Está lloviendo mucho en la escuela ahora.",
+          "Ahora está lloviendo mucho en la escuela.",
+          "Está lloviendo mucho en la escuela en este momento.",
+          "En la escuela está lloviendo mucho ahora."
+        ],
+        "explanation": "\"Está lloviendo mucho en la escuela ahora.\" means \"It is raining a lot at school right now\". \"Está lloviendo\" is the present progressive: \"estar\" plus the -ndo form of the verb."
+      }
+    }
+  }
+}
