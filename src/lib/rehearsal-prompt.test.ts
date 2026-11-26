@@ -160,6 +160,18 @@ describe("memory", () => {
     expect(p).not.toContain(REHEARSAL_TEMPLATES.en.firstRun);
   });
 
+  it("the hard-moments stage raises only moments not yet handled well, and all of them once every one has been", () => {
+    const pending = inBlock(buildRehearsalPrompt(base({ stage: "hard_moments", runs: prior })));
+    expect(pending).toContain(b.hardMoments[1]!.label);
+    expect(pending).toContain(b.hardMoments[2]!.label);
+    expect(pending).not.toMatch(new RegExp(`hard_moment_\\d: "${b.hardMoments[0]!.label}:`)); // went well in a run
+    const allHandled = [
+      run({ stage: "hard_moments", wentWell: b.hardMoments.map((m) => m.label) }),
+    ];
+    const again = inBlock(buildRehearsalPrompt(base({ stage: "hard_moments", runs: allHandled })));
+    for (const m of b.hardMoments) expect(again).toContain(m.label);
+  });
+
   it("is order-independent: the last run is the latest by finishedAt, not by position", () => {
     const p = buildRehearsalPrompt(base({ runs: [...prior].reverse() }));
     expect(inBlock(p)).toContain("I have 5 years of experience");
