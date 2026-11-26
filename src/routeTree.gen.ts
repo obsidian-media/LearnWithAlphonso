@@ -36,6 +36,7 @@ import { Route as AuthenticatedPathRouteImport } from './routes/_authenticated/p
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
 import { Route as AuthenticatedProReturnRouteImport } from './routes/_authenticated/pro-return'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedRehearseRouteImport } from './routes/_authenticated/rehearse'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedSeasonRouteImport } from './routes/_authenticated/season'
 import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
@@ -61,6 +62,7 @@ import { Route as ApiLearningPathRouteImport } from './routes/api/learning-path'
 import { Route as ApiPracticeRouteImport } from './routes/api/practice'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
+import { Route as ApiRehearsalRouteImport } from './routes/api/rehearsal'
 import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
@@ -87,6 +89,7 @@ import { Route as ApiInternalSupportNotifyRouteImport } from './routes/api/inter
 import { Route as ApiSupportConversationRouteImport } from './routes/api/support/conversation'
 import { Route as ApiSupportHandoffRouteImport } from './routes/api/support/handoff'
 import { Route as ApiSupportMessageRouteImport } from './routes/api/support/message'
+import { Route as AuthenticatedRehearseIdStageRouteImport } from './routes/_authenticated/rehearse_.$id.$stage'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -224,6 +227,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRehearseRoute = AuthenticatedRehearseRouteImport.update({
+  id: '/rehearse',
+  path: '/rehearse',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
   id: '/review',
   path: '/review',
@@ -347,6 +355,11 @@ const ApiProOfferingRoute = ApiProOfferingRouteImport.update({
 const ApiProStatusRoute = ApiProStatusRouteImport.update({
   id: '/api/pro-status',
   path: '/api/pro-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRehearsalRoute = ApiRehearsalRouteImport.update({
+  id: '/api/rehearsal',
+  path: '/api/rehearsal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiReviewDemoCodeRoute = ApiReviewDemoCodeRouteImport.update({
@@ -489,6 +502,12 @@ const ApiSupportMessageRoute = ApiSupportMessageRouteImport.update({
   path: '/api/support/message',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRehearseIdStageRoute =
+  AuthenticatedRehearseIdStageRouteImport.update({
+    id: '/rehearse_/$id/$stage',
+    path: '/rehearse/$id/$stage',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -517,6 +536,7 @@ export interface FileRoutesByFullPath {
   '/placement': typeof AuthenticatedPlacementRoute
   '/pro-return': typeof AuthenticatedProReturnRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/rehearse': typeof AuthenticatedRehearseRoute
   '/review': typeof AuthenticatedReviewRoute
   '/season': typeof AuthenticatedSeasonRoute
   '/teams': typeof AuthenticatedTeamsRoute
@@ -542,6 +562,7 @@ export interface FileRoutesByFullPath {
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
+  '/api/rehearsal': typeof ApiRehearsalRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -568,6 +589,7 @@ export interface FileRoutesByFullPath {
   '/api/support/handoff': typeof ApiSupportHandoffRoute
   '/api/support/message': typeof ApiSupportMessageRoute
   '/stories/': typeof AuthenticatedStoriesIndexRoute
+  '/rehearse/$id/$stage': typeof AuthenticatedRehearseIdStageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -596,6 +618,7 @@ export interface FileRoutesByTo {
   '/placement': typeof AuthenticatedPlacementRoute
   '/pro-return': typeof AuthenticatedProReturnRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/rehearse': typeof AuthenticatedRehearseRoute
   '/review': typeof AuthenticatedReviewRoute
   '/season': typeof AuthenticatedSeasonRoute
   '/teams': typeof AuthenticatedTeamsRoute
@@ -621,6 +644,7 @@ export interface FileRoutesByTo {
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
+  '/api/rehearsal': typeof ApiRehearsalRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -647,6 +671,7 @@ export interface FileRoutesByTo {
   '/api/support/handoff': typeof ApiSupportHandoffRoute
   '/api/support/message': typeof ApiSupportMessageRoute
   '/stories': typeof AuthenticatedStoriesIndexRoute
+  '/rehearse/$id/$stage': typeof AuthenticatedRehearseIdStageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -677,6 +702,7 @@ export interface FileRoutesById {
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/pro-return': typeof AuthenticatedProReturnRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/rehearse': typeof AuthenticatedRehearseRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/season': typeof AuthenticatedSeasonRoute
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
@@ -702,6 +728,7 @@ export interface FileRoutesById {
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
+  '/api/rehearsal': typeof ApiRehearsalRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -728,6 +755,7 @@ export interface FileRoutesById {
   '/api/support/handoff': typeof ApiSupportHandoffRoute
   '/api/support/message': typeof ApiSupportMessageRoute
   '/_authenticated/stories/': typeof AuthenticatedStoriesIndexRoute
+  '/_authenticated/rehearse_/$id/$stage': typeof AuthenticatedRehearseIdStageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -758,6 +786,7 @@ export interface FileRouteTypes {
     | '/placement'
     | '/pro-return'
     | '/profile'
+    | '/rehearse'
     | '/review'
     | '/season'
     | '/teams'
@@ -783,6 +812,7 @@ export interface FileRouteTypes {
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
+    | '/api/rehearsal'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -809,6 +839,7 @@ export interface FileRouteTypes {
     | '/api/support/handoff'
     | '/api/support/message'
     | '/stories/'
+    | '/rehearse/$id/$stage'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -837,6 +868,7 @@ export interface FileRouteTypes {
     | '/placement'
     | '/pro-return'
     | '/profile'
+    | '/rehearse'
     | '/review'
     | '/season'
     | '/teams'
@@ -862,6 +894,7 @@ export interface FileRouteTypes {
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
+    | '/api/rehearsal'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -888,6 +921,7 @@ export interface FileRouteTypes {
     | '/api/support/handoff'
     | '/api/support/message'
     | '/stories'
+    | '/rehearse/$id/$stage'
   id:
     | '__root__'
     | '/'
@@ -917,6 +951,7 @@ export interface FileRouteTypes {
     | '/_authenticated/placement'
     | '/_authenticated/pro-return'
     | '/_authenticated/profile'
+    | '/_authenticated/rehearse'
     | '/_authenticated/review'
     | '/_authenticated/season'
     | '/_authenticated/teams'
@@ -942,6 +977,7 @@ export interface FileRouteTypes {
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
+    | '/api/rehearsal'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -968,6 +1004,7 @@ export interface FileRouteTypes {
     | '/api/support/handoff'
     | '/api/support/message'
     | '/_authenticated/stories/'
+    | '/_authenticated/rehearse_/$id/$stage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1007,6 +1044,7 @@ export interface RootRouteChildren {
   ApiPracticeRoute: typeof ApiPracticeRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
+  ApiRehearsalRoute: typeof ApiRehearsalRoute
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
@@ -1212,6 +1250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rehearse': {
+      id: '/_authenticated/rehearse'
+      path: '/rehearse'
+      fullPath: '/rehearse'
+      preLoaderRoute: typeof AuthenticatedRehearseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/review': {
       id: '/_authenticated/review'
       path: '/review'
@@ -1385,6 +1430,13 @@ declare module '@tanstack/react-router' {
       path: '/api/pro-status'
       fullPath: '/api/pro-status'
       preLoaderRoute: typeof ApiProStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/rehearsal': {
+      id: '/api/rehearsal'
+      path: '/api/rehearsal'
+      fullPath: '/api/rehearsal'
+      preLoaderRoute: typeof ApiRehearsalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/review-demo-code': {
@@ -1569,6 +1621,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSupportMessageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/rehearse_/$id/$stage': {
+      id: '/_authenticated/rehearse_/$id/$stage'
+      path: '/rehearse/$id/$stage'
+      fullPath: '/rehearse/$id/$stage'
+      preLoaderRoute: typeof AuthenticatedRehearseIdStageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -1597,6 +1656,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedProReturnRoute: typeof AuthenticatedProReturnRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRehearseRoute: typeof AuthenticatedRehearseRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedSeasonRoute: typeof AuthenticatedSeasonRoute
   AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
@@ -1613,6 +1673,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStoriesStoryIdRoute: typeof AuthenticatedStoriesStoryIdRoute
   AuthenticatedTeamsTeamIdRoute: typeof AuthenticatedTeamsTeamIdRoute
   AuthenticatedStoriesIndexRoute: typeof AuthenticatedStoriesIndexRoute
+  AuthenticatedRehearseIdStageRoute: typeof AuthenticatedRehearseIdStageRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1629,6 +1690,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedProReturnRoute: AuthenticatedProReturnRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedRehearseRoute: AuthenticatedRehearseRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedSeasonRoute: AuthenticatedSeasonRoute,
   AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
@@ -1645,6 +1707,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStoriesStoryIdRoute: AuthenticatedStoriesStoryIdRoute,
   AuthenticatedTeamsTeamIdRoute: AuthenticatedTeamsTeamIdRoute,
   AuthenticatedStoriesIndexRoute: AuthenticatedStoriesIndexRoute,
+  AuthenticatedRehearseIdStageRoute: AuthenticatedRehearseIdStageRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -1688,6 +1751,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPracticeRoute: ApiPracticeRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
   ApiProStatusRoute: ApiProStatusRoute,
+  ApiRehearsalRoute: ApiRehearsalRoute,
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
   ApiSttRoute: ApiSttRoute,
   ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,

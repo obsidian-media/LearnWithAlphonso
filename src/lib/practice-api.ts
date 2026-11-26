@@ -4,7 +4,8 @@ import type { PracticeHubData } from "./practice-hub";
 
 /** The browser side of /api/practice (src/routes/api/practice.ts). */
 export type PracticeResult = {
-  kind: "scenario" | "scene";
+  /** "rehearsal" is a rehearsal run (src/lib/rehearsal-rules.ts); the Practice hub never lists those. */
+  kind: "scenario" | "scene" | "rehearsal";
   itemKey: string;
   stars: number;
   bestBefore: number;

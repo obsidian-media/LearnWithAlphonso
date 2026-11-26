@@ -19,6 +19,7 @@ export type AiCostKind =
   | "define"
   | "support"
   | "recap"
+  | "rehearsal_brief"
   | "practice"
   | "weakness"
   | "stt"

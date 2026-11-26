@@ -12,7 +12,7 @@ const code = (rel: string) => fs.readFileSync(path.join(root, rel), "utf8");
 describe("the opening line waits for the call-start sound", () => {
   it("web: Practice and Campaigns await the cue before the opener's audio starts", () => {
     for (const rel of [
-      "src/routes/_authenticated/converse_.$scenarioId.tsx",
+      "src/components/practice/ConverseCall.tsx",
       "src/routes/_authenticated/campaign_.$campaignId.tsx",
     ]) {
       const src = code(rel);
