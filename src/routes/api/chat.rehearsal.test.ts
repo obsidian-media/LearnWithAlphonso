@@ -72,7 +72,11 @@ const fetchMock = vi.fn();
 
 const send = (body: Record<string, unknown>) =>
   POST({
-    request: new Request("https://x/api/chat", { method: "POST", body: JSON.stringify(body) }),
+    request: new Request("https://x/api/chat", {
+      method: "POST",
+      headers: { Authorization: "Bearer t" },
+      body: JSON.stringify(body),
+    }),
   });
 const rehearsalBody = (over: Record<string, unknown> = {}) => ({
   rehearsal: { id: REHEARSAL, stage: "conversation" },
@@ -279,6 +283,20 @@ describe("recording", () => {
       _kind: "rehearsal",
       _item_key: `${REHEARSAL}:conversation`,
     });
+  });
+});
+
+describe("the body is not read before auth", () => {
+  it("a request with no bearer token is authorised as an ordinary chat request: no early parse, no deferred quota", async () => {
+    const res = await POST({
+      request: new Request("https://x/api/chat", {
+        method: "POST",
+        body: JSON.stringify(rehearsalBody()),
+      }),
+    });
+    expect(h.authorize).toHaveBeenCalledTimes(1);
+    expect(h.authorize.mock.calls[0]![2]).not.toMatchObject({ deferQuota: true });
+    expect(res.status).toBe(400); // no systemPrompt: the ordinary path refuses it
   });
 });
 

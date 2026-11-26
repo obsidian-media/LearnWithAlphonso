@@ -81,6 +81,8 @@ function withDifficultyHint(
 
 /** True when the body is a JSON object with an object-valued `rehearsal`. Reads a clone, so the request stays unread. */
 async function peekRehearsal(request: Request): Promise<boolean> {
+  // Only a request that carries a bearer token is worth parsing here; an anonymous body is never read before auth.
+  if (!/^Bearer\s+\S/i.test(request.headers.get("Authorization") ?? "")) return false;
   try {
     const peek = (await request.clone().json()) as { rehearsal?: unknown } | null;
     return typeof peek?.rehearsal === "object" && peek.rehearsal !== null;

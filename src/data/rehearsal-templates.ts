@@ -197,13 +197,13 @@ export const REHEARSAL_OPENERS: Record<Course, Record<Stage, string>> = {
       "Let's practise the tricky moments. Start with a greeting and I will take it from there.",
   },
   fr: {
-    warmup: "Échauffons-nous. Dites bonjour et expliquez-moi pour quoi vous vous préparez.",
+    warmup: "Échauffons-nous. Dis bonjour et explique-moi pour quoi tu te prépares.",
     conversation: "Commencez quand vous voulez. Saluez-moi comme vous le feriez le jour J.",
     hard_moments:
       "Travaillons les moments délicats. Commencez par une salutation, je m'occupe du reste.",
   },
   es: {
-    warmup: "Vamos a calentar. Salude y cuénteme para qué se está preparando.",
+    warmup: "Vamos a calentar. Saluda y cuéntame para qué te estás preparando.",
     conversation: "Empiece cuando quiera. Salúdeme como lo haría el día de la cita.",
     hard_moments: "Practiquemos los momentos difíciles. Empiece con un saludo y yo sigo.",
   },

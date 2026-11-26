@@ -229,7 +229,7 @@ const FR: Record<EventKind, RawBrief> = {
       "Les salutations avant le début de l'entretien",
       "Présentez-vous, s'il vous plaît",
       "Pourquoi voulez-vous ce poste ?",
-      "Racontez-moi une fois où vous avez résolu un problème au travail",
+      "Racontez-moi une situation où vous avez résolu un problème au travail",
       "Avez-vous des questions pour nous ?",
     ],
     hard: [
@@ -434,13 +434,13 @@ const ES: Record<EventKind, RawBrief> = {
       "El saludo antes de empezar la entrevista",
       "Preséntese, por favor",
       "¿Por qué quiere este trabajo?",
-      "Cuénteme una vez que resolvió un problema en el trabajo",
+      "Cuénteme alguna ocasión en que resolvió un problema en el trabajo",
       "¿Tiene alguna pregunta para nosotros?",
     ],
     hard: [
-      ["La pregunta del sueldo", "Pregunte al alumno qué sueldo espera."],
+      ["La pregunta del sueldo", "Pregunte al estudiante qué sueldo espera."],
       ["Un hueco en el currículum", "Pregunte con educación por un periodo sin trabajo."],
-      ["Su punto débil", "Pregunte al alumno cuál es su mayor defecto."],
+      ["Su punto débil", "Pregunte al estudiante cuál es su mayor defecto."],
     ],
   },
   meeting: {
@@ -451,7 +451,7 @@ const ES: Record<EventKind, RawBrief> = {
       "¿Puedo añadir algo?",
       "Estoy de acuerdo con ese punto.",
       "¿Podría repetirlo, por favor?",
-      "Mi informe es que el trabajo va según lo previsto.",
+      "Por mi parte, el trabajo avanza según lo previsto.",
       "Lo compruebo y le respondo.",
       "¿Acordamos los próximos pasos?",
     ],
@@ -463,14 +463,14 @@ const ES: Record<EventKind, RawBrief> = {
       "Acuerden los próximos pasos y cierren",
     ],
     hard: [
-      ["Que le interrumpan", "Interrumpa al alumno a media frase con otro tema."],
+      ["Que le interrumpan", "Interrumpa al estudiante a media frase con otro tema."],
       [
         "Un desacuerdo",
-        "Discrepe con educación de la propuesta del alumno y pídale que la justifique.",
+        "Discrepe con educación de la propuesta del estudiante y pídale que la justifique.",
       ],
       [
         "Una pregunta sin respuesta",
-        "Haga una pregunta que el alumno probablemente no sepa contestar.",
+        "Haga una pregunta que el estudiante probablemente no sepa contestar.",
       ],
     ],
   },
@@ -495,7 +495,7 @@ const ES: Record<EventKind, RawBrief> = {
     ],
     hard: [
       ["Una pregunta difícil", "Haga una pregunta difícil que ponga en duda la idea principal."],
-      ["Perder el hilo", "Pida al alumno que vuelva a algo que dijo antes."],
+      ["Perder el hilo", "Pida al estudiante que vuelva a algo que dijo antes."],
       ["Simplificar", "Diga que no ha entendido y pida que lo explique de forma más sencilla."],
     ],
   },
@@ -519,9 +519,12 @@ const ES: Record<EventKind, RawBrief> = {
       "Acuerden lo que pasa después y despídase",
     ],
     hard: [
-      ["No entender", "Use una palabra algo difícil y vea si el alumno pide que se la expliquen."],
-      ["Una espera larga", "Diga que habrá un retraso y vea cómo reacciona el alumno."],
-      ["Un formulario", "Pida al alumno unos datos para un formulario, uno por uno."],
+      [
+        "No entender",
+        "Use una palabra algo difícil y vea si el estudiante pide que se la expliquen.",
+      ],
+      ["Una espera larga", "Diga que habrá un retraso y vea cómo reacciona el estudiante."],
+      ["Un formulario", "Pida al estudiante unos datos para un formulario, uno por uno."],
     ],
   },
   housing: {
@@ -550,7 +553,7 @@ const ES: Record<EventKind, RawBrief> = {
       ],
       [
         "Un pequeño problema",
-        "Mencione un defecto pequeño del piso y pregunte qué opina el alumno.",
+        "Mencione un defecto pequeño del piso y pregunte qué opina el estudiante.",
       ],
       ["Una decisión rápida", "Diga que hay más interesados y pida que decida pronto."],
     ],
@@ -575,14 +578,20 @@ const ES: Record<EventKind, RawBrief> = {
       "Acuerden lo que hará después",
     ],
     hard: [
-      ["Nombres y caras", "Presente a varios compañeros de golpe y vea cómo lo lleva el alumno."],
-      ["Instrucciones rápidas", "Dé instrucciones rápido y vea si el alumno pide que las repita."],
-      ["La charla informal", "Pregunte al alumno qué tal le fue el fin de semana."],
+      [
+        "Nombres y caras",
+        "Presente a varios compañeros de golpe y vea cómo lo lleva el estudiante.",
+      ],
+      [
+        "Instrucciones rápidas",
+        "Dé instrucciones rápido y vea si el estudiante pide que las repita.",
+      ],
+      ["La charla informal", "Pregunte al estudiante qué tal le fue el fin de semana."],
     ],
   },
   other: {
-    setting: "Una conversación importante que el alumno tiene prevista.",
-    role: "la persona con la que hablará el alumno",
+    setting: "Una conversación importante que el estudiante tiene prevista.",
+    role: "la persona con la que hablará el estudiante",
     tone: "educado y natural",
     phrases: [
       "Gracias por atenderme.",
@@ -600,9 +609,9 @@ const ES: Record<EventKind, RawBrief> = {
       "Acuerden lo que pasa después y cierren",
     ],
     hard: [
-      ["Una sorpresa", "Diga algo inesperado y vea cómo reacciona el alumno."],
-      ["No entender", "Hable un poco rápido y vea si el alumno pide que lo repita."],
-      ["Una respuesta difícil", "Diga que no a algo que pida el alumno y vea cómo continúa."],
+      ["Una sorpresa", "Diga algo inesperado y vea cómo reacciona el estudiante."],
+      ["No entender", "Hable un poco rápido y vea si el estudiante pide que lo repita."],
+      ["Una respuesta difícil", "Diga que no a algo que pida el estudiante y vea cómo continúa."],
     ],
   },
 };
