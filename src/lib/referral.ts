@@ -19,13 +19,17 @@ export const REFERRAL_KEEP_MS = 30 * 24 * 60 * 60 * 1000;
 /** An invite code is the opaque token from friend_invite_codes: short, URL-safe or base64. Anything else is ignored. */
 const CODE = /^[A-Za-z0-9+/=_-]{4,32}$/;
 
-/** The code from a query string (`?ref=...`), or null when absent or not shaped like a code. */
-export function parseRefParam(search: string): string | null {
-  const raw = new URLSearchParams(search).get("ref");
+/** A bare code as typed or decoded from a URL, or null when empty or not shaped like a code. */
+export function parseRefCode(raw: string | null | undefined): string | null {
   if (!raw) return null;
-  // URLSearchParams turns "+" into a space; a base64 code that lost its "+" is put back.
+  // Form decoding turns "+" into a space; a base64 code that lost its "+" is put back.
   const code = raw.trim().replace(/ /g, "+");
   return CODE.test(code) ? code : null;
+}
+
+/** The code from a query string (`?ref=...`), or null when absent or not shaped like a code. */
+export function parseRefParam(search: string): string | null {
+  return parseRefCode(new URLSearchParams(search).get("ref"));
 }
 
 type Store = Pick<Storage, "getItem" | "setItem" | "removeItem">;
@@ -33,7 +37,16 @@ type Stored = { code: string; at: number };
 
 /** Remembers a code from the landing URL. The FIRST code wins (a later link never replaces it); storage may be blocked. */
 export function captureRef(search: string, store: Store | null, now = Date.now()): void {
-  const code = parseRefParam(search);
+  captureRefCode(parseRefParam(search), store, now);
+}
+
+/** Same as captureRef for a code already read from the address (the `/r/<code>` share link). Junk is ignored. */
+export function captureRefCode(
+  raw: string | null | undefined,
+  store: Store | null,
+  now = Date.now(),
+): void {
+  const code = parseRefCode(raw);
   if (!code || !store) return;
   try {
     if (readPendingRef(store, now)) return;
@@ -110,9 +123,9 @@ export async function claimPendingRef(
   return result.ok ? "claimed" : "refused";
 }
 
-/** The shareable link for a code: the site's origin plus ?ref=. */
+/** The shareable link for a code: the site's origin plus /r/<code> (an app link; old ?ref= links still work). */
 export function referralLink(origin: string, code: string): string {
-  return `${origin.replace(/\/$/, "")}/?ref=${encodeURIComponent(code)}`;
+  return `${origin.replace(/\/$/, "")}/r/${encodeURIComponent(code)}`;
 }
 
 export type ReferralSummary = {

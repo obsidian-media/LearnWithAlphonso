@@ -87,12 +87,18 @@ public enum ReferralLink {
         return isValid(code) ? code : nil
     }
 
-    /// The code in a web link `https://learnwithalphonso.com/?ref=<code>`; nil for any other URL.
+    /// The code in a web link: the share link `https://learnwithalphonso.com/r/<code>` (an app link) or the older
+    /// `https://learnwithalphonso.com/?ref=<code>`; nil for any other URL.
     public static func code(from url: URL, host: String = FriendInviteLink.host) -> String? {
         let accepted = host == FriendInviteLink.host ? FriendInviteLink.acceptedHosts : [host]
         guard url.scheme == "https", let urlHost = url.host?.lowercased(), accepted.contains(urlHost),
-              let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else { return nil }
-        return code(fromParam: items.first(where: { $0.name == "ref" })?.value)
+              let parts = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+        // The path is read still percent-encoded, so an encoded "/" or "+" in a code is not mistaken for a separator.
+        let segments = parts.percentEncodedPath.split(separator: "/", omittingEmptySubsequences: true)
+        if segments.count == 2, segments[0] == "r" {
+            return code(fromParam: segments[1].removingPercentEncoding.map { $0.replacingOccurrences(of: " ", with: "+") })
+        }
+        return code(fromParam: parts.queryItems?.first(where: { $0.name == "ref" })?.value)
     }
 
     /// What a learner typed or pasted in the invite-code field: a bare code, or the whole referral link.
@@ -104,14 +110,14 @@ public enum ReferralLink {
         return code(fromParam: trimmed)
     }
 
-    /// The shareable link for a code: the site's origin plus `/?ref=`. Same as the web's `referralLink`.
+    /// The shareable link for a code: the site's origin plus `/r/<code>`. Same as the web's `referralLink`.
     public static func link(base: URL, code: String) -> String {
         var allowed = CharacterSet.alphanumerics
         allowed.insert(charactersIn: "-_.~")
         let encoded = code.addingPercentEncoding(withAllowedCharacters: allowed) ?? code
         var origin = base.absoluteString
         while origin.hasSuffix("/") { origin.removeLast() }
-        return "\(origin)/?ref=\(encoded)"
+        return "\(origin)/r/\(encoded)"
     }
 }
 

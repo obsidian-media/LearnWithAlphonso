@@ -112,8 +112,8 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * https://learnwithalphonso.com/?ref=<code>: kept until the account exists (the first code wins). The app link
-     * association covers /invite/ only today, so this waits on that infra; the manual code field is the fallback.
+     * https://learnwithalphonso.com/r/<code> (an App Link; the older /?ref=<code> is read too): kept until the account
+     * exists (the first code wins). The manual code field is the fallback.
      */
     private fun handleReferralLink(intent: Intent?) {
         val uri = intent?.data ?: return

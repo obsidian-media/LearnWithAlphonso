@@ -20,13 +20,13 @@ final class ReferralTests: XCTestCase {
     // MARK: link
 
     func testTheInviteLinkIsBuiltFromTheLearnersCode() {
-        XCTAssertEqual(ReferralLink.link(base: base, code: "29d081151d67"), "https://learn.alphonsoecosystem.app/?ref=29d081151d67")
+        XCTAssertEqual(ReferralLink.link(base: base, code: "29d081151d67"), "https://learn.alphonsoecosystem.app/r/29d081151d67")
     }
 
     func testTheLinkTrimsTrailingSlashesAndEncodesBase64Characters() {
         XCTAssertEqual(
             ReferralLink.link(base: URL(string: "https://learn.alphonsoecosystem.app/")!, code: "a+b/c="),
-            "https://learn.alphonsoecosystem.app/?ref=a%2Bb%2Fc%3D")
+            "https://learn.alphonsoecosystem.app/r/a%2Bb%2Fc%3D")
     }
 
     func testTheBuiltLinkReadsBackToTheSameCode() {
@@ -43,6 +43,25 @@ final class ReferralTests: XCTestCase {
         XCTAssertNil(ReferralLink.code(from: URL(string: "https://learn.alphonsoecosystem.app/")!))
         XCTAssertNil(ReferralLink.code(from: URL(string: "https://learn.alphonsoecosystem.app/?ref=a")!))
         XCTAssertNil(ReferralLink.code(from: URL(string: "https://learn.alphonsoecosystem.app/?ref=a%20b%3Cscript%3E")!))
+    }
+
+    func testTheShareLinkPathYieldsTheCodeOnBothHosts() {
+        for host in ["learnwithalphonso.com", "learn.alphonsoecosystem.app"] {
+            XCTAssertEqual(ReferralLink.code(from: URL(string: "https://\(host)/r/29d081151d67")!), "29d081151d67", host)
+            XCTAssertEqual(ReferralLink.code(from: URL(string: "https://\(host)/r/29d081151d67/")!), "29d081151d67", host)
+        }
+        // The older query link still works.
+        XCTAssertEqual(ReferralLink.code(from: URL(string: "https://learnwithalphonso.com/?ref=29d081151d67")!), "29d081151d67")
+    }
+
+    func testTheSharePathRejectsJunkAndOtherPaths() {
+        XCTAssertNil(ReferralLink.code(from: URL(string: "https://evil.example/r/29d081151d67")!))
+        XCTAssertNil(ReferralLink.code(from: URL(string: "http://learnwithalphonso.com/r/29d081151d67")!))
+        XCTAssertNil(ReferralLink.code(from: URL(string: "https://learnwithalphonso.com/r/a")!))
+        XCTAssertNil(ReferralLink.code(from: URL(string: "https://learnwithalphonso.com/r/")!))
+        XCTAssertNil(ReferralLink.code(from: URL(string: "https://learnwithalphonso.com/r/29d081151d67/extra")!))
+        XCTAssertNil(ReferralLink.code(from: URL(string: "https://learnwithalphonso.com/x/29d081151d67")!))
+        XCTAssertNil(ReferralLink.code(from: URL(string: "https://learnwithalphonso.com/r/a%20b%3Cscript%3E")!))
     }
 
     func testATypedEntryIsABareCodeOrALinkAndNothingElse() {
