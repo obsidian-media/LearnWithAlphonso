@@ -17,7 +17,7 @@ import {
 } from "../../lib/rehearsal-rules";
 import { practiceModeSearch, type PracticeModeSearch } from "../../lib/practice-session";
 import { REHEARSAL_ERROR_TEXT } from "../../lib/rehearsal-copy";
-import { ConverseChatPage } from "./converse_.$scenarioId";
+import { ConverseChatPage } from "../../components/practice/ConverseCall";
 
 export const Route = createFileRoute("/_authenticated/rehearse_/$id/$stage")({
   component: RehearseCallPage,
