@@ -66,6 +66,14 @@ function client(
 }
 const ctx = (supabaseAdmin: unknown, userId = STAFF) => ({ supabaseAdmin, userId });
 
+/** A storage that holds the episode's audio in both buckets, for the writes that now move audio on publish. */
+const holdsAudio = () =>
+  ({
+    download: async () => ({ data: new Blob(["mp3"]), error: null }),
+    upload: async () => ({ data: {}, error: null }),
+    remove: async () => ({ data: {}, error: null }),
+  }) as never;
+
 type Write = {
   name: keyof typeof fns;
   data: Record<string, unknown>;
@@ -142,6 +150,7 @@ describe("every podcast write refuses without a valid reason, before anything is
       });
       // delete and move read their tables first (an empty folder, an empty tree)
       db.from.mockReturnValue(chainable({ data: [], count: 0, error: null }) as never);
+      db.storage.from.mockReturnValue(holdsAudio());
       await fns[w.name]({ data: { ...w.data, reason: `  ${REASON}  ` }, context: ctx(db) });
       expect(db.rpc).toHaveBeenCalledTimes(1);
       const [name, args] = db.rpc.mock.calls[0] as unknown as [string, Record<string, unknown>];
@@ -208,12 +217,88 @@ describe("what the database says becomes a sentence a person can act on", () => 
 
   it("the table's own licence CHECK is translated too (a race past the first check)", async () => {
     const db = client({ error: { message: "check", code: "23514" } });
+    db.storage.from.mockReturnValue(holdsAudio());
     db.from.mockReturnValue(
       chainable({ data: { voice_provider: "deepgram" }, error: null }) as never,
     );
     await expect(
       fns.adminSetPublished({ data: { id: E, published: true, reason: REASON }, context: ctx(db) }),
     ).rejects.toThrow(UNPUBLISHABLE_PROVIDER_MESSAGE);
+  });
+
+  describe("adminSetPublished moves the audio with the flag", () => {
+    const PATH = "en/a1/shared.mp3";
+    /** Storage with real per-bucket contents. */
+    function storageWith(initial: Record<string, string[]>) {
+      const buckets: Record<string, Set<string>> = {
+        "podcast-audio": new Set(initial["podcast-audio"] ?? []),
+        "podcast-audio-drafts": new Set(initial["podcast-audio-drafts"] ?? []),
+      };
+      const from = (bucket: string) => ({
+        download: async (p: string) =>
+          buckets[bucket].has(p)
+            ? { data: new Blob(["mp3"]), error: null }
+            : { data: null, error: { message: "not found" } },
+        upload: async (p: string) => {
+          buckets[bucket].add(p);
+          return { data: {}, error: null };
+        },
+        remove: async (paths: string[]) => {
+          for (const p of paths) buckets[bucket].delete(p);
+          return { data: {}, error: null };
+        },
+      });
+      return { buckets, from };
+    }
+    function setup(
+      publishing: boolean,
+      others: { published: boolean }[],
+      initial: Record<string, string[]>,
+    ) {
+      const db = client();
+      const st = storageWith(initial);
+      db.storage.from.mockImplementation(st.from as never);
+      // call order: (publish only) the provider read, then the audio path, then the other episodes sharing it
+      if (publishing) {
+        db.from.mockReturnValueOnce(
+          chainable({ data: { voice_provider: "deepgram" }, error: null }) as never,
+        );
+      }
+      db.from.mockReturnValueOnce(chainable({ data: { audio_path: PATH }, error: null }) as never);
+      db.from.mockReturnValueOnce(chainable({ data: others, error: null }) as never);
+      return { db, buckets: st.buckets };
+    }
+    const run = (db: ReturnType<typeof client>, published: boolean) =>
+      fns.adminSetPublished({ data: { id: E, published, reason: REASON }, context: ctx(db) });
+
+    it("publishing puts the file in the public bucket at the same path", async () => {
+      const { db, buckets } = setup(true, [], { "podcast-audio-drafts": [PATH] });
+      await run(db, true);
+      expect(buckets["podcast-audio"].has(PATH)).toBe(true);
+      expect(buckets["podcast-audio-drafts"].has(PATH)).toBe(false);
+    });
+
+    it("unpublishing makes the file private", async () => {
+      const { db, buckets } = setup(false, [], { "podcast-audio": [PATH] });
+      await run(db, false);
+      expect(buckets["podcast-audio"].has(PATH)).toBe(false);
+      expect(buckets["podcast-audio-drafts"].has(PATH)).toBe(true);
+    });
+
+    it("unpublishing keeps the public file while another PUBLISHED episode shares the path", async () => {
+      const { db, buckets } = setup(false, [{ published: true }], { "podcast-audio": [PATH] });
+      await run(db, false);
+      expect(buckets["podcast-audio"].has(PATH)).toBe(true);
+    });
+
+    it("publishing keeps the private copy while another UNPUBLISHED episode shares the path", async () => {
+      const { db, buckets } = setup(true, [{ published: false }], {
+        "podcast-audio-drafts": [PATH],
+      });
+      await run(db, true);
+      expect(buckets["podcast-audio-drafts"].has(PATH)).toBe(true);
+      expect(buckets["podcast-audio"].has(PATH)).toBe(true);
+    });
   });
 
   it("a move that would loop is refused with a readable sentence", async () => {

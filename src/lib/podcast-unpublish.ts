@@ -2,8 +2,9 @@
  * Planning for scripts/podcast-tool.ts `unpublish`. Pure, typechecked and tested; the script
  * is a thin wrapper that reads rows, prints this plan, and writes only with --confirm.
  *
- * Unpublishing hides the ROW. The podcast-audio bucket is public-read, so the MP3 stays
- * fetchable by URL until it is deleted (`--remove-audio`).
+ * Unpublishing hides the ROW and moves the MP3 from the public podcast-audio bucket to the
+ * private podcast-audio-drafts bucket (src/lib/podcast-audio-buckets.ts); `--remove-audio`
+ * deletes it for good.
  */
 import { isPublishableProvider } from "./podcast-provenance";
 import { isValidSlug, resolveFolderPath, slugPathFor, type PodcastFolder } from "./podcast-tree";

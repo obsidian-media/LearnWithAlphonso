@@ -16,6 +16,12 @@ import {
 import { normalizeTranscript } from "./podcast-transcript";
 import { isPublishableProvider, UNPUBLISHABLE_PROVIDER_MESSAGE } from "./podcast-provenance";
 import { socialReasonMessage } from "./social-reason-copy";
+import {
+  bucketForEpisode,
+  DRAFT_AUDIO_BUCKET,
+  moveAudioForPublishState,
+  PUBLIC_AUDIO_BUCKET,
+} from "./podcast-audio-buckets";
 
 // Matches podcast_folders/podcast_episodes.course's own CHECK constraint
 // (20260926030000_podcast_library.sql) verbatim. Not imported from
@@ -57,7 +63,10 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminDismissReport",
 ] as const;
 
-const BUCKET = "podcast-audio";
+// Published audio is in the public bucket; everything else (drafts, uploads still being checked) is in the private
+// drafts bucket. See src/lib/podcast-audio-buckets.ts.
+const BUCKET = PUBLIC_AUDIO_BUCKET;
+const DRAFTS = DRAFT_AUDIO_BUCKET;
 
 /**
  * Calls one staff_podcast_* SQL function as the signed-in staff member. Each of them checks the reason (3 to 500
@@ -415,7 +424,16 @@ export const adminListEpisodes = createServerFn({ method: "GET" })
       .order("slug", { ascending: true });
     if (error) throw new Error(error.message);
     const bucket = context.supabaseAdmin.storage.from(BUCKET);
-    return (rows ?? []).map((row) => ({
+    const drafts = context.supabaseAdmin.storage.from(DRAFTS);
+    // An unpublished episode has no public URL; the console player gets a one-hour signed link instead.
+    const urls = await Promise.all(
+      (rows ?? []).map(async (row) =>
+        row.published
+          ? (bucket.getPublicUrl(row.audio_path).data?.publicUrl ?? null)
+          : ((await drafts.createSignedUrl(row.audio_path, 3600)).data?.signedUrl ?? null),
+      ),
+    );
+    return (rows ?? []).map((row, index) => ({
       id: row.id,
       folderId: row.folder_id,
       slug: row.slug,
@@ -428,7 +446,7 @@ export const adminListEpisodes = createServerFn({ method: "GET" })
       course: row.course ?? null,
       voiceProvider: row.voice_provider ?? null,
       voiceModel: row.voice_model ?? null,
-      audioUrl: bucket.getPublicUrl(row.audio_path).data?.publicUrl ?? null,
+      audioUrl: urls[index],
     }));
   });
 
@@ -469,10 +487,8 @@ export const adminSetPublished = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const reason = await podcastReason(data.reason);
-    // Publishing hides or shows the ROW. It does not touch the object:
-    // the podcast-audio bucket is public-read, so an unpublished
-    // episode's audio stays fetchable by anyone holding the URL. Any UI
-    // built on this must say "not listed", never "private".
+    // Publishing moves the audio too: it is copied into the public bucket before the row flips, and unpublishing
+    // moves it back to the private drafts bucket, so unpublished audio cannot be fetched by URL.
     //
     // Publishing is also the point where the audio's provenance is
     // checked, the same rule scripts/podcast-tool.ts publish applies.
@@ -493,16 +509,37 @@ export const adminSetPublished = createServerFn({ method: "POST" })
         throw new Error(UNPUBLISHABLE_PROVIDER_MESSAGE);
       }
     }
-    const { data: changed, error } = await podcastWrite(
-      context,
-      "staff_podcast_episode_set_published",
-      { p_id: data.id, p_published: data.published, p_reason: reason },
-    );
-    if (error) {
-      // The table's own CHECK is the backstop for audio the app may not distribute.
-      throw new Error(error.code === "23514" ? UNPUBLISHABLE_PROVIDER_MESSAGE : error.message);
-    }
-    if (!changed) throw new Error("That episode no longer exists. Reload the list.");
+    const audioPath = await audioPathForEpisode(context.supabaseAdmin, data.id);
+    // Another episode row may share this audio file: the public copy stays while one is published, the private one
+    // while one is not.
+    const { data: others, error: othersError } = await context.supabaseAdmin
+      .from("podcast_episodes")
+      .select("published")
+      .eq("audio_path", audioPath)
+      .neq("id", data.id);
+    if (othersError) throw new Error(othersError.message);
+    const sharers = Array.isArray(others) ? (others as { published: boolean }[]) : [];
+    await moveAudioForPublishState({
+      storage: context.supabaseAdmin.storage,
+      path: audioPath,
+      publish: data.published,
+      sharedWith: {
+        published: sharers.some((row) => row.published),
+        unpublished: sharers.some((row) => !row.published),
+      },
+      flip: async () => {
+        const { data: changed, error } = await podcastWrite(
+          context,
+          "staff_podcast_episode_set_published",
+          { p_id: data.id, p_published: data.published, p_reason: reason },
+        );
+        if (error) {
+          // The table's own CHECK is the backstop for audio the app may not distribute.
+          throw new Error(error.code === "23514" ? UNPUBLISHABLE_PROVIDER_MESSAGE : error.message);
+        }
+        if (!changed) throw new Error("That episode no longer exists. Reload the list.");
+      },
+    });
     return { ok: true };
   });
 
@@ -529,6 +566,21 @@ async function audioPathForEpisode(
   if (error) throw new Error(error.message);
   if (!data) throw new Error("That episode no longer exists.");
   return data.audio_path;
+}
+
+/** The bucket an existing episode's audio is in right now, from its published flag. */
+async function audioBucketForEpisode(
+  client: SupabaseClient<Database>,
+  episodeId: string,
+): Promise<string> {
+  const { data, error } = await client
+    .from("podcast_episodes")
+    .select("published")
+    .eq("id", episodeId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("That episode no longer exists.");
+  return bucketForEpisode(data.published);
 }
 
 /**
@@ -605,12 +657,12 @@ async function verifyStagedAudio(
   stagingPath: string,
 ): Promise<{ buffer: Buffer; contentType: string; durationSeconds: number }> {
   const reject = async (message: string): Promise<never> => {
-    await client.storage.from(BUCKET).remove([stagingPath]);
+    await client.storage.from(DRAFTS).remove([stagingPath]);
     throw new Error(message);
   };
 
   const { data: blob, error: downloadError } = await client.storage
-    .from(BUCKET)
+    .from(DRAFTS)
     .download(stagingPath);
   if (downloadError || !blob) throw new Error("The upload did not arrive. Try again.");
 
@@ -638,7 +690,7 @@ async function verifyStagedAudio(
     return reject("Could not read a duration from that file. It may be truncated.");
   }
 
-  await client.storage.from(BUCKET).remove([stagingPath]);
+  await client.storage.from(DRAFTS).remove([stagingPath]);
   return { buffer, contentType: contentTypeFor(kind), durationSeconds };
 }
 
@@ -682,7 +734,7 @@ export const adminCreateEpisodeUploadUrl = createServerFn({ method: "POST" })
     const draft = await draftForNewEpisode(client, data);
     const audioPath = storagePathFor(draft);
     const { data: signed, error } = await client.storage
-      .from(BUCKET)
+      .from(DRAFTS)
       .createSignedUploadUrl(stagingPathFor(audioPath), { upsert: true });
     if (error || !signed) throw new Error(error?.message ?? "Could not start the upload.");
     return { signedUrl: signed.signedUrl, token: signed.token };
@@ -728,8 +780,9 @@ export const adminCreateEpisode = createServerFn({ method: "POST" })
       stagingPathFor(audioPath),
     );
 
+    // A new episode is unpublished, so its audio lands in the private drafts bucket.
     const { error: promoteError } = await client.storage
-      .from(BUCKET)
+      .from(DRAFTS)
       .upload(audioPath, buffer, { contentType, upsert: true });
     if (promoteError) throw new Error(promoteError.message);
 
@@ -747,8 +800,8 @@ export const adminCreateEpisode = createServerFn({ method: "POST" })
     if (error) {
       throw new Error(
         error.code === "23505"
-          ? `An episode with slug "${data.slug}" already exists in this folder. The audio uploaded to ${BUCKET}/${audioPath} anyway -- delete it manually or reuse it with a different slug.`
-          : `Upload succeeded but the database insert failed: ${error.message}. Orphaned object: ${BUCKET}/${audioPath}`,
+          ? `An episode with slug "${data.slug}" already exists in this folder. The audio uploaded to ${DRAFTS}/${audioPath} anyway -- delete it manually or reuse it with a different slug.`
+          : `Upload succeeded but the database insert failed: ${error.message}. Orphaned object: ${DRAFTS}/${audioPath}`,
       );
     }
     return { id: newId as string, durationSeconds };
@@ -791,7 +844,7 @@ export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
     const client = context.supabaseAdmin;
     const audioPath = await audioPathForEpisode(client, data.episodeId);
     const { data: signed, error } = await client.storage
-      .from(BUCKET)
+      .from(DRAFTS)
       .createSignedUploadUrl(stagingPathFor(audioPath), { upsert: true });
     if (error || !signed) throw new Error(error?.message ?? "Could not start the upload.");
     return { signedUrl: signed.signedUrl, token: signed.token };
@@ -825,8 +878,9 @@ export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
     // sniffed bytes rather than from whatever the browser PUT, because
     // the stored type is what the bucket serves with -- sniffing alone
     // does not control that.
+    const liveBucket = await audioBucketForEpisode(client, data.episodeId);
     const { error: promoteError } = await client.storage
-      .from(BUCKET)
+      .from(liveBucket)
       .upload(audioPath, buffer, { contentType, upsert: true });
     if (promoteError) throw new Error(promoteError.message);
 

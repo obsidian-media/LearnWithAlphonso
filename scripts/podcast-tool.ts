@@ -79,10 +79,17 @@ import {
   requireStringFlag,
   type CliFlags,
 } from "../src/lib/podcast-cli-args";
+import {
+  bucketForEpisode,
+  DRAFT_AUDIO_BUCKET,
+  moveAudioForPublishState,
+  PUBLIC_AUDIO_BUCKET,
+} from "../src/lib/podcast-audio-buckets";
 import { COURSES } from "../src/data/courses";
 import { LEVELS } from "../src/data/levels";
 
-const BUCKET = "podcast-audio";
+// New audio lands in the PRIVATE drafts bucket; `publish` copies it into the public one (src/lib/podcast-audio-buckets.ts).
+const BUCKET = DRAFT_AUDIO_BUCKET;
 
 /**
  * Flags this tool understands. The parser rejects anything else by name
@@ -540,7 +547,8 @@ async function cmdValidate(flags: CliFlags) {
     `  voice:     ${episode.voice_provider}${episode.voice_model ? ` (${episode.voice_model})` : ""}`,
   );
   console.log(`  duration:  ${episode.duration_seconds}s`);
-  console.log(`  audio:     ${BUCKET}/${episode.audio_path}`);
+  const audioBucket = bucketForEpisode(episode.published);
+  console.log(`  audio:     ${audioBucket}/${episode.audio_path}`);
   console.log(`  published: ${episode.published ? "yes" : "no"}`);
 
   // list() on the object's prefix, not download() -- the latter pulls the
@@ -549,7 +557,7 @@ async function cmdValidate(flags: CliFlags) {
   const prefix = lastSlash === -1 ? "" : episode.audio_path.slice(0, lastSlash);
   const name = episode.audio_path.slice(lastSlash + 1);
   const { data: objects, error: listError } = await db.storage
-    .from(BUCKET)
+    .from(audioBucket)
     .list(prefix, { search: name });
   if (listError) {
     problems.push(`could not check the audio object: ${listError.message}`);
@@ -584,13 +592,14 @@ async function cmdPublish(flags: CliFlags) {
 
   const { data: candidate, error: readError } = await db
     .from("podcast_episodes")
-    .select("voice_provider")
+    .select("id, voice_provider, audio_path")
     .eq("folder_id", folder.id)
     .eq("slug", slug)
     .maybeSingle();
   if (readError) fail(`could not read the episode: ${readError.message}`);
   if (!candidate) fail(`no episode "${slug}" in ${folderPath}.`);
   const provider = (candidate as { voice_provider: string }).voice_provider;
+  const audioPath = (candidate as { audio_path: string }).audio_path;
   if (!isPublishableProvider(provider)) {
     fail(
       `refusing to publish ${folderPath}/${slug}: its audio provider is "${provider}". ` +
@@ -605,14 +614,39 @@ async function cmdPublish(flags: CliFlags) {
     return;
   }
 
-  const { data, error } = await db
+  // Another episode row may share this audio file: keep the private copy while one of them is unpublished.
+  const { data: others, error: othersError } = await db
     .from("podcast_episodes")
-    .update({ published: true, published_at: new Date().toISOString() })
-    .eq("folder_id", folder.id)
-    .eq("slug", slug)
-    .select("slug");
-  if (error) fail(`publish failed: ${error.message}`);
-  if (!data || data.length === 0) fail(`no episode "${slug}" in ${folderPath}.`);
+    .select("published")
+    .eq("audio_path", audioPath)
+    .neq("id", (candidate as { id: string }).id);
+  if (othersError) fail(`could not read the other episodes: ${othersError.message}`);
+  const sharers = Array.isArray(others) ? (others as { published: boolean }[]) : [];
+
+  // The audio goes into the public bucket first, then the row flips; a failed flip removes the public copy again.
+  try {
+    await moveAudioForPublishState({
+      storage: db.storage,
+      path: audioPath,
+      publish: true,
+      sharedWith: {
+        published: sharers.some((row) => row.published),
+        unpublished: sharers.some((row) => !row.published),
+      },
+      flip: async () => {
+        const { data, error } = await db
+          .from("podcast_episodes")
+          .update({ published: true, published_at: new Date().toISOString() })
+          .eq("folder_id", folder.id)
+          .eq("slug", slug)
+          .select("slug");
+        if (error) throw new Error(`publish failed: ${error.message}`);
+        if (!data || data.length === 0) throw new Error(`no episode "${slug}" in ${folderPath}.`);
+      },
+    });
+  } catch (e) {
+    fail(e instanceof Error ? e.message : String(e));
+  }
   console.log(`Published ${folderPath}/${slug}.`);
 }
 
@@ -677,8 +711,8 @@ async function cmdTranscript(flags: CliFlags) {
  * All-or-nothing on input problems: any bad line and nothing is written. Prints what
  * stays published per course and warns for a course left empty (Listen then shows its
  * empty state). --remove-audio also deletes the MP3s of every listed episode, published
- * or already unpublished: the bucket is public-read, so unpublishing alone leaves the
- * audio downloadable by URL. Deletion cannot be undone from this tool.
+ * or already unpublished. Unpublishing moves the audio to the private drafts bucket, so it is not
+ * downloadable by URL; --remove-audio deletes it for good. Deletion cannot be undone from this tool.
  */
 async function cmdUnpublish(flags: CliFlags) {
   const listFile = flags.list as string | undefined;
@@ -777,7 +811,7 @@ async function cmdUnpublish(flags: CliFlags) {
   if (flags.confirm !== true) {
     console.log(
       removeAudio
-        ? `Dry run. Would also DELETE ${removable.paths.length} audio object(s) from ${BUCKET}.`
+        ? `Dry run. Would also DELETE ${removable.paths.length} audio object(s) from ${DRAFT_AUDIO_BUCKET} and ${PUBLIC_AUDIO_BUCKET}.`
         : "Dry run.",
     );
     console.log("Re-run with --confirm to write it.");
@@ -785,20 +819,47 @@ async function cmdUnpublish(flags: CliFlags) {
   }
 
   if (plan.toUnpublish.length > 0) {
-    const ids = plan.toUnpublish.map((episode) => episode.id);
-    const { data: updated, error: updateError } = await db
-      .from("podcast_episodes")
-      .update({ published: false })
-      .in("id", ids)
-      .eq("published", true)
-      .select("id");
-    if (updateError) fail(`unpublish failed: ${updateError.message}. Nothing else was attempted.`);
-    console.log(`Unpublished ${updated?.length ?? 0} of ${ids.length}.`);
+    // One episode at a time: each one's audio goes back to the private bucket, then its row flips, then the public
+    // copy is removed. An audio path a still-published episode shares is left public.
+    let unpublished = 0;
+    for (const episode of plan.toUnpublish) {
+      const shared = removable.keptBecauseShared.includes(episode.audioPath);
+      const flip = async () => {
+        const { data: updated, error: updateError } = await db
+          .from("podcast_episodes")
+          .update({ published: false })
+          .eq("id", episode.id)
+          .eq("published", true)
+          .select("id");
+        if (updateError) throw new Error(`unpublish failed: ${updateError.message}`);
+        unpublished += updated?.length ?? 0;
+      };
+      try {
+        if (shared) {
+          console.log(`Keeping ${episode.audioPath} public: a published episode shares it.`);
+          await flip();
+        } else {
+          await moveAudioForPublishState({
+            storage: db.storage,
+            path: episode.audioPath,
+            publish: false,
+            flip,
+          });
+        }
+      } catch (e) {
+        fail(
+          `${e instanceof Error ? e.message : String(e)} Stopped at ${episode.slug}; ${unpublished} unpublished so far. Re-run to continue.`,
+        );
+      }
+    }
+    console.log(`Unpublished ${unpublished} of ${plan.toUnpublish.length}.`);
   }
 
   if (removeAudio && removable.paths.length > 0) {
+    // Both buckets: an unpublished episode's audio is in the drafts bucket, a legacy one may still be public.
+    await db.storage.from(PUBLIC_AUDIO_BUCKET).remove(removable.paths);
     const { data: removed, error: removeError } = await db.storage
-      .from(BUCKET)
+      .from(DRAFT_AUDIO_BUCKET)
       .remove(removable.paths);
     if (removeError) {
       fail(
@@ -806,7 +867,9 @@ async function cmdUnpublish(flags: CliFlags) {
           "Re-run with --remove-audio.",
       );
     }
-    console.log(`Deleted ${removed?.length ?? 0} audio object(s) from ${BUCKET}.`);
+    console.log(
+      `Deleted ${removed?.length ?? 0} audio object(s) from ${DRAFT_AUDIO_BUCKET} (and any public copy).`,
+    );
   }
 }
 
