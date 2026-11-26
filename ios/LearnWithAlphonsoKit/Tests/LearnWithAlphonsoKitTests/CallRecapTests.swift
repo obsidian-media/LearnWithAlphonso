@@ -142,28 +142,6 @@ final class CallRecapTests: XCTestCase {
         let bad = await client(status: 500, body: [:]).forgetEverything()
         XCTAssertFalse(bad)
     }
-}
-
-final class CallRecapNoteTests: XCTestCase {
-    func testMistakeNoteUsesTheMockWording() {
-        let now = Date(timeIntervalSince1970: 1_800_000_000)
-        func note(_ days: Double) -> String { TutorMemory.Mistake(id: "i", topic: "t", label: "l", seenCount: 4, lastSeenAt: now.addingTimeInterval(-days * 86_400)).note(now: now) }
-        XCTAssertEqual(note(2), "Seen in 4 calls, last 2 days ago")
-        XCTAssertEqual(note(9), "Seen in 4 calls, last week")
-        XCTAssertEqual(note(0), "Seen in 4 calls, last today")
-    }
-}
-
-final class CallRecapRobustnessTests: XCTestCase {
-    func testTwoCorrectionsOnTheSameTopicHaveDifferentIds() throws {
-        let body: [String: Any] = ["recap": ["corrections": [
-            ["said": "Soy cansado", "fixed": "Estoy cansado", "why": "estar", "topic": "ser-estar", "label": "Ser or estar"],
-            ["said": "Soy en casa", "fixed": "Estoy en casa", "why": "estar", "topic": "ser-estar", "label": "Ser or estar"],
-        ], "phrase": NSNull()]]
-        let recap = try XCTUnwrap(CallRecap.parse(try JSONSerialization.data(withJSONObject: body)))
-        XCTAssertEqual(recap.corrections.count, 2)
-        XCTAssertEqual(Set(recap.corrections.map(\.id)).count, 2, "a ForEach needs unique ids")
-    }
 
     func testAFailedAttemptIsARetryNothingToShowAndARefusalAreNot() async {
         let t = call(learnerTurns: 3)
@@ -187,6 +165,28 @@ final class CallRecapRobustnessTests: XCTestCase {
         let offline = AIConversationClient(baseURL: baseURL, accessToken: { "tok" }, requester: { _ in throw URLError(.notConnectedToInternet) })
         let r = await offline.callRecapAttempt(callId: callId, transcript: call(learnerTurns: 3))
         XCTAssertEqual(r, .retry)
+    }
+}
+
+final class CallRecapNoteTests: XCTestCase {
+    func testMistakeNoteUsesTheMockWording() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        func note(_ days: Double) -> String { TutorMemory.Mistake(id: "i", topic: "t", label: "l", seenCount: 4, lastSeenAt: now.addingTimeInterval(-days * 86_400)).note(now: now) }
+        XCTAssertEqual(note(2), "Seen in 4 calls, last 2 days ago")
+        XCTAssertEqual(note(9), "Seen in 4 calls, last week")
+        XCTAssertEqual(note(0), "Seen in 4 calls, last today")
+    }
+}
+
+final class CallRecapRobustnessTests: XCTestCase {
+    func testTwoCorrectionsOnTheSameTopicHaveDifferentIds() throws {
+        let body: [String: Any] = ["recap": ["corrections": [
+            ["said": "Soy cansado", "fixed": "Estoy cansado", "why": "estar", "topic": "ser-estar", "label": "Ser or estar"],
+            ["said": "Soy en casa", "fixed": "Estoy en casa", "why": "estar", "topic": "ser-estar", "label": "Ser or estar"],
+        ], "phrase": NSNull()]]
+        let recap = try XCTUnwrap(CallRecap.parse(try JSONSerialization.data(withJSONObject: body)))
+        XCTAssertEqual(recap.corrections.count, 2)
+        XCTAssertEqual(Set(recap.corrections.map(\.id)).count, 2, "a ForEach needs unique ids")
     }
 
     func testASlowRecapIsGivenUpOnAtTheTotalDeadline() async {

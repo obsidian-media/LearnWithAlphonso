@@ -24,14 +24,14 @@ class LearnFixedItemsTest {
         val src = File("src/main/java/com/obsidianmedia/learnwithalphonso/ui/learn/LearnScreen.kt").readText()
         val above = src.substring(src.indexOf("item(key = \"header\")"), src.indexOf("rows.forEach { row ->"))
         val keys = Regex("""item\(key = "([^"]+)"\)""").findAll(above).map { it.groupValues[1] }.toList()
-        // Always drawn: header, for-you, levels, jump (4). Drawn when shown: learn-climb, for-you-detail, placement.
-        assertEquals(listOf("header", "learn-climb", "for-you", "for-you-detail", "placement", "levels", "jump"), keys)
+        // Always drawn: header, for-you, levels, jump (4). Drawn when shown: placement (first, above the map), learn-climb, for-you-detail.
+        assertEquals(listOf("header", "placement", "learn-climb", "for-you", "for-you-detail", "levels", "jump"), keys)
         assertEquals(7, learnFixedItems(hasClimb = true, forYouDetailOpen = true, showsPlacement = true))
         // Each conditional item sits under the same condition the count uses.
         for ((key, condition) in listOf(
             "learn-climb" to "climb?.let",
             "for-you-detail" to "forYouOpen",
-            "placement" to "state.placementTaken == false",
+            "placement" to "offerStyle != PlacementOffer.Style.NONE",
         )) {
             val at = above.indexOf("item(key = \"$key\")")
             val before = above.substring(maxOf(0, at - 260), at)

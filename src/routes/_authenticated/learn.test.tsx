@@ -59,6 +59,13 @@ vi.mock("framer-motion", () => ({
   useReducedMotion: () => false,
 }));
 
+const sessionUser = vi.hoisted(() => ({ current: { id: "u1" } as Record<string, unknown> }));
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: {
+    auth: { getSession: async () => ({ data: { session: { user: sessionUser.current } } }) },
+  },
+}));
+
 const setCefrLevel = vi.fn();
 const fetchProgress = vi.fn();
 const restoreHeartsRemote = vi.fn();
@@ -111,6 +118,8 @@ beforeEach(() => {
   fetchDueReviews.mockReset();
   fetchDueReviews.mockResolvedValue({ due: [], total: 0 });
   useProgress.getState().reset();
+  sessionUser.current = { id: "u1" };
+  localStorage.removeItem("lwa.placementOfferDismissed.v1.en");
 });
 
 describe("Learn page", () => {
@@ -143,6 +152,54 @@ describe("Learn page", () => {
       "href",
       "/placement",
     );
+  });
+
+  describe("the placement offer", () => {
+    const knows = (level: string) => {
+      sessionUser.current = { id: "u1", user_metadata: { learner_profile: { level } } };
+    };
+    // Loaded progress (the offer waits for it), not placed yet.
+    const loaded = () => useProgress.setState({ hydrated: true, placementTakenAt: null });
+
+    it("is a prominent card at the top, above the map, for a learner who knows some", async () => {
+      knows("some");
+      loaded();
+      renderPage();
+      const card = await screen.findByText("Find your level");
+      expect(screen.getByRole("link", { name: "Start" })).toHaveAttribute("href", "/placement");
+      const mapNode = await screen.findByRole("button", { name: /, next$/ });
+      expect(card.compareDocumentPosition(mapNode) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it("Not now makes it the small card again and is remembered for the course", async () => {
+      knows("confident");
+      loaded();
+      renderPage();
+      await userEvent.click(await screen.findByRole("button", { name: "Not now" }));
+      expect(localStorage.getItem("lwa.placementOfferDismissed.v1.en")).toBe("1");
+      expect(screen.queryByText("Find your level")).not.toBeInTheDocument();
+      expect(screen.getByText("Not sure where to start?")).toBeInTheDocument();
+    });
+
+    it("a true beginner keeps only the small card", async () => {
+      knows("new");
+      loaded();
+      renderPage();
+      expect(await screen.findByText("Not sure where to start?")).toBeInTheDocument();
+      expect(screen.queryByText("Find your level")).not.toBeInTheDocument();
+    });
+
+    it("is gone once placement is taken", async () => {
+      knows("some");
+      useProgress.setState({ hydrated: true, placementTakenAt: "2026-11-01T00:00:00.000Z" });
+      renderPage();
+      await screen.findByRole("button", { name: /, next$/ });
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 25));
+      });
+      expect(screen.queryByText("Find your level")).not.toBeInTheDocument();
+      expect(screen.queryByText("Not sure where to start?")).not.toBeInTheDocument();
+    });
   });
 
   it("hides the placement banner once a placement result exists", async () => {

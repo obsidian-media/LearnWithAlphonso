@@ -39,6 +39,8 @@ BEGIN
   RETURN n = 1;
 END;
 $$;
+REVOKE ALL ON FUNCTION public.claim_call_recap(uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.claim_call_recap(uuid, uuid) TO service_role;
 
 -- Gives the claim back after a failed attempt so the client can try again straight away.
 CREATE FUNCTION public.release_call_recap(_user_id uuid, _call_id uuid)

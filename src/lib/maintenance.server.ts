@@ -12,6 +12,11 @@ import { MIN_SHARED_SECRET_LENGTH, secretMatches } from "./shared-secret.server"
 import { defaultSupportDeps, sweepSupport, type SupportNotifyDeps } from "./support-notify.server";
 import { defaultAiCostDeps, sweepAiCost, type AiCostSweepDeps } from "./ai-cost-sweep.server";
 import { defaultOpsAlertDeps, sweepOpsAlerts, type OpsAlertDeps } from "./ops-alert-sweep.server";
+import {
+  defaultTrialReminderDeps,
+  sweepTrialReminders,
+  type TrialReminderDeps,
+} from "./trial-reminder.server";
 
 /**
  * The scheduled maintenance pass. Called every 15 minutes by the database (run_maintenance_sweep in
@@ -28,6 +33,7 @@ import { defaultOpsAlertDeps, sweepOpsAlerts, type OpsAlertDeps } from "./ops-al
  *      yesterday's estimated spend crossed a threshold (src/lib/ai-cost-sweep.server.ts).
  *   7. Operational events: emails the owner when a server-side failure event crosses its hourly threshold, once per
  *      event per 24 hours (src/lib/ops-alert-sweep.server.ts).
+ *   8. Trial-ending reminder emails, OFF unless TRIAL_REMINDER_ENABLED=true (src/lib/trial-reminder.server.ts).
  * (The support chat retention, 12 months after a chat was solved, runs inside run_maintenance_sweep in the database.)
  */
 type Admin = SupabaseClient<Database>;
@@ -65,6 +71,8 @@ export type MaintenanceDeps = {
   aiCost?: AiCostSweepDeps;
   /** The operational-event alert (src/lib/ops-alert-sweep.server.ts); absent, that step is skipped. */
   opsAlerts?: OpsAlertDeps;
+  /** The trial-ending reminder (src/lib/trial-reminder.server.ts); absent, that step is skipped. */
+  trialReminders?: TrialReminderDeps;
 };
 
 export type RevocationResult = { revoked: number; stillPending: number; expired: number };
@@ -394,6 +402,7 @@ async function defaultDeps(): Promise<MaintenanceDeps> {
     support: await defaultSupportDeps(),
     aiCost: await defaultAiCostDeps(),
     opsAlerts: await defaultOpsAlertDeps(),
+    trialReminders: await defaultTrialReminderDeps(),
   };
 }
 
@@ -438,6 +447,10 @@ export async function handleMaintenance(
   }
   const opsDeps = deps.opsAlerts;
   const opsAlerts = opsDeps ? await run("ops-alerts", () => sweepOpsAlerts(opsDeps)) : null;
+  const trialDeps = deps.trialReminders;
+  const trialReminders = trialDeps
+    ? await run("trial-reminders", () => sweepTrialReminders(trialDeps))
+    : null;
   // Counts only: this response is stored in the database's request log.
   return json(
     {
@@ -449,6 +462,7 @@ export async function handleMaintenance(
       ...(supportDeps ? { support } : {}),
       ...(aiCostDeps ? { aiCost } : {}),
       ...(opsDeps ? { opsAlerts } : {}),
+      ...(trialDeps ? { trialReminders } : {}),
     },
     failures.length ? 500 : 200,
   );

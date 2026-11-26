@@ -945,3 +945,77 @@ describe("web Hector correction card", () => {
     expect(cancel).toHaveBeenCalled();
   });
 });
+
+describe("web Hector offers the placement test when a call ends", () => {
+  const profile = (level: string) => ({
+    id: "u1",
+    user_metadata: { learner_profile: { level } },
+  });
+  beforeEach(() => {
+    localStorage.removeItem("showAlphonsoWhilePractising");
+    localStorage.removeItem("lwa.placementOfferDismissed.v1.fr");
+    navigate.mockReset();
+    useProgress.setState({ hydrated: true, placementTakenAt: null });
+  });
+  afterEach(() => {
+    sessionUser.current = { id: "u1" };
+  });
+
+  async function hangUp() {
+    await renderPage();
+    await screen.findByTestId("call-caption");
+    // The first-run level is read from the session after mount, then the hang-up becomes a button.
+    await userEvent.click(await screen.findByRole("button", { name: "End the call" }));
+  }
+
+  it("a learner who knows some of the language sees the invitation, and Start goes to placement", async () => {
+    sessionUser.current = profile("some");
+    await hangUp();
+    expect(await screen.findByText("Call ended")).toBeInTheDocument();
+    expect(screen.getByText("Find your level")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Start" })).toHaveAttribute("href", "/placement");
+  });
+
+  it("Not now is remembered for the course and goes to Learn", async () => {
+    sessionUser.current = profile("confident");
+    await hangUp();
+    await userEvent.click(await screen.findByRole("button", { name: "Not now" }));
+    expect(localStorage.getItem("lwa.placementOfferDismissed.v1.fr")).toBe("1");
+    expect(navigate).toHaveBeenCalledWith({ to: "/learn" });
+  });
+
+  it("after Not now the next call ends straight on Learn", async () => {
+    sessionUser.current = profile("some");
+    localStorage.setItem("lwa.placementOfferDismissed.v1.fr", "1");
+    await renderPage();
+    await screen.findByTestId("call-caption");
+    // Let the session read finish: only then would a wrongly shown offer have swapped the link for a button.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 25));
+    });
+    expect(screen.getByRole("link", { name: "End the call" })).toHaveAttribute("href", "/learn");
+  });
+
+  it("a true beginner is not offered it", async () => {
+    sessionUser.current = profile("new");
+    await renderPage();
+    await screen.findByTestId("call-caption");
+    // Let the session read finish: only then would a wrongly shown offer have swapped the link for a button.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 25));
+    });
+    expect(screen.getByRole("link", { name: "End the call" })).toHaveAttribute("href", "/learn");
+  });
+
+  it("nobody who has taken it is offered it again", async () => {
+    sessionUser.current = profile("some");
+    useProgress.setState({ hydrated: true, placementTakenAt: "2026-11-01T00:00:00.000Z" });
+    await renderPage();
+    await screen.findByTestId("call-caption");
+    // Let the session read finish: only then would a wrongly shown offer have swapped the link for a button.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 25));
+    });
+    expect(screen.getByRole("link", { name: "End the call" })).toHaveAttribute("href", "/learn");
+  });
+});

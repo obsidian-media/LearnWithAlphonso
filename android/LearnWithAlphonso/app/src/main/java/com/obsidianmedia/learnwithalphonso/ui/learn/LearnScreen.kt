@@ -44,6 +44,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import com.obsidianmedia.learnwithalphonso.core.firstrun.PlacementOffer
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -215,7 +217,13 @@ fun LearnScreen(
     var showFreezeShop by rememberSaveable { mutableStateOf(false) }
     fun toggleForYou(which: String) { forYouOpen = if (forYouOpen == which) "" else which }
     // Items before the unit rows: status, rail, units header, jump button, plus the ones that come and go (the climbing map is one).
-    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = state.placementTaken == false)
+    // The placement offer (PlacementOffer in the core): prominent for "some" and "confident" learners, the small card for
+    // everyone else and after "Not now", nothing once placed or while that is still unknown.
+    var offerDismissed by remember(state.course) { mutableStateOf(container.prefs.getBoolean(PlacementOffer.dismissKey(state.course.code), false)) }
+    val firstRunLevel by produceState<String?>(null) { value = runCatching { container.learnerProfileClient.fetch().answers.level }.getOrNull() }
+    val offerStyle = if (state.placementTaken == null) PlacementOffer.Style.NONE
+        else PlacementOffer.style(firstRunLevel, placementTaken = state.placementTaken == true, dismissed = offerDismissed, surface = PlacementOffer.Surface.LEARN)
+    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = offerStyle != PlacementOffer.Style.NONE)
     val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
     // No scroll on first show: the status row and the climbing map are the top of the screen. "Jump to current" is the way down.
     Column(Modifier.fillMaxSize().background(ds.surface)) {
@@ -233,6 +241,15 @@ fun LearnScreen(
             // and unkeyed items shifting index is the one way a lazy list can show a row twice.
             // The slim status row (streak with its protected mark, hearts, XP, league). The streak pill opens the freeze shop.
             item(key = "header") { StatusHeader(progress, showFreezeShop = showFreezeShop, onToggleFreezeShop = { showFreezeShop = !showFreezeShop }, onBuyStreakFreeze = vm::buyStreakFreeze) }
+            // The placement offer comes first, above the map, so it is never below the fold.
+            if (offerStyle != PlacementOffer.Style.NONE) {
+                item(key = "placement") {
+                    PlacementOfferCard(offerStyle, onStart = { onOpenPlacement(state.course) }, onNotNow = {
+                        container.prefs.edit().putBoolean(PlacementOffer.dismissKey(state.course.code), true).apply()
+                        offerDismissed = true
+                    })
+                }
+            }
             // The climbing map replaces the old hero: this level's unit as a climb, with the start sheet for the next lesson.
             // "Unit N of M" counts the units of the level on screen. Continue lesson only when the next lesson is the course-wide one.
             climb?.let { c ->
@@ -248,8 +265,8 @@ fun LearnScreen(
                     PathUi.None -> LearnRail.PATH_UNSET
                     is PathUi.Ready -> PathGoalCard.lines(u.path).headline
                 }
-                // A full bar that is not yet completed or claimed is a reward waiting to be claimed.
-                val claimReady = state.challenges.any { it.progress >= it.threshold && !it.completed && it.templateId !in state.claimedChallengeIds }
+                // A finished quest that is not yet claimed is a reward waiting to be claimed (challenges pay themselves).
+                val claimReady = state.quests.any { it.claimable }
                 val cards = buildList {
                     add(RailItem("review", R.drawable.ds_book, "Review", LearnRail.reviewValue(dueCount), LearnRail.reviewSpoken(dueCount), showsDot = dueCount > 0, expanded = null) { onOpenReview(state.course) })
                     add(RailItem("path", R.drawable.ds_target, if (hasNoGoal) "Build my path" else "My path", pathValue, "${if (hasNoGoal) "Build my path" else "My path"}, $pathValue", expanded = if (hasNoGoal) null else forYouOpen == "path") {
@@ -257,7 +274,7 @@ fun LearnScreen(
                         if (hasNoGoal) onBuildPath() else toggleForYou("path")
                     })
                     teamMission?.let { m -> LearnRail.teamValue(m).let { v -> add(RailItem("team", R.drawable.ds_friends, "Team mission", v, "Team mission, $v", expanded = forYouOpen == "team") { toggleForYou("team") }) } }
-                    if (state.challenges.isNotEmpty()) LearnRail.weeklyValue(state.challenges).let { v -> add(RailItem("weekly", R.drawable.ds_star_solid, "Weekly", v, "Weekly challenges, $v${if (claimReady) ", reward ready to claim" else ""}", showsDot = claimReady, expanded = forYouOpen == "weekly") { toggleForYou("weekly") }) }
+                    if (state.challenges.isNotEmpty() || state.quests.isNotEmpty() || state.weeklyLoadFailed) LearnRail.weeklyValue(state.challenges, state.quests.size, state.weeklyLoadFailed).let { v -> add(RailItem("weekly", R.drawable.ds_star_solid, "Weekly", v, "Weekly challenges, $v${if (claimReady) ", reward ready to claim" else ""}", showsDot = claimReady, expanded = forYouOpen == "weekly") { toggleForYou("weekly") }) }
                 }
                 ForYouRail(cards)
             }
@@ -267,16 +284,11 @@ fun LearnScreen(
                     when (forYouOpen) {
                         "path" -> com.obsidianmedia.learnwithalphonso.ui.path.PathCard(pathVm, onOpenRoad = onOpenPath, onBuild = onBuildPath, onOpenRef = onOpenPathRef)
                         "team" -> teamMission?.let { TeamMissionCard(it) }
-                        "weekly" -> ChallengesCard(state.challenges, state.claimedChallengeIds, onClaim = vm::claimChallenge)
-                    }
-                }
-            }
-            if (state.placementTaken == false) {
-                item(key = "placement") {
-                    DsCard(spacing = AlphonsoTokens.Space.s2) {
-                        Text("Find your level", style = HeadlineType, color = ds.ink)
-                        Text("A five-minute placement test picks the right band for you. No hearts lost.", style = FootnoteType, color = ds.inkSoft)
-                        DsCompactButton("Take the placement test", { onOpenPlacement(state.course) }, primary = true)
+                        "weekly" -> Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                            if (state.weeklyLoadFailed) WeeklyLoadFailedCard(onRetry = vm::refresh)
+                            if (state.challenges.isNotEmpty()) ChallengesCard(state.challenges)
+                            if (state.quests.isNotEmpty()) QuestsCard(state.quests, onClaim = vm::claimQuest)
+                        }
                     }
                 }
             }
@@ -413,21 +425,49 @@ internal fun ForYouRail(items: List<RailItem>) {
     }
 }
 
-/** This week's challenges in full (what the rail's Weekly card opens): progress bars and the claim button. */
+/** A read of the weekly card failed: say so and offer Try again, as the web does; what loaded before stays below it. */
 @Composable
-private fun ChallengesCard(challenges: List<com.obsidianmedia.learnwithalphonso.core.net.WeeklyChallenge>, claimed: Set<String>, onClaim: (com.obsidianmedia.learnwithalphonso.core.net.WeeklyChallenge) -> kotlin.Unit) {
+private fun WeeklyLoadFailedCard(onRetry: () -> kotlin.Unit) {
+    val ds = LocalAlphonsoTokens.current
+    DsCard(spacing = AlphonsoTokens.Space.s2) {
+        Text("Couldn't load this week's challenges and quests.", style = FootnoteType, color = ds.inkSoft)
+        DsCompactButton("Try again", onRetry, primary = true)
+    }
+}
+
+/** This week's challenges in full (what the rail's Weekly card opens): progress bars. They pay themselves, so no claim. */
+@Composable
+private fun ChallengesCard(challenges: List<com.obsidianmedia.learnwithalphonso.core.net.WeeklyChallenge>) {
     val ds = LocalAlphonsoTokens.current
     DsCard(spacing = AlphonsoTokens.Space.s2) {
         DsOverline("This week's challenges")
         challenges.forEach { c ->
-            val done = c.progress >= c.threshold
             Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
                 Text(c.title, style = BodyType, color = if (c.completed) ds.inkSoft else ds.ink)
                 DsProgressBar(minOf(c.progress, c.threshold).toFloat() / maxOf(c.threshold, 1))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("${minOf(c.progress, c.threshold)}/${c.threshold}", style = CaptionType, color = ds.inkSoft, modifier = Modifier.weight(1f))
-                    if (done && !c.completed && c.templateId !in claimed) DsCompactButton("Claim", { onClaim(c) }, primary = true)
-                    else if (c.completed || c.templateId in claimed) Text("Claimed", style = FootnoteType, color = ds.actionText)
+                    if (c.completed) Text("Done", style = FootnoteType, color = ds.actionText)
+                }
+            }
+        }
+    }
+}
+
+/** This week's quests (weekly_quests): progress bars and a Claim button on a finished one; same look as the challenges. */
+@Composable
+private fun QuestsCard(quests: List<com.obsidianmedia.learnwithalphonso.core.net.WeeklyQuest>, onClaim: (com.obsidianmedia.learnwithalphonso.core.net.WeeklyQuest) -> kotlin.Unit) {
+    val ds = LocalAlphonsoTokens.current
+    DsCard(spacing = AlphonsoTokens.Space.s2) {
+        DsOverline("This week's quests")
+        quests.forEach { q ->
+            Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+                Text("${q.title} (+${q.xpReward} XP)", style = BodyType, color = if (q.claimed) ds.inkSoft else ds.ink)
+                DsProgressBar(minOf(q.progress, q.target).toFloat() / maxOf(q.target, 1))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("${minOf(q.progress, q.target)}/${q.target}", style = CaptionType, color = ds.inkSoft, modifier = Modifier.weight(1f))
+                    if (q.claimable) DsCompactButton("Claim", { onClaim(q) }, primary = true)
+                    else if (q.claimed) Text("Claimed", style = FootnoteType, color = ds.actionText)
                 }
             }
         }

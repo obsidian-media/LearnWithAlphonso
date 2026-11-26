@@ -24,6 +24,8 @@ vi.mock("@tanstack/react-start", () => ({
 
 const { getWeeklyQuestProgress, claimWeeklyQuest } = asTestFns(await import("./quests.functions"));
 
+const { currentWeekStart, QUESTS } = await import("../data/quests");
+
 const USER_ID = "user-1";
 function ctx(supabase: ReturnType<typeof createSupabaseMock>) {
   return { supabase, userId: USER_ID };
@@ -80,7 +82,30 @@ describe("claimWeeklyQuest", () => {
       context: ctx(supabase),
       data: { questId: "weekly_xp_150", course: "en" },
     });
-    expect(result).toEqual({ ok: true, xp: 130 });
+    // xp is the reward paid (the quest's catalogue reward); totalXp is the course total the RPC returns.
+    expect(result).toEqual({ ok: true, xp: 30, totalXp: 130 });
+  });
+
+  it("sends the weekly_quests id, the course and this week's Monday to claim_weekly_quest", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: [{ ok: true, xp: 130 }], error: null });
+    await claimWeeklyQuest({
+      context: ctx(supabase),
+      data: { questId: "weekly_lessons_5", course: "fr" },
+    });
+    expect(supabase.rpc).toHaveBeenCalledWith("claim_weekly_quest", {
+      _quest_id: "weekly_lessons_5",
+      _course: "fr",
+      _week_start: currentWeekStart(),
+    });
+  });
+
+  it("refuses a weekly CHALLENGE template id: that id space is not weekly_quests", async () => {
+    const supabase = createSupabaseMock();
+    await expect(
+      claimWeeklyQuest({ context: ctx(supabase), data: { questId: "lessons_5", course: "en" } }),
+    ).rejects.toThrow();
+    expect(supabase.rpc).not.toHaveBeenCalled();
   });
 
   it("surfaces a not-yet-completed rejection from the RPC", async () => {

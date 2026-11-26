@@ -61,3 +61,19 @@ export function currentWeekStart(now: Date = new Date()): string {
   utc.setUTCDate(utc.getUTCDate() - daysSinceMonday);
   return utc.toISOString().slice(0, 10);
 }
+
+/** What each reason the claim RPC can give means to the learner. Anything else gets the generic line. */
+export function claimQuestMessage(reason: string): string {
+  switch (reason) {
+    case "not-yet-completed":
+      return "Not finished yet. Keep going!";
+    case "already-claimed":
+      return "You already claimed this one.";
+    case "invalid-week":
+      return "This week just ended. Refresh to see the new quests.";
+    case "no-course-progress":
+      return "Complete a lesson in this course first.";
+    default:
+      return "Couldn't claim that reward. Try again.";
+  }
+}

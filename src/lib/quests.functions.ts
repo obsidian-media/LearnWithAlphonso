@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { QUESTS, currentWeekStart } from "../data/quests";
+import { QUESTS, QUESTS_BY_ID, currentWeekStart } from "../data/quests";
 import { publicError } from "./public-error";
 
 const courseSchema = z.enum(["en", "fr", "es"]).default("en");
@@ -69,12 +69,17 @@ export const getWeeklyQuestProgress = createServerFn({ method: "GET" })
     }));
   });
 
-export type ClaimQuestResult = { ok: true; xp: number } | { ok: false; reason: string };
+/** `xp` is the reward this claim paid; `totalXp` is the course's XP after it (what the RPC returns as `xp`). */
+export type ClaimQuestResult =
+  { ok: true; xp: number; totalXp: number } | { ok: false; reason: string };
+
+/** Only weekly_quests ids go to claim_weekly_quest. A weekly CHALLENGE template id (lessons_5) is a different id space. */
+const questIdSchema = z.string().refine((id) => id in QUESTS_BY_ID, "unknown-quest");
 
 export const claimWeeklyQuest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ questId: z.string().min(1).max(60), course: courseSchema }).parse(d),
+    z.object({ questId: questIdSchema, course: courseSchema }).parse(d),
   )
   .handler(async ({ data, context }): Promise<ClaimQuestResult> => {
     const { supabase } = context;
@@ -86,5 +91,6 @@ export const claimWeeklyQuest = createServerFn({ method: "POST" })
     if (error) return { ok: false, reason: "server-error" };
     const row = Array.isArray(rows) ? rows[0] : rows;
     if (!row?.ok) return { ok: false, reason: row?.reason ?? "unknown-error" };
-    return { ok: true, xp: row.xp ?? 0 };
+    const totalXp = row.xp ?? 0;
+    return { ok: true, xp: QUESTS_BY_ID[data.questId]?.xpReward ?? 0, totalXp };
   });

@@ -2972,6 +2972,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      trial_reminder_checked: {
+        Row: {
+          checked_at: string;
+          user_id: string;
+        };
+        Insert: {
+          checked_at: string;
+          user_id: string;
+        };
+        Update: {
+          checked_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      trial_reminders: {
+        Row: {
+          claimed_at: string;
+          trial_ends_at: string;
+          user_id: string;
+        };
+        Insert: {
+          claimed_at?: string;
+          trial_ends_at: string;
+          user_id: string;
+        };
+        Update: {
+          claimed_at?: string;
+          trial_ends_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       tutor_memory: {
         Row: {
           call_id: string | null;
@@ -4497,6 +4530,12 @@ export type Database = {
         Returns: string;
       };
       team_name_problem: { Args: { _name: string }; Returns: string };
+      trial_reminder_candidates: {
+        Args: { p_active_since: string; p_checked_before: string; p_limit: number };
+        Returns: {
+          user_id: string;
+        }[];
+      };
       trip_ai_spend_breaker: { Args: { p_limit_micro: number }; Returns: Json };
       weekly_xp: { Args: { _user_id: string; _week_start: string }; Returns: number };
     };

@@ -386,7 +386,7 @@ private fun SignedInApp(
             composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { id, mode -> nav.navigate(Routes.scenario(id, mode)) }, onOpenCampaign = { id, scene, mode -> nav.navigate(Routes.campaign(id, scene, mode)) }, onHector = { nav.navigate(Routes.HECTOR) }) }
             composable(Routes.SCENARIO) { entry -> ScenarioConversationScreen(container, entry.arguments?.getString("id") ?: "", chatMode = entry.arguments?.getString("mode") == "chat", onBack = { nav.popBackStack() }, onOpenMemory = { nav.navigate(Routes.MEMORY) }) }
             composable(Routes.CAMPAIGN) { entry -> CampaignConversationScreen(container, entry.arguments?.getString("id") ?: "", startScene = entry.arguments?.getString("scene")?.toIntOrNull() ?: 0, chatMode = entry.arguments?.getString("mode") == "chat", onBack = { nav.popBackStack() }, onOpenMemory = { nav.navigate(Routes.MEMORY) }) }
-            composable(Routes.HECTOR) { HectorTab(container) }
+            composable(Routes.HECTOR) { HectorTab(container, onOpenPlacement = { course -> nav.navigate(Routes.placement(course.code)) }) }
             composable(Routes.PROFILE) {
                 ProfileHubScreen(
                     container = container,

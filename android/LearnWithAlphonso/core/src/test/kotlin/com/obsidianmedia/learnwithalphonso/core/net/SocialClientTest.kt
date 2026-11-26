@@ -169,8 +169,38 @@ class SocialClientTest {
         }
         val c = client(fake)
         assertEquals(listOf(WeeklyChallenge("t1", "Finish 5 lessons", "d", 2, 5, false)), c.getWeeklyChallenges())
-        assertEquals(QuestClaimOutcome(true, null, 100), c.claimWeeklyQuest("t1", "en", "2026-09-28"))
-        assertEquals("""{"_quest_id":"t1","_course":"en","_week_start":"2026-09-28"}""", fake.seen[1].body)
+        assertEquals(QuestClaimOutcome(true, null, 100), c.claimWeeklyQuest("weekly_xp_150", "en", "2026-09-28"))
+        assertEquals("""{"_quest_id":"weekly_xp_150","_course":"en","_week_start":"2026-09-28"}""", fake.seen[1].body)
+    }
+
+    @Test
+    fun `a weekly challenge template id never reaches claim_weekly_quest`() = runTest {
+        val fake = FakeSupabase { json("""[{"ok":false,"reason":"unknown-quest"}]""") }
+        val failure = runCatching { client(fake).claimWeeklyQuest("lessons_5", "en", "2026-09-28") }.exceptionOrNull()
+        assertTrue(failure is IllegalArgumentException)
+        assertEquals(0, fake.seen.size)
+    }
+
+    @Test
+    fun `weekly quests are built from this week's xp, lessons and claims`() = runTest {
+        val fake = FakeSupabase { req ->
+            when {
+                req.path.endsWith("activity_days") -> json("""[{"xp_earned":300},{"xp_earned":250}]""")
+                req.path.endsWith("lesson_completions") -> json("""[{"id":"a"},{"id":"b"}]""")
+                else -> json("""[{"quest_id":"weekly_xp_150"}]""")
+            }
+        }
+        val quests = client(fake).getWeeklyQuests("en", "2026-09-28")
+        assertEquals(
+            listOf(
+                WeeklyQuest("weekly_xp_150", "Weekly Grinder", 30, 550, 150, true),
+                WeeklyQuest("weekly_xp_500", "XP Marathon", 100, 550, 500, false),
+                WeeklyQuest("weekly_lessons_5", "Lesson Streak", 40, 2, 5, false),
+            ),
+            quests,
+        )
+        assertEquals("(day.gte.2026-09-28,day.lt.2026-10-05)", fake.seen[0].query["and"])
+        assertEquals("eq.en", fake.seen[1].query["language"])
     }
 
     @Test
