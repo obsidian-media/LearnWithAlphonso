@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.review
 
+import com.obsidianmedia.learnwithalphonso.core.content.hasVariantForGoal
 import com.obsidianmedia.learnwithalphonso.core.content.resolveForGoal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -90,6 +91,8 @@ class ReviewViewModel(
         return PendingReviewGrade(
             item.itemKey, answer, course.code, now(), ownerUserId(), expectedDueOn = item.snapshotDueOn(),
             expectedLastReviewedAt = item.snapshotLastReviewedAt(),
+            // The goal of the goal-flavoured version on screen, so the server grades the base and that one version.
+            variantGoal = _state.value.goal?.takeIf { g -> !item.isSelfContained && questionFor(item)?.hasVariantForGoal(g) == true },
         ).also { gradeAttempt = it }
     }
 
@@ -141,7 +144,7 @@ class ReviewViewModel(
                     return@launch
                 }
                 if (isConnected()) {
-                    val outcome = runCatching { client.gradeReview(item.itemKey, picked, course.code, attempt(item, picked).queueIdentity, item.snapshotDueOn(), item.snapshotLastReviewedAt()) }.getOrNull()
+                    val outcome = runCatching { client.gradeReview(item.itemKey, picked, course.code, attempt(item, picked).queueIdentity, item.snapshotDueOn(), item.snapshotLastReviewedAt(), attempt(item, picked).variantGoal) }.getOrNull()
                     if (outcome != null) {
                         // Before advance(): the current item moves on with idx.
                         dropFromDueCacheIfNoLongerDue(outcome, item.itemKey)
@@ -181,7 +184,7 @@ class ReviewViewModel(
         val submission = (picked ?: "").trim()
         val local = TranslationVerdict(TranslationAnswer.matches(submission, q.acceptableAnswers), null)
         if (!isConnected()) return local to false
-        val outcome = runCatching { client.gradeReview(item.itemKey, submission, course.code, attempt(item, submission).queueIdentity, item.snapshotDueOn(), item.snapshotLastReviewedAt()) }.getOrNull() ?: return local to false
+        val outcome = runCatching { client.gradeReview(item.itemKey, submission, course.code, attempt(item, submission).queueIdentity, item.snapshotDueOn(), item.snapshotLastReviewedAt(), attempt(item, submission).variantGoal) }.getOrNull() ?: return local to false
         dropFromDueCacheIfNoLongerDue(outcome, item.itemKey)
         val correct = outcome.correct ?: return local to false
         return TranslationVerdict(correct, null) to true

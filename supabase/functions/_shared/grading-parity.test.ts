@@ -25,6 +25,8 @@ type Case = {
     bank?: string[];
     acceptable?: string[];
   }[];
+  /** Which variant the learner was shown (absent: the base question). Another variant's answer is not right. */
+  variantIndex?: number;
   expected: boolean;
   runtimes?: Runtime[];
 };
@@ -58,7 +60,13 @@ async function grade(c: Case): Promise<boolean> {
       ...(v.bank ? { bank: v.bank } : {}),
     })),
   };
-  return await deriveAnswerCorrectness(row, c.input!, course);
+  return await deriveAnswerCorrectness(
+    row,
+    c.input!,
+    course,
+    undefined,
+    c.variantIndex === undefined ? null : "g" + c.variantIndex,
+  );
 }
 
 Deno.test("fixture has unique ids and covers every question type", () => {

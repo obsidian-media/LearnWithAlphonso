@@ -166,8 +166,12 @@ data class TranslationVerdict(val correct: Boolean, val reason: String?)
  * vendor outage can never mark a learner wrong.
  */
 class TranslationGradingClient(private val http: ApiHttp) {
-    suspend fun gradeLessonTranslation(lessonId: String, questionId: String, submission: String, course: String): TranslationVerdict? =
-        grade(buildJsonObject { put("lessonId", lessonId); put("questionId", questionId); put("submission", submission); put("course", course) })
+    /** [variantGoal] is the goal of the goal-flavoured version on screen (GoalVariant.kt): the server asks about that version. */
+    suspend fun gradeLessonTranslation(lessonId: String, questionId: String, submission: String, course: String, variantGoal: String? = null): TranslationVerdict? =
+        grade(buildJsonObject {
+            put("lessonId", lessonId); put("questionId", questionId); put("submission", submission); put("course", course)
+            if (variantGoal != null) put("variantGoal", variantGoal)
+        })
 
     suspend fun gradePlacementTranslation(placementId: String, submission: String, course: String): TranslationVerdict? =
         grade(buildJsonObject { put("placementId", placementId); put("submission", submission); put("course", course) })

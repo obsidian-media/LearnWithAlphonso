@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { curriculum, type Question } from "./curriculum";
+import { curriculum, type GoalVariantBody, type Question } from "./curriculum";
 import { curriculumFr } from "./curriculum-fr";
 import { curriculumEs } from "./curriculum-es";
 import { GOAL_VARIANTS } from "./goal-variants";
@@ -124,15 +124,39 @@ for (const course of ["en", "fr", "es"] as const) {
       }
     });
 
-    it("a learner who answers any version right is graded right, and one wrong choice is wrong", () => {
-      for (const { q } of withVariants) {
-        if (q.type !== "mc" && q.type !== "fill" && q.type !== "listening") continue;
-        for (const body of Object.values(q.goalVariants!)) {
-          const right = (() => {
-            if (q.type === "mc") return (body!.choices ?? q.choices)[body!.answer as number]!;
-            return String(body!.answer);
-          })();
-          expect(deriveAnswerCorrectness(q, right, course)).toBe(true);
+    it("each version's right answer is right for that goal, the base is right for every goal, and no other goal's is", () => {
+      const rightOf = (q: Question, body: GoalVariantBody | undefined): string | null => {
+        if (q.type === "mc") return (body!.choices ?? q.choices)[body!.answer as number]!;
+        if (q.type === "translate") return body!.acceptableAnswers![0]!;
+        if (q.type === "reorder") return null;
+        return String(body!.answer);
+      };
+      const baseRight = (q: Question): string | null =>
+        q.type === "mc"
+          ? q.choices[q.answer]!
+          : q.type === "translate"
+            ? q.acceptableAnswers[0]!
+            : q.type === "reorder"
+              ? null
+              : q.answer;
+      for (const { lessonId, q } of withVariants) {
+        const entries = Object.entries(q.goalVariants!);
+        for (const [goal, body] of entries) {
+          const at = `${lessonId}:${q.id} ${goal}`;
+          const right = rightOf(q, body!)!;
+          expect(deriveAnswerCorrectness(q, right, course, goal), at).toBe(true);
+          expect(deriveAnswerCorrectness(q, baseRight(q)!, course, goal), at).toBe(true);
+          // With no goal named only the base counts: a different version's answer is not right.
+          if (right !== baseRight(q))
+            expect(deriveAnswerCorrectness(q, right, course, null), at).toBe(false);
+          for (const [other, otherBody] of entries) {
+            if (other === goal) continue;
+            const theirs = rightOf(q, otherBody!)!;
+            if (theirs === right || theirs === baseRight(q)) continue;
+            expect(deriveAnswerCorrectness(q, theirs, course, goal), `${at} vs ${other}`).toBe(
+              false,
+            );
+          }
         }
       }
     });

@@ -8,9 +8,10 @@
 //   variantsOf          every question a grader should also accept an answer for (the base and each variant);
 //   variantProblems     the data rules (shape, and no answer that is right in one version and wrong in another).
 //
-// Grading accepts a match against the canonical question OR any variant (srs.ts and
-// supabase/functions/_shared/answer-correctness.ts, kept in step): the server is never told which goal a learner
-// saw, so it cannot pick one, and the disjointness rule below is what makes accepting any of them safe.
+// Grading accepts a match against the canonical question OR the one version the client says it showed (`variantGoal`;
+// srs.ts and supabase/functions/_shared/answer-correctness.ts, kept in step), never another goal's: a different meaning
+// is not right. For mc and fill the disjointness rule below keeps a wrong choice of the version on screen from being
+// the right answer of the base.
 // Import-free of runtime code on purpose (srs.ts, the review route and the practice fallback all load it).
 
 import type { GoalVariantBody, Question, Unit } from "../data/curriculum";
@@ -59,21 +60,24 @@ export function lessonHasGoalVariant(
   return !!goal && lesson.questions.some((q) => !!q.goalVariants?.[goal]);
 }
 
-/** Every version of a question except the base one: what grading tries after the base. */
-export function variantQuestions(q: Question): Question[] {
-  if (!q.goalVariants) return [];
-  return Object.values(q.goalVariants)
-    .filter((b): b is GoalVariantBody => !!b)
-    .map((b) => applyVariantBody(q, b));
+/**
+ * The version a learner was shown, named by the goal the client sends with its answer (`variantGoal`; null or absent
+ * for the base question, which is all a build that predates variants ever shows). Null when the question has no
+ * variant for that goal. Grading accepts the base question and THIS version only, never another goal's sentence: a
+ * different meaning must not be marked right.
+ */
+export function shownVariant(q: Question, variantGoal: string | null | undefined): Question | null {
+  const body = variantGoal ? q.goalVariants?.[variantGoal as Goal] : undefined;
+  return body ? applyVariantBody(q, body) : null;
 }
 
-/** Every accepted translation wording across the base and the variants, in that order, without repeats. */
-export function allAcceptableAnswers(q: Question): string[] {
+/** The accepted translation wordings of the base and the shown version, in that order, without repeats. */
+export function allAcceptableAnswers(q: Question, variantGoal?: string | null): string[] {
   if (q.type !== "translate") return [];
   const out = [...q.acceptableAnswers];
-  for (const v of variantQuestions(q))
-    if (v.type === "translate")
-      for (const a of v.acceptableAnswers) if (!out.includes(a)) out.push(a);
+  const v = shownVariant(q, variantGoal);
+  if (v && v.type === "translate")
+    for (const a of v.acceptableAnswers) if (!out.includes(a)) out.push(a);
   return out;
 }
 
@@ -160,8 +164,8 @@ export function variantShapeProblems(q: Question, body: GoalVariantBody): string
 
 /**
  * The disjointness rule, over the base and every variant of one question: no text may be the RIGHT answer of one
- * version and a WRONG choice of another. Grading accepts an answer that is right in any version, so a text that is
- * wrong where the learner saw it but right somewhere else would be marked correct on a miss.
+ * version and a WRONG choice of another. Grading accepts the base and the shown version, so a text that is wrong
+ * where the learner saw it but right in the other would be marked correct on a miss.
  */
 export function variantSetProblems(q: Question): string[] {
   const versions: { label: string; q: Question }[] = [{ label: "the base question", q }];

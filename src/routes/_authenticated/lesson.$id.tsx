@@ -154,7 +154,9 @@ function LessonPage() {
   // not -- completeLessonRemote re-derives correctness itself from these
   // against the real answer key (§0.1-d #6), rather than trusting which
   // ones this client claims it missed.
-  const [answeredQs, setAnsweredQs] = useState<{ questionId: string; answer: string }[]>([]);
+  const [answeredQs, setAnsweredQs] = useState<
+    { questionId: string; answer: string; variantGoal?: Goal }[]
+  >([]);
   const [picked, setPicked] = useState<string | null>(null);
   // "reorder" questions accumulate a sequence of tapped token *indices*
   // (not values, since a sentence can repeat a word) instead of using
@@ -425,6 +427,11 @@ function LessonPage() {
   const isReinforcing = activeReinforcement !== null;
   const q: Question = activeReinforcement ?? questions[idx];
 
+  // The goal of the goal-flavoured version on screen (null for the base question and for a reinforcement round): sent
+  // with the answer so the server grades the base and that one version only (goal-variants.ts).
+  const variantGoalShown: Goal | null =
+    !isReinforcing && goal && lesson.questions[idx]?.goalVariants?.[goal] ? goal : null;
+
   const submittedAnswer =
     q.type === "reorder" ? orderPicks.map((i) => q.tokens[i]).join(" ") : picked;
 
@@ -452,6 +459,7 @@ function LessonPage() {
           questionId: q.id,
           submission: submittedAnswer,
           course,
+          ...(variantGoalShown ? { variantGoal: variantGoalShown } : {}),
         },
         () => aiConsent?.markWithdrawn(),
       );
@@ -484,7 +492,14 @@ function LessonPage() {
     // Reinforcement rounds are supplementary practice only -- they never
     // touch correct/missed/hearts/XP, regardless of outcome.
     if (isReinforcing) return;
-    setAnsweredQs((a) => [...a, { questionId: q.id, answer: submittedAnswer }]);
+    setAnsweredQs((a) => [
+      ...a,
+      {
+        questionId: q.id,
+        answer: submittedAnswer,
+        ...(variantGoalShown ? { variantGoal: variantGoalShown } : {}),
+      },
+    ]);
     if (isCorrect) setCorrect((c) => c + 1);
     else {
       setMissedQs((m) => [...m, { q, yours: submittedAnswer }]);

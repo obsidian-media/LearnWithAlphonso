@@ -90,7 +90,8 @@ func settledTranslationVerdict(
     session: Session,
     isConnected: Bool,
     hasAIConsent: Bool,
-    submission rawSubmission: String?
+    submission rawSubmission: String?,
+    variantGoal: String? = nil
 ) async -> TranslationVerdict {
     let submission = (rawSubmission ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
     if TranslationAnswer.matches(submission: submission, acceptable: question.acceptableAnswers) {
@@ -111,7 +112,8 @@ func settledTranslationVerdict(
         lessonId: lessonId,
         questionId: question.id,
         submission: submission,
-        course: course.translationCourseCode)
+        course: course.translationCourseCode,
+        variantGoal: variantGoal)
     return remote ?? TranslationVerdict(correct: false, reason: nil)
 }
 

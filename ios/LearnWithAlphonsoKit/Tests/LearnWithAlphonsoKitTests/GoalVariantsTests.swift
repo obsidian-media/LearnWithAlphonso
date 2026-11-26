@@ -49,12 +49,26 @@ final class GoalVariantsTests: XCTestCase {
         XCTAssertEqual(none.prompt, "We eat ___ seven o'clock.")
     }
 
-    func testGradingAcceptsTheVariantsWordingAndKeepsTheBases() throws {
+    func testGradingAcceptsTheShownVersionAndTheBaseOnly() throws {
         let t = try questions()[1]
-        XCTAssertTrue(isAnswerCorrect(t, picked: "Where is the station?"))
+        XCTAssertTrue(isAnswerCorrect(t, picked: "Where is the station?", variantGoal: "travel"))
+        XCTAssertTrue(isAnswerCorrect(t, picked: "Where is the bank?", variantGoal: "travel"))
+        XCTAssertFalse(isAnswerCorrect(t, picked: "Where is the airport?", variantGoal: "travel"))
+        // Another goal, no goal (an older build) and a goal without a version are all the base.
+        XCTAssertFalse(isAnswerCorrect(t, picked: "Where is the station?", variantGoal: "work"))
+        XCTAssertFalse(isAnswerCorrect(t, picked: "Where is the station?"))
         XCTAssertTrue(isAnswerCorrect(t, picked: "Where is the bank?"))
-        XCTAssertFalse(isAnswerCorrect(t, picked: "Where is the airport?"))
         // What the player shows is graded by what it shows.
         XCTAssertTrue(isAnswerCorrect(t.resolved(forGoal: "travel"), picked: "Where is the station?"))
+    }
+
+    func testAQueuedAnswerKeepsItsGoalAndAnOldRowDecodesAsTheBase() {
+        let stored = VariantGoalTag.encode("I take a taxi.", goal: "travel")
+        XCTAssertEqual(VariantGoalTag.decode(stored).text, "I take a taxi.")
+        XCTAssertEqual(VariantGoalTag.decode(stored).goal, "travel")
+        XCTAssertEqual(VariantGoalTag.encode("plain", goal: nil), "plain")
+        XCTAssertNil(VariantGoalTag.decode("plain").goal)
+        XCTAssertEqual(VariantGoalTag.decode("plain").text, "plain")
+        XCTAssertEqual(VariantGoalTag.decode(VariantGoalTag.encode("", goal: "work")).text, "")
     }
 }

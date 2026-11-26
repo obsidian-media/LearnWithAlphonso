@@ -666,7 +666,8 @@ struct LessonPlayerView: View {
             session: session,
             isConnected: networkMonitor.isConnected,
             hasAIConsent: aiConsent.isGranted,
-            submission: picked)
+            submission: picked,
+            variantGoal: !isReinforcing && currentQuestion.hasVariant(forGoal: goal) ? goal : nil)
     }
 
     /// The verdict's sound and haptic, once per checked answer. A lost heart follows the wrong-answer sound, and only
@@ -687,7 +688,10 @@ struct LessonPlayerView: View {
         // never touch correctCount/answers/hearts/XP.
         guard !isReinforcing else { return false }
         let question = lesson.questions[idx]
-        answers.append(LessonAnswer(questionId: questionID(question), answer: picked ?? ""))
+        // The goal of the version on screen goes with the answer, so the server grades the base and that one version.
+        answers.append(LessonAnswer(
+            questionId: questionID(question), answer: picked ?? "",
+            variantGoal: question.hasVariant(forGoal: goal) ? goal : nil))
         // For a translation the settled verdict outranks the local match: it is
         // what the learner was just shown, and isAnswerCorrect only knows the
         // curated phrasings.

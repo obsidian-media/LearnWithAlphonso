@@ -80,9 +80,12 @@ extension Question {
         return goalVariants?[goal] != nil
     }
 
-    /// Every version except the base one: what grading tries after the base.
-    func variantVersions() -> [Question] {
-        (goalVariants ?? [:]).values.map { applying($0) }
+    /// The version the learner was shown, named by the goal the client sends with its answer (`variantGoal`; nil for
+    /// the base question, which is all a build that predates variants ever shows). Nil when the question has no
+    /// version for that goal. Grading accepts the base and THIS version only, never another goal's.
+    func shownVersion(_ variantGoal: String?) -> Question? {
+        guard let variantGoal, let variant = goalVariants?[variantGoal] else { return nil }
+        return applying(variant)
     }
 
     /// The variant's fields laid over this question. The variants stay on the result so grading still sees them,
@@ -134,5 +137,26 @@ extension Lesson {
     public func resolved(forGoal goal: String?) -> Lesson {
         guard let goal else { return self }
         return Lesson(id: id, title: title, subtitle: subtitle, questions: questions.map { $0.resolved(forGoal: goal) })
+    }
+}
+
+/// How a queued answer remembers which goal-flavoured version it was given. The stored rows (SwiftData) have no column
+/// for it and a new column would need a schema migration, so the goal rides inside the stored answer text as a
+/// prefix of control characters, which no learner can type: "\u{1}travel\u{1}I take a taxi." Rows written before this
+/// have no prefix and decode as the base question's answer, which is what those builds showed.
+public enum VariantGoalTag {
+    private static let mark = "\u{1}"
+
+    public static func encode(_ text: String, goal: String?) -> String {
+        guard let goal, !goal.isEmpty, !goal.contains(mark) else { return text }
+        return mark + goal + mark + text
+    }
+
+    public static func decode(_ stored: String) -> (text: String, goal: String?) {
+        guard stored.hasPrefix(mark) else { return (stored, nil) }
+        let rest = stored.dropFirst()
+        guard let end = rest.firstIndex(of: Character(mark)) else { return (stored, nil) }
+        let goal = String(rest[rest.startIndex..<end])
+        return (String(rest[rest.index(after: end)...]), goal.isEmpty ? nil : goal)
     }
 }

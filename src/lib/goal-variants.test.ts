@@ -152,8 +152,20 @@ describe("resolveForGoal", () => {
   });
 });
 
-describe("grading accepts the base question or any variant", () => {
-  it("accepts an answer that is right in the variant and still the base's", () => {
+describe("grading accepts the base question or the version the client says it showed", () => {
+  const SPEAK: Question = {
+    id: "s1",
+    type: "speak",
+    prompt: "Say this aloud:",
+    answer: "She is a doctor",
+    explanation: "",
+    goalVariants: {
+      travel: { prompt: "Say this aloud:", answer: "She is a pilot", explanation: "" },
+      work: { prompt: "Say this aloud:", answer: "She is a chef", explanation: "" },
+    },
+  };
+
+  it("accepts the shown version's right answer and still the base's", () => {
     const withDifferent: Question = {
       id: "q",
       type: "mc",
@@ -165,23 +177,40 @@ describe("grading accepts the base question or any variant", () => {
         travel: { prompt: "v", choices: ["train", "bus", "taxi"], answer: 2, explanation: "" },
       },
     };
-    expect(deriveAnswerCorrectness(withDifferent, "taxi")).toBe(true);
-    expect(deriveAnswerCorrectness(withDifferent, "dog")).toBe(true);
-    expect(deriveAnswerCorrectness(withDifferent, "cat")).toBe(false);
-    expect(deriveAnswerCorrectness(withDifferent, "train")).toBe(false);
-    // The resolved question (what the player grades) is still right for what it shows.
+    expect(deriveAnswerCorrectness(withDifferent, "taxi", "en", "travel")).toBe(true);
+    expect(deriveAnswerCorrectness(withDifferent, "dog", "en", "travel")).toBe(true);
+    expect(deriveAnswerCorrectness(withDifferent, "cat", "en", "travel")).toBe(false);
+    expect(deriveAnswerCorrectness(withDifferent, "train", "en", "travel")).toBe(false);
+    // The resolved question (what the player grades locally) is right for what it shows.
     const shown = resolveForGoal(withDifferent, "travel");
     expect(deriveAnswerCorrectness(shown, "taxi")).toBe(true);
     expect(deriveAnswerCorrectness(shown, "train")).toBe(false);
   });
 
-  it("collects every translate wording, the base's first, without repeats", () => {
-    expect(allAcceptableAnswers(TRANSLATE)).toEqual([
+  it("rejects another goal's sentence: a different meaning is not right", () => {
+    expect(deriveAnswerCorrectness(SPEAK, "she is a pilot", "en", "travel")).toBe(true);
+    expect(deriveAnswerCorrectness(SPEAK, "she is a chef", "en", "travel")).toBe(false);
+    expect(deriveAnswerCorrectness(SPEAK, "she is a pilot", "en", "work")).toBe(false);
+    expect(deriveAnswerCorrectness(SPEAK, "she is a doctor", "en", "work")).toBe(true);
+  });
+
+  it("with no goal named (an older build, or the base question) only the base counts", () => {
+    expect(deriveAnswerCorrectness(SPEAK, "she is a pilot")).toBe(false);
+    expect(deriveAnswerCorrectness(SPEAK, "she is a pilot", "en", null)).toBe(false);
+    expect(deriveAnswerCorrectness(SPEAK, "she is a doctor")).toBe(true);
+    // A goal the question has no version for is the base too.
+    expect(deriveAnswerCorrectness(SPEAK, "she is a pilot", "en", "exam")).toBe(false);
+  });
+
+  it("collects the translate wordings of the base and the shown version only", () => {
+    expect(allAcceptableAnswers(TRANSLATE, "travel")).toEqual([
       "Where is the bank?",
       "Where is the station?",
       "Where's the station?",
     ]);
-    expect(allAcceptableAnswers(MC)).toEqual([]);
+    expect(allAcceptableAnswers(TRANSLATE)).toEqual(["Where is the bank?"]);
+    expect(allAcceptableAnswers(TRANSLATE, "work")).toEqual(["Where is the bank?"]);
+    expect(allAcceptableAnswers(MC, "travel")).toEqual([]);
   });
 });
 

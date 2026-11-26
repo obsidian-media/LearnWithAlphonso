@@ -1007,36 +1007,43 @@ Deno.test(
 );
 
 Deno.test(
-  "a goal variant's answer is graded correct on the server, and a wrong one is still a miss",
+  "a goal variant's answer is graded correct when the client names that goal, and nothing else is",
   async () => {
-    // The learner saw the travel version of q2 ("e"/"f", right answer "f"); the server is never told which goal was
-    // shown, so it accepts an answer that is right in the base question OR in any variant.
+    // The learner saw the travel version of q2 ("e"/"f", right answer "f"); the client names it with the answer.
+    // A second goal's version ("g"/"h", right answer "h") exists too and is not right for a travel learner.
     const variantQ2 = {
       ...QUESTIONS[1],
-      goal_variants: [{ goal: "travel", choices: ["e", "f"], answer_index: 1 }],
+      goal_variants: [
+        { goal: "travel", choices: ["e", "f"], answer_index: 1 },
+        { goal: "work", choices: ["g", "h"], answer_index: 1 },
+      ],
     };
-    const right = setup();
-    right.db.lesson = {
-      id: "u1l1",
-      course: "fr",
-      units: { level_id: "A2" },
-      questions: [QUESTIONS[0], variantQ2],
+    const run = async (
+      answers: { questionId: string; answer: string; variantGoal?: string | null }[],
+    ) => {
+      const t = setup();
+      t.db.lesson = {
+        id: "u1l1",
+        course: "fr",
+        units: { level_id: "A2" },
+        questions: [QUESTIONS[0], variantQ2],
+      };
+      const res = await t.handler(post({ ...body(["a", "c"]), answers }));
+      assertEquals(res.status, 200);
+      return t.db.rpcCalls[0].args._missed_question_ids;
     };
-    const ok = await right.handler(post(body(["a", "f"])));
-    assertEquals(ok.status, 200);
-    assertEquals(right.db.rpcCalls[0].args._missed_question_ids, []);
-
-    const wrong = setup();
-    wrong.db.lesson = {
-      id: "u1l1",
-      course: "fr",
-      units: { level_id: "A2" },
-      questions: [QUESTIONS[0], variantQ2],
-    };
-    // "e" is the variant's WRONG choice; it must still be a miss.
-    const bad = await wrong.handler(post(body(["a", "e"])));
-    assertEquals(bad.status, 200);
-    assertEquals(wrong.db.rpcCalls[0].args._missed_question_ids, ["q2"]);
+    const q1 = { questionId: "q1", answer: "a" };
+    // Right for the version shown.
+    assertEquals(await run([q1, { questionId: "q2", answer: "f", variantGoal: "travel" }]), []);
+    // The base answer stays right while a variant is shown.
+    assertEquals(await run([q1, { questionId: "q2", answer: "d", variantGoal: "travel" }]), []);
+    // The shown version's WRONG choice is a miss.
+    assertEquals(await run([q1, { questionId: "q2", answer: "e", variantGoal: "travel" }]), ["q2"]);
+    // Another goal's right answer is a miss.
+    assertEquals(await run([q1, { questionId: "q2", answer: "h", variantGoal: "travel" }]), ["q2"]);
+    // No goal sent (an older build): only the base counts, so the variant's answer is a miss.
+    assertEquals(await run([q1, { questionId: "q2", answer: "f" }]), ["q2"]);
+    assertEquals(await run([q1, { questionId: "q2", answer: "f", variantGoal: null }]), ["q2"]);
   },
 );
 

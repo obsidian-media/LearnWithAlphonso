@@ -20,6 +20,8 @@ final class GradingParityTests: XCTestCase {
         let expected: Bool
         let runtimes: [String]?
         let variants: [Variant]?
+        /// Which variant the learner was shown (nil: the base question). Another variant's answer is not right.
+        let variantIndex: Int?
     }
 
     /// A goal-flavoured version of the case's question; the input is right when it is right for the case OR for any.
@@ -104,7 +106,8 @@ final class GradingParityTests: XCTestCase {
         XCTAssertGreaterThan(applicable.count, 0)
         var ran = 0
         for c in applicable {
-            let got = isAnswerCorrect(try question(c), picked: c.input, course: course(c))
+            let got = isAnswerCorrect(
+                try question(c), picked: c.input, course: course(c), variantGoal: c.variantIndex.map { "g\($0)" })
             XCTAssertEqual(got, c.expected, c.id)
             ran += 1
         }

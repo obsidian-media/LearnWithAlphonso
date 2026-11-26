@@ -312,10 +312,14 @@ public struct LessonCompletionResult: Sendable, Decodable, Equatable {
 public struct LessonAnswer: Sendable, Equatable {
     public let questionId: String
     public let answer: String
+    /// The goal of the goal-flavoured version the learner was shown (GoalVariants.swift); nil for the base question.
+    /// The server grades the base and this one version only.
+    public let variantGoal: String?
 
-    public init(questionId: String, answer: String) {
+    public init(questionId: String, answer: String, variantGoal: String? = nil) {
         self.questionId = questionId
         self.answer = answer
+        self.variantGoal = variantGoal
     }
 }
 
@@ -511,7 +515,11 @@ public final class ProgressSyncClient: Sendable {
         var payload: [String: Any] = [
             "lessonId": lessonID,
             "total": total,
-            "answers": answers.map { ["questionId": $0.questionId, "answer": $0.answer] },
+            "answers": answers.map { a -> [String: Any] in
+                var row: [String: Any] = ["questionId": a.questionId, "answer": a.answer]
+                if let goal = a.variantGoal { row["variantGoal"] = goal }
+                return row
+            },
             "course": course,
             "sessionToken": sessionToken,
         ]
@@ -620,10 +628,11 @@ public final class ProgressSyncClient: Sendable {
     public func gradeReview(_ attempt: PendingReviewGrade) async throws -> ReviewGradeOutcome {
         try await gradeReview(
             itemKey: attempt.itemKey, answer: attempt.answer, course: attempt.course, attemptID: attempt.queueIdentity,
-            expectedDueOn: attempt.expectedDueOn, expectedLastReviewedAt: attempt.expectedLastReviewedAt)
+            expectedDueOn: attempt.expectedDueOn, expectedLastReviewedAt: attempt.expectedLastReviewedAt,
+            variantGoal: attempt.variantGoal)
     }
 
-    public func gradeReview(itemKey: String, answer: String, course: String, attemptID: String? = nil, expectedDueOn: String? = nil, expectedLastReviewedAt: String? = nil) async throws -> ReviewGradeOutcome {
+    public func gradeReview(itemKey: String, answer: String, course: String, attemptID: String? = nil, expectedDueOn: String? = nil, expectedLastReviewedAt: String? = nil, variantGoal: String? = nil) async throws -> ReviewGradeOutcome {
         var request = URLRequest(url: supabaseURL.appendingPathComponent("functions/v1/grade-review"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -631,6 +640,8 @@ public final class ProgressSyncClient: Sendable {
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         var payload: [String: Any] = ["itemKey": itemKey, "answer": answer, "course": course]
         if let attemptID { payload["attemptId"] = attemptID }
+        // The goal of the goal-flavoured version the learner was shown; the server grades the base and that one.
+        if let variantGoal { payload["variantGoal"] = variantGoal }
         if let expectedDueOn {
             payload["expectedDueOn"] = expectedDueOn
             payload["expectedLastReviewedAt"] = expectedLastReviewedAt ?? NSNull()

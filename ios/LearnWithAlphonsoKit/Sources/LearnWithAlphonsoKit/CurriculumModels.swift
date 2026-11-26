@@ -36,7 +36,7 @@ public enum Question: Decodable, Sendable {
         /// (curriculum.ts `term`); "" means this question makes no card.
         public let term: String?
         /// Goal-flavoured versions of this question, by goal (curriculum.ts `goalVariants`); nil for nearly every
-        /// question. See GoalVariants.swift: the player shows `resolved(forGoal:)`, grading accepts any version.
+        /// question. See GoalVariants.swift: the player shows `resolved(forGoal:)`, grading accepts the base and the shown version.
         public var goalVariants: [String: GoalVariant]?
 
         public init(

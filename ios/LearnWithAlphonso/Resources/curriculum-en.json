@@ -4443,7 +4443,7 @@
               "meaning": "to learn about something",
               "goalVariants": {
                 "travel": {
-                  "prompt": "We ___ the city map every morning.",
+                  "prompt": "We ___ new words before our trip every day.",
                   "choices": [
                     "study",
                     "studies",
@@ -4451,7 +4451,7 @@
                     "are study"
                   ],
                   "answer": 0,
-                  "explanation": "With the plural \"We\", the present simple uses the base verb: \"study\". We study the city map every morning."
+                  "explanation": "With the plural \"We\", the present simple uses the base verb: \"study\". We study new words before our trip every day."
                 },
                 "work": {
                   "prompt": "We ___ the sales report every Monday.",
@@ -6974,7 +6974,7 @@
                   "prompt": "Which sentence did you hear?",
                   "audioText": "The taxi is behind the hotel.",
                   "choices": [
-                    "The taxi is opposite the hotel.",
+                    "The taxi is outside the hotel.",
                     "The taxi is behind the hotel.",
                     "The taxi is beside the hotel.",
                     "The taxi is near the hotel."
@@ -6984,15 +6984,15 @@
                 },
                 "work": {
                   "prompt": "Which sentence did you hear?",
-                  "audioText": "The printer is behind the door.",
+                  "audioText": "The printer is behind the desk.",
                   "choices": [
-                    "The printer is beside the door.",
-                    "The printer is behind the door.",
-                    "The printer is near the door.",
-                    "The printer is opposite the door."
+                    "The printer is beside the desk.",
+                    "The printer is behind the desk.",
+                    "The printer is near the desk.",
+                    "The printer is under the desk."
                   ],
-                  "answer": "The printer is behind the door.",
-                  "explanation": "You heard \"The printer is behind the door.\" The other choices change one word."
+                  "answer": "The printer is behind the desk.",
+                  "explanation": "You heard \"The printer is behind the desk.\" The other choices change one word."
                 },
                 "school": {
                   "prompt": "Which sentence did you hear?",
@@ -7000,8 +7000,8 @@
                   "choices": [
                     "The bus is near the school.",
                     "The bus is beside the school.",
-                    "The bus is behind the school.",
-                    "The bus is opposite the school."
+                    "The bus is outside the school.",
+                    "The bus is behind the school."
                   ],
                   "answer": "The bus is behind the school.",
                   "explanation": "You heard \"The bus is behind the school.\" The other choices change one word."
@@ -8207,7 +8207,7 @@
                   "explanation": "\"Who\" asks about a person. Who is that woman? Our new manager."
                 },
                 "school": {
-                  "prompt": "___ is that man? The school principal.",
+                  "prompt": "___ is that man? Our new teacher.",
                   "choices": [
                     "Who",
                     "How",
@@ -8215,7 +8215,7 @@
                     "When"
                   ],
                   "answer": 0,
-                  "explanation": "\"Who\" asks about a person. Who is that man? The school principal."
+                  "explanation": "\"Who\" asks about a person. Who is that man? Our new teacher."
                 }
               }
             },
@@ -8305,7 +8305,7 @@
                   "explanation": "\"How\" goes before \"much\" to ask about a price. How much is a ticket to the museum?"
                 },
                 "work": {
-                  "prompt": "___ much is the conference ticket?",
+                  "prompt": "___ much is the taxi to the office?",
                   "bank": [
                     "Where",
                     "Which",
@@ -8313,7 +8313,7 @@
                     "Whose"
                   ],
                   "answer": "How",
-                  "explanation": "\"How\" goes before \"much\" to ask about a price. How much is the conference ticket?"
+                  "explanation": "\"How\" goes before \"much\" to ask about a price. How much is the taxi to the office?"
                 },
                 "school": {
                   "prompt": "___ much is the bus pass for school?",
@@ -12073,14 +12073,14 @@
                   "explanation": "You can say \"I want to pay for the office supplies by card.\" We use \"by\" with the way we pay."
                 },
                 "school": {
-                  "prompt": "Say that you want to pay for the school trip by card.",
+                  "prompt": "Say that you want to pay for your lunch by card.",
                   "acceptableAnswers": [
-                    "I want to pay for the school trip by card.",
-                    "I'd like to pay for the school trip by card.",
-                    "I want to pay for the school trip with a card.",
-                    "I'll pay for the school trip by card."
+                    "I want to pay for my lunch by card.",
+                    "I'd like to pay for my lunch by card.",
+                    "I want to pay for my lunch with a card.",
+                    "I'll pay for my lunch by card."
                   ],
-                  "explanation": "You can say \"I want to pay for the school trip by card.\" We use \"by\" with the way we pay."
+                  "explanation": "You can say \"I want to pay for my lunch by card.\" We use \"by\" with the way we pay."
                 }
               }
             },
@@ -15372,15 +15372,15 @@
               "goalVariants": {
                 "travel": {
                   "prompt": "Which sentence did you hear?",
-                  "audioText": "She cooks dinner for the tourists every evening.",
+                  "audioText": "She cooks dinner at the hotel every evening.",
                   "choices": [
-                    "She cooking dinner for the tourists every evening.",
-                    "She cooks dinner for the tourists every morning.",
-                    "She cooks dinner for the tourists every evening.",
-                    "She cooks lunch for the tourists every evening."
+                    "She cooks dinner at the hotel every morning.",
+                    "She cooks dinner at the hotel every evening.",
+                    "She cooking dinner at the hotel every evening.",
+                    "She cooks lunch at the hotel every evening."
                   ],
-                  "answer": "She cooks dinner for the tourists every evening.",
-                  "explanation": "You heard \"She cooks dinner for the tourists every evening.\" The other choices change one word."
+                  "answer": "She cooks dinner at the hotel every evening.",
+                  "explanation": "You heard \"She cooks dinner at the hotel every evening.\" The other choices change one word."
                 },
                 "work": {
                   "prompt": "Which sentence did you hear?",
@@ -15509,13 +15509,13 @@
                 "work": {
                   "prompt": "We ___ the sales numbers every Friday.",
                   "bank": [
-                    "watch",
-                    "watches",
-                    "watching",
-                    "to watch"
+                    "check",
+                    "checks",
+                    "checking",
+                    "to check"
                   ],
-                  "answer": "watch",
-                  "explanation": "With the plural \"We\", the present simple uses the base verb: \"watch\". We watch the sales numbers every Friday."
+                  "answer": "check",
+                  "explanation": "With the plural \"We\", the present simple uses the base verb: \"check\". We check the sales numbers every Friday."
                 },
                 "school": {
                   "prompt": "We ___ a short video in class every Friday.",

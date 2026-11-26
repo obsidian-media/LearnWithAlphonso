@@ -25,7 +25,7 @@ struct ReviewQueueView: View {
     @State private var queue: [ResolvedReviewItem] = []
     /// The learner's goal from their first-run answers (nil until read, or when they skipped it). A due question is
     /// shown in the version written for it (GoalVariants.swift); the review key and the server's grading are the
-    /// base question's, and the server accepts any version.
+    /// base question's, and the server accepts the base and the version named by variantGoal.
     @State private var goal: String?
     @State private var total = 0
     @State private var idx = 0
@@ -498,7 +498,9 @@ struct ReviewQueueView: View {
             itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(),
             expectedDueOn: item.hasReviewSnapshot ? item.dueOn : nil,
             expectedLastReviewedAt: item.hasReviewSnapshot ? item.lastReviewedAt : nil,
-            ownerUserID: reviewOwnerUserID ?? session.userID)
+            ownerUserID: reviewOwnerUserID ?? session.userID,
+            // The goal of the goal-flavoured version on screen, so the server grades the base and that one version.
+            variantGoal: currentQuestion?.hasVariant(forGoal: goal) == true ? goal : nil)
         gradeAttempt = started
         return started
     }

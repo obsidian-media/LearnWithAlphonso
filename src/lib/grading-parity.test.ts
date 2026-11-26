@@ -24,6 +24,8 @@ type Case = {
   reply?: Record<string, unknown>;
   /** Goal-flavoured versions of the question: the input is right when it is right for the case OR for any of these. */
   variants?: Variant[];
+  /** Which variant the learner was shown (absent: the base question). Another variant's answer is not right. */
+  variantIndex?: number;
   expected: boolean;
   runtimes?: Runtime[];
   note?: string;
@@ -36,6 +38,11 @@ type Variant = {
   acceptable?: string[];
 };
 const GOAL_NAMES = ["travel", "work", "school", "family", "exam", "fun"] as const;
+
+/** The goal of the version shown, as the client would send it with its answer. */
+function variantGoalOf(c: Case): string | null {
+  return c.variantIndex === undefined ? null : GOAL_NAMES[c.variantIndex]!;
+}
 
 /** The fixture's variants as the Question.goalVariants a curriculum would carry (one goal each, in order). */
 function goalVariantsOf(c: Case): Question["goalVariants"] {
@@ -84,6 +91,7 @@ function grade(c: Case): boolean {
         } as Question,
         c.input!,
         course,
+        variantGoalOf(c),
       );
     case "translate":
       return deriveAnswerCorrectness(
@@ -97,6 +105,7 @@ function grade(c: Case): boolean {
         } as Question,
         c.input!,
         course,
+        variantGoalOf(c),
       );
     default:
       return deriveAnswerCorrectness(
@@ -112,6 +121,7 @@ function grade(c: Case): boolean {
         } as unknown as Question,
         c.input!,
         course,
+        variantGoalOf(c),
       );
   }
 }

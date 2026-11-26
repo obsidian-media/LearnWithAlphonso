@@ -56,11 +56,25 @@ class GoalVariantTest {
     }
 
     @Test
-    fun `grading accepts the variant's wording and keeps the base's`() {
+    fun `grading accepts the shown version and the base only`() {
         val t = questions[1]
-        assertTrue(isAnswerCorrect(t, "Where is the station?"))
+        assertTrue(isAnswerCorrect(t, "Where is the station?", variantGoal = "travel"))
+        assertTrue(isAnswerCorrect(t, "Where is the bank?", variantGoal = "travel"))
+        assertFalse(isAnswerCorrect(t, "Where is the airport?", variantGoal = "travel"))
+        // Another goal, no goal (an older build) and a goal without a version are all the base.
+        assertFalse(isAnswerCorrect(t, "Where is the station?", variantGoal = "work"))
+        assertFalse(isAnswerCorrect(t, "Where is the station?"))
         assertTrue(isAnswerCorrect(t, "Where is the bank?"))
-        assertFalse(isAnswerCorrect(t, "Where is the airport?"))
+        // What the player shows is graded by what it shows.
         assertTrue(isAnswerCorrect(t.resolveForGoal("travel"), "Where is the station?"))
+    }
+
+    @Test
+    fun `a queued answer keeps its goal and an old row decodes as the base`() {
+        val stored = VariantGoalTag.encode("I take a taxi.", "travel")
+        assertEquals("I take a taxi." to "travel", VariantGoalTag.decode(stored))
+        assertEquals("plain", VariantGoalTag.encode("plain", null))
+        assertEquals("plain" to null, VariantGoalTag.decode("plain"))
+        assertEquals("" to "work", VariantGoalTag.decode(VariantGoalTag.encode("", "work")))
     }
 }

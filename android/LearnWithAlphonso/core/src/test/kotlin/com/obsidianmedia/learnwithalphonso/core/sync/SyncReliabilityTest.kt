@@ -364,8 +364,8 @@ class SyncReliabilityTest {
             override suspend fun startLessonSession(lessonId: String, course: String) = real.startLessonSession(lessonId, course)
             override suspend fun completeLesson(lessonId: String, total: Int, answers: List<LessonAnswer>, course: String, sessionToken: String, completedAt: Long?) =
                 real.completeLesson(lessonId, total, answers, course, sessionToken, completedAt).also { current = false }
-            override suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String?, expectedDueOn: String?, expectedLastReviewedAt: String?) {
-                real.gradeReview(itemKey, answer, course, attemptId, expectedDueOn, expectedLastReviewedAt)
+            override suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String?, expectedDueOn: String?, expectedLastReviewedAt: String?, variantGoal: String?) {
+                real.gradeReview(itemKey, answer, course, attemptId, expectedDueOn, expectedLastReviewedAt, variantGoal)
             }
         }
         val result = SyncEngine.sync(

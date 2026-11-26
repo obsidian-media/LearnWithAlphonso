@@ -30,7 +30,7 @@ import type { Question } from "../data/curriculum";
 import type { Course } from "../data/courses";
 import { deriveAnswerCorrectness } from "./srs";
 import { matchesAcceptableAnswer } from "./translation-answer";
-import { allAcceptableAnswers } from "./goal-variants";
+import { allAcceptableAnswers, shownVariant } from "./goal-variants";
 import { gradeTranslationWithAi } from "./translation-grader.server";
 import { resolveLlmApiKey, resolveLlmChatModel } from "./llm-chat-model.server";
 
@@ -45,12 +45,15 @@ export async function gradeLessonAnswer(
   answer: string,
   course: Course,
   ai?: AiGrading,
+  variantGoal?: string | null,
 ): Promise<boolean> {
   if (question.type !== "translate") {
-    return deriveAnswerCorrectness(question, answer, course);
+    return deriveAnswerCorrectness(question, answer, course, variantGoal);
   }
-  // The base wordings and every goal variant's (goal-variants.ts): the server is never told which goal was shown.
-  const acceptable = allAcceptableAnswers(question);
+  // The base wordings and the wordings of the version the client says it showed (goal-variants.ts), never another
+  // goal's. The AI grader is asked about the version on screen.
+  const acceptable = allAcceptableAnswers(question, variantGoal);
+  const shown = shownVariant(question, variantGoal);
   if (matchesAcceptableAnswer(answer, acceptable)) return true;
   if (!answer.trim()) return false;
   // No consent, no vendor call; the curated verdict stands. Omitting `ai` means no AI at all, so a new caller that
@@ -60,7 +63,7 @@ export async function gradeLessonAnswer(
   if (!apiKey) return false;
   if (ai.checkQuota && !(await ai.checkQuota())) return false;
   const verdict = await gradeTranslationWithAi({
-    prompt: question.prompt,
+    prompt: shown?.prompt ?? question.prompt,
     acceptableAnswers: acceptable,
     submission: answer,
     apiKey,

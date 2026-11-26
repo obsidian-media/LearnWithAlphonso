@@ -185,7 +185,7 @@ function ReviewPage() {
   const baseCard = cards && idx < cards.length ? cards[idx] : null;
   // Goal-flavoured variants (goal-variants.ts): a due question is shown in the version written for the learner's goal.
   // The goal is fixed once the queue is on screen, so a slow profile read never swaps a question mid-answer. The
-  // review key and the server's grading are the base question's (the server accepts any version).
+  // review key and the server's grading are the base question's (the server accepts the base and the version named by variantGoal).
   const learnerGoal = useLearnerGoal();
   const queueGoal = useRef<{ goal: Goal | null } | null>(null);
   if (cards !== null && !queueGoal.current) queueGoal.current = { goal: learnerGoal };
@@ -262,6 +262,8 @@ function ReviewPage() {
         expectedDueOn: c.dueOn,
         expectedLastReviewedAt: c.lastReviewedAt,
         attemptId: attemptIdFor(c, answer),
+        // The goal of the version on screen, so the server grades the base and that one version.
+        ...(showingVariant && goal ? { variantGoal: goal } : {}),
       },
     })
       .then((r) => {

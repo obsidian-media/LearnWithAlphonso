@@ -8,7 +8,7 @@ import { matchesSpokenAnswerFr } from "./spoken-answer-fr";
 import { matchesSpokenAnswerEs } from "./spoken-answer-es";
 import { matchesAcceptableAnswer } from "./translation-answer";
 import type { Course } from "../data/courses";
-import { variantQuestions } from "./goal-variants";
+import { shownVariant } from "./goal-variants";
 
 /**
  * gradeReview used to trust a raw `correct: boolean` from the client --
@@ -34,12 +34,14 @@ export function deriveAnswerCorrectness(
   question: Question,
   answer: string,
   course: Course = "en",
+  variantGoal?: string | null,
 ): boolean {
   if (deriveForVersion(question, answer, course)) return true;
-  // Goal-flavoured variants (goal-variants.ts): the server is never told which goal a learner saw, so an answer that
-  // is right in ANY version of the question is right. The gate that keeps every version's right answer out of every
-  // other version's wrong choices is what makes that safe. Kept in step with _shared/answer-correctness.ts.
-  return variantQuestions(question).some((v) => deriveForVersion(v, answer, course));
+  // Goal-flavoured variants (goal-variants.ts): the client names the goal of the version it showed (`variantGoal`,
+  // null or absent for the base question), and an answer is right against the base OR that one version, never
+  // another goal's. Kept in step with _shared/answer-correctness.ts, the Swift Kit and the Android core.
+  const shown = shownVariant(question, variantGoal);
+  return shown !== null && deriveForVersion(shown, answer, course);
 }
 
 /** One version of a question (the base, or a variant laid over it) against an answer. */

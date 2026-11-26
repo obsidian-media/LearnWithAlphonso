@@ -69,6 +69,8 @@ export type QuestionRow = {
 
 export type GoalVariantRow = {
   goal: string;
+  /** The version's own prompt: the AI translation grader is asked about the version on screen. */
+  prompt?: string;
   choices?: string[] | null;
   bank?: string[] | null;
   answer_index?: number | null;
@@ -140,7 +142,7 @@ function questionRow(lessonId: string, q: Question, sortOrder: number): Question
     if (!body) return [];
     const v = questionRowOf(lessonId, applyVariantBody(q, body), sortOrder);
     // Only the columns this type fills, so the Edge Function lays them over the base row without surprises.
-    const out: GoalVariantRow = { goal };
+    const out: GoalVariantRow = { goal, prompt: v.prompt };
     if (v.choices !== null) out.choices = v.choices;
     if (v.bank !== null) out.bank = v.bank;
     if (v.answer_index !== null) out.answer_index = v.answer_index;

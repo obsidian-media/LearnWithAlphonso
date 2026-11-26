@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import com.obsidianmedia.learnwithalphonso.core.content.hasVariantForGoal
 import com.obsidianmedia.learnwithalphonso.core.content.resolveForGoal
 import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsProperties
 import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
@@ -382,7 +383,7 @@ class LessonViewModel(
         val submission = (picked ?: "").trim()
         if (TranslationAnswer.matches(submission, q.acceptableAnswers)) return TranslationVerdict(true, null)
         if (!TranslationGradingPolicy.mayAskServer(isConnected = isConnected(), hasAccessToken = true, hasAiConsent = hasAiConsent())) return TranslationVerdict(false, null)
-        return translation.gradeLessonTranslation(_state.value.lesson.id, q.id, submission, course.code) ?: TranslationVerdict(false, null)
+        return translation.gradeLessonTranslation(_state.value.lesson.id, q.id, submission, course.code, _state.value.goal?.takeIf { q.hasVariantForGoal(it) }) ?: TranslationVerdict(false, null)
     }
 
     private fun recordAnswer() {
@@ -390,7 +391,8 @@ class LessonViewModel(
         if (s.isReinforcing) return
         val question = s.lesson.questions[s.idx]
         val correct = if (question is Question.Translate && s.translationVerdict != null) s.translationVerdict.correct else isAnswerCorrect(question, s.picked, course)
-        val answers = s.answers + LessonAnswer(question.id, s.picked ?: "")
+        // The goal of the version on screen goes with the answer, so the server grades the base and that one version.
+        val answers = s.answers + LessonAnswer(question.id, s.picked ?: "", s.goal?.takeIf { question.hasVariantForGoal(it) })
         if (correct) {
             _state.update { it.copy(answers = answers, correctCount = it.correctCount + 1) }
         } else {

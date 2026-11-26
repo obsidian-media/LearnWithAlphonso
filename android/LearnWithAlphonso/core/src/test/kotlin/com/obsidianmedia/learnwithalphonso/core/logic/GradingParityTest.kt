@@ -79,7 +79,7 @@ class GradingParityTest {
         val failures = mutableListOf<String>()
         var ran = 0
         for (c in applicable) {
-            val got = isAnswerCorrect(question(c), c.str("input"), course(c))
+            val got = isAnswerCorrect(question(c), c.str("input"), course(c), c["variantIndex"]?.jsonPrimitive?.int?.let { "g$it" })
             val want = c["expected"]!!.jsonPrimitive.boolean
             if (got != want) failures += "${c.str("id")}: got $got, fixture says $want"
             ran++

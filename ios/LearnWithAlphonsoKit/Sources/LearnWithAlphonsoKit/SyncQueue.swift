@@ -70,12 +70,16 @@ public struct PendingReviewGrade: Sendable, Equatable {
     public let ownerUserID: String?
     public let attemptCount: Int
     public let nextAttemptAt: Date?
+    /// The goal of the goal-flavoured version the learner was shown (GoalVariants.swift); nil for the base question.
+    public let variantGoal: String?
 
     public init(
         itemKey: String, answer: String, course: String, queuedAt: Date,
         expectedDueOn: String? = nil, expectedLastReviewedAt: String? = nil,
-        ownerUserID: String? = nil, attemptCount: Int = 0, nextAttemptAt: Date? = nil
+        ownerUserID: String? = nil, attemptCount: Int = 0, nextAttemptAt: Date? = nil,
+        variantGoal: String? = nil
     ) {
+        self.variantGoal = variantGoal
         self.itemKey = itemKey
         self.answer = answer
         self.course = course
@@ -93,7 +97,7 @@ public struct PendingReviewGrade: Sendable, Equatable {
         PendingReviewGrade(
             itemKey: itemKey, answer: answer, course: course, queuedAt: queuedAt,
             expectedDueOn: expectedDueOn, expectedLastReviewedAt: expectedLastReviewedAt, ownerUserID: ownerUserID,
-            attemptCount: attemptCount, nextAttemptAt: nextAttemptAt)
+            attemptCount: attemptCount, nextAttemptAt: nextAttemptAt, variantGoal: variantGoal)
     }
 }
 

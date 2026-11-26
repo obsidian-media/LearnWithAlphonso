@@ -320,14 +320,16 @@ private fun QuizStage(vm: LessonViewModel, state: LessonUiState, course: Course,
     val expression = LessonStage.expression(picked = !state.picked.isNullOrBlank() || started, verdict = if (answered) correct else null)
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+            // A question showing its goal version says so, on the room just above Alphonso's bubble.
+            val variantGoal = state.goal?.takeIf { !state.isReinforcing && question.hasVariantForGoal(it) }
             LessonRoom(roomId, expression, layout.roomHeight.dp, layout.alphonsoWidth.dp) {
-                Box(Modifier.padding(16.dp)) {
-                    LessonHud((state.idx + if (answered) 1 else 0).toFloat() / maxOf(1, state.total), hearts, onExit, valueText = "Question ${state.idx + 1} of ${state.total}")
+                Box(Modifier.fillMaxSize()) {
+                    Box(Modifier.padding(16.dp)) {
+                        LessonHud((state.idx + if (answered) 1 else 0).toFloat() / maxOf(1, state.total), hearts, onExit, valueText = "Question ${state.idx + 1} of ${state.total}")
+                    }
+                    if (variantGoal != null) Box(Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 52.dp)) { GoalTagPill(variantGoal) }
                 }
             }
-            // A question showing its goal version says so, just above Alphonso's bubble.
-            val variantGoal = state.goal?.takeIf { !state.isReinforcing && question.hasVariantForGoal(it) }
-            if (variantGoal != null) Box(Modifier.padding(start = 16.dp, top = 4.dp).offset(y = (-40).dp)) { GoalTagPill(variantGoal) }
             Box(Modifier.padding(horizontal = 16.dp).offset(y = if (layout.size == LessonStage.Size.SMALL) (-36).dp else (-44).dp)) {
                 key(state.isReinforcing, question.id) {
                     LessonStageQuestion(
