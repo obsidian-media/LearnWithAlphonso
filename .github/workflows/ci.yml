@@ -869,8 +869,8 @@ jobs:
 
   promote-web:
     # Vercel builds every main commit on its own. With "Auto-assign Custom Production Domains" turned OFF on the web and
-    # admin projects, those builds wait as staged deployments, and this job points learn.* and admin.* at this commit's
-    # build only AFTER deploy-supabase has applied the migrations and functions the new code calls. With the toggle
+    # admin projects, those builds wait as staged deployments, and this job points learnwithalphonso.com and
+    # admin.learnwithalphonso.com at this commit's build only AFTER deploy-supabase has applied the migrations and functions the new code calls. With the toggle
     # still on, Vercel has already moved the domains and this job only confirms it (it sends no promote request).
     # It never moves production back to an older commit: if a newer main commit is already live, it skips.
     # VERCEL_TOKEN (repo Actions secret, team-scoped) unset: warns and passes. Owner steps: docs/ENV-SETUP.md.
