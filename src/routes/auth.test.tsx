@@ -123,6 +123,60 @@ describe("Auth page", () => {
     localStorage.removeItem("lwa.firstRun.v1");
   });
 
+  it("titles the tab Create account on the sign-up form and Sign in otherwise", () => {
+    const head = Route.options.head! as (ctx: { match: { search: unknown } }) => {
+      meta: { title?: string; property?: string; content?: string }[];
+    };
+    const title = (search: unknown) =>
+      head({ match: { search } }).meta.find((m) => m.title !== undefined)?.title;
+    expect(title({ mode: "signup" })).toBe("Create account — Alphonso");
+    expect(title({})).toBe("Sign in — Alphonso");
+    const og = head({ match: { search: { mode: "signup" } } }).meta.find(
+      (m) => m.property === "og:title",
+    );
+    expect(og?.content).toBe("Create account — Alphonso");
+  });
+
+  it("explains an invalid email and a short password inline, only after blur, never while typing", async () => {
+    searchParams = { mode: "signup" };
+    const user = userEvent.setup();
+    renderPage();
+    const email = screen.getByLabelText("Email");
+    const password = screen.getByLabelText("Password");
+
+    await user.type(email, "not-an-email");
+    expect(screen.queryByText(/doesn't look right/)).not.toBeInTheDocument();
+    await user.tab(); // leaves the email
+    const emailMsg = screen.getByText(/That email address doesn't look right/);
+    expect(email).toHaveAttribute("aria-invalid", "true");
+    expect(email.getAttribute("aria-describedby")).toBe(emailMsg.id);
+
+    await user.type(password, "short");
+    expect(screen.queryByText(/Use at least 10 characters/)).not.toBeInTheDocument();
+    await user.tab();
+    const passwordMsg = screen.getByText(/Use at least 10 characters/);
+    expect(password).toHaveAttribute("aria-invalid", "true");
+    expect(password.getAttribute("aria-describedby")).toBe(passwordMsg.id);
+
+    // Fixing the field clears the message at once.
+    await user.clear(email);
+    await user.type(email, "sam@example.com");
+    expect(screen.queryByText(/doesn't look right/)).not.toBeInTheDocument();
+    expect(email).not.toHaveAttribute("aria-invalid");
+    expect(signUp).not.toHaveBeenCalled();
+  });
+
+  it("on a submit attempt with an empty form shows both messages, focuses the first and sends nothing", async () => {
+    searchParams = { mode: "signup" };
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole("button", { name: "Create account" }));
+    expect(screen.getByText("Enter your email address.")).toBeInTheDocument();
+    expect(screen.getByText("Enter your password.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toHaveFocus();
+    expect(signUp).not.toHaveBeenCalled();
+  });
+
   it("on a device that answered Under 13, shows the kind stop and no way to make an account", async () => {
     localStorage.setItem("lwa.under13.v1", "1");
     searchParams = { mode: "signup" };
