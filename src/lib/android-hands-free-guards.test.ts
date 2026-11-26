@@ -179,7 +179,9 @@ describe("it is off at every call start and tuned per partner", () => {
     expect(code(VMS)).toMatch(/fun onLeave\(\) \{ handsFree\.disable\(\)/);
     expect(code(VMS)).toMatch(/finishing = true\s*handsFree\.disable\(\)/);
     expect(code(VMS)).toMatch(/public override fun onCleared\(\) \{\s*handsFree\.disable\(\)/);
-    expect(code(HECTOR)).toMatch(/fun onLeave\(\) \{ handsFree\.disable\(\)/);
+    expect(code(HECTOR)).toMatch(
+      /fun onLeave\(configChange: Boolean = false\) \{ handsFree\.disable\(\)/,
+    );
     expect(code(HECTOR)).toMatch(/callGeneration\+\+\s*handsFree\.disable\(\)/);
     expect(code(HECTOR)).toMatch(/public override fun onCleared\(\) \{\s*handsFree\.disable\(\)/);
   });
