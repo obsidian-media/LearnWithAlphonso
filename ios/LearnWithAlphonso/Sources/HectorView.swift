@@ -154,8 +154,7 @@ private struct HectorConversationView: View {
             voice.onCapture = nil
             // Leaving with the call still open (a tab switch, a closed sheet): have Hector remember it and analyse
             // what was said. Each once, so a call already handled at hang-up is not sent again.
-            sendCallEnd()
-            analyzeWeaknessesIfNew()
+            finishCall()
         }
     }
 
@@ -414,9 +413,8 @@ private struct HectorConversationView: View {
     private func endCall() {
         voice.setHandsFree(false)
         voice.disappeared()
-        // The call is over: have Hector remember it and analyse it now, not whenever the tab is left.
-        sendCallEnd()
-        analyzeWeaknessesIfNew()
+        // The call is over: have Hector remember it now, not whenever the tab is left.
+        finishCall()
         // As a sheet the call hid its Done button, so hanging up closes it; on the tab it shows "Call ended".
         if let onClose { onClose() } else { callEnded = true }
     }
@@ -445,8 +443,9 @@ private struct HectorConversationView: View {
         let level = cefrLevel
         let courseCode = course.wireCode
         let opening: HectorOpening
-        if let accessToken = session.accessToken {
+        if let accessToken = await session.freshAccessToken() {
             let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            // A slow request gives way to the local greeting after HectorOpening.greetingTimeout (5 s).
             opening = await HectorOpening.resolve(
                 course: course, variants: .userDefaults(), localFallback: local
             ) { last in try await client.hectorGreeting(course: courseCode, cefrLevel: level, lastVariant: last) }
@@ -460,32 +459,43 @@ private struct HectorConversationView: View {
         openerCue += 1
     }
 
-    /// Sends the finished call to /api/hector-call-end, once per call id and only for a call of at least three
-    /// learner turns. Everything it needs is captured and it is a plain Task, so leaving the screen never cancels it.
-    /// A failure or a `saved: false` is logged with its reason; "Saved" shows on the ended screen only when kept.
-    private func sendCallEnd() {
+    /// The call is over, or the screen is closing: have Hector remember it (/api/hector-call-end, once per call id and
+    /// only with three learner turns), on a plain Task that leaving the screen never cancels. When that did not
+    /// succeed, or was not sent, the weakness analysis is the fallback (a kept call-end recorded the weakness events
+    /// itself). A failure or a `saved: false` is logged with its reason; "Saved" shows on the ended screen only when
+    /// the server kept the call. If the learner talks again afterwards, a new segment with a fresh call id starts
+    /// (see `respond`), and its turns are saved as their own call.
+    private func finishCall() {
         let snapshot = conversationStore.snapshot(for: key) ?? conversation
-        guard tracker.claimCallEnd(turns: snapshot.turns) else { return }
-        guard let accessToken = session.accessToken else {
-            Self.log.error("hector-call-end skipped: reason=auth (signed out)")
+        let turns = snapshot.turns
+        guard let segment = tracker.claimCallEnd(turns: turns) else {
+            // A call-end already sent for this segment decides about the analysis itself.
+            if !tracker.callEndSent { analyzeWeaknessesIfNew(turns: turns) }
             return
         }
-        let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-        let callId = ids.callId
         let courseCode = course.wireCode
         let level = cefrLevel
-        let messages = snapshot.turns
-        // A plain Task: unlike `.task`, it is not cancelled when the view goes away.
         Task {
+            // A fresh token: the cached one may have expired during a long call.
+            guard let accessToken = await session.freshAccessToken() else {
+                Self.log.error("hector-call-end skipped: reason=auth (signed out)")
+                analyzeWeaknessesIfNew(turns: turns)
+                return
+            }
+            let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
             do {
-                let result = try await client.hectorCallEnd(callId: callId, course: courseCode, cefrLevel: level, messages: messages)
-                if result.saved {
-                    if callId == ids.callId { savedToMemory = true }
+                let result = try await client.hectorCallEnd(
+                    callId: segment.callId, course: courseCode, cefrLevel: level, messages: segment.messages)
+                if result.kept {
+                    tracker.callEndSucceeded(callId: segment.callId)
+                    if result.saved, segment.callId == ids.callId { savedToMemory = true }
                 } else {
                     Self.log.notice("hector-call-end not saved: reason=\(result.reason ?? "unknown", privacy: .public)")
+                    analyzeWeaknessesIfNew(turns: turns)
                 }
             } catch {
                 Self.log.error("hector-call-end failed: reason=\(HectorCall.failureReason(error), privacy: .public)")
+                analyzeWeaknessesIfNew(turns: turns)
             }
         }
     }
@@ -718,6 +728,8 @@ private struct HectorConversationView: View {
     private func respond(to text: String, generation: Int) async {
         let key = self.key
         let courseCode = course.wireCode
+        // Talking again after a call-end was sent (the learner left and came back) starts a new segment: a fresh call id.
+        tracker.onLearnerTurn(turnCountBefore: max(0, (conversationStore.snapshot(for: key) ?? conversation).turns.count - 1))
         let callIds = ids
         guard let accessToken = await session.freshAccessToken() else {
             voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
@@ -743,7 +755,10 @@ private struct HectorConversationView: View {
                 voice: VoicePrefsCache().voice(.hector, course: courseCode)
             )
             // A reply to a call that has since ended and been replaced by "Call again" belongs to the old call.
-            guard callIds == ids else { return }
+            guard callIds == ids else {
+                Self.log.notice("dropped a reply that belongs to an earlier call")
+                return
+            }
             // The server already took the block out; parsing the reply here too means a tag can never be shown.
             let parsed = HectorCorrections.extract(reply.reply)
             snapshot = conversationStore.append(
@@ -768,25 +783,22 @@ private struct HectorConversationView: View {
         }
     }
 
-    private func analyzeWeaknessesIfNew() {
-        let snapshot = conversationStore.snapshot(for: key) ?? conversation
-        // A call-end already recorded this call's weakness events; the analysis is only the fallback when none was sent.
-        guard HectorCall.shouldAnalyse(
-            turnCount: snapshot.turns.count, analysedTurnCount: snapshot.analyzedTurnCount, recapAttempted: tracker.recapAttempted)
-        else { return }
+    /// The weakness analysis of this segment, once per stretch, and never after a kept call-end. Detached, with
+    /// everything it needs captured, so leaving the screen never cancels it; a failure is logged with its reason.
+    private func analyzeWeaknessesIfNew(turns: [ChatMessage]) {
+        guard tracker.claimAnalysis(turns: turns) else { return }
         guard let accessToken = session.accessToken else {
             Self.log.error("analyze-weaknesses skipped: reason=auth (signed out)")
             return
         }
-        conversationStore.update(key) { $0.analyzedTurnCount = snapshot.turns.count }
         let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-        let transcript = snapshot.recentTurns
+        let transcript = Array(tracker.segmentTurns(turns).suffix(ConversationSnapshot.maxTurnsSent))
         let courseCode = course.wireCode
-        // Detached, with everything it needs captured: it is not tied to this view, so leaving the screen never
-        // cancels it. A failure is logged with its reason, never swallowed.
+        // The static is main-actor isolated (the View is): capture it, as PronunciationClips does for its statics.
+        let log = Self.log
         Task.detached {
             do { _ = try await client.analyzeWeaknesses(transcript: transcript, course: courseCode) }
-            catch { Self.log.error("analyze-weaknesses failed: reason=\(HectorCall.failureReason(error), privacy: .public)") }
+            catch { log.error("analyze-weaknesses failed: reason=\(HectorCall.failureReason(error), privacy: .public)") }
         }
     }
 }

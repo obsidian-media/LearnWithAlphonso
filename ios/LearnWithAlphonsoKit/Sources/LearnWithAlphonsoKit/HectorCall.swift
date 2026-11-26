@@ -49,31 +49,73 @@ public enum HectorCall {
         turns.filter { $0.role == "user" }.count >= minLearnerTurnsToSave
     }
 
-    /// The state of one call at a time: its identity, and whether its call-end has been claimed. "Call again" starts
-    /// a new call, which can send its own call-end.
+    /// The state of a Hector conversation. A call is a sequence of segments: a segment ends when its call-end is sent
+    /// (hang-up, or the learner leaving the screen), and when the learner talks again after that a new segment starts
+    /// with a fresh call id, so the later turns are saved as their own call.
     public struct Tracker: Equatable, Sendable {
+        /// A segment's call-end to send: the call id and the segment's turns.
+        public struct Segment: Equatable, Sendable {
+            public let callId: String
+            public let messages: [ChatMessage]
+        }
+
         public private(set) var ids: Ids
+        private var segmentStart = 0
+        private var analysedTurnCount = 0
         private var callEndSentFor: String?
-        /// True once this call's call-end was sent (which already records its weakness events).
+        /// True once this segment's call-end succeeded (it records the weakness events itself).
         public private(set) var recapAttempted = false
 
         public init(ids: Ids = .fresh()) { self.ids = ids }
 
-        /// True once per call id, and only for a call that qualifies: the caller then sends /api/hector-call-end.
-        public mutating func claimCallEnd(turns: [ChatMessage]) -> Bool {
-            guard callEndSentFor != ids.callId, HectorCall.qualifiesForCallEnd(turns) else { return false }
+        /// True once this segment's call-end was claimed (sent, or in flight).
+        public var callEndSent: Bool { callEndSentFor == ids.callId }
+
+        /// This segment's turns.
+        public func segmentTurns(_ turns: [ChatMessage]) -> [ChatMessage] { Array(turns.dropFirst(segmentStart)) }
+
+        /// The learner is about to add a turn (`turnCountBefore` turns so far): after a sent call-end this starts a
+        /// new segment with a fresh call id (the tutor session carries on).
+        public mutating func onLearnerTurn(turnCountBefore: Int) {
+            guard callEndSentFor == ids.callId else { return }
+            ids = Ids(callId: UUID().uuidString, sessionID: ids.sessionID)
+            segmentStart = turnCountBefore
+            analysedTurnCount = 0
+            recapAttempted = false
+            callEndSentFor = nil
+        }
+
+        /// The segment to send to /api/hector-call-end: once per call id, and only with three learner turns.
+        public mutating func claimCallEnd(turns: [ChatMessage]) -> Segment? {
+            let segment = segmentTurns(turns)
+            guard callEndSentFor != ids.callId, HectorCall.qualifiesForCallEnd(segment) else { return nil }
             callEndSentFor = ids.callId
-            // call-end records the call's weakness events itself (remember_call_recap): no separate analysis for this call.
-            recapAttempted = true
+            return Segment(callId: ids.callId, messages: segment)
+        }
+
+        /// The call-end of `callId` was kept (`saved` or `already_saved`): it recorded the weakness events, so no
+        /// separate analysis. After an error or a `saved: false` the analysis stays the fallback.
+        public mutating func callEndSucceeded(callId: String) {
+            if callId == ids.callId { recapAttempted = true }
+        }
+
+        /// True once per stretch of the segment: the caller then sends the weakness analysis of `segmentTurns`.
+        public mutating func claimAnalysis(turns: [ChatMessage]) -> Bool {
+            let count = turns.count - segmentStart
+            guard HectorCall.shouldAnalyse(turnCount: count, analysedTurnCount: analysedTurnCount, recapAttempted: recapAttempted)
+            else { return false }
+            analysedTurnCount = count
             return true
         }
 
-        /// "Call again": clears this course's Hector thread and mints a new call identity. The caller captures the
-        /// old call's transcript first.
+        /// "Call again": clears this course's Hector thread and mints a new call identity.
         @discardableResult
         public mutating func startNewCall(store: ConversationStore, course: Course) -> ConversationSnapshot {
             ids = .fresh()
+            segmentStart = 0
+            analysedTurnCount = 0
             recapAttempted = false
+            callEndSentFor = nil
             return store.startNew(.hector(course: course), opener: nil)
         }
     }
@@ -84,6 +126,9 @@ public struct HectorCallEndResult: Equatable, Sendable {
     public let saved: Bool
     public let lines: Int
     public let reason: String?
+
+    /// The call is in Hector's memory (now, or already): its weakness events are recorded too.
+    public var kept: Bool { saved || reason == "already_saved" }
 
     public init(saved: Bool, lines: Int = 0, reason: String? = nil) {
         self.saved = saved

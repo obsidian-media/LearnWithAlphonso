@@ -62,47 +62,89 @@ object HectorCall {
 }
 
 /**
- * The per-call state of a Hector conversation: its identity, and whether its analysis has been claimed. A plain class
- * so "Call again" is testable without a view model.
+ * The per-call state of a Hector conversation. A call is a sequence of segments: a segment ends when its call-end is
+ * sent (hang-up, or the learner leaving the screen), and when the learner talks again after that a new segment starts
+ * with a fresh call id, so the later turns are saved as their own call. A plain class so it is testable without a
+ * view model.
  */
 class HectorCallTracker(initial: HectorCall.Ids = HectorCall.Ids.fresh()) {
+    /** A segment's call-end to send: the call id and the segment's turns (the greeting included for the first). */
+    data class Segment(val callId: String, val messages: List<ChatMessage>)
+
     var ids: HectorCall.Ids = initial
         private set
+    private var segmentStart = 0
     private var analysedTurnCount = 0
-    var recapAttempted = false
-
-    /** True once per stretch of conversation: the caller then sends the analysis. */
-    @Synchronized
-    fun claimAnalysis(turnCount: Int): Boolean {
-        if (!HectorCall.shouldAnalyse(turnCount, analysedTurnCount, recapAttempted)) return false
-        analysedTurnCount = turnCount
-        return true
-    }
-
     private var callEndSentFor: String? = null
+    private var recapAttempted = false
 
-    /** True once per call id, and only for a call that qualifies: the caller then sends /api/hector-call-end. */
+    /** True once this segment's call-end succeeded (it records the weakness events itself). */
     @Synchronized
-    fun claimCallEnd(turns: List<ChatMessage>): Boolean {
-        if (callEndSentFor == ids.callId || !HectorCall.qualifiesForCallEnd(turns)) return false
+    fun recapAttempted(): Boolean = recapAttempted
+
+    /** True once this segment's call-end was claimed (sent, or in flight). */
+    @Synchronized
+    fun callEndSent(): Boolean = callEndSentFor == ids.callId
+
+    /** This segment's turns. */
+    @Synchronized
+    fun segmentTurns(turns: List<ChatMessage>): List<ChatMessage> = turns.drop(segmentStart)
+
+    /** The learner is about to add a turn ([turnCountBefore] turns so far): after a sent call-end this starts a new segment. */
+    @Synchronized
+    fun onLearnerTurn(turnCountBefore: Int) {
+        if (callEndSentFor != ids.callId) return
+        ids = HectorCall.Ids(HectorCall.Ids.fresh().callId, ids.sessionId)
+        segmentStart = turnCountBefore
+        analysedTurnCount = 0
+        recapAttempted = false
+        callEndSentFor = null
+    }
+
+    /** The segment to send to /api/hector-call-end: once per call id, and only with at least three learner turns. */
+    @Synchronized
+    fun claimCallEnd(turns: List<ChatMessage>): Segment? {
+        val segment = turns.drop(segmentStart)
+        if (callEndSentFor == ids.callId || !HectorCall.qualifiesForCallEnd(segment)) return null
         callEndSentFor = ids.callId
-        // call-end records the call's weakness events itself (remember_call_recap): no separate analysis for this call.
-        recapAttempted = true
+        return Segment(ids.callId, segment)
+    }
+
+    /**
+     * The call-end of [callId] was kept (`saved` or `already_saved`): it recorded the weakness events, so no separate
+     * analysis. After an error or a `saved: false` the analysis stays the fallback.
+     */
+    @Synchronized
+    fun callEndSucceeded(callId: String) {
+        if (callId == ids.callId) recapAttempted = true
+    }
+
+    /** True once per stretch of the segment: the caller then sends the weakness analysis of [segmentTurns]. */
+    @Synchronized
+    fun claimAnalysis(turns: List<ChatMessage>): Boolean {
+        val count = turns.size - segmentStart
+        if (!HectorCall.shouldAnalyse(count, analysedTurnCount, recapAttempted)) return false
+        analysedTurnCount = count
         return true
     }
 
-    /** "Call again": a new call id and session, and a clean slate for the analysis and the call-end. */
+    /** "Call again": a new call id and session, an empty thread, and a clean slate. */
     @Synchronized
     fun startNewCall(): HectorCall.Ids {
         ids = HectorCall.Ids.fresh()
+        segmentStart = 0
         analysedTurnCount = 0
         recapAttempted = false
+        callEndSentFor = null
         return ids
     }
 }
 
 /** POST /api/hector-call-end's answer: `{ saved: true, lines }` or `{ saved: false, reason }`. */
 data class HectorCallEndResult(val saved: Boolean, val lines: Int = 0, val reason: String? = null) {
+    /** The call is in Hector's memory (now, or already): its weakness events are recorded too. */
+    val kept: Boolean get() = saved || reason == "already_saved"
+
     companion object {
         private val json = Json { ignoreUnknownKeys = true }
 
@@ -142,16 +184,22 @@ class HectorGreetingVariants(private val read: (String) -> Int?, private val wri
 /** What Hector opens a call with, and where it came from. */
 data class HectorOpening(val text: String, val fromServer: Boolean, val fallbackReason: String? = null) {
     companion object {
+        /** A slow greeting request gives way to the local template after this long. */
+        const val GREETING_TIMEOUT_MS = 5_000L
+
         /**
          * The server's memory-aware line, or the local template when the request fails, is offline, or answers with an
          * empty line. The server's variant is remembered per course and sent back next time.
          */
         suspend fun resolve(
             course: String, variants: HectorGreetingVariants, localFallback: String,
+            timeoutMillis: Long = GREETING_TIMEOUT_MS,
             fetch: suspend (lastVariant: Int?) -> HectorGreetingReply,
         ): HectorOpening {
             val reply = try {
-                fetch(variants.last(course))
+                kotlinx.coroutines.withTimeout(timeoutMillis) { fetch(variants.last(course)) }
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                return HectorOpening(localFallback, fromServer = false, fallbackReason = "network")
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {

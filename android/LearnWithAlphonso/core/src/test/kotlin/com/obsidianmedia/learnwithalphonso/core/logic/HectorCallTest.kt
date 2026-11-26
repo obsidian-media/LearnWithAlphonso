@@ -6,6 +6,8 @@ import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationError
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -27,18 +29,6 @@ class HectorCallTest {
     }
 
     @Test
-    fun `call again mints a new call id and session and clears the analysis`() {
-        val tracker = HectorCallTracker(HectorCall.Ids("c1", "s1"))
-        assertTrue(tracker.claimAnalysis(4))
-        assertFalse(tracker.claimAnalysis(4))
-        val next = tracker.startNewCall()
-        assertNotEquals("c1", next.callId)
-        assertNotEquals("s1", next.sessionId)
-        assertEquals(next, tracker.ids)
-        assertTrue(tracker.claimAnalysis(4), "a new call is analysed afresh")
-    }
-
-    @Test
     fun `analysis runs once per stretch, never for a short call, never after a recap`() {
         assertTrue(HectorCall.shouldAnalyse(4, 0, false))
         assertFalse(HectorCall.shouldAnalyse(4, 4, false))
@@ -49,30 +39,102 @@ class HectorCallTest {
 
     private fun learnerTurns(n: Int) = listOf(m("assistant", "Hi")) + (0 until n).flatMap { listOf(m("user", "u$it"), m("assistant", "a$it")) }
 
+    /** The thread as the screen builds it: a greeting, then [n] exchanges. */
+    private fun more(base: List<ChatMessage>, n: Int) = base + (0 until n).flatMap { listOf(m("user", "u${base.size + it}"), m("assistant", "a${base.size + it}")) }
+
+    @Test
+    fun `call again mints a new call id and session and clears the analysis`() {
+        val tracker = HectorCallTracker(HectorCall.Ids("c1", "s1"))
+        assertTrue(tracker.claimAnalysis(learnerTurns(2)))
+        assertFalse(tracker.claimAnalysis(learnerTurns(2)))
+        val next = tracker.startNewCall()
+        assertNotEquals("c1", next.callId)
+        assertNotEquals("s1", next.sessionId)
+        assertEquals(next, tracker.ids)
+        assertTrue(tracker.claimAnalysis(learnerTurns(2)), "a new call is analysed afresh")
+    }
+
     @Test
     fun `call end needs three learner turns and is claimed once per call id`() {
         val tracker = HectorCallTracker()
-        assertFalse(tracker.claimCallEnd(learnerTurns(2)))
-        assertTrue(tracker.claimCallEnd(learnerTurns(3)))
-        assertFalse(tracker.claimCallEnd(learnerTurns(3)), "hang-up then leaving the screen")
+        assertNull(tracker.claimCallEnd(learnerTurns(2)))
+        val first = tracker.claimCallEnd(learnerTurns(3))
+        assertEquals(7, first!!.messages.size)
+        assertNull(tracker.claimCallEnd(learnerTurns(3)), "hang-up then leaving the screen")
         tracker.startNewCall()
-        assertTrue(tracker.claimCallEnd(learnerTurns(3)), "call again is a new call with its own call-end")
+        assertNotNull(tracker.claimCallEnd(learnerTurns(3)), "call again is a new call with its own call-end")
     }
 
     @Test
-    fun `once call end is sent for a call there is no separate analysis, and a new call is analysed afresh`() {
-        val tracker = HectorCallTracker()
-        assertTrue(tracker.claimCallEnd(learnerTurns(3)))
-        assertFalse(tracker.claimAnalysis(7), "call-end already recorded the weakness events")
-        tracker.startNewCall()
-        assertTrue(tracker.claimAnalysis(4))
+    fun `talking again after a call end was sent starts a new segment with a fresh call id and only the new turns`() {
+        val tracker = HectorCallTracker(HectorCall.Ids("c1", "s1"))
+        val thread = learnerTurns(3)
+        val sent = tracker.claimCallEnd(thread)!!
+        assertEquals("c1", sent.callId)
+        // The learner is back and speaks (7 turns so far).
+        tracker.onLearnerTurn(thread.size)
+        assertNotEquals("c1", tracker.ids.callId)
+        assertEquals("s1", tracker.ids.sessionId, "the tutor session carries on")
+        val grown = more(thread, 3)
+        val second = tracker.claimCallEnd(grown)!!
+        assertEquals(tracker.ids.callId, second.callId)
+        assertEquals(6, second.messages.size, "only the turns since the leave")
+        assertEquals("u7", second.messages.first().content)
     }
 
     @Test
-    fun `a call too short for call end still falls back to the analysis`() {
-        val tracker = HectorCallTracker()
-        assertFalse(tracker.claimCallEnd(learnerTurns(2)))
-        assertTrue(tracker.claimAnalysis(5))
+    fun `talking again without a call end having been sent keeps the same call id`() {
+        val tracker = HectorCallTracker(HectorCall.Ids("c1", "s1"))
+        tracker.onLearnerTurn(1)
+        assertEquals("c1", tracker.ids.callId)
+        assertNull(tracker.claimCallEnd(learnerTurns(2)))
+        tracker.onLearnerTurn(5)
+        assertEquals("c1", tracker.ids.callId, "a refused short claim is not a send")
+    }
+
+    @Test
+    fun `no separate analysis once call end succeeded, but an error or an unsaved call still falls back`() {
+        val ok = HectorCallTracker()
+        ok.claimCallEnd(learnerTurns(3))
+        ok.callEndSucceeded(ok.ids.callId)
+        assertFalse(ok.claimAnalysis(learnerTurns(3)), "kept: the weakness events were recorded")
+
+        val failed = HectorCallTracker()
+        failed.claimCallEnd(learnerTurns(3))
+        // An error, a 429 or saved:false leaves callEndSucceeded uncalled.
+        assertTrue(failed.claimAnalysis(learnerTurns(3)), "the fallback runs")
+        assertFalse(failed.claimAnalysis(learnerTurns(3)), "and only once")
+
+        val short = HectorCallTracker()
+        assertNull(short.claimCallEnd(learnerTurns(2)))
+        assertTrue(short.claimAnalysis(learnerTurns(2)))
+    }
+
+    @Test
+    fun `a stale success never covers a newer segment`() {
+        val tracker = HectorCallTracker(HectorCall.Ids("c1", "s1"))
+        val thread = learnerTurns(3)
+        tracker.claimCallEnd(thread)
+        tracker.onLearnerTurn(thread.size)
+        tracker.callEndSucceeded("c1")
+        assertTrue(tracker.claimAnalysis(more(thread, 2)), "the new segment has its own analysis")
+    }
+
+    @Test
+    fun `only saved and already saved count as kept`() {
+        assertTrue(HectorCallEndResult.parse("""{"saved":true,"lines":1}""")!!.kept)
+        assertTrue(HectorCallEndResult.parse("""{"saved":false,"reason":"already_saved"}""")!!.kept)
+        for (r in listOf("no_recap", "write_failed", "not_configured", "short_call", "not_pro", "entitlement_unavailable", "nothing_to_keep")) {
+            assertFalse(HectorCallEndResult.parse("""{"saved":false,"reason":"$r"}""")!!.kept, r)
+        }
+    }
+
+    @Test
+    fun `a greeting that takes too long falls back to the local template`() = runBlocking {
+        val o = HectorOpening.resolve("en", HectorGreetingVariants({ null }, { _, _ -> }), "local", timeoutMillis = 50) {
+            kotlinx.coroutines.delay(5_000); HectorGreetingReply("late", null, 0, false)
+        }
+        assertEquals(HectorOpening("local", false, "network"), o)
     }
 
     @Test

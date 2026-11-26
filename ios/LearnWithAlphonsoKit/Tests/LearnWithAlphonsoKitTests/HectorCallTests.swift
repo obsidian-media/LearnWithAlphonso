@@ -56,32 +56,74 @@ final class HectorCallTests: XCTestCase {
         return turns
     }
 
-    func testCallEndNeedsThreeLearnerTurns() {
-        var tracker = HectorCall.Tracker()
-        XCTAssertFalse(tracker.claimCallEnd(turns: learnerTurns(2)))
-        XCTAssertTrue(tracker.claimCallEnd(turns: learnerTurns(3)))
+    private func more(_ base: [ChatMessage], _ n: Int) -> [ChatMessage] {
+        var turns = base
+        for i in 0..<n { turns += [turn("user", "u\(base.count + i)"), turn("assistant", "a\(base.count + i)")] }
+        return turns
     }
 
-    func testCallEndIsSentOncePerCallId() {
+    func testCallEndNeedsThreeLearnerTurnsAndIsClaimedOncePerCallId() {
         let store = ConversationStore()
         var tracker = HectorCall.Tracker()
-        XCTAssertTrue(tracker.claimCallEnd(turns: learnerTurns(3)))
-        // Hang-up then leaving the screen: the second claim for the same call is refused.
-        XCTAssertFalse(tracker.claimCallEnd(turns: learnerTurns(3)))
+        XCTAssertNil(tracker.claimCallEnd(turns: learnerTurns(2)))
+        XCTAssertEqual(tracker.claimCallEnd(turns: learnerTurns(3))?.messages.count, 7)
+        XCTAssertNil(tracker.claimCallEnd(turns: learnerTurns(3)), "hang-up, then leaving the screen")
         tracker.startNewCall(store: store, course: .english)
-        XCTAssertTrue(tracker.claimCallEnd(turns: learnerTurns(3)), "Call again is a new call with its own call-end")
+        XCTAssertNotNil(tracker.claimCallEnd(turns: learnerTurns(3)), "Call again is a new call with its own call-end")
     }
 
-    func testCallEndSentMeansNoSeparateAnalysisAndShortCallsFallBack() {
-        let store = ConversationStore()
-        var tracker = HectorCall.Tracker()
-        XCTAssertFalse(tracker.claimCallEnd(turns: learnerTurns(2)))
-        XCTAssertFalse(tracker.recapAttempted, "a short call sent no call-end, so the analysis is the fallback")
-        XCTAssertTrue(tracker.claimCallEnd(turns: learnerTurns(3)))
-        XCTAssertTrue(tracker.recapAttempted)
-        XCTAssertFalse(HectorCall.shouldAnalyse(turnCount: 7, analysedTurnCount: 0, recapAttempted: tracker.recapAttempted))
-        tracker.startNewCall(store: store, course: .english)
-        XCTAssertFalse(tracker.recapAttempted)
+    func testTalkingAgainAfterACallEndStartsANewSegmentWithOnlyTheNewTurns() {
+        var tracker = HectorCall.Tracker(ids: HectorCall.Ids(callId: "c1", sessionID: "s1"))
+        let thread = learnerTurns(3)
+        XCTAssertEqual(tracker.claimCallEnd(turns: thread)?.callId, "c1")
+        tracker.onLearnerTurn(turnCountBefore: thread.count)
+        XCTAssertNotEqual(tracker.ids.callId, "c1")
+        XCTAssertEqual(tracker.ids.sessionID, "s1", "the tutor session carries on")
+        let second = tracker.claimCallEnd(turns: more(thread, 3))
+        XCTAssertEqual(second?.callId, tracker.ids.callId)
+        XCTAssertEqual(second?.messages.count, 6, "only the turns since the leave")
+        XCTAssertEqual(second?.messages.first?.content, "u7")
+    }
+
+    func testTalkingAgainWithoutASentCallEndKeepsTheCallId() {
+        var tracker = HectorCall.Tracker(ids: HectorCall.Ids(callId: "c1", sessionID: "s1"))
+        tracker.onLearnerTurn(turnCountBefore: 1)
+        XCTAssertNil(tracker.claimCallEnd(turns: learnerTurns(2)))
+        tracker.onLearnerTurn(turnCountBefore: 5)
+        XCTAssertEqual(tracker.ids.callId, "c1")
+    }
+
+    func testNoSeparateAnalysisOnceCallEndSucceededButErrorsAndUnsavedCallsFallBack() {
+        var kept = HectorCall.Tracker()
+        _ = kept.claimCallEnd(turns: learnerTurns(3))
+        kept.callEndSucceeded(callId: kept.ids.callId)
+        XCTAssertFalse(kept.claimAnalysis(turns: learnerTurns(3)))
+
+        var failed = HectorCall.Tracker()
+        _ = failed.claimCallEnd(turns: learnerTurns(3))
+        XCTAssertTrue(failed.claimAnalysis(turns: learnerTurns(3)), "an error, a 429 or saved:false leaves the fallback on")
+        XCTAssertFalse(failed.claimAnalysis(turns: learnerTurns(3)), "and only once")
+
+        var short = HectorCall.Tracker()
+        XCTAssertNil(short.claimCallEnd(turns: learnerTurns(2)))
+        XCTAssertTrue(short.claimAnalysis(turns: learnerTurns(2)))
+    }
+
+    func testAStaleSuccessNeverCoversANewerSegment() {
+        var tracker = HectorCall.Tracker(ids: HectorCall.Ids(callId: "c1", sessionID: "s1"))
+        let thread = learnerTurns(3)
+        _ = tracker.claimCallEnd(turns: thread)
+        tracker.onLearnerTurn(turnCountBefore: thread.count)
+        tracker.callEndSucceeded(callId: "c1")
+        XCTAssertTrue(tracker.claimAnalysis(turns: more(thread, 2)))
+    }
+
+    func testOnlySavedAndAlreadySavedCountAsKept() {
+        XCTAssertTrue(HectorCallEndResult(saved: true, lines: 1).kept)
+        XCTAssertTrue(HectorCallEndResult(saved: false, reason: "already_saved").kept)
+        for reason in ["no_recap", "write_failed", "not_configured", "short_call", "not_pro", "entitlement_unavailable", "nothing_to_keep"] {
+            XCTAssertFalse(HectorCallEndResult(saved: false, reason: reason).kept, reason)
+        }
     }
 
     func testCallEndResultParses() {

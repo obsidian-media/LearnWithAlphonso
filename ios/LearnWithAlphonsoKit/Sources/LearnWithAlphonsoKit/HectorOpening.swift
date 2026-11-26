@@ -56,14 +56,28 @@ public struct HectorOpening: Equatable, Sendable {
     /// Why the server line was not used (consent, quota, auth, network, server); nil when it was.
     public let fallbackReason: String?
 
+    /// A slow greeting request gives way to the local template after this long.
+    public static let greetingTimeout: TimeInterval = 5
+
     /// The server's memory-aware line, or the local template when the request fails, is offline, or answers with an
     /// empty line. The server's variant is remembered per course and sent back next time.
     public static func resolve(
         course: Course, variants: HectorGreetingVariants, localFallback: String,
-        fetch: (_ lastVariant: Int?) async throws -> HectorGreetingReply
+        timeout: TimeInterval = greetingTimeout,
+        fetch: @escaping @Sendable (_ lastVariant: Int?) async throws -> HectorGreetingReply
     ) async -> HectorOpening {
+        let last = variants.last(for: course)
         do {
-            let reply = try await fetch(variants.last(for: course))
+            let reply = try await withThrowingTaskGroup(of: HectorGreetingReply.self) { group in
+                group.addTask { try await fetch(last) }
+                group.addTask {
+                    try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                    throw TutorError.network
+                }
+                defer { group.cancelAll() }
+                guard let first = try await group.next() else { throw TutorError.network }
+                return first
+            }
             let text = reply.greeting.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !text.isEmpty else {
                 return HectorOpening(text: localFallback, fromServer: false, fallbackReason: "server")

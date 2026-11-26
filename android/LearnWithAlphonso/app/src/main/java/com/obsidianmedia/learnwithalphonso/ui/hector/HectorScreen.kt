@@ -164,6 +164,8 @@ class HectorViewModel(
     private val recordingCapMs: Long = HectorRecordingCap.MILLIS,
     /** The last greeting variant used per course (sent back to /api/hector-greeting so the next one differs). */
     private val greetingVariants: HectorGreetingVariants = HectorGreetingVariants({ null }, { _, _ -> }),
+    /** A slow /api/hector-greeting gives way to the local template after this long. */
+    private val greetingTimeoutMs: Long = HectorOpening.GREETING_TIMEOUT_MS,
     /** Outlives this view model: the call-end and the weakness analysis must finish after the screen is gone. */
     private val workScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
     /** Where a failed or unsaved background request is recorded, with its reason (logcat in the app). */
@@ -267,7 +269,7 @@ class HectorViewModel(
             }
             // The server's memory-aware line for a call with no turns yet; the local template when it fails or is offline.
             val text = if (_state.value.turns.isNotEmpty()) local else {
-                val opening = HectorOpening.resolve(course.code, greetingVariants, local) { last -> ai.hectorGreeting(course.code, cefrLevel, last) }
+                val opening = HectorOpening.resolve(course.code, greetingVariants, local, greetingTimeoutMs) { last -> ai.hectorGreeting(course.code, cefrLevel, last) }
                 opening.fallbackReason?.let { log("hector-greeting fell back to the local greeting: reason=$it", null) }
                 opening.text
             }
@@ -336,12 +338,14 @@ class HectorViewModel(
 
     private suspend fun sendTurn(text: String) {
         val generation = callGeneration
+        // Talking again after a call-end was sent (the learner left and came back) starts a new segment: a fresh call id.
+        call.onLearnerTurn(_state.value.turns.size)
         val ids = call.ids
         _state.update { it.copy(turns = it.turns + ChatMessage("user", text), phase = ConversationPhase.THINKING) }
         try {
             val reply = tutor.respond(ids.sessionId, text, course.code, historyForTutor(), course = course.code, cefrLevel = cefrLevel, voice = hectorVoice(course.code))
             // A reply to a call that has since been replaced by "Call again" belongs to the old call.
-            if (ids != call.ids) return
+            if (ids != call.ids) { log("dropped a reply that belongs to an earlier call", null); return }
             // A reply that comes back after the learner hung up joins the transcript but is never spoken.
             val live = generation == callGeneration
             // The server already took the block out; parsing the reply here too means a tag can never be shown.
@@ -391,40 +395,42 @@ class HectorViewModel(
         greet()
     }
 
-    /** The call is over (or the screen is closing): keep it in Hector's memory, and analyse it once. */
+    /**
+     * The call is over (or the screen is closing): keep it in Hector's memory. When that did not succeed, or was not
+     * sent, the weakness analysis is the fallback (a successful call-end recorded the weakness events itself).
+     */
     private fun finishCall() {
         val turns = _state.value.turns
-        sendCallEnd(turns)
-        sendAnalysis(turns)
-    }
-
-    /** /api/hector-call-end, once per call id and only for a call of at least three learner turns. */
-    private fun sendCallEnd(turns: List<ChatMessage>) {
-        if (!call.claimCallEnd(turns)) return
-        val callId = call.ids.callId
+        val segment = call.claimCallEnd(turns)
+        if (segment == null) {
+            // A call-end already sent for this segment decides about the analysis itself.
+            if (!call.callEndSent()) workScope.launch { sendAnalysis(turns) }
+            return
+        }
         val level = cefrLevel
         workScope.launch {
-            try {
-                val result = ai.hectorCallEnd(callId, course.code, level, turns)
-                if (result.saved) { if (callId == call.ids.callId) _savedToMemory.value = true }
+            val kept = try {
+                val result = ai.hectorCallEnd(segment.callId, course.code, level, segment.messages)
+                if (result.kept) { if (result.saved && segment.callId == call.ids.callId) _savedToMemory.value = true }
                 else log("hector-call-end not saved: reason=${result.reason ?: "unknown"}", null)
+                result.kept
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
                 log("hector-call-end failed: reason=${HectorCall.failureReason(e)}", e)
+                false
             }
+            if (kept) { call.callEndSucceeded(segment.callId); log("hector-call-end kept", null) } else sendAnalysis(turns)
         }
     }
 
-    /** /api/analyze-weaknesses, once per stretch of conversation, on a scope that outlives the screen. */
-    private fun sendAnalysis(turns: List<ChatMessage>) {
-        // A call-end already recorded this call's weakness events; the analysis is only the fallback when none was sent.
-        if (!call.claimAnalysis(turns.size)) return
-        workScope.launch {
-            try { ai.analyzeWeaknesses(turns, course.code) }
-            catch (e: kotlinx.coroutines.CancellationException) { throw e }
-            catch (e: Exception) { log("analyze-weaknesses failed: reason=${HectorCall.failureReason(e)}", e) }
-        }
+    /** /api/analyze-weaknesses, once per stretch of the segment, on a scope that outlives the screen. */
+    private suspend fun sendAnalysis(turns: List<ChatMessage>) {
+        if (!call.claimAnalysis(turns)) return
+        val transcript = call.segmentTurns(turns)
+        try { ai.analyzeWeaknesses(transcript, course.code) }
+        catch (e: kotlinx.coroutines.CancellationException) { throw e }
+        catch (e: Exception) { log("analyze-weaknesses failed: reason=${HectorCall.failureReason(e)}", e) }
     }
 
     companion object {
