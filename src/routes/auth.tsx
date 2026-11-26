@@ -59,8 +59,9 @@ export const Route = createFileRoute("/auth")({
     // The first run's "Continue with email" opens straight on Create your account.
     ...(s.mode === "signup" ? { mode: "signup" as const } : {}),
   }),
-  head: ({ match }) => {
-    const title = authTitle(match.search.mode === "signup" ? "signup" : "signin");
+  // `ctx` can be absent: tests call head() bare.
+  head: (ctx?: { match?: { search?: { mode?: string } } }) => {
+    const title = authTitle(ctx?.match?.search?.mode === "signup" ? "signup" : "signin");
     return {
       links: [canonicalLink("/auth")],
       meta: [

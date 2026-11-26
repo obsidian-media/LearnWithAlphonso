@@ -137,6 +137,31 @@ describe("Auth page", () => {
     expect(og?.content).toBe("Create account — Alphonso");
   });
 
+  it("head() works with no argument (the SEO test calls it bare) and falls back to Sign in", () => {
+    const head = Route.options.head! as unknown as () => {
+      meta: { title?: string }[];
+    };
+    expect(() => head()).not.toThrow();
+    expect(head().meta.find((m) => m.title !== undefined)?.title).toBe("Sign in — Alphonso");
+  });
+
+  it("titles every screen to fit its heading, including Check your email", async () => {
+    const { authTitle } = await import("../lib/auth-form");
+    expect(authTitle("verify")).toBe("Check your email — Alphonso");
+    expect(authTitle("forgot")).toBe("Reset your password — Alphonso");
+    expect(authTitle("signup")).toBe("Create account — Alphonso");
+    expect(authTitle("signin")).toBe("Sign in — Alphonso");
+  });
+
+  it("the tab title follows the form when the learner reaches the code screen", async () => {
+    sessionStorage.setItem("lwa.auth.verifyEmail.v1", "sam@example.com");
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: "Check your email" })).toBeInTheDocument(),
+    );
+    expect(document.title).toBe("Check your email — Alphonso");
+  });
+
   it("explains an invalid email and a short password inline, only after blur, never while typing", async () => {
     searchParams = { mode: "signup" };
     const user = userEvent.setup();

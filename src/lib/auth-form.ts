@@ -1,8 +1,17 @@
 import { isLongEnoughNewPassword, TOO_SHORT_MESSAGE } from "./password-policy";
 
-/** The browser tab title: the page says Create account on the sign-up form, Sign in everywhere else. */
+/** The browser tab title: it names what the screen is, matching its heading. */
 export function authTitle(mode: "signin" | "signup" | "forgot" | "verify"): string {
-  return mode === "signup" ? "Create account — Alphonso" : "Sign in — Alphonso";
+  switch (mode) {
+    case "signup":
+      return "Create account — Alphonso";
+    case "verify":
+      return "Check your email — Alphonso";
+    case "forgot":
+      return "Reset your password — Alphonso";
+    default:
+      return "Sign in — Alphonso";
+  }
 }
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
