@@ -72,6 +72,18 @@ final class HectorCallTests: XCTestCase {
         XCTAssertTrue(tracker.claimCallEnd(turns: learnerTurns(3)), "Call again is a new call with its own call-end")
     }
 
+    func testCallEndSentMeansNoSeparateAnalysisAndShortCallsFallBack() {
+        let store = ConversationStore()
+        var tracker = HectorCall.Tracker()
+        XCTAssertFalse(tracker.claimCallEnd(turns: learnerTurns(2)))
+        XCTAssertFalse(tracker.recapAttempted, "a short call sent no call-end, so the analysis is the fallback")
+        XCTAssertTrue(tracker.claimCallEnd(turns: learnerTurns(3)))
+        XCTAssertTrue(tracker.recapAttempted)
+        XCTAssertFalse(HectorCall.shouldAnalyse(turnCount: 7, analysedTurnCount: 0, recapAttempted: tracker.recapAttempted))
+        tracker.startNewCall(store: store, course: .english)
+        XCTAssertFalse(tracker.recapAttempted)
+    }
+
     func testCallEndResultParses() {
         XCTAssertEqual(HectorCallEndResult.parse(Data(#"{"saved":true,"lines":2}"#.utf8)), HectorCallEndResult(saved: true, lines: 2))
         XCTAssertEqual(

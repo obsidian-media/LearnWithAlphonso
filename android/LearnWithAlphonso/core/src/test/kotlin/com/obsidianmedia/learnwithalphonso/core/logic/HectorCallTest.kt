@@ -60,6 +60,22 @@ class HectorCallTest {
     }
 
     @Test
+    fun `once call end is sent for a call there is no separate analysis, and a new call is analysed afresh`() {
+        val tracker = HectorCallTracker()
+        assertTrue(tracker.claimCallEnd(learnerTurns(3)))
+        assertFalse(tracker.claimAnalysis(7), "call-end already recorded the weakness events")
+        tracker.startNewCall()
+        assertTrue(tracker.claimAnalysis(4))
+    }
+
+    @Test
+    fun `a call too short for call end still falls back to the analysis`() {
+        val tracker = HectorCallTracker()
+        assertFalse(tracker.claimCallEnd(learnerTurns(2)))
+        assertTrue(tracker.claimAnalysis(5))
+    }
+
+    @Test
     fun `call end and greeting answers parse`() {
         assertEquals(HectorCallEndResult(true, 2), HectorCallEndResult.parse("""{"saved":true,"lines":2}"""))
         assertEquals(HectorCallEndResult(false, 0, "not_pro"), HectorCallEndResult.parse("""{"saved":false,"reason":"not_pro"}"""))

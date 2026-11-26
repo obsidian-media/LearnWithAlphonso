@@ -107,7 +107,7 @@ class HectorCallViewModelTest {
         f.vm.onLeave(); f.vm.onCleared()
         Thread.sleep(200)
         assertEquals(1, bodies(s, "/api/hector-call-end").size)
-        assertEquals(1, bodies(s, "/api/analyze-weaknesses").size)
+        assertEquals("call-end already recorded the weakness events: no separate analysis", 0, bodies(s, "/api/analyze-weaknesses").size)
     }
 
     @Test

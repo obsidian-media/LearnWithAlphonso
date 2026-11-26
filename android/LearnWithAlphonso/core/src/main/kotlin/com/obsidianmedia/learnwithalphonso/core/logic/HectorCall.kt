@@ -86,6 +86,8 @@ class HectorCallTracker(initial: HectorCall.Ids = HectorCall.Ids.fresh()) {
     fun claimCallEnd(turns: List<ChatMessage>): Boolean {
         if (callEndSentFor == ids.callId || !HectorCall.qualifiesForCallEnd(turns)) return false
         callEndSentFor = ids.callId
+        // call-end records the call's weakness events itself (remember_call_recap): no separate analysis for this call.
+        recapAttempted = true
         return true
     }
 

@@ -54,6 +54,8 @@ public enum HectorCall {
     public struct Tracker: Equatable, Sendable {
         public private(set) var ids: Ids
         private var callEndSentFor: String?
+        /// True once this call's call-end was sent (which already records its weakness events).
+        public private(set) var recapAttempted = false
 
         public init(ids: Ids = .fresh()) { self.ids = ids }
 
@@ -61,6 +63,8 @@ public enum HectorCall {
         public mutating func claimCallEnd(turns: [ChatMessage]) -> Bool {
             guard callEndSentFor != ids.callId, HectorCall.qualifiesForCallEnd(turns) else { return false }
             callEndSentFor = ids.callId
+            // call-end records the call's weakness events itself (remember_call_recap): no separate analysis for this call.
+            recapAttempted = true
             return true
         }
 
@@ -69,6 +73,7 @@ public enum HectorCall {
         @discardableResult
         public mutating func startNewCall(store: ConversationStore, course: Course) -> ConversationSnapshot {
             ids = .fresh()
+            recapAttempted = false
             return store.startNew(.hector(course: course), opener: nil)
         }
     }

@@ -770,9 +770,9 @@ private struct HectorConversationView: View {
 
     private func analyzeWeaknessesIfNew() {
         let snapshot = conversationStore.snapshot(for: key) ?? conversation
-        // Hector sends no recap yet, so no recap has analysed this call.
+        // A call-end already recorded this call's weakness events; the analysis is only the fallback when none was sent.
         guard HectorCall.shouldAnalyse(
-            turnCount: snapshot.turns.count, analysedTurnCount: snapshot.analyzedTurnCount, recapAttempted: false)
+            turnCount: snapshot.turns.count, analysedTurnCount: snapshot.analyzedTurnCount, recapAttempted: tracker.recapAttempted)
         else { return }
         guard let accessToken = session.accessToken else {
             Self.log.error("analyze-weaknesses skipped: reason=auth (signed out)")

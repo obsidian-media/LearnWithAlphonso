@@ -418,7 +418,7 @@ class HectorViewModel(
 
     /** /api/analyze-weaknesses, once per stretch of conversation, on a scope that outlives the screen. */
     private fun sendAnalysis(turns: List<ChatMessage>) {
-        // Hector sends no recap, so no recap has analysed this call.
+        // A call-end already recorded this call's weakness events; the analysis is only the fallback when none was sent.
         if (!call.claimAnalysis(turns.size)) return
         workScope.launch {
             try { ai.analyzeWeaknesses(turns, course.code) }
