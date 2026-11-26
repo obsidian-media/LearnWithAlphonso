@@ -1239,13 +1239,13 @@
       "expected": true
     },
     {
-      "id": "translate-es-n-tilde-dropped-is-rejected",
+      "id": "translate-es-n-tilde-folded",
       "kind": "translate",
       "course": "es",
       "acceptable": ["Hablo español."],
       "input": "hablo espanol",
-      "expected": false,
-      "note": "written Spanish keeps the enye, as fill-in already does (fill-n-tilde-folded-is-wrong); the AI grader may still forgive the slip"
+      "expected": true,
+      "note": "a missing tilde is a forgivable slip (many keyboards have no enye) unless the tilde-less form is a different real word (see the twin cases below)"
     },
     {
       "id": "translate-es-n-tilde-uppercase",
@@ -1278,6 +1278,65 @@
       "acceptable": ["El gato duerme."],
       "input": "gato duerme",
       "expected": false
+    },
+    {
+      "id": "translate-es-una-for-uña-rejected",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Me duele la uña."],
+      "input": "me duele la una",
+      "expected": false,
+      "note": "una (a/one) is a different real word from uña (nail)"
+    },
+    {
+      "id": "translate-es-uña-typed-with-enye",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Me duele la uña."],
+      "input": "me duele la uña",
+      "expected": true
+    },
+    {
+      "id": "translate-es-pena-for-peña-rejected",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Vamos a la peña."],
+      "input": "vamos a la pena",
+      "expected": false,
+      "note": "pena (pity) is a different real word from peña"
+    },
+    {
+      "id": "translate-es-sueno-for-sueño-rejected",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Tengo un sueño."],
+      "input": "tengo un sueno",
+      "expected": false
+    },
+    {
+      "id": "translate-es-caña-twin-typed-with-enye",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Quiero una caña."],
+      "input": "quiero una caña",
+      "expected": true
+    },
+    {
+      "id": "translate-es-mañana-tilde-dropped",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Hasta mañana."],
+      "input": "hasta manana",
+      "expected": true,
+      "note": "manana is not a Spanish word, so the dropped tilde is a slip"
+    },
+    {
+      "id": "translate-es-español-uppercase-dropped",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Hablo español."],
+      "input": "HABLO ESPANOL",
+      "expected": true
     },
     {
       "id": "translate-es-ano-for-año-rejected",
@@ -1320,7 +1379,7 @@
       "course": "es",
       "acceptable": ["¿Dónde está el niño?"],
       "input": "donde esta el nino",
-      "expected": false
+      "expected": true
     },
     {
       "id": "translate-en-café-still-folds",

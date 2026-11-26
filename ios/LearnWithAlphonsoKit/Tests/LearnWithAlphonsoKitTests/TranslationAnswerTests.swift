@@ -55,13 +55,17 @@ final class TranslationAnswerTests: XCTestCase {
         XCTAssertFalse(TranslationAnswer.matches(submission: "anything at all", acceptable: []))
     }
 
-    func testWrittenSpanishKeepsTheEnyeButOtherAccentsStillFold() {
+    func testAMissingTildeIsASlipUnlessItMakesADifferentRealWord() {
+        XCTAssertTrue(TranslationAnswer.matches(submission: "hablo espanol", acceptable: ["Hablo español."]))
+        XCTAssertTrue(TranslationAnswer.matches(submission: "hasta manana", acceptable: ["Hasta mañana."]))
+        XCTAssertFalse(TranslationAnswer.matches(submission: "me duele la una", acceptable: ["Me duele la uña."]))
         let ano = ["Tengo un año."]
         XCTAssertFalse(TranslationAnswer.matches(submission: "tengo un ano", acceptable: ano))
         XCTAssertTrue(TranslationAnswer.matches(submission: "TENGO UN AÑO", acceptable: ano))
         XCTAssertTrue(TranslationAnswer.matches(submission: "Tengo un an\u{0303}o.", acceptable: ano))
         XCTAssertTrue(TranslationAnswer.matches(submission: "donde esta el niño", acceptable: ["¿Dónde está el niño?"]))
-        XCTAssertEqual(TranslationAnswer.normalise("¡El Niño!"), "el niño")
+        XCTAssertEqual(TranslationAnswer.normalise("¡El Niño!"), "el nino")
+        XCTAssertEqual(TranslationAnswer.normalise("Un AÑO"), "un año")
         XCTAssertEqual(SpokenAnswer.normalise("año"), "ano", "speech keeps its tolerance")
     }
 

@@ -15,7 +15,7 @@ const MIGRATION = readFileSync(
 );
 
 const RETRY_MIGRATION = readFileSync(
-  path.join(process.cwd(), "supabase/migrations/20261128150000_call_recap_retryable_claim.sql"),
+  path.join(process.cwd(), "supabase/migrations/20261128170000_call_recap_retryable_claim.sql"),
   "utf8",
 );
 
@@ -371,7 +371,7 @@ describe("the recap quota kind", () => {
   });
 });
 
-describe("a failed recap attempt does not consume the call (20261128150000)", () => {
+describe("a failed recap attempt does not consume the call (20261128170000)", () => {
   const CALL3 = "00000000-0000-4000-8000-0000000000c3";
   const CALL4 = "00000000-0000-4000-8000-0000000000c4";
   const q = async (sql: string) => (await server(() => db.query<{ r: unknown }>(sql))).rows[0]!.r;

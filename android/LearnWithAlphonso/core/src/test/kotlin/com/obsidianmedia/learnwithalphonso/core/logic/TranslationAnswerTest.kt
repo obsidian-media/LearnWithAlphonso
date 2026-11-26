@@ -37,13 +37,17 @@ class TranslationAnswerTest {
     }
 
     @Test
-    fun `written Spanish keeps the enye but other accents still fold`() {
+    fun `a missing tilde is a slip unless it makes a different real word`() {
+        assertTrue(matches("hablo espanol", listOf("Hablo español.")))
+        assertTrue(matches("hasta manana", listOf("Hasta mañana.")))
+        assertFalse(matches("me duele la una", listOf("Me duele la uña.")))
         val ano = listOf("Tengo un año.")
         assertFalse(matches("tengo un ano", ano))
         assertTrue(matches("TENGO UN AÑO", ano))
         assertTrue(matches("Tengo un año.", ano))
         assertTrue(matches("donde esta el niño", listOf("¿Dónde está el niño?")))
-        assertEquals("el niño", normalise("¡El Niño!"))
+        assertEquals("el nino", normalise("¡El Niño!"))
+        assertEquals("un año", normalise("Un AÑO"))
         assertEquals("ano", SpokenAnswer.normalise("año")) // speech keeps its tolerance
     }
 

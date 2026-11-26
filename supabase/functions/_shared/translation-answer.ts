@@ -11,6 +11,14 @@ import { normaliseSpoken } from "./spoken-answer.ts";
 const ENYE = "xqenyeqx";
 
 /**
+ * Spanish words whose tilde-less spelling is itself a different real word (año/ano, uña/una, peña/pena, caña/cana,
+ * sueño/sueno, cuña/cuna, moño/mono, ceño/ceno, maña/mana, cañón/canon). Kept IN STEP in the Deno, Swift and Kotlin
+ * copies; the shared grading-parity cases fail when they drift. (The grader word list is not used: it drops words
+ * under five letters and is not available on the native apps.)
+ */
+const ENYE_TWINS = new Set(["año", "años", "peña", "peñas", "caña", "cañas", "sueño", "sueños", "uña", "uñas", "cuña", "cuñas", "moño", "moños", "ceño", "maña", "cañón"]);
+
+/**
  * The LOCAL half of translate grading: costs nothing, needs no network, and is
  * the floor rather than the verdict. What it accepts is correct; what it
  * rejects goes to the AI grader (translation-grader.ts) before anything is
@@ -22,10 +30,15 @@ const ENYE = "xqenyeqx";
  * when said and rejected when typed.
  */
 export function normaliseWritten(input: string): string {
-  // The spoken normaliser folds every accent, which is right for a transcript (speech recognition cannot hear a tilde)
-  // but wrong for typed Spanish: "ano" and "año" are different words. Protect the enye through the fold, then restore
-  // it. Speech keeps its tolerance (spoken-answer-es.ts); this is the written side only.
-  const protectedInput = input.normalize("NFC").replace(/ñ/gi, ENYE);
+  // The spoken normaliser folds every accent, so a missing tilde is a forgivable slip ("espanol" for "español": many
+  // keyboards have no enye). The one exception: a word whose tilde-less spelling is a DIFFERENT real word ("ano" for
+  // "año", "una" for "uña") keeps its enye through the fold, so the two never compare equal. Speech keeps its tolerance
+  // (spoken-answer-es.ts); this is the written side only.
+  const protectedInput = input
+    .normalize("NFC")
+    .replace(/\p{L}*[ñÑ]\p{L}*/gu, (word) =>
+      ENYE_TWINS.has(word.toLowerCase()) ? word.replace(/ñ/gi, ENYE) : word,
+    );
   return normaliseSpoken(protectedInput).split(ENYE).join("ñ");
 }
 

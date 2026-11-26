@@ -20,13 +20,28 @@ public enum TranslationAnswer {
     /// A letters-only stand-in for "ñ" that survives the spoken normaliser's accent fold and punctuation strip.
     private static let enye = "xqenyeqx"
 
-    /// The spoken normaliser folds every accent, right for a transcript but wrong for typed Spanish: "ano" and "año"
-    /// are different words. The enye is protected through the fold and restored; speech keeps its tolerance.
+    /// Spanish words whose tilde-less spelling is itself a different real word; keep in step with translation-answer.ts.
+    private static let enyeTwins: Set<String> = ["año", "años", "peña", "peñas", "caña", "cañas", "sueño", "sueños", "uña", "uñas", "cuña", "cuñas", "moño", "moños", "ceño", "maña", "cañón"]
+    private static let enyeWord = try! NSRegularExpression(pattern: "\\p{L}*[ñÑ]\\p{L}*")
+
+    /// The spoken normaliser folds every accent, so a missing tilde is a forgivable slip ("espanol" for "español").
+    /// The exception: a word whose tilde-less spelling is a different real word ("ano" for "año", "una" for "uña")
+    /// keeps its enye through the fold. Speech keeps its tolerance.
     public static func normalise(_ input: String) -> String {
-        let protected = input.precomposedStringWithCanonicalMapping
-            .replacingOccurrences(of: "ñ", with: enye)
-            .replacingOccurrences(of: "Ñ", with: enye)
-        return SpokenAnswer.normalise(protected).replacingOccurrences(of: enye, with: "ñ")
+        let nfc = input.precomposedStringWithCanonicalMapping
+        var out = ""
+        var last = nfc.startIndex
+        for m in enyeWord.matches(in: nfc, range: NSRange(nfc.startIndex..., in: nfc)) {
+            guard let r = Range(m.range, in: nfc) else { continue }
+            out += nfc[last..<r.lowerBound]
+            let word = String(nfc[r])
+            out += enyeTwins.contains(word.lowercased())
+                ? word.replacingOccurrences(of: "ñ", with: enye).replacingOccurrences(of: "Ñ", with: enye)
+                : word
+            last = r.upperBound
+        }
+        out += nfc[last...]
+        return SpokenAnswer.normalise(out).replacingOccurrences(of: enye, with: "ñ")
     }
 
     /// Whether `submission` is one of the phrasings `acceptable` allows.

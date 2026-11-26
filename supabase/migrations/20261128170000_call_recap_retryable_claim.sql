@@ -14,7 +14,7 @@
 -- Calls whose recap_at was set by the old claim stay as they are (they cannot be told apart from a completed recap).
 --
 -- Depends on practice_calls (20261107032021) and 20261119100000_call_recap_memory.sql (remember_call_recap). Version
--- 20261128150000 is after video_drafts_bucket (20261128140000), the newest migration on main when written.
+-- 20261128170000 is after the trial_reminders migration (20261128150000) and the planned Hector one (about 20261128160000).
 --
 -- Rollback: re-create claim_call_recap as in 20261119100000, then
 --   DROP FUNCTION public.finish_call_recap(uuid, text, uuid, text[], jsonb, boolean), public.release_call_recap(uuid, uuid);

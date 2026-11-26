@@ -12,12 +12,19 @@ object TranslationAnswer {
     /** A letters-only stand-in for "ñ" that survives the spoken normaliser's accent fold and punctuation strip. */
     private const val ENYE = "xqenyeqx"
 
+    /** Spanish words whose tilde-less spelling is itself a different real word; keep in step with translation-answer.ts. */
+    private val ENYE_TWINS = setOf("año", "años", "peña", "peñas", "caña", "cañas", "sueño", "sueños", "uña", "uñas", "cuña", "cuñas", "moño", "moños", "ceño", "maña", "cañón")
+    private val ENYE_WORD = Regex("\\p{L}*[ñÑ]\\p{L}*")
+
     /**
-     * The spoken normaliser folds every accent, right for a transcript but wrong for typed Spanish: "ano" and "año" are
-     * different words. The enye is protected through the fold and restored; speech keeps its tolerance.
+     * The spoken normaliser folds every accent, so a missing tilde is a forgivable slip ("espanol" for "español").
+     * The exception: a word whose tilde-less spelling is a different real word ("ano" for "año", "una" for "uña")
+     * keeps its enye through the fold. Speech keeps its tolerance.
      */
     fun normalise(input: String): String {
-        val protectedInput = Normalizer.normalize(input, Normalizer.Form.NFC).replace("ñ", ENYE).replace("Ñ", ENYE)
+        val protectedInput = ENYE_WORD.replace(Normalizer.normalize(input, Normalizer.Form.NFC)) { m ->
+            if (m.value.lowercase() in ENYE_TWINS) m.value.replace("ñ", ENYE).replace("Ñ", ENYE) else m.value
+        }
         return SpokenAnswer.normalise(protectedInput).replace(ENYE, "ñ")
     }
 
