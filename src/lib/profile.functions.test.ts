@@ -128,6 +128,8 @@ describe("getProfileOverview", () => {
     for (const log of calls.review_items!)
       expect(log).toContainEqual({ method: "eq", args: ["language", "es"] });
     expect(calls.review_items![0]).toContainEqual({ method: "eq", args: ["source", "weakness"] });
+    // The Hector card's topics are this course's too: a Spanish learner is not shown English grammar.
+    expect(calls.weakness_events![0]).toContainEqual({ method: "eq", args: ["course", "es"] });
     expect(calls.review_items![1]).toContainEqual({ method: "eq", args: ["source", "saved_word"] });
   });
 

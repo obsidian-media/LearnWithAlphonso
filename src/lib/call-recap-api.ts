@@ -156,12 +156,14 @@ export async function fetchGoalsNote(): Promise<string | null> {
     const resp = await fetch("/api/learner-profile", { headers: await authHeaders() });
     if (!resp.ok) return null;
     const { profile } = (await resp.json()) as {
-      profile?: { goal?: string; dailyMinutes?: number };
+      profile?: { goal?: string; dailyMinutes?: number; interests?: unknown };
     };
     const lines = goalLines({
       goal: profile?.goal ?? null,
       dailyMinutes: profile?.dailyMinutes ?? null,
-      interests: [],
+      interests: Array.isArray(profile?.interests)
+        ? profile.interests.filter((i): i is string => typeof i === "string")
+        : [],
     });
     return lines.length ? lines.map((l) => l.title).join(", ") : null;
   } catch {

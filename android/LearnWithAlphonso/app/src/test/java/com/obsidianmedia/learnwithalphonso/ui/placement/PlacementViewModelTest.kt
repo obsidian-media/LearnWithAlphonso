@@ -9,6 +9,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.PlacementQuestion
 import com.obsidianmedia.learnwithalphonso.core.logic.BandMarkerState
 import com.obsidianmedia.learnwithalphonso.core.logic.isPlacementAnswerCorrect
 import com.obsidianmedia.learnwithalphonso.testContent
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -74,6 +75,47 @@ class PlacementViewModelTest {
         awaitTrue("saved") { s.seen.any { it.path.endsWith("save_placement_result") } }
         val save = s.seen.first { it.path.endsWith("save_placement_result") }
         assertEquals("""{"_language":"en","_level":"A1","_score":0}""", save.body)
+    }
+
+    // The save used to be `runCatching { ... }` and forgotten: a dropped connection left the server at A1 while the
+    // screen said B1. It is now awaited with a bounded retry and the screen learns how it went.
+    private fun failingThenOk(failures: Int): Pair<FakeServer, () -> Int> {
+        var saves = 0
+        val s = FakeServer { req ->
+            if (req.path.endsWith("save_placement_result")) {
+                saves++
+                if (saves <= failures) json("{}", HttpStatusCode.InternalServerError) else json("")
+            } else json("""{"correct":false,"reason":null}""")
+        }
+        return s to { saves }
+    }
+
+    private fun finishWithZeroCorrect(s: FakeServer): PlacementViewModel {
+        val v = PlacementViewModel(testContent, s.progressClient, s.translation, Course.ENGLISH, canPlayAudio = false, isConnected = { false }, random = Random(7), hasAiConsent = { true }, saveDelaysMs = listOf(0L, 0L))
+        repeat(3) {
+            val q = v.state.value.currentQuestion!!
+            v.pick(wrongAnswer(q)); v.submit(); awaitTrue("advanced") { v.state.value.picked == null }
+        }
+        return v
+    }
+
+    @Test
+    fun `a save that fails once is retried and ends Saved`() = runBlocking {
+        val (s, saves) = failingThenOk(1)
+        val v = finishWithZeroCorrect(s)
+        awaitTrue("saved") { v.state.value.saveState == SaveState.Saved }
+        assertEquals(2, saves())
+    }
+
+    @Test
+    fun `a save that keeps failing stops after three tries and shows Failed, and retrySave tries again`() = runBlocking {
+        val (s, saves) = failingThenOk(3)
+        val v = finishWithZeroCorrect(s)
+        awaitTrue("failed") { v.state.value.saveState == SaveState.Failed }
+        assertEquals(3, saves())
+        v.retrySave()
+        awaitTrue("saved after retry") { v.state.value.saveState == SaveState.Saved }
+        assertEquals(4, saves())
     }
 
     @Test

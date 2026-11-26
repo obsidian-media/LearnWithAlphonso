@@ -54,6 +54,12 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
             : `conversation with a learner of ${language} (write the question, its choices and the display text in ${language}; write the explanation in English)`;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { currentCefrLevel } = await import("@/lib/learner-level.server");
+        const level = await currentCefrLevel(
+          supabaseAdmin as unknown as Parameters<typeof currentCefrLevel>[0],
+          userId,
+          course,
+        );
         const inserted = await detectAndRecordWeaknesses({
           userId,
           sourceDescription,
@@ -79,7 +85,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
               user_id: userId,
               item_key: itemKey,
               lesson_id: "weakness",
-              level: "A1",
+              level,
               language: course,
               ease: 2.5,
               interval_days: 0,
@@ -98,7 +104,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           adminInsertEvent: async (category) => {
             await supabaseAdmin
               .from("weakness_events")
-              .insert({ user_id: userId, category, event_type: "detected" });
+              .insert({ user_id: userId, category, event_type: "detected", course });
           },
         });
 

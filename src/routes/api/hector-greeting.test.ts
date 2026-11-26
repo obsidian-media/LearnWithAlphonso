@@ -4,6 +4,7 @@ const h = vi.hoisted(() => ({
   pro: vi.fn(),
   memory: [] as { memory_key: string }[],
   events: [] as { category: string; event_type: string; created_at: string }[],
+  eqs: [] as { table: string; col: string; val: unknown }[],
 }));
 vi.mock("@/lib/account-ban.server", () => ({ checkBan: async () => null }));
 vi.mock("@/lib/call-recap.server", () => ({ proStateFor: h.pro }));
@@ -17,7 +18,11 @@ vi.mock("@/integrations/supabase/client.server", () => ({
     },
     from: (t: string) => {
       const q: Record<string, unknown> = {};
-      for (const n of ["select", "eq", "order"]) q[n] = () => q;
+      for (const n of ["select", "order"]) q[n] = () => q;
+      q.eq = (col: string, val: unknown) => {
+        h.eqs.push({ table: t, col, val });
+        return q;
+      };
       q.limit = async () => ({ data: h.memory, error: null });
       q.then = (ok: (v: unknown) => unknown) =>
         ok({ data: t === "weakness_events" ? h.events : h.memory, error: null });
@@ -46,6 +51,7 @@ beforeEach(() => {
   h.pro.mockResolvedValue("active");
   h.memory = [];
   h.events = [];
+  h.eqs = [];
 });
 
 describe("POST /api/hector-greeting", () => {
@@ -72,6 +78,12 @@ describe("POST /api/hector-greeting", () => {
     h.events = [];
     const none = await (await call({ course: "en" })).json();
     expect(none).toMatchObject({ topic: null, remembered: false });
+  });
+
+  it("reads the weak spots of the course asked for, not every course's", async () => {
+    await call({ course: "fr" });
+    expect(h.eqs).toContainEqual({ table: "weakness_events", col: "course", val: "fr" });
+    expect(h.eqs).toContainEqual({ table: "tutor_memory", col: "course", val: "fr" });
   });
 
   it("is Pro only, like Hector", async () => {

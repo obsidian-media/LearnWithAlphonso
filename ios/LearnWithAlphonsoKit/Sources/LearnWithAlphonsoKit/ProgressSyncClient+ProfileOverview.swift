@@ -122,6 +122,7 @@ extension ProgressSyncClient {
         async let events = profileRows("weakness_events", [
             URLQueryItem(name: "select", value: "category,event_type,created_at"),
             URLQueryItem(name: "user_id", value: me),
+            URLQueryItem(name: "course", value: "eq.\(course)"),
             URLQueryItem(name: "order", value: "created_at.asc"),
         ])
         async let achievements = profileRows("user_achievements", [

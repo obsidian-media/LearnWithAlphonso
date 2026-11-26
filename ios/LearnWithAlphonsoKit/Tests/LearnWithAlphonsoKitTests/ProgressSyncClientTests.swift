@@ -1186,6 +1186,20 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/weakness_events"))
     }
 
+    func testFetchWeaknessTrendForACourseAsksOnlyForThatCourse() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+        _ = try await client.fetchWeaknessTrend(course: "fr")
+        let scoped = try XCTUnwrap(captured.value?.url?.absoluteString)
+        XCTAssertTrue(scoped.contains("course=eq.fr"))
+        _ = try await client.fetchWeaknessTrend()
+        let all = try XCTUnwrap(captured.value?.url?.absoluteString)
+        XCTAssertFalse(all.contains("course="))
+    }
+
     func testFetchWeaknessTrendReturnsEmptyWhenNoEvents() async throws {
         let client = makeClient { request in
             self.jsonResponse(for: request.url!, body: [] as [[String: Any]])

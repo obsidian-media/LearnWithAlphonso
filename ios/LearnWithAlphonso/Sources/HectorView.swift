@@ -492,7 +492,7 @@ private struct HectorConversationView: View {
         let client = ProgressSyncClient(
             supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         let level = (try? await client.fetchCefrLevel(course: course.wireCode)) ?? nil
-        let trend = (try? await client.fetchWeaknessTrend()) ?? []
+        let trend = (try? await client.fetchWeaknessTrend(course: course.wireCode)) ?? []
         // A name the learner chose; an unconfirmed one is a generated handle.
         let nameStatus = (try? await client.fetchNameStatus()) ?? nil
         let openCategories = trend.filter { $0.openCount > 0 }.map(\.category)

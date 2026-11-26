@@ -238,6 +238,8 @@ describe("GET /api/practice: the hub's rows", () => {
       expect(filters).toContainEqual({ table, col: "user_id", val: "user-1" });
     }
     expect(filters).toContainEqual({ table: "practice_stars", col: "course", val: "es" });
+    // A Spanish learner's picks come from Spanish weak spots only.
+    expect(filters).toContainEqual({ table: "weakness_events", col: "course", val: "es" });
   });
 
   it("a failed read is an error, never zero stars", async () => {
