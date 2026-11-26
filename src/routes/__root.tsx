@@ -9,6 +9,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { retryPendingHectorCallEnds } from "@/lib/hector-call-end";
 import { MotionConfig } from "framer-motion";
 
 import appCss from "../styles.css?url";
@@ -171,6 +172,7 @@ function RootComponent() {
   const suspended = useAccountStatus((s) => s.suspended);
   useEffect(() => {
     void track("app_open");
+    void retryPendingHectorCallEnds();
     dismissBootSplash();
   }, []);
   // iOS Safari lets only an audio element a tap has played start sound later, after a fetch: so the first tap anywhere
