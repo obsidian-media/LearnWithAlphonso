@@ -220,7 +220,7 @@ for (const course of ["en", "fr", "es"] as const) {
 const SHIPPED: Record<"en" | "fr" | "es", string[]> = {
   en: ["A1", "A2"],
   fr: ["A1"],
-  es: ["A2"],
+  es: ["A1", "A2"],
 };
 
 describe("which course-levels ship goal variants", () => {
