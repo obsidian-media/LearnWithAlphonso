@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./auth-headers", () => ({ authHeaders: async () => ({ Authorization: "Bearer t" }) }));
-const { callQualifiesForRecap, fetchCallRecap, fetchCallRecapAttempt } =
+const { callQualifiesForRecap, fetchCallRecap, fetchCallRecapAttempt, fetchGoalsNote } =
   await import("./call-recap-api");
 
 const call = (n: number) =>
@@ -84,5 +84,26 @@ describe("when a recap attempt fails the screen can offer Try again", () => {
       recap: null,
       retry: false,
     });
+  });
+});
+
+describe("the goals line on the memory page", () => {
+  it("names the learner's own interests, not an empty list", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          profile: { goal: "travel", dailyMinutes: 10, interests: ["music", "food"] },
+        }),
+      ),
+    );
+    try {
+      const note = await fetchGoalsNote();
+      expect(note).toContain("Travel");
+      expect(note).toContain("Music");
+      expect(note).toContain("food");
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

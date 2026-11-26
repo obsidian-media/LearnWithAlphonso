@@ -122,6 +122,7 @@ export const getProfileOverview = createServerFn({ method: "GET" })
         .from("weakness_events")
         .select("category,event_type,created_at")
         .eq("user_id", userId)
+        .eq("course", course)
         .order("created_at", { ascending: true }),
       supabase
         .from("user_achievements")

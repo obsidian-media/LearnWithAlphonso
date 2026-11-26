@@ -56,6 +56,7 @@ async function hub(admin: Admin, userId: string, course: string): Promise<Respon
       .from("weakness_events")
       .select("category,event_type,created_at")
       .eq("user_id", userId)
+      .eq("course", course)
       .order("created_at", { ascending: true }),
   ]);
   // "No error" is not "no data": a failed read must not show a learner zero stars.

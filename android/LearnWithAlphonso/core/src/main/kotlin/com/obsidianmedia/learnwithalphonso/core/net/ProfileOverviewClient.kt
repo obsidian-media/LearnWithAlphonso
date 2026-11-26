@@ -54,7 +54,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
         http.requireSuccess(response)
         response.headers["Content-Range"]?.substringAfter('/')?.toIntOrNull() ?: 0
     }
-    val events = async { rows("weakness_events", mapOf("select" to "category,event_type,created_at", "order" to "created_at.asc")) }
+    val events = async { rows("weakness_events", mapOf("select" to "category,event_type,created_at", "course" to "eq.$course", "order" to "created_at.asc")) }
     val achievements = async { rows("user_achievements", mapOf("select" to "achievement_id,progress,unlocked_at")) }
     // The friends board is secondary: if it fails the rest of Profile still shows.
     val friends = async { try { fetchFriendsProgress() } catch (e: CancellationException) { throw e } catch (e: Exception) { emptyList() } }

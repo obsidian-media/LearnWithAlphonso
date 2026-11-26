@@ -305,6 +305,15 @@ class SocialClientTest {
     }
 
     @Test
+    fun `weakness trend for a course asks only for that course's events, and without one asks for all`() = runTest {
+        val fake = FakeSupabase { json("[]") }
+        client(fake).fetchWeaknessTrend("fr")
+        assertEquals("eq.fr", fake.seen[0].query["course"])
+        client(fake).fetchWeaknessTrend()
+        assertEquals(null, fake.seen[1].query["course"])
+    }
+
+    @Test
     fun `a server error on a social rpc surfaces as ProgressSyncError`() = runTest {
         val fake = FakeSupabase { json("""{"message":"permission denied"}""", HttpStatusCode.Forbidden) }
         val error = runCatching { client(fake).fetchFriendsProgress() }.exceptionOrNull()

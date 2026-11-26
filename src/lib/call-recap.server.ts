@@ -160,7 +160,15 @@ type Table = {
 /** Adds the recap's items to the learner's review queue. A second tap upserts the same keys: nothing more is added. */
 export async function addRecapToReview(
   admin: Rpc & Table,
-  args: { userId: string; callId: string; course: Course; recap: Recap; remember: boolean },
+  args: {
+    userId: string;
+    callId: string;
+    course: Course;
+    recap: Recap;
+    remember: boolean;
+    /** The learner's CEFR level in this course (currentCefrLevel); A1 when not given. */
+    level?: string;
+  },
 ): Promise<{ added: number } | { error: true }> {
   const items = reviewItemsFromRecap(args.recap, args.course);
   if (items.length === 0) return { added: 0 };
@@ -169,7 +177,7 @@ export async function addRecapToReview(
     user_id: args.userId,
     item_key: recapItemKey(args.callId, i.index),
     lesson_id: i.source === "weakness" ? "weakness" : "savedword",
-    level: "A1",
+    level: args.level ?? "A1",
     language: args.course,
     ease: 2.5,
     interval_days: 0,

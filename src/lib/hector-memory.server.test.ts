@@ -32,6 +32,9 @@ describe("Hector memory topics are per course", () => {
     };
     await loadMemoryPrimingMessage(db, "u1", "es");
     expect(calls["weakness_events.limit"]).toEqual([[50]]);
+    // Only this course's events: the filter on the course column, next to the learner's own.
+    expect(calls["weakness_events.eq"]).toContainEqual(["course", "es"]);
+    expect(calls["weakness_events.eq"]).toContainEqual(["user_id", "u1"]);
     expect(calls["weakness_events.order"]).toEqual([["created_at", { ascending: false }]]);
   });
 });

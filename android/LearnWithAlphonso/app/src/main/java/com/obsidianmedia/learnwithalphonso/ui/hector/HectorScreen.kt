@@ -196,7 +196,7 @@ class HectorViewModel(
     init {
         viewModelScope.launch {
             val level = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()
-            val trend = runCatching { progress.fetchWeaknessTrend() }.getOrDefault(emptyList())
+            val trend = runCatching { progress.fetchWeaknessTrend(course.code) }.getOrDefault(emptyList())
             val open = trend.filter { it.openCount > 0 }.map { it.category }
             // A name the learner chose; an unconfirmed one is a generated handle.
             val name = runCatching { progress.fetchNameStatus() }.getOrNull()?.takeIf { it.nameConfirmed }?.displayName

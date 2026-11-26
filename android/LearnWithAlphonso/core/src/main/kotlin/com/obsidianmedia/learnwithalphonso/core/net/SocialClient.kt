@@ -412,8 +412,11 @@ suspend fun ProgressSyncClient.reportTeamName(teamId: String, reason: String): B
 // ---- weakness trend ----
 
 /** Aggregates weakness_events per category; open first, then most recent. Port of fetchWeaknessTrend. */
-suspend fun ProgressSyncClient.fetchWeaknessTrend(): List<WeaknessTrendEntry> {
-    val rows = rowsOf(http.rest(HttpMethod.Get, "weakness_events", mapOf("select" to "category,event_type,created_at", "order" to "created_at.asc")))
+suspend fun ProgressSyncClient.fetchWeaknessTrend(course: String? = null): List<WeaknessTrendEntry> {
+    // `course` scopes the read to one course's events; null reads every course (the achievements trend).
+    val query = mutableMapOf("select" to "category,event_type,created_at", "order" to "created_at.asc")
+    if (course != null) query["course"] = "eq.$course"
+    val rows = rowsOf(http.rest(HttpMethod.Get, "weakness_events", query))
     data class Acc(var detected: Int, var resolved: Int, var last: String)
     val order = ArrayList<String>()
     val byCategory = HashMap<String, Acc>()

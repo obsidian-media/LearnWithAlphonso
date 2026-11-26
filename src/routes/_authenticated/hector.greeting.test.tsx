@@ -205,6 +205,13 @@ describe("Hector speaks first", () => {
     await shows("Last time we worked on articles");
   });
 
+  it("asks for the weak-spot trend of the course being called, not every course", async () => {
+    useProgress.setState({ course: "fr" });
+    renderPage();
+    await vi.waitFor(() => expect(getWeaknessTrend).toHaveBeenCalled());
+    expect(getWeaknessTrend).toHaveBeenCalledWith({ data: { course: "fr" } });
+  });
+
   it("opens differently on each call: another wording says other words", async () => {
     getWeaknessTrend.mockResolvedValue({ categories: [] });
     greetingPick.variant = 1;

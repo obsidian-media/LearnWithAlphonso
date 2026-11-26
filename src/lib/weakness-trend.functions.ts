@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type WeaknessTrendEntry = {
@@ -14,10 +15,9 @@ export type WeaknessTrendEntry = {
  * 20260921000000_v3_weakness_trend_log.sql) into a per-category trend --
  * how many times a gap was detected vs. resolved, so the profile screen
  * can show real improvement over time instead of just the current
- * (ever-changing) review_items snapshot. No `course` param: weakness
- * detection itself is English-only today (see analyze-weaknesses.ts's
- * hardcoded `language: "en"` on the review_items it creates), so there's
- * nothing to filter by yet.
+ * (ever-changing) review_items snapshot. `course` scopes it to one course's
+ * events (Hector's greeting must not name an English grammar topic to a French
+ * learner); without it every course is read.
  *
  * `openCount` is `max(0, detected - resolved)`, not just "not yet
  * resolved" -- a category can be detected again after being resolved
@@ -26,13 +26,22 @@ export type WeaknessTrendEntry = {
  */
 export const getWeaknessTrend = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ categories: WeaknessTrendEntry[] }> => {
+  .inputValidator((d: unknown) =>
+    z
+      .object({ course: z.enum(["en", "fr", "es"]).optional() })
+      .optional()
+      .parse(d),
+  )
+  .handler(async ({ data: input, context }): Promise<{ categories: WeaknessTrendEntry[] }> => {
     const { supabase, userId } = context;
-    const { data } = await supabase
+    const base = supabase
       .from("weakness_events")
       .select("category,event_type,created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+      .eq("user_id", userId);
+    const { data } = await (input?.course ? base.eq("course", input.course) : base).order(
+      "created_at",
+      { ascending: true },
+    );
 
     const byCategory = new Map<
       string,
