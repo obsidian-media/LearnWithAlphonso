@@ -55,6 +55,12 @@ vi.mock("@/lib/hector-recording-cap", () => ({
 }));
 const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
+// Which wording of the greeting is said (and what earlier calls saved) is chosen by the test, not by the dice.
+const greetingPick = vi.hoisted(() => ({ variant: 0, topic: null as string | null }));
+vi.mock("@/lib/hector-greeting-context", () => ({
+  chooseGreetingVariant: () => greetingPick.variant,
+  rememberedTopic: async () => greetingPick.topic,
+}));
 const getWeaknessTrend = vi.fn();
 vi.mock("@/lib/weakness-trend.functions", () => ({ getWeaknessTrend }));
 
@@ -99,6 +105,8 @@ const tts = () => sent.filter((s) => s.url === "/api/tts");
 
 beforeEach(() => {
   clearOpenerSpeechCache();
+  greetingPick.variant = 0;
+  greetingPick.topic = null;
   localStorage.setItem("showAlphonsoWhilePractising", "false");
   useProgress.setState({ course: "en" });
   Element.prototype.scrollTo = vi.fn();
@@ -190,6 +198,26 @@ describe("Hector speaks first", () => {
     expect(players[0].play).toHaveBeenCalled();
   });
 
+  it("names what an earlier call saved: 'Last time we worked on', ahead of the weak-spot trend", async () => {
+    greetingPick.topic = "articles";
+    greetingPick.variant = 1;
+    renderPage();
+    await shows("Last time we worked on articles");
+  });
+
+  it("opens differently on each call: another wording says other words", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    greetingPick.variant = 1;
+    const first = renderPage();
+    await shows("Welcome back");
+    first.unmount();
+    clearOpenerSpeechCache();
+    greetingPick.variant = 2;
+    renderPage();
+    await shows("What did you get up to this week");
+    expect(screen.getByRole("log").textContent).not.toContain("Welcome back");
+  });
+
   it("without a recent weak spot it is the generic greeting", async () => {
     getWeaknessTrend.mockResolvedValue({ categories: [] });
     renderPage();
@@ -210,6 +238,40 @@ describe("Hector speaks first", () => {
     };
     expect(turn.text).toBe("Yes please");
     expect(turn.history).toEqual([{ role: "assistant", content: GREETING_EN }]);
+  });
+
+  it("leaving the call sends it once for Hector's memory, with the real conversation", async () => {
+    routes["/api/hector-call-end"] = () => Response.json({ saved: true, lines: 1 });
+    const view = renderPage();
+    await shows(GREETING_EN);
+    const box = screen.getByRole("textbox", { name: "Message Hector" });
+    for (const said of ["one", "two", "three"]) {
+      await userEvent.type(box, `${said}{Enter}`);
+      await waitFor(() =>
+        expect(sent.filter((s) => s.url === "/api/hector-respond")).toHaveLength(
+          ["one", "two", "three"].indexOf(said) + 1,
+        ),
+      );
+      await shows("Sure! What did you do yesterday?");
+      await waitFor(() => expect(box).not.toBeDisabled());
+    }
+    expect(sent.some((s) => s.url === "/api/hector-call-end")).toBe(false);
+    view.unmount();
+    await waitFor(() => expect(sent.some((s) => s.url === "/api/hector-call-end")).toBe(true));
+    const end = sent.filter((s) => s.url === "/api/hector-call-end");
+    expect(end).toHaveLength(1);
+    const body = end[0].body as { callId: string; course: string; messages: { role: string }[] };
+    expect(body.course).toBe("en");
+    expect(body.callId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(body.messages.filter((m) => m.role === "user")).toHaveLength(3);
+  });
+
+  it("a call with no real conversation sends nothing at the end", async () => {
+    const view = renderPage();
+    await shows(GREETING_EN);
+    view.unmount();
+    await new Promise((r) => setTimeout(r, 100));
+    expect(sent.some((s) => s.url === "/api/hector-call-end")).toBe(false);
   });
 
   it("is not requested before AI consent", async () => {

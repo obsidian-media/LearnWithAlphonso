@@ -53,6 +53,8 @@ import { HECTOR_OUT_FOR_TODAY, isHectorAllowanceUsedUp } from "@/lib/hector-allo
 import { getWeaknessTrend } from "@/lib/weakness-trend.functions";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import { supabase } from "@/integrations/supabase/client";
+import { chooseGreetingVariant, rememberedTopic } from "@/lib/hector-greeting-context";
+import { createHectorCallEnd } from "@/lib/hector-call-end";
 
 export const Route = createFileRoute("/_authenticated/hector")({
   component: HectorPage,
@@ -315,7 +317,8 @@ function HectorConversation({
       getWeaknessTrend(),
       supabase.auth.getSession(),
       isHectorAllowanceUsedUp(supabase),
-    ]).then(([p, trend, session, usedUp]) => {
+      rememberedTopic(supabase, course),
+    ]).then(([p, trend, session, usedUp, remembered]) => {
       if (cancelled) return;
       // Today's allowance is used up (BACKLOG 0.0-bq #5): the "out for today" message, and no greeting, so no speech.
       if (usedUp.status === "fulfilled" && usedUp.value) {
@@ -324,16 +327,19 @@ function HectorConversation({
       }
       const meta =
         session.status === "fulfilled" ? session.value.data.session?.user?.user_metadata : null;
+      // What earlier calls saved comes first ("Last time we worked on..."), then the recent weak spots.
       const weakSpot =
-        trend.status === "fulfilled"
+        (remembered.status === "fulfilled" ? remembered.value : null) ??
+        (trend.status === "fulfilled"
           ? recentWeakSpot(trend.value?.categories ?? [], Date.now())
-          : null;
+          : null);
       void greet(
         buildHectorGreeting({
           course,
           cefr: p.status === "fulfilled" ? p.value.cefrLevel : null,
           name: parseLearnerProfile(meta?.[LEARNER_PROFILE_KEY]).name,
           weakSpot,
+          variant: chooseGreetingVariant(course),
         }),
         hectorChips({ course, weakSpot, streakDays: useProgress.getState().streak }),
       );
@@ -345,6 +351,25 @@ function HectorConversation({
       skipReply();
     };
   }, [course, greet, skipReply]);
+
+  // The call ends when the learner leaves the screen or closes the tab: what it taught Hector about them is saved
+  // once, for the next call (/api/hector-call-end; Pro only, decided on the server).
+  const cefrRef = useRef(cefrLevel);
+  cefrRef.current = cefrLevel;
+  useEffect(() => {
+    const endCall = createHectorCallEnd({
+      callId: crypto.randomUUID(),
+      course,
+      getTurns: () => messagesRef.current,
+      getCefr: () => cefrRef.current,
+    });
+    const onHide = () => void endCall();
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      void endCall();
+    };
+  }, [course]);
 
   // Starting a call pauses the podcast (one voice at a time).
   useEffect(() => claimAudioSession("voice"), []);

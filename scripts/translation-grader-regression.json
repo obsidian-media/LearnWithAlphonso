@@ -2067,5 +2067,80 @@
     "submission": "Alors, euh, je dirais plutôt, enfin si on veut, que ma sœur est, comment dire, infirmière.",
     "expectCorrect": true,
     "kind": "hedged"
+  },
+  {
+    "id": "adv-realword-world-en",
+    "course": "en",
+    "level": "A2",
+    "prompt": "Say that you need one more word.",
+    "acceptableAnswers": [
+      "I need one more word.",
+      "I need another word."
+    ],
+    "submission": "I need one more world.",
+    "expectCorrect": false,
+    "kind": "real-word"
+  },
+  {
+    "id": "adv-realword-though-en",
+    "course": "en",
+    "level": "B1",
+    "prompt": "Say that you walked through the door.",
+    "acceptableAnswers": [
+      "I walked through the door."
+    ],
+    "submission": "I walked though the door.",
+    "expectCorrect": false,
+    "kind": "real-word"
+  },
+  {
+    "id": "adv-realword-through-en",
+    "course": "en",
+    "level": "B1",
+    "prompt": "Say that you stayed in even though it rained.",
+    "acceptableAnswers": [
+      "I stayed in even though it rained.",
+      "I stayed in though it rained."
+    ],
+    "submission": "I stayed in even through it rained.",
+    "expectCorrect": false,
+    "kind": "real-word"
+  },
+  {
+    "id": "adv-realword-cabos-es",
+    "course": "es",
+    "level": "A2",
+    "prompt": "Di que los cavos están sueltos.",
+    "acceptableAnswers": [
+      "Los cavos están sueltos."
+    ],
+    "submission": "Los cabos están sueltos.",
+    "expectCorrect": false,
+    "kind": "real-word"
+  },
+  {
+    "id": "adv-realword-votar-es",
+    "course": "es",
+    "level": "A2",
+    "prompt": "Di que quieres votar mañana.",
+    "acceptableAnswers": [
+      "Quiero votar mañana.",
+      "Yo quiero votar mañana."
+    ],
+    "submission": "Quiero botar mañana.",
+    "expectCorrect": false,
+    "kind": "real-word"
+  },
+  {
+    "id": "adv-realword-monde-fr",
+    "course": "fr",
+    "level": "A2",
+    "prompt": "Dis que le monde est grand.",
+    "acceptableAnswers": [
+      "Le monde est grand."
+    ],
+    "submission": "Le monte est grand.",
+    "expectCorrect": false,
+    "kind": "real-word"
   }
 ]

@@ -78,6 +78,10 @@ Sound effects by Kenney (kenney.nl), CC0. The nine short effects (right and wron
 
 Licence evidence: each pack's page says "CC0 licensed", and the `License.txt` in each downloaded zip reads "Creative Commons Zero, CC0". The OGGs were converted to MP3 with no other change.
 
+## Grader word lists (shipped in the web server and the Edge Functions)
+
+The written-answer grader checks whether a learner's word is a real word with three lists derived from the FrequencyWords project by Hermit Dave (https://github.com/hermitdave/FrequencyWords): the 2018 English, French and Spanish 50k word-frequency lists, built from OpenSubtitles (https://www.opensubtitles.org/). The project's content is licensed CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/; its code is MIT). We filtered them (letters only, 5 or more letters, a minimum count, other-language words removed; see `src/data/grader-words/README.md`) and ship the result as `src/data/grader-words/{en,fr,es}.ts` and the byte-identical copies in `supabase/functions/_shared/grader-words/`. **Only those six data files carry CC BY-SA 4.0** (attribution is this entry and the README; the adapted lists stay under the same licence). The rest of the repository, including the code that reads them, is not derived from them and is under its own terms.
+
 ## Wiktionary extracts (check-only, not committed)
 
 `scripts/check-wiktionary.ts` reads the kaikki.org extracts of Wiktionary (CC BY-SA 4.0)
