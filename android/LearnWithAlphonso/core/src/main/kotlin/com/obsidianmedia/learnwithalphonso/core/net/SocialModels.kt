@@ -83,4 +83,9 @@ data class TeamCreateOutcome(val ok: Boolean, val reason: String?, val teamId: S
 
 data class DuelCreateOutcome(val ok: Boolean, val reason: String?, val duelId: String?)
 
+/** One weekly quest (weekly_quests, claimed through claim_weekly_quest) with this week's progress; not a weekly challenge. */
+data class WeeklyQuest(val id: String, val title: String, val xpReward: Int, val progress: Int, val target: Int, val claimed: Boolean) {
+    val claimable: Boolean get() = progress >= target && !claimed
+}
+
 data class QuestClaimOutcome(val ok: Boolean, val reason: String?, val xp: Int?)

@@ -6,8 +6,10 @@ import { usePath } from "@/lib/learning-path-client";
 import { pathGoalCard } from "@/lib/path-goal-card";
 import { useTeamMission } from "@/lib/use-team-mission";
 import { useWeeklyChallenges } from "@/lib/use-weekly-challenges";
+import { useWeeklyQuests } from "@/lib/use-weekly-quests";
 import { TeamMissionCard } from "../TeamMissionCard";
 import { WeeklyChallengesCard } from "../WeeklyChallengesCard";
+import { WeeklyQuestsCard } from "../WeeklyQuestsCard";
 
 const CARD =
   "relative flex min-h-11 w-[104px] shrink-0 flex-col gap-1 rounded-2xl border-2 border-ds-line bg-ds-card px-2.5 py-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice";
@@ -44,6 +46,7 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
   const { state, reload } = usePath(course);
   const team = useTeamMission();
   const challenges = useWeeklyChallenges();
+  const quests = useWeeklyQuests(course);
   const [open, setOpen] = useState<"team" | "weekly" | null>(null);
 
   const goal = state.kind === "ready" ? pathGoalCard(state.path) : pathGoalCard(null);
@@ -63,11 +66,19 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
         : `${team.mission?.percent ?? 0}% done`;
 
   const list = challenges.challenges ?? [];
-  const showWeekly = challenges.failed || list.length > 0;
+  const questList = quests.quests ?? [];
+  const showWeekly = challenges.failed || list.length > 0 || questList.length > 0;
   const doneCount = list.filter((c) => c.completed).length;
-  const weeklyValue = challenges.failed ? "Couldn't load" : `${doneCount} of ${list.length} done`;
+  const weeklyValue = challenges.failed
+    ? "Couldn't load"
+    : list.length === 0
+      ? `${questList.length} quests`
+      : `${doneCount} of ${list.length} done`;
   // A challenge whose bar is full but not yet completed is a reward waiting to be claimed.
-  const claimReady = list.some((c) => !c.completed && c.progress >= c.threshold);
+  // A quest at its target that has not been claimed is the same: the Claim button is inside.
+  const claimReady =
+    list.some((c) => !c.completed && c.progress >= c.threshold) ||
+    questList.some((q) => !q.claimed && q.progress >= q.target);
 
   return (
     <section aria-label="For you" className="grid gap-2">
@@ -157,7 +168,12 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
       </div>
       <div id="for-you-detail" data-sheet>
         {open === "team" && showTeam ? <TeamMissionCard nested /> : null}
-        {open === "weekly" && showWeekly ? <WeeklyChallengesCard nested /> : null}
+        {open === "weekly" && showWeekly ? (
+          <div className="grid gap-3">
+            <WeeklyChallengesCard nested />
+            <WeeklyQuestsCard course={course} nested />
+          </div>
+        ) : null}
       </div>
     </section>
   );

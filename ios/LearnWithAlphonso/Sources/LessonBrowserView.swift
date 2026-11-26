@@ -42,6 +42,10 @@ struct LessonBrowserView: View {
     // empty until its data arrives produces no List row, so a .task attached to it never fires.
     @StateObject private var missionModel = TeamMissionModel()
     @State private var challenges: [WeeklyChallenge] = []
+    /// This week's weekly_quests (claimable XP rewards); not the challenges above, which pay themselves.
+    @State private var quests: [WeeklyQuest] = []
+    @State private var questNotice: String?
+    @State private var claimingQuestID: String?
     @State private var isCheckingPlacement = true
     @State private var placementTaken = false
     /// What the placement state above was last checked for (course and onboarding state), so re-appearing
@@ -361,10 +365,13 @@ struct LessonBrowserView: View {
                 expanded: forYouDetail == .team,
                 action: { toggleForYou(.team) }))
         }
-        if !challenges.isEmpty {
-            let value = "\(challenges.filter(\.completed).count) of \(challenges.count) done"
-            // A full bar that is not yet completed is a reward waiting to be claimed.
-            let claimReady = challenges.contains { !$0.completed && $0.progress >= $0.threshold }
+        if !challenges.isEmpty || !quests.isEmpty {
+            // With no challenges this week the card still opens for the quests, so it counts those instead.
+            let value = challenges.isEmpty
+                ? "\(quests.count) quests"
+                : "\(challenges.filter(\.completed).count) of \(challenges.count) done"
+            // A finished quest that is not yet claimed is a reward waiting to be claimed (challenges pay themselves).
+            let claimReady = quests.contains(where: \.claimable)
             items.append(LearnForYouRail.Item(
                 id: "weekly", emoji: "\u{2B50}", title: "Weekly", value: value,
                 spoken: "Weekly challenges, \(value)\(claimReady ? ", reward ready to claim" : "")",
@@ -449,6 +456,9 @@ struct LessonBrowserView: View {
                 }
                 if forYouDetail == .weekly {
                     WeeklyChallengesSection(challenges: challenges)
+                    WeeklyQuestsSection(quests: quests, notice: questNotice, claimingID: claimingQuestID) { quest in
+                        Task { await claimQuest(quest) }
+                    }
                 }
 
                 // Fallback for anyone RootView's post-sign-in placement
@@ -556,6 +566,7 @@ struct LessonBrowserView: View {
             .task(id: "\(course.code)-\(onboardingSettled)-\(placementTaken)") { await loadLevel() }
             .task { await missionModel.load(session: session) }
             .task { await loadChallenges() }
+            .task(id: course.code) { await loadQuests() }
             .task(id: course.translationCourseCode) {
                 let made = PathModel(session: session, courseCode: course.translationCourseCode)
                 railPath = made
@@ -731,6 +742,49 @@ struct LessonBrowserView: View {
         challenges = result
     }
 
+    /// Quests are per course (the lessons quest counts this course's lessons). Best-effort, shows nothing on failure.
+    private func loadQuests() async {
+        let loadingCourse = course.code
+        quests = []
+        questNotice = nil
+        guard let accessToken = await session.freshAccessToken() else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        let result = (try? await client.getWeeklyQuests(course: loadingCourse, weekStart: WeeklyQuests.weekStart())) ?? []
+        guard !Task.isCancelled, course.code == loadingCourse else { return }
+        quests = result
+    }
+
+    /// Claims a finished quest with its weekly_quests id (never a challenge template id). The server enforces one
+    /// claim per quest per week; a refusal is shown with its own reason, not as a connection problem.
+    private func claimQuest(_ quest: WeeklyQuest) async {
+        guard claimingQuestID == nil, quest.claimable else { return }
+        claimingQuestID = quest.id
+        defer { claimingQuestID = nil }
+        let claimCourse = course.code
+        guard let accessToken = await session.freshAccessToken() else {
+            questNotice = "Check your connection and try again."
+            return
+        }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            let result = try await client.claimWeeklyQuest(questID: quest.id, course: claimCourse, weekStart: WeeklyQuests.weekStart())
+            if result.ok {
+                questNotice = "+\(quest.xpReward) XP claimed!"
+                if let latest = try? await client.fetchProgress(course: claimCourse) {
+                    syncQueueStore.updateLastKnownProgress(latest)
+                }
+            } else {
+                questNotice = WeeklyQuests.claimMessage(reason: result.reason)
+            }
+            // Re-read either way: a refusal usually means the list on screen was stale.
+            if course.code == claimCourse {
+                quests = (try? await client.getWeeklyQuests(course: claimCourse, weekStart: WeeklyQuests.weekStart())) ?? quests
+            }
+        } catch {
+            questNotice = "Check your connection and try again."
+        }
+    }
+
     /// Placement is per-course, so this re-runs when the course changes. A failed check leaves the banner
     /// hidden rather than showing it on a network hiccup.
     private func checkPlacement() async {
@@ -849,6 +903,59 @@ private struct WeeklyChallengesSection: View {
                 }
             } header: {
                 Text("This week's challenges")
+                    .dsText(.caption)
+                    .foregroundStyle(ds.flame)
+            }
+            .listRowBackground(ds.choiceTint)
+        }
+    }
+}
+
+/// This week's quests (weekly_quests): the challenges' look, plus a Claim button on a finished, unclaimed one.
+private struct WeeklyQuestsSection: View {
+    @Environment(\.alphonsoDS) private var ds
+    let quests: [WeeklyQuest]
+    let notice: String?
+    let claimingID: String?
+    let onClaim: (WeeklyQuest) -> Void
+
+    var body: some View {
+        if !quests.isEmpty {
+            Section {
+                ForEach(quests) { q in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(q.title) (+\(q.xpReward) XP)")
+                            .dsText(.footnote)
+                            .strikethrough(q.claimed)
+                            .foregroundStyle(q.claimed ? ds.inkSoft : ds.ink)
+                        AlphonsoProgressBar(progress: Double(min(q.progress, q.target)) / Double(max(q.target, 1)))
+                        HStack {
+                            Text("\(min(q.progress, q.target))/\(q.target)")
+                                .dsText(.caption)
+                                .foregroundStyle(ds.inkSoft)
+                            Spacer()
+                            if q.claimable {
+                                Button(claimingID == q.id ? "Claiming..." : "Claim") { onClaim(q) }
+                                    .disabled(claimingID != nil)
+                                    .buttonStyle(.borderedProminent)
+                                    .accessibilityLabel("Claim \(q.title), \(q.xpReward) XP")
+                            } else if q.claimed {
+                                Text("Claimed")
+                                    .dsText(.footnote)
+                                    .foregroundStyle(ds.action)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+                if let notice {
+                    Text(notice)
+                        .dsText(.footnote)
+                        .foregroundStyle(ds.ink)
+                        .accessibilityAddTraits(.updatesFrequently)
+                }
+            } header: {
+                Text("This week's quests")
                     .dsText(.caption)
                     .foregroundStyle(ds.flame)
             }

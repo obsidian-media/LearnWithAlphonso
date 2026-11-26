@@ -21,6 +21,11 @@ const getMyTeam = vi.fn();
 vi.mock("../../lib/teams.functions", () => ({ getTeamMission, getMyTeam }));
 const getWeeklyChallenges = vi.fn();
 vi.mock("../../lib/challenges.functions", () => ({ getWeeklyChallenges }));
+const getWeeklyQuestProgress = vi.fn();
+vi.mock("../../lib/quests.functions", () => ({
+  getWeeklyQuestProgress,
+  claimWeeklyQuest: vi.fn(),
+}));
 const usePathMock = vi.fn();
 vi.mock("../../lib/learning-path-client", () => ({ usePath: usePathMock }));
 
@@ -50,6 +55,7 @@ beforeEach(() => {
   getTeamMission.mockReset().mockResolvedValue(null);
   getMyTeam.mockReset().mockResolvedValue(null);
   getWeeklyChallenges.mockReset().mockResolvedValue([]);
+  getWeeklyQuestProgress.mockReset().mockResolvedValue([]);
   usePathMock.mockReset().mockReturnValue({ state: { kind: "none" }, reload: vi.fn() });
 });
 

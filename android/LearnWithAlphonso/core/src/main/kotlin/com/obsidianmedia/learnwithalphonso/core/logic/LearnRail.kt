@@ -30,5 +30,7 @@ object LearnRail {
         TeamMissionStatus.IN_PROGRESS -> "${mission.percent}% done"
     }
 
-    fun weeklyValue(challenges: List<WeeklyChallenge>): String = "${challenges.count { it.completed }} of ${challenges.size} done"
+    /** With no challenges this week the card still opens for the quests, so it counts those instead. */
+    fun weeklyValue(challenges: List<WeeklyChallenge>, questCount: Int = 0): String =
+        if (challenges.isEmpty() && questCount > 0) "$questCount quests" else "${challenges.count { it.completed }} of ${challenges.size} done"
 }
