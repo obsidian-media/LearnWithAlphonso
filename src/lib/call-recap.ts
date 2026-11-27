@@ -5,7 +5,7 @@ import { normalizeForScan } from "./text-normalize";
 
 /**
  * The call recap's pure rules (no I/O): the topic lists, the strict check of what the model wrote, the review items
- * built from it, and the line that primes Alphonso's Pro calls. The model only supplies text; this file decides what
+ * built from it, and the line that primes Alphonso's practice calls. The model only supplies text; this file decides what
  * of it is kept.
  */
 
@@ -320,7 +320,7 @@ export function reviewItemsFromRecap(
 // ------------------------------------------------------------------------------ priming
 
 /**
- * One leading user turn for Alphonso's Pro calls, from the learner's own memory lines. Labels from our own topic lists
+ * One leading user turn for Alphonso's practice calls, from the learner's own memory lines. Labels from our own topic lists
  * only, never what the learner said (same trust rule as hector-memory.server.ts).
  */
 export function buildAlphonsoPriming(course: Course, topicSlugs: string[]): Turn | null {
