@@ -25,7 +25,7 @@ vi.mock("@tanstack/react-router", () => ({
 const usePathMock = vi.fn();
 vi.mock("@/lib/learning-path-client", () => ({ usePath: usePathMock }));
 
-const { PinnedRows, RehearsalHero } = await import("./PinnedRehearsal");
+const { PinnedRows, RehearsalHero, useHeroPinned } = await import("./PinnedRehearsal");
 
 const ID = "11111111-1111-4111-8111-111111111111";
 const stage: PinnedItem = {
@@ -89,15 +89,23 @@ describe("PinnedRows (Today)", () => {
   });
 });
 
-describe("RehearsalHero (event day)", () => {
+describe("the event-day hero", () => {
   const ready = (pinned: PinnedItem[]) =>
     usePathMock.mockReturnValue({
       state: { kind: "ready", path: { pinned } as unknown as LearningPath },
     });
+  const hero = () => {
+    let out: PinnedItem | null = null;
+    const Probe = () => {
+      out = useHeroPinned("en");
+      return null;
+    };
+    render(<Probe />);
+    return out;
+  };
 
-  it("takes the hero on the event day: interview today, the 2-minute warm-up, Start 2 minutes", () => {
-    ready([warm]);
-    render(<RehearsalHero course="en" />);
+  it("RehearsalHero shows: interview today, the 2-minute warm-up, Start 2 minutes", () => {
+    render(<RehearsalHero item={warm} />);
     expect(screen.getByText("Interview today")).toBeInTheDocument();
     expect(screen.getByText("2-minute warm-up")).toBeInTheDocument();
     expect(screen.getByText("Say the key phrases once more before you go")).toBeInTheDocument();
@@ -107,21 +115,19 @@ describe("RehearsalHero (event day)", () => {
     );
   });
 
-  it("is not there on an ordinary rehearsal day, after the event, or without the path", () => {
-    ready([stage]);
-    const a = render(<RehearsalHero course="en" />);
-    expect(a.container).toBeEmptyDOMElement();
-    ready([followup]);
-    const b = render(<RehearsalHero course="en" />);
-    expect(b.container).toBeEmptyDOMElement();
-    usePathMock.mockReturnValue({ state: { kind: "loading" } });
-    const c = render(<RehearsalHero course="en" />);
-    expect(c.container).toBeEmptyDOMElement();
+  it("useHeroPinned finds the hero item on the event day", () => {
+    ready([warm]);
+    expect(hero()).toEqual(warm);
   });
 
-  it("an older path with no pinned list is just not there", () => {
+  it("is null on an ordinary rehearsal day, after the event, with an older path, or while loading", () => {
+    ready([stage]);
+    expect(hero()).toBeNull();
+    ready([followup]);
+    expect(hero()).toBeNull();
     usePathMock.mockReturnValue({ state: { kind: "ready", path: {} as LearningPath } });
-    const { container } = render(<RehearsalHero course="en" />);
-    expect(container).toBeEmptyDOMElement();
+    expect(hero()).toBeNull();
+    usePathMock.mockReturnValue({ state: { kind: "loading" } });
+    expect(hero()).toBeNull();
   });
 });

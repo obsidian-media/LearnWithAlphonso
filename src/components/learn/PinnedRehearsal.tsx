@@ -59,15 +59,20 @@ export function PinnedRows({ pinned }: { pinned: PinnedItem[] | undefined }) {
   );
 }
 
-/**
- * On the day of the event the 2-minute warm-up takes the top of Learn, for that day only (the next day the lesson is
- * back). Nothing on any other day, after the event, or while the path is not known.
- */
-export function RehearsalHero({ course }: { course: Course }) {
+/** The event-day hero item for this course, or null (every other day, after the event, or while the path is unknown). */
+export function useHeroPinned(course: Course): PinnedItem | null {
   const { state } = usePath(course);
   if (state.kind !== "ready") return null;
   const item = state.path.pinned?.find((p) => p.hero);
-  if (!item || item.stage === null) return null;
+  return item && item.stage !== null ? item : null;
+}
+
+/**
+ * On the day of the event the 2-minute warm-up TAKES the top of Learn for that day only: the Learn page shows this
+ * instead of the lesson hero and map (the next day the lesson is back).
+ */
+export function RehearsalHero({ item }: { item: PinnedItem }) {
+  if (item.stage === null) return null;
   return (
     <section
       aria-label="Rehearsal today"

@@ -90,6 +90,14 @@ vi.mock("../../components/learn/ForYouRail", () => ({
   ),
 }));
 
+// The event-day hero comes from the path; this page test only checks what the page does with it.
+const heroPinned = vi.hoisted(() => ({ current: null as null | Record<string, unknown> }));
+vi.mock("../../components/learn/PinnedRehearsal", () => ({
+  useHeroPinned: () => heroPinned.current,
+  RehearsalHero: () => <section aria-label="Rehearsal today">2-minute warm-up</section>,
+  PinnedRows: () => null,
+}));
+
 const { Route } = await import("./learn");
 const { useProgress } = await import("../../lib/progress");
 const { getCourse } = await import("../../data/courses");
@@ -120,6 +128,22 @@ beforeEach(() => {
   useProgress.getState().reset();
   sessionUser.current = { id: "u1" };
   localStorage.removeItem("lwa.placementOfferDismissed.v1.en");
+  heroPinned.current = null;
+});
+
+describe("Learn page: the event-day hero", () => {
+  it("on the event day the warm-up REPLACES the lesson map, and the next day the map is back", async () => {
+    heroPinned.current = { kind: "warmup_today", stage: "warmup", hero: true };
+    const first = renderPage();
+    expect(await screen.findByRole("region", { name: "Rehearsal today" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Continue lesson" })).toBeNull();
+    expect(screen.queryByText("Ready for today's lesson?")).toBeNull();
+    first.unmount();
+    heroPinned.current = null;
+    renderPage();
+    expect(await screen.findByText("Ready for today's lesson?")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Rehearsal today" })).toBeNull();
+  });
 });
 
 describe("Learn page", () => {
