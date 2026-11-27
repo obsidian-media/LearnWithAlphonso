@@ -57,7 +57,7 @@ async function loadRehearsalForPath(
  * 500: a failed read must never look like "no activity". Every query is scoped to the user id from the verified token.
  * No saved goal is not an error and not null any more: `goal` comes back null and the builder works out a SUGGESTED one
  * (path v2). The weakness reads (Review due, weakness_events, tutor_memory) are bounded and course-scoped where the
- * table has a course; weakness_events has none, and the builder reads them for the English course only.
+ * table has a course (weakness_events too since #753).
  */
 export async function loadPathData(
   admin: Admin,
@@ -155,6 +155,7 @@ export async function loadPathData(
       .from("weakness_events")
       .select("category,event_type,created_at")
       .eq("user_id", userId)
+      .eq("course", course)
       .gte("created_at", windowStart)
       .order("created_at", { ascending: false })
       .limit(WEAKNESS_EVENTS_LIMIT),
