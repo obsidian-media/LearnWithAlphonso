@@ -11,7 +11,8 @@ export type ReviewNotesInput = {
   demoAccountEmail: string;
   reviewContactEmail: string;
   demoCodeURL: string;
-  recordingURL: string;
+  /** Optional: a device screen recording of the reviewed flows. Omitted from the notes when absent. */
+  recordingURL?: string;
   productTitle: string;
 };
 
@@ -50,11 +51,10 @@ export const REQUIRED_NOTE_MARKERS = [
   "Google Sign-In", // 2.1 services
   "AI-narrated", // podcast audio provenance
   "New since build 49", // new features
-  "recording", // 2.1 device recording
 ] as const;
 
 export function buildReviewNotes(i: ReviewNotesInput): string {
-  return `Learn With Alphonso teaches English, French and Spanish (CEFR A1 to C1) to learners aged 13+: lessons, spaced review, speaking practice, an audio library and Hector, an AI voice tutor (Pro). Screen recording: ${i.recordingURL}
+  return `Learn With Alphonso teaches English, French and Spanish (CEFR A1 to C1) to learners aged 13+: lessons, spaced review, speaking practice, an audio library and Hector, an AI voice tutor (Pro).${i.recordingURL ? ` Screen recording: ${i.recordingURL}` : ""}
 
 SIGN IN (no password)
 1. Enter ${i.demoAccountEmail} and tap "Send code".
@@ -127,7 +127,10 @@ export function reviewNotesProblems(notes: string, i: ReviewNotesInput): string[
   for (const re of HUMAN_NARRATION)
     if (re.test(notes))
       p.push(`podcast audio must be described as AI-narrated, never human-made (${re})`);
-  if (!/^https:\/\//.test(i.recordingURL)) p.push("recording URL must be https");
+  if (i.recordingURL !== undefined) {
+    if (!/^https:\/\//.test(i.recordingURL)) p.push("recording URL must be https");
+    if (!notes.includes(i.recordingURL)) p.push('missing the screen "recording" link');
+  }
   if (!/^https:\/\//.test(i.demoCodeURL)) p.push("demo code URL must be https");
   const text = withoutInputs(notes, i);
   if (/--/.test(text)) p.push('literal "--" in notes');

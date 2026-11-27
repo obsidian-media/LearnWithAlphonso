@@ -161,6 +161,16 @@ describe("reviewNotesProblems (each mutation removes exactly the property its ru
     }
   });
 
+  it("leaves the recording out when there is none, and still passes", () => {
+    const none = { ...worst, recordingURL: undefined };
+    const notes = buildReviewNotes(none);
+    expect(notes).not.toMatch(/Screen recording/);
+    expect(reviewNotesProblems(notes, none)).toEqual([]);
+    const withOne = buildReviewNotes(worst);
+    expect(withOne).toContain(`Screen recording: ${worst.recordingURL}`);
+    expect(reviewNotesProblems(notes, worst).join("|")).toMatch(/recording/);
+  });
+
   it("flags a non-https recording or code link", () => {
     expect(reviewNotesProblems(good(), { ...worst, recordingURL: "http://x" }).join("|")).toMatch(
       /recording/,
