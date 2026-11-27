@@ -43,6 +43,7 @@ export const PAYWALL_SOURCES = [
   "practice_hector_card",
   "practice_end_prompt",
   "lesson_complete",
+  "rehearsal_entry",
 ] as const;
 export type PaywallSource = (typeof PAYWALL_SOURCES)[number];
 

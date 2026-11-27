@@ -62,10 +62,14 @@ export function toRehearsal(row: RehearsalRow): Rehearsal {
   };
 }
 
-export function toSummary(row: RehearsalRow): RehearsalSummary {
+/** What a closed rehearsal held: how many finished runs, how many stages had one, how many corrected forms in all. */
+export type SummaryStats = Pick<RehearsalSummary, "runs" | "stagesDone" | "corrections">;
+const NO_STATS: SummaryStats = { runs: 0, stagesDone: 0, corrections: 0 };
+
+export function toSummary(row: RehearsalRow, stats: SummaryStats = NO_STATS): RehearsalSummary {
   const { id, course, eventKind, eventDate, status, free, outcome, createdAt, closedAt } =
     toRehearsal(row);
-  return { id, course, eventKind, eventDate, status, free, outcome, createdAt, closedAt };
+  return { id, course, eventKind, eventDate, status, free, outcome, createdAt, closedAt, ...stats };
 }
 
 const HISTORY_LIMIT = 20;
@@ -139,6 +143,39 @@ export async function loadRuns(db: Db, userId: string, rehearsalId: string): Pro
   }));
 }
 
+/** Run counts per rehearsal, for the history list (the paywall names what the learner already did). */
+async function loadSummaryStats(
+  db: Db,
+  userId: string,
+  ids: string[],
+): Promise<Map<string, SummaryStats>> {
+  const out = new Map<string, SummaryStats>();
+  if (ids.length === 0) return out;
+  const { data, error } = await db
+    .from("rehearsal_runs")
+    .select("rehearsal_id,stage,corrections")
+    .eq("user_id", userId)
+    .in("rehearsal_id", ids);
+  if (error) throw new Error("rehearsal_runs read failed");
+  const stages = new Map<string, Set<string>>();
+  for (const r of (data ?? []) as {
+    rehearsal_id: string;
+    stage: string;
+    corrections: string[] | null;
+  }[]) {
+    const cur = out.get(r.rehearsal_id) ?? { runs: 0, stagesDone: 0, corrections: 0 };
+    const seen = stages.get(r.rehearsal_id) ?? new Set<string>();
+    seen.add(r.stage);
+    stages.set(r.rehearsal_id, seen);
+    out.set(r.rehearsal_id, {
+      runs: cur.runs + 1,
+      stagesDone: seen.size,
+      corrections: cur.corrections + (r.corrections?.length ?? 0),
+    });
+  }
+  return out;
+}
+
 /** The state the clients render: the active rehearsal, the closed ones, and whether the free one is still there. */
 export async function loadRehearsalState(db: Db, userId: string, course: Course) {
   const [active, history, used] = await Promise.all([
@@ -157,11 +194,19 @@ export async function loadRehearsalState(db: Db, userId: string, course: Course)
   // Which of the three stages are done, and which to offer next, from the finished runs.
   const runs = active ? await loadRuns(db, userId, active.id) : [];
   const progress = active ? stageProgress(runs) : null;
+  const closed = (history.data ?? []) as RehearsalRow[];
+  const stats = await loadSummaryStats(
+    db,
+    userId,
+    closed.map((r) => r.id),
+  );
   return {
     active: active ? toRehearsal(active) : null,
     progress,
     nextStage: progress ? nextStage(progress, runs) : null,
-    history: ((history.data ?? []) as RehearsalRow[]).map(toSummary),
+    // Labels and corrected forms only (never the learner's words): the plan's debrief reads the latest run from here.
+    runs,
+    history: closed.map((r) => toSummary(r, stats.get(r.id))),
     freeAvailable: !used,
   };
 }

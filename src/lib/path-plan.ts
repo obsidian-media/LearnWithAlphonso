@@ -29,6 +29,14 @@ import { DAILY_MINUTES, type Goal, type Interest } from "./learner-profile";
 import { categorySkill } from "../data/refresher-topics";
 import type { Skill } from "./profile-data";
 import { localDay } from "./local-day";
+import {
+  EVENT_KIND_LABELS,
+  EVENT_SHORT,
+  STAGE_LABELS,
+  STAGE_MINUTES,
+  type EventKind,
+  type Stage,
+} from "./rehearsal-rules";
 
 /**
  * The learning path (docs/superpowers/specs/2026-11-12-learning-path-design.md): ONE pure engine that turns what the
@@ -165,6 +173,39 @@ export type PathInput = {
   goalSuggested?: boolean;
   /** Weak spots (v2). Left out, the path has neither "Fix your weak spots" nor a refresher. */
   weak?: WeakInput;
+  /** The learner's active rehearsal for this course (Rehearsals), or left out. It adds a pinned item, never a mix entry. */
+  rehearsal?: RehearsalPathInput;
+};
+
+/** What the engine needs of an active rehearsal. Every day here is the learner's own calendar day. */
+export type RehearsalPathInput = {
+  id: string;
+  eventKind: EventKind;
+  /** The event's day (YYYY-MM-DD), or null for "not sure yet". */
+  eventDate: string | null;
+  /** The stage to offer next (rehearsal-rules nextStage). */
+  nextStage: Stage;
+  /** Every stage has a finished run. */
+  allDone: boolean;
+  /** The day of the latest finished run, or null before the first. */
+  lastRunDay: string | null;
+};
+
+/**
+ * A pinned item: kept apart from the weekly mix and Today's list, like the Fix card, so it never changes the plan's
+ * minutes. `stage`: the next stage. `warmup_today`: the 2-minute warm-up on the event day (it takes the Learn hero).
+ * `followup`: "How did it go?" after the event.
+ */
+export type PinnedItem = {
+  kind: "stage" | "warmup_today" | "followup";
+  rehearsalId: string;
+  /** What the rehearsal is for, so a screen can say "Interview today" without parsing the title. */
+  eventKind: EventKind;
+  stage: Stage | null;
+  title: string;
+  subtitle: string;
+  minutes: number;
+  hero: boolean;
 };
 
 export type MixEntry = { type: PathType; minutes: number; share: number; count: number };
@@ -232,6 +273,8 @@ export type LearningPath = {
   /** "Fix before it sticks": weak-spot items kept apart from Today's plan. Null when there is nothing to fix, or switched off. */
   fix: FixCard | null;
   fixOff: boolean;
+  /** Rehearsal items for today: at most one, outside the mix (empty without an active rehearsal). */
+  pinned: PinnedItem[];
   status: GoalStatus;
   /** The status in words, and one sentence under it (the goal planner's numbers, never a new calculation). */
   statusLine: string;
@@ -563,6 +606,76 @@ function refresherPick(input: PathInput, today: string): RefresherPick | null {
   };
 }
 
+// ---------------------------------------------------------------- rehearsal (pinned)
+
+/** "How did it go?" is offered from the day after the event for this many days, then left alone. */
+export const FOLLOW_UP_DAYS = 3;
+/** With no event date: a stage every other day while some are left, then weekly. */
+const UNDATED_GAP_DAYS = 2;
+const UNDATED_DONE_GAP_DAYS = 7;
+export const WARMUP_TODAY_MINUTES = 2;
+
+/**
+ * The rehearsal item for today, at most one (the rule: one per study day, none after the event except "How did it
+ * go?"). Pure, on the learner's local day: `today` is theirs, and so is every day in `r`.
+ */
+export function rehearsalPinned(
+  r: RehearsalPathInput | undefined,
+  today: string,
+  restDay: number | null,
+): PinnedItem[] {
+  if (!r) return [];
+  const noun = EVENT_SHORT[r.eventKind];
+  if (r.eventDate && today > r.eventDate) {
+    if (dayNum(today) - dayNum(r.eventDate) > FOLLOW_UP_DAYS) return [];
+    return [
+      {
+        kind: "followup",
+        rehearsalId: r.id,
+        eventKind: r.eventKind,
+        stage: null,
+        title: "How did it go?",
+        subtitle: `Your ${noun}`,
+        minutes: 0,
+        hero: false,
+      },
+    ];
+  }
+  if (r.eventDate && today === r.eventDate) {
+    return [
+      {
+        kind: "warmup_today",
+        rehearsalId: r.id,
+        eventKind: r.eventKind,
+        stage: "warmup",
+        title: `${WARMUP_TODAY_MINUTES}-minute warm-up before your ${noun}`,
+        subtitle: "The key phrases, one more time",
+        minutes: WARMUP_TODAY_MINUTES,
+        hero: true,
+      },
+    ];
+  }
+  // Before the event, or with no date: only on a day the learner studies, and not twice in one day.
+  if (restDay !== null && weekdayOf(today) === restDay) return [];
+  if (r.lastRunDay === today) return [];
+  if (!r.eventDate && r.lastRunDay) {
+    const gap = r.allDone ? UNDATED_DONE_GAP_DAYS : UNDATED_GAP_DAYS;
+    if (dayNum(today) - dayNum(r.lastRunDay) < gap) return [];
+  }
+  return [
+    {
+      kind: "stage",
+      rehearsalId: r.id,
+      eventKind: r.eventKind,
+      stage: r.nextStage,
+      title: STAGE_LABELS[r.nextStage],
+      subtitle: `${EVENT_KIND_LABELS[r.eventKind]} rehearsal`,
+      minutes: STAGE_MINUTES[r.nextStage],
+      hero: false,
+    },
+  ];
+}
+
 // ---------------------------------------------------------------- the engine
 
 export function planPath(input: PathInput): LearningPath {
@@ -702,6 +815,7 @@ export function planPath(input: PathInput): LearningPath {
     goal: { suggested: input.goalSuggested === true, built: builtFrom(input) },
     fix: fixCard(fixItems),
     fixOff: input.prefs.fixOff === true,
+    pinned: rehearsalPinned(input.rehearsal, today, restDay),
     status,
     statusLine: STATUS_LINE[status],
     statusDetail: statusDetail(input.goalPlan),

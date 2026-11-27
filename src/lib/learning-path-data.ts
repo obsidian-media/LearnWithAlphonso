@@ -36,6 +36,7 @@ import {
   type Candidate,
   type LearningPath,
   type PathType,
+  type RehearsalPathInput,
   type WeakCategory,
   type WeakInput,
 } from "./path-plan";
@@ -55,6 +56,8 @@ export const isPathCallKind = (kind: string): kind is "scenario" | "scene" =>
  */
 export type PathData = {
   course: Course;
+  /** The learner's active rehearsal on this course, loaded only while Rehearsals is on. Days are theirs (local). */
+  rehearsal?: RehearsalPathInput;
   now: Date;
   /** The learner's IANA time zone (learner_time_zones); every day below is their calendar day. UTC when missing. */
   timeZone?: string | null;
@@ -520,6 +523,7 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     goalLabel: goalLabel(goal.targetLevel, goal.targetDate),
     goalSuggested: !data.goal,
     weak: data.weak ? weakInput(data, completedAt, units) : undefined,
+    rehearsal: data.rehearsal,
     profile: {
       goal: data.profile.goal,
       interests: data.profile.interests ?? [],

@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { AlphonsoAvatar } from "./AlphonsoAvatar";
+import { AiLabel } from "./AiLabel";
+import { STAGES, STAGE_LABELS, type Stage } from "@/lib/rehearsal-rules";
 import { ALPHONSO_KIT, type CharacterKit } from "@/lib/avatar/layers";
 import type { AvatarMode } from "@/lib/avatar/machine";
 import { EVENING_OVERLAY, sceneArt } from "@/lib/avatar/scenes";
@@ -47,6 +49,11 @@ export type CallCaption = {
 type Props = {
   /** The scenario's name, shown under "Alphonso". */
   title: string;
+  /**
+   * A rehearsal run: the event is the title (with the AI label), "Alphonso · Stage N of 3: <stage>" goes under it and a
+   * three-segment bar shows where the learner is in the plan.
+   */
+  rehearsal?: { title: string; stage: Stage };
   /** A visually hidden page heading, for a screen that is the whole page and has no other h1 (a call's). */
   heading?: string;
   /** Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise. */
@@ -115,6 +122,7 @@ const formatClock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padSt
 export function PracticeCall(props: Props) {
   const {
     title,
+    rehearsal,
     heading,
     kit = ALPHONSO_KIT,
     scenarioId,
@@ -278,10 +286,11 @@ export function PracticeCall(props: Props) {
       <div className="absolute left-[18px] right-[18px] top-[18px] z-[5] flex items-center gap-2.5">
         <div className="grid leading-tight" style={{ textShadow: textShadow(1, 6, 35) }}>
           <b
-            className="ds-type-question-small"
+            className="flex items-center gap-1.5 ds-type-question-small"
             style={{ fontFamily: DISPLAY_FACE, fontWeight: 800 }}
           >
-            {kit.displayName}
+            {rehearsal ? rehearsal.title : kit.displayName}
+            {rehearsal && <AiLabel />}
           </b>
           <span
             className="flex items-center gap-1.5 ds-type-footnote opacity-95"
@@ -299,8 +308,36 @@ export function PracticeCall(props: Props) {
                 boxShadow: speaking ? `0 0 0 3px ${tone("call-end", 25)}` : "none",
               }}
             />
-            <span>{title}</span>
+            <span>
+              {rehearsal
+                ? `${kit.displayName} · Stage ${STAGES.indexOf(rehearsal.stage) + 1} of ${STAGES.length}: ${STAGE_LABELS[rehearsal.stage]}`
+                : title}
+            </span>
           </span>
+          {rehearsal && (
+            <span
+              role="progressbar"
+              aria-label="Rehearsal stage"
+              aria-valuemin={1}
+              aria-valuemax={STAGES.length}
+              aria-valuenow={STAGES.indexOf(rehearsal.stage) + 1}
+              className="mt-1.5 flex gap-1"
+            >
+              {STAGES.map((s, i) => (
+                <i
+                  key={s}
+                  data-filled={i <= STAGES.indexOf(rehearsal.stage)}
+                  className="h-1 flex-1 rounded-full"
+                  style={{
+                    background:
+                      i <= STAGES.indexOf(rehearsal.stage)
+                        ? "var(--c-on-hero)"
+                        : "color-mix(in srgb, var(--c-on-hero) 30%, var(--c-call-glass))",
+                  }}
+                />
+              ))}
+            </span>
+          )}
         </div>
         {onToggleTts && (
           <button

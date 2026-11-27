@@ -129,7 +129,7 @@ afterEach(() => {
 });
 
 describe("a rehearsal's chat request is checked before anything is spent", () => {
-  it("an unknown rehearsalId is 404: no model call, no quota (Review focus 2)", async () => {
+  it("an unknown rehearsalId is 404: no model call, no quota", async () => {
     h.rehearsal = null;
     const res = await send(rehearsalBody());
     expect(res.status).toBe(404);

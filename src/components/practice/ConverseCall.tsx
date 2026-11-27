@@ -34,6 +34,7 @@ import { voicePlayback } from "@/lib/voice-playback";
 import { useReplyVoice } from "@/lib/use-reply-voice";
 import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
 import { PracticeResult } from "@/components/practice/PracticeResult";
+import { RehearsalDebrief } from "@/components/rehearsal/RehearsalDebrief";
 import { useCallRecap } from "@/lib/use-call-recap";
 import { PracticeUnscored } from "@/components/practice/PracticeUnscored";
 import { roomUrl } from "@/lib/practice-catalog";
@@ -71,6 +72,7 @@ export function ConverseChatPage({
   onRetry,
   source = SCENARIO_SOURCE,
   backTo = "/converse",
+  rehearsalTitle,
 }: {
   scenario: LocalizedScenario;
   course: Course;
@@ -80,6 +82,8 @@ export function ConverseChatPage({
   source?: CallSource;
   /** Where Back, Finish with no reply, and the result's forward button go. */
   backTo?: "/converse" | "/rehearse";
+  /** A rehearsal run's header title: the event ("Job interview rehearsal"). */
+  rehearsalTitle?: string;
 }) {
   const isRehearsal = source.kind === "rehearsal";
   const consent = useAiConsent();
@@ -627,6 +631,26 @@ export function ConverseChatPage({
     );
   }
 
+  if (result && source.kind === "rehearsal") {
+    // A rehearsal run has no stars: its debrief reads the run the recap wrote.
+    return (
+      <LessonFrame>
+        <RehearsalDebrief
+          course={course}
+          rehearsalId={source.id}
+          stage={source.stage}
+          seconds={result.seconds}
+          // The scripted opener is not a turn the learner took part in.
+          turns={Math.max(0, messages.length - 1)}
+          recapStatus={recap.status}
+          fixCount={recap.recap?.reviewCount ?? 0}
+          onRunAgain={onRetry}
+          onDone={() => void navigate({ to: backTo })}
+        />
+      </LessonFrame>
+    );
+  }
+
   if (result) {
     return (
       <LessonFrame>
@@ -659,6 +683,11 @@ export function ConverseChatPage({
       <LessonFrame>
         <PracticeCall
           title={scenario.title}
+          rehearsal={
+            source.kind === "rehearsal"
+              ? { title: rehearsalTitle ?? scenario.title, stage: source.stage }
+              : undefined
+          }
           heading={`Call: ${scenario.title}`}
           scenarioId={isRehearsal ? null : scenario.id}
           avatar={{
