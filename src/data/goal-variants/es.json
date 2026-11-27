@@ -212,7 +212,7 @@
           "Mañana yo voy al mercado.",
           "Mañana iré al mercado."
         ],
-        "explanation": "\"Mañana voy al mercado.\" means \"Tomorrow I am going to the market\". \"voy a\" plus a place says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+        "explanation": "\"Mañana voy al mercado.\" means \"Tomorrow I am going to the market\". \"voy a\" plus a place says where you are going, and \"a\" joins with \"el\" to make \"al\" before mercado."
       },
       "work": {
         "prompt": "Say that you are going to the post office tomorrow.",
@@ -222,7 +222,7 @@
           "Mañana yo voy al correo.",
           "Mañana voy a la oficina de correos."
         ],
-        "explanation": "\"Mañana voy al correo.\" means \"Tomorrow I am going to the post office\". \"voy a\" plus a place says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+        "explanation": "\"Mañana voy al correo.\" means \"Tomorrow I am going to the post office\". \"voy a\" plus a place says where you are going, and \"a\" joins with \"el\" to make \"al\" before correo."
       },
       "school": {
         "prompt": "Say that you are going to the cafeteria tomorrow.",
@@ -232,7 +232,7 @@
           "Mañana yo voy a la cafetería.",
           "Mañana iré a la cafetería."
         ],
-        "explanation": "\"Mañana voy a la cafetería.\" means \"Tomorrow I am going to the cafeteria\". \"voy a\" plus a place says where you are going, and \"a\" joins with \"el\" to make \"al\"."
+        "explanation": "\"Mañana voy a la cafetería.\" means \"Tomorrow I am going to the cafeteria\". \"voy a\" plus a place says where you are going, and \"a la\" goes before a feminine place like cafetería."
       }
     }
   },
@@ -246,7 +246,7 @@
           "Necesito el cargador para mi celular durante el viaje.",
           "Me hace falta el cargador de mi celular para el viaje."
         ],
-        "explanation": "\"Necesito el cargador de mi celular para el viaje.\" means \"I need my cell phone charger for the trip\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: el cargador de mi celular."
+        "explanation": "\"Necesito el cargador de mi celular para el viaje.\" means \"I need my cell phone charger for the trip\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: \"de mi celular\"."
       },
       "work": {
         "prompt": "Say that you need the charger for your laptop.",
@@ -256,7 +256,7 @@
           "Necesito el cargador para mi computadora.",
           "Me hace falta el cargador de mi computadora."
         ],
-        "explanation": "\"Necesito el cargador de mi computadora.\" means \"I need the charger for my laptop\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: el cargador de mi celular."
+        "explanation": "\"Necesito el cargador de mi computadora.\" means \"I need the charger for my laptop\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: \"de mi computadora\"."
       },
       "school": {
         "prompt": "Say that you need the charger for your tablet.",
@@ -266,7 +266,7 @@
           "Necesito el cargador para mi tableta.",
           "Me hace falta el cargador de mi tableta."
         ],
-        "explanation": "\"Necesito el cargador de mi tableta.\" means \"I need the charger for my tablet\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: el cargador de mi celular."
+        "explanation": "\"Necesito el cargador de mi tableta.\" means \"I need the charger for my tablet\". \"necesito\" takes the thing directly, and \"de\" joins with what it belongs to: \"de mi tableta\"."
       }
     }
   },
@@ -433,7 +433,7 @@
           "Mañana yo voy a ver a un cliente.",
           "Mañana veré a un cliente."
         ],
-        "explanation": "\"Mañana voy a ver a un cliente.\" means \"Tomorrow I am going to see a client\". \"voy a\" plus an infinitive is the near future, and \"con\" joins who you do it with."
+        "explanation": "\"Mañana voy a ver a un cliente.\" means \"Tomorrow I am going to see a client\". \"voy a\" plus an infinitive is the near future, and \"a\" goes before a person who is the object: \"ver a un cliente\"."
       },
       "school": {
         "prompt": "Say that you are going to study with a classmate (a girl) tomorrow.",
@@ -564,8 +564,8 @@
       },
       "work": {
         "prompt": "Say this aloud:",
-        "answer": "Me gusta descansar de la oficina los domingos",
-        "explanation": "\"Me gusta descansar de la oficina los domingos\" means \"I like resting from the office on Sundays\". \"Me gusta\" is followed by an infinitive, and \"los domingos\" means on Sundays."
+        "answer": "Me gusta descansar del trabajo los domingos",
+        "explanation": "\"Me gusta descansar del trabajo los domingos\" means \"I like resting from work on Sundays\". \"Me gusta\" is followed by an infinitive, and \"los domingos\" means on Sundays."
       },
       "school": {
         "prompt": "Say this aloud:",
@@ -652,15 +652,15 @@
     "lx1": {
       "travel": {
         "prompt": "What did you hear?",
-        "audioText": "Visito el museo desde las nueve hasta las cinco.",
+        "audioText": "El museo abre desde las nueve hasta las cinco.",
         "choices": [
-          "Visito el museo desde las nueve hasta las seis.",
-          "Visito el museo desde las nueve hasta las cinco.",
-          "Visito el museo desde las ocho hasta las cinco.",
-          "Visito el mercado desde las nueve hasta las cinco."
+          "El museo abre desde las nueve hasta las seis.",
+          "El museo abre desde las nueve hasta las cinco.",
+          "El museo abre desde las ocho hasta las cinco.",
+          "El mercado abre desde las nueve hasta las cinco."
         ],
-        "answer": "Visito el museo desde las nueve hasta las cinco.",
-        "explanation": "\"Visito el museo desde las nueve hasta las cinco.\" means \"I visit the museum from nine to five\". \"desde\" and \"hasta\" gives the start and the end of a time, and the other choices change one hour or the activity."
+        "answer": "El museo abre desde las nueve hasta las cinco.",
+        "explanation": "\"El museo abre desde las nueve hasta las cinco.\" means \"The museum is open from nine to five\". \"desde\" and \"hasta\" gives the start and the end of a time, and the other choices change one hour or the activity."
       },
       "work": {
         "prompt": "What did you hear?",
@@ -692,8 +692,8 @@
     "sx1": {
       "travel": {
         "prompt": "Say this aloud:",
-        "answer": "Visito esta ciudad desde hace dos años",
-        "explanation": "\"Visito esta ciudad desde hace dos años\" means \"I have been visiting this city for two years\". \"desde hace\" plus a length of time says how long something has been going on."
+        "answer": "Viajo a esta ciudad desde hace dos años",
+        "explanation": "\"Viajo a esta ciudad desde hace dos años\" means \"I have been traveling to this city for two years\". \"desde hace\" plus a length of time says how long something has been going on."
       },
       "work": {
         "prompt": "Say this aloud:",
@@ -1438,7 +1438,7 @@
           "El nuevo hotel es muy bonito.",
           "El nuevo hotel es muy lindo."
         ],
-        "explanation": "\"El hotel nuevo es muy bonito.\" means \"The new hotel is very pretty\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"bonito\" for a masculine noun."
+        "explanation": "\"El hotel nuevo es muy bonito.\" means \"The new hotel is very pretty\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"bonito\" for a masculine noun like hotel."
       },
       "work": {
         "prompt": "Say that the new manager is very friendly.",
@@ -1448,7 +1448,7 @@
           "El nuevo gerente es muy amable.",
           "El nuevo gerente es muy simpático."
         ],
-        "explanation": "\"El gerente nuevo es muy amable.\" means \"The new manager is very friendly\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"bonito\" for a masculine noun."
+        "explanation": "\"El gerente nuevo es muy amable.\" means \"The new manager is very friendly\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"amable\" for a masculine noun like gerente."
       },
       "school": {
         "prompt": "Say that the new teacher is very nice.",
@@ -1458,7 +1458,7 @@
           "El nuevo maestro es muy simpático.",
           "El nuevo maestro es muy amable."
         ],
-        "explanation": "\"El maestro nuevo es muy simpático.\" means \"The new teacher is very nice\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"bonito\" for a masculine noun."
+        "explanation": "\"El maestro nuevo es muy simpático.\" means \"The new teacher is very nice\". An adjective agrees with its noun in gender and number: \"nuevo\" and \"simpático\" for a masculine noun like maestro."
       }
     }
   },
@@ -1482,7 +1482,7 @@
           "Las empleadas están muy cansadas.",
           "Están cansadas las empleadas."
         ],
-        "explanation": "\"Las empleadas están cansadas.\" means \"The employees are tired\". In the plural a feminine adjective ends in -as: \"cansadas\" goes with \"las turistas\"."
+        "explanation": "\"Las empleadas están cansadas.\" means \"The employees are tired\". In the plural a feminine adjective ends in -as: \"cansadas\" goes with \"las empleadas\"."
       },
       "school": {
         "prompt": "Say that the students (girls) are tired.",
@@ -1492,7 +1492,7 @@
           "Las estudiantes están muy cansadas.",
           "Están cansadas las estudiantes."
         ],
-        "explanation": "\"Las estudiantes están cansadas.\" means \"The students are tired\". In the plural a feminine adjective ends in -as: \"cansadas\" goes with \"las turistas\"."
+        "explanation": "\"Las estudiantes están cansadas.\" means \"The students are tired\". In the plural a feminine adjective ends in -as: \"cansadas\" goes with \"las estudiantes\"."
       }
     }
   },
