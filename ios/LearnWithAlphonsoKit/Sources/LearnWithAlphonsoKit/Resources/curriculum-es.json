@@ -2719,7 +2719,7 @@
               "meaning": "I live",
               "goalVariants": {
                 "travel": {
-                  "prompt": "Yo ___ (vivir) en un hostal por una semana.",
+                  "prompt": "Yo ___ (vivir) en Oaxaca.",
                   "choices": [
                     "vive",
                     "vivimos",
@@ -2727,7 +2727,7 @@
                     "vives"
                   ],
                   "answer": 2,
-                  "explanation": "With \"yo\", the present tense of \"vivir\" is \"vivo\". A regular -ir verb ends in -o after \"yo\". Yo vivo en un hostal por una semana. (I live in a hostel for a week)"
+                  "explanation": "With \"yo\", the present tense of \"vivir\" is \"vivo\". A regular -ir verb ends in -o after \"yo\". Yo vivo en Oaxaca. (I live in Oaxaca)"
                 },
                 "work": {
                   "prompt": "Yo ___ (vivir) cerca de la oficina.",
@@ -3769,7 +3769,7 @@
                 "travel": {
                   "prompt": "Say this aloud:",
                   "answer": "Por la tarde visito la ciudad.",
-                  "explanation": "\"Por la tarde visito la ciudad.\" means \"In the afternoon I visit the city\". \"Por la tarde\" says when something happens, and \"tengo\" is the verb \"tener\" in its yo form."
+                  "explanation": "\"Por la tarde visito la ciudad.\" means \"In the afternoon I visit the city\". \"Por la tarde\" says when something happens, and the verb ends in -o with yo."
                 },
                 "work": {
                   "prompt": "Say this aloud:",
@@ -5216,7 +5216,7 @@
                     "La libreta cuesta cuarenta pesos.",
                     "Un cuaderno cuesta cuarenta pesos."
                   ],
-                  "explanation": "\"El cuaderno cuesta cuarenta pesos.\" means \"The notebook costs forty pesos\". \"cuesta\" is \"costar\" with a single thing, and the price follows with the currency: ochenta pesos."
+                  "explanation": "\"El cuaderno cuesta cuarenta pesos.\" means \"The notebook costs forty pesos\". \"cuesta\" is \"costar\" with a single thing, and the price follows with the currency: cuarenta pesos."
                 }
               }
             }
@@ -8906,7 +8906,7 @@
                     "A las tres de la tarde llega el vuelo.",
                     "El vuelo aterriza a las tres de la tarde."
                   ],
-                  "explanation": "\"El vuelo llega a las tres de la tarde.\" means \"The flight arrives at three in the afternoon\". \"a las\" says the hour something happens, and \"de la tarde\" or \"de la mañana\" tells the part of the day."
+                  "explanation": "\"El vuelo llega a las tres de la tarde.\" means \"The flight arrives at three in the afternoon\". \"a las\" says the hour something happens, and \"de la tarde\" tells the part of the day."
                 },
                 "work": {
                   "prompt": "Say that the meeting starts at ten in the morning.",
@@ -8916,7 +8916,7 @@
                     "A las diez de la mañana empieza la reunión.",
                     "La reunión es a las diez de la mañana."
                   ],
-                  "explanation": "\"La reunión empieza a las diez de la mañana.\" means \"The meeting starts at ten in the morning\". \"a las\" says the hour something happens, and \"de la tarde\" or \"de la mañana\" tells the part of the day."
+                  "explanation": "\"La reunión empieza a las diez de la mañana.\" means \"The meeting starts at ten in the morning\". \"a las\" says the hour something happens, and \"de la mañana\" tells the part of the day."
                 },
                 "school": {
                   "prompt": "Say that the class starts at eight in the morning.",
@@ -8926,7 +8926,7 @@
                     "A las ocho de la mañana empieza la clase.",
                     "La clase es a las ocho de la mañana."
                   ],
-                  "explanation": "\"La clase empieza a las ocho de la mañana.\" means \"The class starts at eight in the morning\". \"a las\" says the hour something happens, and \"de la tarde\" or \"de la mañana\" tells the part of the day."
+                  "explanation": "\"La clase empieza a las ocho de la mañana.\" means \"The class starts at eight in the morning\". \"a las\" says the hour something happens, and \"de la mañana\" tells the part of the day."
                 }
               }
             }
