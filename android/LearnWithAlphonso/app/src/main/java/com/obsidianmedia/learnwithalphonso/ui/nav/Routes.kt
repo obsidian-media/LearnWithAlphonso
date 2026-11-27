@@ -46,6 +46,13 @@ object Routes {
     const val CAMPAIGN = "practice/campaign/{id}?scene={scene}&mode={mode}"
     fun campaign(id: String, scene: Int = 0, mode: String = "call") = "practice/campaign/$id?scene=$scene&mode=$mode"
 
+    /** Rehearsals: the plan or the intake (the screen decides), the stage call, and the Pro screen opened from the entry sheet. */
+    const val REHEARSAL = "rehearsal?mode={mode}"
+    fun rehearsal(mode: String = "") = "rehearsal?mode=$mode"
+    const val REHEARSAL_CALL = "rehearsal/call/{id}/{stage}"
+    fun rehearsalCall(id: String, stage: String) = "rehearsal/call/$id/$stage"
+    const val REHEARSAL_PRO = "rehearsal/pro"
+
     const val LISTEN_FOLDER = "listen/folder/{id}"
     const val STORIES = "listen/stories/{course}"
     fun stories(course: String) = "listen/stories/$course"

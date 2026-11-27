@@ -82,4 +82,14 @@ describe("privacy page: current data uses", () => {
     for (const row of FORCED_HANDOFF_ROWS) expect(page, row).toMatch(HANDOVER_PHRASES[row]);
     expect(page).toMatch(/any change to your account, anything she cannot answer/);
   });
+
+  it("describes Rehearsals: what is kept, that it is exported, how to delete it, and the free marker", () => {
+    expect(page).toMatch(/<Section heading="Rehearsals">/);
+    expect(page).toMatch(/at most 200 characters/);
+    expect(page).toMatch(/never contain the words you said/);
+    expect(page).toMatch(/Rehearsals are included in your data export/);
+    expect(page).toMatch(/Delete this rehearsal/);
+    expect(page).toMatch(/only the fact that your free rehearsal was used/);
+    expect(page).toMatch(/do not send what you write to analytics/);
+  });
 });

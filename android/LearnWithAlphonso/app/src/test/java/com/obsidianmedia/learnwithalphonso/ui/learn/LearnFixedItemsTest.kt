@@ -21,16 +21,27 @@ class LearnFixedItemsTest {
     }
 
     @Test
+    fun `on the event day the warm-up takes the hero's place, so the map is neither drawn nor counted`() {
+        val src = File("src/main/java/com/obsidianmedia/learnwithalphonso/ui/learn/LearnScreen.kt").readText()
+        // The count is told there is no climb whenever a hero is pinned, so Jump to current lands on the right row.
+        assertTrue("hasClimb = climb != null && (pathUi as? PathUi.Ready)?.path?.heroPinned == null" in src)
+        // And the map itself is skipped under the same condition.
+        assertTrue("climb?.takeIf { (pathUi as? PathUi.Ready)?.path?.heroPinned == null }" in src)
+    }
+
+    @Test
     fun `the items above the unit rows are exactly the ones the count knows about`() {
         val src = File("src/main/java/com/obsidianmedia/learnwithalphonso/ui/learn/LearnScreen.kt").readText()
         val above = src.substring(src.indexOf("item(key = \"header\")"), src.indexOf("rows.forEach { row ->"))
         val keys = Regex("""item\(key = "([^"]+)"\)""").findAll(above).map { it.groupValues[1] }.toList()
         // Always drawn: header, for-you, levels, jump (4). Drawn when shown: placement (first, above the map), learn-climb, for-you-detail.
-        assertEquals(listOf("header", "placement", "learn-climb", "path-cards", "for-you", "for-you-detail", "levels", "jump"), keys)
+        assertEquals(listOf("header", "placement", "rehearsal-hero", "learn-climb", "path-cards", "for-you", "for-you-detail", "levels", "jump"), keys)
         assertEquals(7, learnFixedItems(hasClimb = true, forYouDetailOpen = true, showsPlacement = true))
+        assertEquals(5, learnFixedItems(hasClimb = false, forYouDetailOpen = false, showsPlacement = false, rehearsalHero = true))
         // Each conditional item sits under the same condition the count uses.
         for ((key, condition) in listOf(
-            "learn-climb" to "climb?.let",
+            "learn-climb" to "climb?.takeIf { (pathUi as? PathUi.Ready)?.path?.heroPinned == null }",
+            "rehearsal-hero" to "heroPinned",
             "for-you-detail" to "forYouOpen",
             "placement" to "offerStyle != PlacementOffer.Style.NONE",
             "path-cards" to "learnPathCardCount",

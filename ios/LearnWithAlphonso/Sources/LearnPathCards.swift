@@ -13,6 +13,9 @@ struct LearnPathCards: View {
     let onOpenLesson: (String) -> Void
     /// Opens the Review queue ("Fix your weak spots").
     let onOpenReview: () -> Void
+    /// Rehearsals: the pinned item shows first in Today only while the feature is on.
+    var pinnedEnabled = false
+    var onOpenPinned: (PathPinned) -> Void = { _ in }
 
     @State private var saving = false
     @State private var saveFailed = false
@@ -22,7 +25,7 @@ struct LearnPathCards: View {
         if let path = model.path {
             VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                 if path.goalIsSuggested { ready(path) }
-                if !path.today.items.isEmpty { today(path) }
+                if !path.today.items.isEmpty || pinned(path) != nil { today(path) }
                 if let fix = path.fix, !fix.items.isEmpty { fixCard(fix) }
             }
             .padding(.horizontal, AlphonsoDS.Space.gutter)
@@ -58,6 +61,12 @@ struct LearnPathCards: View {
         .accessibilityElement(children: .contain)
     }
 
+    /// The rehearsal's item for today. On the event day the hero card carries it, so Today does not repeat it.
+    private func pinned(_ path: LearningPath) -> PathPinned? {
+        guard pinnedEnabled, let item = path.pinnedItem, !item.hero else { return nil }
+        return item
+    }
+
     private func today(_ path: LearningPath) -> some View {
         let done = path.today.items.filter { $0.state == "done" }.count
         return card {
@@ -66,6 +75,9 @@ struct LearnPathCards: View {
                 Spacer()
                 Text("\(done) of \(path.today.items.count) \u{00B7} \(path.today.items.reduce(0) { $0 + $1.minutes }) min")
                     .dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            if let item = pinned(path) {
+                RehearsalPinnedRow(item: item) { onOpenPinned(item) }
             }
             ForEach(Array(path.today.items.enumerated()), id: \.offset) { _, item in
                 row(item)

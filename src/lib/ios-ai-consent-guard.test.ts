@@ -23,7 +23,13 @@ describe("iOS AI consent wiring", () => {
 
   it("only the AI screens carry the whole-screen gate", () => {
     const gated = files.filter((f) => code(f).includes(".aiDisclosureGate()")).sort();
-    expect(gated).toEqual(["CampaignView.swift", "ConversationView.swift", "HectorView.swift"]);
+    // Rehearsals is an AI screen: the gate sits on the run view, where the call (and so the AI request) is made.
+    expect(gated).toEqual([
+      "CampaignView.swift",
+      "ConversationView.swift",
+      "HectorView.swift",
+      "RehearsalViews.swift",
+    ]);
   });
 
   it("placement grades on device only", () => {

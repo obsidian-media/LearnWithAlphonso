@@ -125,6 +125,13 @@ describe("reportAiResponse", () => {
     expect("reported" in row).toBe(false);
   });
 
+  it("accepts a rehearsal reply: the conversation surface with scenario id 'rehearsal'", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ error: null }));
+    const data = { ...base, context: { ...base.context, scenario_id: "rehearsal" } };
+    expect(await reportAiResponse({ context: ctx(supabase), data })).toEqual({ ok: true });
+  });
+
   it("accepts the support (Miya Help chat) surface", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockReturnValueOnce(chainable({ error: null }));

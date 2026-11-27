@@ -169,6 +169,10 @@ fun LearnScreen(
     onOpenPath: () -> Unit = {},
     onBuildPath: () -> Unit = {},
     onOpenPathRef: (com.obsidianmedia.learnwithalphonso.core.path.PathItemRef) -> Unit = {},
+    /** Rehearsals: the plan or the intake (the Learn entry), a stage call, "How did it go?", and the Pro screen. */
+    onOpenRehearsal: (mode: String) -> Unit = {},
+    onOpenRehearsalStage: (id: String, stage: com.obsidianmedia.learnwithalphonso.core.rehearsal.Stage) -> Unit = { _, _ -> },
+    onOpenRehearsalPro: () -> Unit = {},
 ) {
     val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore, initialCourse = container.activeCourse.course.value, userId = container.session.userId) }
     val state by vm.state.collectAsState()
@@ -216,6 +220,12 @@ fun LearnScreen(
     // Which rail card is open in place below the rail: "", "path", "team" or "weekly". The streak pill opens the freeze shop.
     var forYouOpen by rememberSaveable { mutableStateOf("") }
     var showFreezeShop by rememberSaveable { mutableStateOf(false) }
+    // Rehearsals: hidden unless the server's features.rehearsals is true; the rail card reads the state to say what a tap does.
+    val rehearsalState by produceState<com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalState?>(null, state.course) {
+        value = null
+        if (container.rehearsalsEnabled()) (container.rehearsalClient.state(state.course.code) as? com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalResult.Ok)?.let { value = it.value }
+    }
+    var rehearsalSheet by rememberSaveable { mutableStateOf(false) }
     fun toggleForYou(which: String) { forYouOpen = if (forYouOpen == which) "" else which }
     // Items before the unit rows: status, rail, units header, jump button, plus the ones that come and go (the climbing map is one).
     // The placement offer (PlacementOffer in the core): prominent for "some" and "confident" learners, the small card for
@@ -224,7 +234,7 @@ fun LearnScreen(
     val firstRunLevel by produceState<String?>(null) { value = runCatching { container.learnerProfileClient.fetch().answers.level }.getOrNull() }
     val offerStyle = if (state.placementTaken == null) PlacementOffer.Style.NONE
         else PlacementOffer.style(firstRunLevel, placementTaken = state.placementTaken == true, dismissed = offerDismissed, surface = PlacementOffer.Surface.LEARN)
-    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = offerStyle != PlacementOffer.Style.NONE, pathCards = com.obsidianmedia.learnwithalphonso.ui.path.learnPathCardCount((pathUi as? PathUi.Ready)?.path) > 0)
+    val fixedItems = learnFixedItems(hasClimb = climb != null && (pathUi as? PathUi.Ready)?.path?.heroPinned == null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = offerStyle != PlacementOffer.Style.NONE, pathCards = com.obsidianmedia.learnwithalphonso.ui.path.learnPathCardCount((pathUi as? PathUi.Ready)?.path) > 0, rehearsalHero = (pathUi as? PathUi.Ready)?.path?.heroPinned != null)
     val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
     // No scroll on first show: the status row and the climbing map are the top of the screen. "Jump to current" is the way down.
     Column(Modifier.fillMaxSize().background(ds.surface)) {
@@ -236,6 +246,9 @@ fun LearnScreen(
             IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = ds.actionText) }
         }
         ToastBanner(state.notice, onClear = vm::clearNotice)
+        if (rehearsalSheet) com.obsidianmedia.learnwithalphonso.ui.rehearsal.RehearsalPaywallSheet(
+            rehearsalState?.history?.firstOrNull(), onSeePro = { rehearsalSheet = false; onOpenRehearsalPro() }, onNotNow = { rehearsalSheet = false },
+        )
         SyncNotices(container, vm)
         LazyColumn(state = listState, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             // Stable keys on every item: the header, challenges and placement card come and go as data loads,
@@ -251,9 +264,16 @@ fun LearnScreen(
                     })
                 }
             }
+            // The day of the event: the 2-minute warm-up takes the hero for that day only (the lesson is back tomorrow).
+            ((pathUi as? PathUi.Ready)?.path?.heroPinned)?.let { hero ->
+                item(key = "rehearsal-hero") {
+                    com.obsidianmedia.learnwithalphonso.ui.rehearsal.RehearsalHeroCard(hero) { onOpenRehearsalStage(hero.rehearsalId, com.obsidianmedia.learnwithalphonso.core.rehearsal.Stage.WARMUP) }
+                }
+            }
             // The climbing map replaces the old hero: this level's unit as a climb, with the start sheet for the next lesson.
             // "Unit N of M" counts the units of the level on screen. Continue lesson only when the next lesson is the course-wide one.
-            climb?.let { c ->
+            // On the event day the warm-up hero above TAKES the map's place; tomorrow the map is back.
+            climb?.takeIf { (pathUi as? PathUi.Ready)?.path?.heroPinned == null }?.let { c ->
                 item(key = "learn-climb") {
                     LearnClimbMap(c, greeting(progress), continueLessonId = currentUnit?.lessonId, reduceMotion = reduceMotion, onOpenLesson = { id -> onOpenLesson(state.course, id) })
                 }
@@ -261,7 +281,8 @@ fun LearnScreen(
             // Path cards (Your path is ready, Today, Fix before it sticks) between the map and the rail: one list item, present only with content.
             if (com.obsidianmedia.learnwithalphonso.ui.path.learnPathCardCount((pathUi as? PathUi.Ready)?.path) > 0) {
                 item(key = "path-cards") {
-                    com.obsidianmedia.learnwithalphonso.ui.path.LearnPathCards(pathVm, container, state.course, onBuild = onBuildPath, onOpenRef = onOpenPathRef, onOpenReview = { onOpenReview(state.course) })
+                    com.obsidianmedia.learnwithalphonso.ui.path.LearnPathCards(pathVm, container, state.course, onBuild = onBuildPath, onOpenRef = onOpenPathRef, onOpenReview = { onOpenReview(state.course) },
+                        onOpenPinned = { p -> if (p.isFollowUp) onOpenRehearsal("outcome") else p.stageOrNull?.let { onOpenRehearsalStage(p.rehearsalId, it) } })
                 }
             }
             item(key = "for-you") {
@@ -274,7 +295,7 @@ fun LearnScreen(
                 }
                 // A finished quest that is not yet claimed is a reward waiting to be claimed (challenges pay themselves).
                 val claimReady = state.quests.any { it.claimable }
-                val cards = buildList {
+                val cards = buildList<RailItem> {
                     add(RailItem("review", R.drawable.ds_book, "Review", LearnRail.reviewValue(dueCount), LearnRail.reviewSpoken(dueCount), showsDot = dueCount > 0, expanded = null) { onOpenReview(state.course) })
                     add(RailItem("path", R.drawable.ds_target, if (hasNoGoal) "Build my path" else "My path", pathValue, "${if (hasNoGoal) "Build my path" else "My path"}, $pathValue", expanded = if (hasNoGoal) null else forYouOpen == "path") {
                         // No goal yet: straight to the planner (what the goal card did). With a goal: open its detail below.
@@ -283,7 +304,16 @@ fun LearnScreen(
                     teamMission?.let { m -> LearnRail.teamValue(m).let { v -> add(RailItem("team", R.drawable.ds_friends, "Team mission", v, "Team mission, $v", expanded = forYouOpen == "team") { toggleForYou("team") }) } }
                     if (state.challenges.isNotEmpty() || state.quests.isNotEmpty() || state.weeklyLoadFailed) LearnRail.weeklyValue(state.challenges, state.quests.size, state.weeklyLoadFailed).let { v -> add(RailItem("weekly", R.drawable.ds_star_solid, "Weekly", v, "Weekly challenges, $v${if (claimReady) ", reward ready to claim" else ""}", showsDot = claimReady, expanded = forYouOpen == "weekly") { toggleForYou("weekly") }) }
                 }
-                ForYouRail(cards)
+                // Rehearse a real conversation: last in the rail, so Review stays first. Present only while the server flag is on.
+                val rehearsalItem = rehearsalState?.let { rs ->
+                    val active = rs.active
+                    val value = com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalCopy.entryValue(active)
+                    val title = com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalCopy.entryTitle(active)
+                    RailItem("rehearsal", R.drawable.ds_mic, title, value, "$title, $value", expanded = null) {
+                        if (com.obsidianmedia.learnwithalphonso.ui.rehearsal.entryOpensPaywall(rs, container.entitlements.isPro)) rehearsalSheet = true else onOpenRehearsal("")
+                    }
+                }
+                ForYouRail(cards + listOfNotNull(rehearsalItem))
             }
             // The opened card's full detail, in place under the rail.
             if (forYouOpen.isNotEmpty()) {
@@ -655,5 +685,5 @@ private fun HeartsPill(progress: LessonCompletionProgress) {
  * you rail, the levels menu and the jump row always; the climbing map, the open For-you detail and the placement
  * banner when shown. Keep it in step with the `item(...)` calls before the unit rows in [LearnScreen].
  */
-internal fun learnFixedItems(hasClimb: Boolean, forYouDetailOpen: Boolean, showsPlacement: Boolean, pathCards: Boolean = false): Int =
-    4 + (if (hasClimb) 1 else 0) + (if (forYouDetailOpen) 1 else 0) + (if (showsPlacement) 1 else 0) + (if (pathCards) 1 else 0)
+internal fun learnFixedItems(hasClimb: Boolean, forYouDetailOpen: Boolean, showsPlacement: Boolean, pathCards: Boolean = false, rehearsalHero: Boolean = false): Int =
+    4 + (if (rehearsalHero) 1 else 0) + (if (hasClimb) 1 else 0) + (if (forYouDetailOpen) 1 else 0) + (if (showsPlacement) 1 else 0) + (if (pathCards) 1 else 0)

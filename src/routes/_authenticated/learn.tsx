@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { ForYouRail } from "../../components/learn/ForYouRail";
 import { RehearsalHero, useHeroPinned } from "../../components/learn/PinnedRehearsal";
+import { RehearsalFirstRunLine } from "../../components/learn/RehearsalFirstRunLine";
 import { PathCards } from "../../components/learn/PathCards";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
@@ -450,6 +451,7 @@ function LearnPage() {
           </div>
         )}
 
+        <RehearsalFirstRunLine course={course} />
         <PathCards course={course} />
         <div className="my-4">
           <ForYouRail course={course} dueCount={dueCount} />

@@ -66,14 +66,14 @@ class AiConversationClient(private val http: ApiHttp) {
      * The same call as [chat], keeping the server's `verdict` about the learner's last turn (the talking avatar reacts
      * to it). An older server sends no verdict, which reads as [ReplyVerdict.NONE].
      */
-    suspend fun chatReply(messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null, course: String? = null, callId: String? = null): ChatReply {
-        val body = buildJsonObject {
-            putJsonArray("messages") { messages.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
-            if (systemPrompt != null) put("systemPrompt", systemPrompt)
-            if (cefrLevel != null) put("cefrLevel", cefrLevel)
-            if (course != null) put("course", course)
-            if (callId != null) put("callId", callId)
-        }
+    suspend fun chatReply(
+        messages: List<ChatMessage>, systemPrompt: String? = null, cefrLevel: String? = null, course: String? = null, callId: String? = null,
+        /** A rehearsal call sends only its id and stage, with no prompt and no course: the server builds the prompt itself. */
+        source: com.obsidianmedia.learnwithalphonso.core.rehearsal.CallSource = com.obsidianmedia.learnwithalphonso.core.rehearsal.CallSource.Scenario,
+    ): ChatReply {
+        val body = com.obsidianmedia.learnwithalphonso.core.rehearsal.ChatRequestBody.build(
+            source, systemPrompt, cefrLevel, course, callId, messages.map { it.role to it.content },
+        )
         // The server says 502 empty-reply when the model returned nothing. One retry, never a loop.
         val first = http.post("api/chat", body)
         val response = if (first.status.value == 502 && ServerErrorBody.parse(first.bodyAsText()).code == "empty-reply") {
