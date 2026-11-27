@@ -4574,7 +4574,7 @@
                     "Me duelen los pies después de la caminata.",
                     "Después de la caminata me duelen los pies."
                   ],
-                  "explanation": "\"Me duelen los pies después del paseo.\" means \"My feet hurt after the walk\". \"Me duele\" goes with one thing and \"me duelen\" with several: la cabeza, los pies."
+                  "explanation": "\"Me duelen los pies después del paseo.\" means \"My feet hurt after the walk\". \"Me duele\" goes with one thing and \"me duelen\" with several: los pies."
                 },
                 "work": {
                   "prompt": "Say that your back hurts after the meeting.",
@@ -4584,7 +4584,7 @@
                     "Me duele la espalda tras la reunión.",
                     "Tras la reunión me duele la espalda."
                   ],
-                  "explanation": "\"Me duele la espalda después de la reunión.\" means \"My back hurts after the meeting\". \"Me duele\" goes with one thing and \"me duelen\" with several: la cabeza, los pies."
+                  "explanation": "\"Me duele la espalda después de la reunión.\" means \"My back hurts after the meeting\". \"Me duele\" goes with one thing and \"me duelen\" with several: la espalda."
                 },
                 "school": {
                   "prompt": "Say that your head hurts after class.",
@@ -4594,7 +4594,7 @@
                     "Me duele la cabeza tras la clase.",
                     "Tras la clase me duele la cabeza."
                   ],
-                  "explanation": "\"Me duele la cabeza después de la clase.\" means \"My head hurts after class\". \"Me duele\" goes with one thing and \"me duelen\" with several: la cabeza, los pies."
+                  "explanation": "\"Me duele la cabeza después de la clase.\" means \"My head hurts after class\". \"Me duele\" goes with one thing and \"me duelen\" with several: la cabeza."
                 }
               }
             }
@@ -8458,17 +8458,17 @@
                 "travel": {
                   "prompt": "Say this aloud:",
                   "answer": "¿Cuántas maletas tienes?",
-                  "explanation": "\"¿Cuántas maletas tienes?\" means \"How many suitcases do you have\". \"Cuántos\" agrees with the noun it counts: cuántos for masculine, cuántas for feminine."
+                  "explanation": "\"¿Cuántas maletas tienes?\" means \"How many suitcases do you have\". \"Cuántos\" or \"Cuántas\" agrees with the noun it counts, so \"Cuántas\" goes with the feminine word maletas."
                 },
                 "work": {
                   "prompt": "Say this aloud:",
                   "answer": "¿Cuántos clientes tienes?",
-                  "explanation": "\"¿Cuántos clientes tienes?\" means \"How many clients do you have\". \"Cuántos\" agrees with the noun it counts: cuántos for masculine, cuántas for feminine."
+                  "explanation": "\"¿Cuántos clientes tienes?\" means \"How many clients do you have\". \"Cuántos\" or \"Cuántas\" agrees with the noun it counts, so \"Cuántos\" goes with the masculine word clientes."
                 },
                 "school": {
                   "prompt": "Say this aloud:",
                   "answer": "¿Cuántos amigos tienes?",
-                  "explanation": "\"¿Cuántos amigos tienes?\" means \"How many friends do you have\". \"Cuántos\" agrees with the noun it counts: cuántos for masculine, cuántas for feminine."
+                  "explanation": "\"¿Cuántos amigos tienes?\" means \"How many friends do you have\". \"Cuántos\" or \"Cuántas\" agrees with the noun it counts, so \"Cuántos\" goes with the masculine word amigos."
                 }
               }
             },
@@ -9188,7 +9188,7 @@
                     "El pasaporte está en la bolsa.",
                     "El pasaporte se encuentra dentro de la bolsa."
                   ],
-                  "explanation": "\"El pasaporte está dentro de la bolsa.\" means \"The passport is inside the bag\". \"dentro de\" means inside, and \"de\" joins with the article that follows: dentro de la bolsa, dentro de la caja."
+                  "explanation": "\"El pasaporte está dentro de la bolsa.\" means \"The passport is inside the bag\". \"dentro de\" means inside, and \"de\" joins with the article that follows: dentro de la bolsa."
                 },
                 "work": {
                   "prompt": "Say that the documents are inside the box.",
@@ -9198,7 +9198,7 @@
                     "Los documentos están en la caja.",
                     "Los documentos se encuentran dentro de la caja."
                   ],
-                  "explanation": "\"Los documentos están dentro de la caja.\" means \"The documents are inside the box\". \"dentro de\" means inside, and \"de\" joins with the article that follows: dentro de la bolsa, dentro de la caja."
+                  "explanation": "\"Los documentos están dentro de la caja.\" means \"The documents are inside the box\". \"dentro de\" means inside, and \"de\" joins with the article that follows: dentro de la caja."
                 },
                 "school": {
                   "prompt": "Say that the pencils are inside the case.",
@@ -9208,7 +9208,7 @@
                     "Los lápices están en el estuche.",
                     "Los lápices se encuentran dentro del estuche."
                   ],
-                  "explanation": "\"Los lápices están dentro del estuche.\" means \"The pencils are inside the case\". \"dentro de\" means inside, and \"de\" joins with the article that follows: dentro de la bolsa, dentro de la caja."
+                  "explanation": "\"Los lápices están dentro del estuche.\" means \"The pencils are inside the case\". \"dentro de\" means inside, and \"de\" joins with \"el\" to make \"del\": dentro del estuche."
                 }
               }
             }
