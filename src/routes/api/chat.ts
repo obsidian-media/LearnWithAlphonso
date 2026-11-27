@@ -245,7 +245,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   const course: Course =
     courseOfSystemPrompt(body.systemPrompt) ??
     (typeof body.course === "string" && isCourse(body.course) ? body.course : "en");
-  // Alphonso's memory (Pro only): topic labels from the learner's own memory lines, as one leading turn, the same way
+  // Alphonso's memory (free for every learner since #749): topic labels from the learner's own memory lines, as one leading turn, the same way
   // Hector is primed. Built here from stored rows, never from the request; nobody without memory pays a lookup.
   const { supabaseAdmin: memoryDb } = await import("@/integrations/supabase/client.server");
   const { loadAlphonsoPriming } = await import("@/lib/call-recap.server");
