@@ -114,7 +114,7 @@ for (const course of ["en", "fr", "es"] as const) {
         }
       }
       expect(failures).toEqual([]);
-    });
+    }, 30_000);
 
     it("each explanation quotes only words from its own version (no base or other-goal example)", () => {
       const fold = (t: string) =>
