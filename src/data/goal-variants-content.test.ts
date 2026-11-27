@@ -116,6 +116,44 @@ for (const course of ["en", "fr", "es"] as const) {
       expect(failures).toEqual([]);
     });
 
+    it("each explanation quotes only words from its own version (no base or other-goal example)", () => {
+      const fold = (t: string) =>
+        t
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}' ]+/gu, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      const failures: string[] = [];
+      for (const { lessonId, q } of withVariants)
+        for (const [goal, body] of Object.entries(q.goalVariants!)) {
+          const b = body as GoalVariantBody;
+          const own = fold(
+            [
+              b.prompt,
+              b.answer,
+              b.audioText,
+              ...(b.acceptableAnswers ?? []),
+              ...(b.choices ?? []),
+              ...(b.bank ?? []),
+            ]
+              .filter((x) => typeof x === "string")
+              .join(" | "),
+          );
+          // A quoted span of three or more words is an example sentence or phrase (not the gloss after "means"): it must come from this version.
+          const parts = String(b.explanation).split('"');
+          for (let k = 1; k < parts.length; k += 2) {
+            if (/means $/.test(parts[k - 1]!)) continue;
+            const span = fold(parts[k]!);
+            if (span.split(" ").length < 3) continue;
+            if (!own.includes(span))
+              failures.push(
+                `${lessonId}:${q.id} ${goal}: quotes "${parts[k]}", which is not in its own version`,
+              );
+          }
+        }
+      expect(failures).toEqual([]);
+    });
+
     it("each goal's version differs from the other goals' versions", () => {
       for (const { lessonId, q } of withVariants) {
         if (q.type === "speak" || q.type === "listening") continue;
@@ -165,7 +203,11 @@ for (const course of ["en", "fr", "es"] as const) {
 
 // The course-levels that ship variants. Each carries about 60 sentence-type questions, all three goals (exam and fun
 // keep serving the base question). Add a level here in the PR that adds its content.
-const SHIPPED: Record<"en" | "fr" | "es", string[]> = { en: ["A1", "A2"], fr: [], es: [] };
+const SHIPPED: Record<"en" | "fr" | "es", string[]> = {
+  en: ["A1", "A2"],
+  fr: [],
+  es: [],
+};
 
 describe("which course-levels ship goal variants", () => {
   for (const course of ["en", "fr", "es"] as const) {

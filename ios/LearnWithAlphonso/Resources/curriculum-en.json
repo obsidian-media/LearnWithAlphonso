@@ -23771,7 +23771,7 @@
                     "How much does the training course cost?",
                     "What is the price of the training course?"
                   ],
-                  "explanation": "You can say \"How much is the training course?\" \"How much is\" asks the price, and the verb agrees with the thing: \"is a ticket\"."
+                  "explanation": "You can say \"How much is the training course?\" \"How much is\" asks the price, and the verb agrees with the thing: \"is the training course\"."
                 },
                 "school": {
                   "prompt": "Ask how much the school trip costs.",
@@ -23780,7 +23780,7 @@
                     "How much does the school trip cost?",
                     "What is the price of the school trip?"
                   ],
-                  "explanation": "You can say \"How much is the school trip?\" \"How much is\" asks the price, and the verb agrees with the thing: \"is a ticket\"."
+                  "explanation": "You can say \"How much is the school trip?\" \"How much is\" asks the price, and the verb agrees with the thing: \"is the school trip\"."
                 }
               }
             }
@@ -24220,7 +24220,7 @@
                   "explanation": "With a noun you cannot count, \"little\" means not much. She has little money left for the trip."
                 },
                 "work": {
-                  "prompt": "She has ___ experience in this job.",
+                  "prompt": "She has ___ money left in the budget.",
                   "choices": [
                     "little",
                     "few",
@@ -24228,10 +24228,10 @@
                     "much"
                   ],
                   "answer": 0,
-                  "explanation": "With a noun you cannot count, \"little\" means not much. She has little experience in this job."
+                  "explanation": "With a noun you cannot count, \"little\" means not much. She has little money left in the budget."
                 },
                 "school": {
-                  "prompt": "She has ___ time for homework.",
+                  "prompt": "She has ___ time left for homework.",
                   "choices": [
                     "little",
                     "few",
@@ -24239,7 +24239,7 @@
                     "much"
                   ],
                   "answer": 0,
-                  "explanation": "With a noun you cannot count, \"little\" means not much. She has little time for homework."
+                  "explanation": "With a noun you cannot count, \"little\" means not much. She has little time left for homework."
                 }
               }
             },
@@ -24373,7 +24373,7 @@
               "meaning": "an amount or number, not exact",
               "goalVariants": {
                 "travel": {
-                  "prompt": "We need ___ more tickets.",
+                  "prompt": "We need ___ more information.",
                   "choices": [
                     "any",
                     "no",
@@ -24381,10 +24381,10 @@
                     "several"
                   ],
                   "answer": 2,
-                  "explanation": "Use \"some\" for an amount that is not exact. We need some more tickets."
+                  "explanation": "Use \"some\" for an amount that is not exact. We need some more information."
                 },
                 "work": {
-                  "prompt": "We need ___ more chairs for the meeting.",
+                  "prompt": "We need ___ more paper for the printer.",
                   "choices": [
                     "any",
                     "no",
@@ -24392,10 +24392,10 @@
                     "several"
                   ],
                   "answer": 2,
-                  "explanation": "Use \"some\" for an amount that is not exact. We need some more chairs for the meeting."
+                  "explanation": "Use \"some\" for an amount that is not exact. We need some more paper for the printer."
                 },
                 "school": {
-                  "prompt": "We need ___ more pencils for the class.",
+                  "prompt": "We need ___ more time for the class.",
                   "choices": [
                     "any",
                     "no",
@@ -24403,7 +24403,7 @@
                     "several"
                   ],
                   "answer": 2,
-                  "explanation": "Use \"some\" for an amount that is not exact. We need some more pencils for the class."
+                  "explanation": "Use \"some\" for an amount that is not exact. We need some more time for the class."
                 }
               }
             },
@@ -24579,7 +24579,7 @@
                   "prompt": "___ of the tourists enjoyed the tour.",
                   "bank": [
                     "much",
-                    "many",
+                    "any",
                     "Most",
                     "enough"
                   ],
@@ -24590,7 +24590,7 @@
                   "prompt": "___ of the employees came to the meeting.",
                   "bank": [
                     "much",
-                    "many",
+                    "any",
                     "Most",
                     "enough"
                   ],
@@ -24601,7 +24601,7 @@
                   "prompt": "___ of the students did their homework.",
                   "bank": [
                     "much",
-                    "many",
+                    "any",
                     "Most",
                     "enough"
                   ],
@@ -25201,7 +25201,7 @@
                     "Tonight I'm going to finish the report.",
                     "I'm planning to finish the report tonight."
                   ],
-                  "explanation": "You can say \"I'm going to finish the report tonight.\" We use \"going to\" for a plan we already have: \"I'm going to visit\"."
+                  "explanation": "You can say \"I'm going to finish the report tonight.\" We use \"going to\" for a plan we already have: \"I'm going to finish\"."
                 },
                 "school": {
                   "prompt": "Say that you are going to do your homework tonight.",
@@ -25210,7 +25210,7 @@
                     "Tonight I'm going to do my homework.",
                     "I'm planning to do my homework tonight."
                   ],
-                  "explanation": "You can say \"I'm going to do my homework tonight.\" We use \"going to\" for a plan we already have: \"I'm going to visit\"."
+                  "explanation": "You can say \"I'm going to do my homework tonight.\" We use \"going to\" for a plan we already have: \"I'm going to do\"."
                 }
               }
             }
@@ -33695,7 +33695,7 @@
                     "When the power went out, I was working.",
                     "I was at work when the power went out."
                   ],
-                  "explanation": "You can say \"I was working when the power went out.\" We use the past continuous \"was sleeping\" for the longer action, and \"when\" for the short action that interrupted it."
+                  "explanation": "You can say \"I was working when the power went out.\" We use the past continuous \"was working\" for the longer action, and \"when\" for the short action that interrupted it."
                 },
                 "school": {
                   "prompt": "Say that you were studying when your friend called.",
@@ -33704,7 +33704,7 @@
                     "When my friend called, I was studying.",
                     "I was doing homework when my friend called."
                   ],
-                  "explanation": "You can say \"I was studying when my friend called.\" We use the past continuous \"was sleeping\" for the longer action, and \"when\" for the short action that interrupted it."
+                  "explanation": "You can say \"I was studying when my friend called.\" We use the past continuous \"was studying\" for the longer action, and \"when\" for the short action that interrupted it."
                 }
               }
             }
@@ -34407,7 +34407,7 @@
                     "I know how to use this software.",
                     "I am able to use this software."
                   ],
-                  "explanation": "You can say \"I can use this software.\" \"can\" is followed by the base verb, with no \"to\": \"can speak\"."
+                  "explanation": "You can say \"I can use this software.\" \"can\" is followed by the base verb, with no \"to\": \"can use\"."
                 },
                 "school": {
                   "prompt": "Say that you can play the guitar.",
@@ -34416,7 +34416,7 @@
                     "I know how to play the guitar.",
                     "I am able to play the guitar."
                   ],
-                  "explanation": "You can say \"I can play the guitar.\" \"can\" is followed by the base verb, with no \"to\": \"can speak\"."
+                  "explanation": "You can say \"I can play the guitar.\" \"can\" is followed by the base verb, with no \"to\": \"can play\"."
                 }
               }
             },
