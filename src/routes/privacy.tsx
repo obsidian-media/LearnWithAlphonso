@@ -257,6 +257,27 @@ function Privacy() {
         </p>
       </Section>
 
+      <Section heading="Rehearsals">
+        <p>
+          Rehearsals let you practise a real conversation that is coming up. What we keep: the four
+          answers you give (the kind of event, its date if you set one, who you will be talking to,
+          and what worries you, both written in your own words and at most 200 characters), the plan
+          Alphonso, an AI, writes from them, and for each finished run a short note of which hard
+          moments came up, what went well and the corrected forms of mistakes. Those notes never
+          contain the words you said. After the event you can tap how it went (went well, OK, hard,
+          or moved); that tap is kept, with one fixed line in Alphonso's memory that holds none of
+          your words. We do not send what you write to analytics.
+        </p>
+        <p>
+          Your answers are sent to our AI provider to write the plan, and the calls work like other
+          practice calls, as described above. Rehearsals are included in your data export. You can
+          delete a rehearsal at any time with Delete this rehearsal: that removes its answers, plan,
+          run notes and memory line. We keep only the fact that your free rehearsal was used, so it
+          cannot be used twice; that fact is removed when you delete your account, which also
+          removes everything else.
+        </p>
+      </Section>
+
       <Section heading="Help chat">
         <p>
           You can write to us from Help in the app and on the website. Your messages and the replies

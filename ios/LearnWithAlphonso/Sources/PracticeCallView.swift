@@ -45,6 +45,9 @@ struct PracticeCallView<Sheet: View>: View {
     let onEnd: () -> Void
     /// Something that belongs on the call itself (a campaign's "Continue" button), shown above the caption.
     var extra: AnyView?
+    /// A rehearsal run: the event as the title with an AI label, "Alphonso . Stage N of 3" under it and a three-segment bar.
+    /// nil for every other call, whose header is unchanged.
+    var rehearsalHeader: RehearsalCallHeaderInfo?
     @ViewBuilder let sheet: () -> Sheet
 
     @Environment(\.colorScheme) private var colorScheme
@@ -133,7 +136,8 @@ struct PracticeCallView<Sheet: View>: View {
         // The call-start sound, once per call (keyed, so a re-appearance cannot repeat it); while he speaks, no effect
         // plays over him.
         .onAppear {
-            Analytics.track(.practiceCallStarted, ["scenario_id": scenarioID])
+            // A rehearsal's telemetry is counts only, added with the rest of the feature, never per call here.
+            if rehearsalHeader == nil { Analytics.track(.practiceCallStarted, ["scenario_id": scenarioID]) }
             SoundEffectsPlayer.shared.registerVoiceProbe("call") { [voice] in
                 if case .speaking = voice.phase { return true }
                 return false
@@ -187,6 +191,9 @@ struct PracticeCallView<Sheet: View>: View {
     private var callBar: some View {
         HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
+                if let header = rehearsalHeader {
+                    RehearsalCallHeaderView(info: header)
+                } else {
                 Text(kit.displayName)
                     .dsText(.questionSmall)
                 HStack(spacing: AlphonsoDS.Space.s2 - 2) {
@@ -197,6 +204,7 @@ struct PracticeCallView<Sheet: View>: View {
                     Text(title)
                         .dsText(.footnote)
                         .lineLimit(1)
+                }
                 }
             }
             .foregroundStyle(ds.onHero)

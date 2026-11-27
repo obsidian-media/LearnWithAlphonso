@@ -1,0 +1,926 @@
+import SwiftUI
+import LearnWithAlphonsoKit
+
+// Rehearsals on iPhone: the Learn entry, the four-step intake, the plan, the call, the debrief, "How did it go?" and the
+// Pro sheet. Every word and every decision lives in the Kit (Rehearsals.swift, tested against the shared fixture); this
+// file lays it out with the existing design tokens and buttons. No score, no star and no readiness number anywhere.
+// The tutor is always labelled AI. Compiled by CI's ios-app-build; not run on a device by the change that added it.
+
+// MARK: - The model
+
+/// One course's rehearsal state, as the server last said it, and the actions that change it.
+@MainActor
+@Observable
+final class RehearsalModel {
+    private(set) var state: RehearsalState?
+    private(set) var error: RehearsalError?
+    private(set) var busy = false
+
+    private let session: Session
+    let courseCode: String
+
+    init(session: Session, courseCode: String) {
+        self.session = session
+        self.courseCode = courseCode
+    }
+
+    private func client() async -> RehearsalClient? {
+        guard let token = await session.freshAccessToken() else { return nil }
+        let session = self.session
+        return RehearsalClient(
+            baseURL: AppConfig.apiBaseURL, accessToken: { token },
+            refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
+    }
+
+    func refresh() async {
+        guard let client = await client() else { error = .failed; return }
+        switch await client.state(course: courseCode) {
+        case .success(let value): state = value; error = nil
+        case .failure(let e): error = e
+        }
+    }
+
+    /// Runs one change, then reads the state again. nil on success, else what went wrong.
+    private func change(_ body: (RehearsalClient) async -> RehearsalError?) async -> RehearsalError? {
+        busy = true
+        defer { busy = false }
+        guard let client = await client() else { return .failed }
+        if let e = await body(client) { error = e; return e }
+        await refresh()
+        return nil
+    }
+
+    func create(_ intake: RehearsalIntake) async -> RehearsalError? {
+        await change { if case .failure(let e) = await $0.create(intake) { return e } else { return nil } }
+    }
+
+    func adjust(id: String, _ intake: RehearsalIntake) async -> RehearsalError? {
+        await change { if case .failure(let e) = await $0.adjust(id: id, intake) { return e } else { return nil } }
+    }
+
+    func delete(id: String) async -> RehearsalError? {
+        await change { if case .failure(let e) = await $0.delete(id: id) { return e } else { return nil } }
+    }
+
+    func cancel(id: String) async -> RehearsalError? {
+        await change { if case .failure(let e) = await $0.cancel(id: id) { return e } else { return nil } }
+    }
+
+    func outcome(id: String, choice: RehearsalOutcomeChoice, newDate: String? = nil) async -> RehearsalError? {
+        await change { if case .failure(let e) = await $0.outcome(id: id, choice: choice, newDate: newDate) { return e } else { return nil } }
+    }
+}
+
+// MARK: - Small shared pieces
+
+private struct RehearsalCard<Content: View>: View {
+    @ViewBuilder var content: Content
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) { content }
+            .padding(AlphonsoDS.Space.s3)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+            .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 1))
+    }
+}
+
+private struct RehearsalErrorLine: View {
+    let error: RehearsalError?
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        if let error {
+            Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
+                .accessibilityAddTraits(.updatesFrequently)
+        }
+    }
+}
+
+/// The call header: the event as the title with an AI label, "Alphonso . Stage N of 3: <label>" and a
+/// three-segment bar.
+struct RehearsalCallHeaderInfo: Equatable {
+    let title: String
+    let subline: String
+    let filled: Int
+}
+
+struct RehearsalCallHeaderView: View {
+    let info: RehearsalCallHeaderInfo
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: AlphonsoDS.Space.s2) {
+                Text(info.title).dsText(.questionSmall).lineLimit(1)
+                AILabelView()
+            }
+            Text(info.subline).dsText(.footnote).lineLimit(1)
+            HStack(spacing: 4) {
+                ForEach(1...RehearsalStage.allCases.count, id: \.self) { n in
+                    Capsule().fill(n <= info.filled ? ds.callMint : ds.onHero.opacity(0.25)).frame(width: 28, height: 4)
+                }
+            }
+            .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(info.title), AI. \(info.subline)")
+    }
+}
+
+// MARK: - The flow
+
+/// What opens the flow: the plan or the intake (decided from the state), a stage straight away (a pinned item), or
+/// "How did it go?".
+enum RehearsalStart: Equatable {
+    case auto
+    case run(RehearsalStage)
+    case outcome
+}
+
+/// The whole Rehearsals experience, presented full screen from Learn.
+struct RehearsalFlowView: View {
+    let model: RehearsalModel
+    let course: Course
+    let session: Session
+    let entitlementStore: EntitlementStore?
+    let start: RehearsalStart
+    let onClose: () -> Void
+
+    private enum Screen: Equatable {
+        case loading
+        case intake(adjusting: Bool)
+        case plan
+        case run(RehearsalStage)
+        case outcome
+    }
+
+    @State private var screen: Screen = .loading
+    @State private var showPaywall = false
+    /// A new value for every run, so "Run this stage again" starts a fresh call instead of reusing the finished one.
+    @State private var runToken = UUID()
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                switch screen {
+                case .loading:
+                    VStack(spacing: AlphonsoDS.Space.s3) {
+                        if let error = model.error {
+                            Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
+                                .multilineTextAlignment(.center)
+                            Button("Try again") { Task { await open() } }.buttonStyle(.alphonsoSecondary)
+                        } else {
+                            ProgressView("Loading\u{2026}").tint(ds.choice)
+                        }
+                    }
+                    .padding(AlphonsoDS.Space.gutter)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .intake(let adjusting):
+                    RehearsalIntakeView(model: model, course: course, adjusting: adjusting ? model.state?.active : nil,
+                                        onPaywall: { showPaywall = true }, onDone: { screen = .plan },
+                                        onCancel: {
+                                            if adjusting { screen = .plan } else { onClose() }
+                                        })
+                case .plan:
+                    if let active = model.state?.active {
+                        RehearsalPlanView(model: model, rehearsal: active,
+                                          onStart: { runToken = UUID(); screen = .run($0) }, onAdjust: { screen = .intake(adjusting: true) },
+                                          onDeleted: { Task { await open() } })
+                    } else { Color.clear.task { await open() } }
+                case .run(let stage):
+                    if let active = model.state?.active {
+                        RehearsalRunView(model: model, rehearsal: active, stage: stage, course: course, session: session,
+                                         onPaywall: { showPaywall = true },
+                                         onRunStage: { runToken = UUID(); screen = .run($0) }, onPlan: { screen = .plan })
+                            .id(runToken)
+                    } else { Color.clear.task { await open() } }
+                case .outcome:
+                    if let active = model.state?.active {
+                        RehearsalOutcomeView(model: model, rehearsal: active, onDone: { Task { await open() } })
+                    } else { Color.clear.task { await open() } }
+                }
+            }
+            .background(ds.surface)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Close") { onClose() }.tint(ds.choice)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        .task { await open() }
+        .sheet(isPresented: $showPaywall) {
+            RehearsalPaywallSheet(
+                copy: RehearsalPaywallCopy.make(history: model.state?.history ?? []),
+                entitlementStore: entitlementStore, onClose: { showPaywall = false })
+        }
+    }
+
+    /// Reads the state and picks the screen: what the launcher asked for when it can be done, else the plan, else the intake.
+    private func open() async {
+        await model.refresh()
+        guard let state = model.state else { screen = .loading; return }
+        guard state.active != nil else { screen = .intake(adjusting: false); return }
+        switch (screen == .loading ? start : .auto) {
+        case .run(let stage): screen = .run(stage)
+        case .outcome: screen = .outcome
+        case .auto: screen = .plan
+        }
+    }
+}
+
+// MARK: - Intake
+
+struct RehearsalIntakeView: View {
+    let model: RehearsalModel
+    let course: Course
+    /// The rehearsal being adjusted, or nil for a new one.
+    let adjusting: Rehearsal?
+    let onPaywall: () -> Void
+    let onDone: () -> Void
+    let onCancel: () -> Void
+
+    @State private var step = 1
+    @State private var draft = RehearsalIntakeDraft()
+    @State private var pickedDate = Date().addingTimeInterval(86_400)
+    @State private var loaded = false
+    @State private var error: RehearsalError?
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
+                Text(RehearsalIntakeCopy.stepLabel(step)).dsText(.overline).foregroundStyle(ds.actionText)
+                ProgressView(value: Double(step), total: Double(RehearsalIntakeDraft.stepCount)).tint(ds.xp)
+                    .accessibilityHidden(true)
+                Text(RehearsalIntakeCopy.titles[step - 1]).dsText(.title).foregroundStyle(ds.ink)
+                    .accessibilityAddTraits(.isHeader)
+                stepBody
+                RehearsalErrorLine(error: error)
+                buttons
+            }
+            .padding(AlphonsoDS.Space.gutter)
+        }
+        .onAppear {
+            guard !loaded else { return }
+            loaded = true
+            if let adjusting {
+                draft = RehearsalIntakeDraft(
+                    kind: adjusting.kind, eventDate: adjusting.eventDate, counterpart: adjusting.counterpart,
+                    worries: adjusting.worries ?? "")
+                if let d = adjusting.eventDate, let noon = RehearsalDates.noon(of: d) { pickedDate = noon }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var stepBody: some View {
+        switch step {
+        case 1:
+            VStack(spacing: AlphonsoDS.Space.s2) {
+                ForEach(RehearsalEventKind.allCases, id: \.self) { kind in
+                    Button { draft.kind = kind } label: {
+                        HStack {
+                            Text(kind.label).dsText(.headline)
+                            Spacer()
+                            if draft.kind == kind { Image(systemName: "checkmark").accessibilityHidden(true) }
+                        }
+                        .foregroundStyle(draft.kind == kind ? ds.actionText : ds.ink)
+                        .padding(AlphonsoDS.Space.s3)
+                        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                            .fill(draft.kind == kind ? ds.actionTint : ds.card))
+                        .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                            .strokeBorder(draft.kind == kind ? ds.action : ds.line, lineWidth: draft.kind == kind ? 2 : 1))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(draft.kind == kind ? .isSelected : [])
+                }
+            }
+        case 2:
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                DatePicker("When is it?", selection: $pickedDate, in: Date()..., displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+                    .tint(ds.action)
+                    .onChange(of: pickedDate) { _, new in draft.eventDate = RehearsalDates.string(from: new) }
+                Button {
+                    draft.eventDate = nil
+                } label: {
+                    HStack {
+                        Image(systemName: draft.eventDate == nil ? "checkmark.circle.fill" : "circle").accessibilityHidden(true)
+                        Text(RehearsalIntakeCopy.notSureYet).dsText(.headline)
+                    }
+                    .foregroundStyle(draft.eventDate == nil ? ds.actionText : ds.ink)
+                    .frame(minHeight: AlphonsoDS.Space.minTouch)
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(draft.eventDate == nil ? .isSelected : [])
+                Text(RehearsalIntakeCopy.notSureNote).dsText(.footnote).foregroundStyle(ds.inkSoft)
+            }
+        case 3:
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                TextField(draft.counterpartPlaceholder, text: $draft.counterpart, axis: .vertical)
+                    .dsText(.body)
+                    .padding(AlphonsoDS.Space.s3)
+                    .alphonsoInputBackground()
+                    .onChange(of: draft.counterpart) { _, new in
+                        if new.count > rehearsalIntakeTextMax { draft.counterpart = String(new.prefix(rehearsalIntakeTextMax)) }
+                    }
+                Text("\(draft.counterpart.count)/\(rehearsalIntakeTextMax)").dsText(.caption).foregroundStyle(ds.inkSoft)
+                Text(RehearsalIntakeCopy.noNames).dsText(.footnote).foregroundStyle(ds.inkSoft)
+            }
+        default:
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                TextField("Questions about salary, and my English when I am nervous", text: $draft.worries, axis: .vertical)
+                    .dsText(.body)
+                    .lineLimit(2...4)
+                    .padding(AlphonsoDS.Space.s3)
+                    .alphonsoInputBackground()
+                    .onChange(of: draft.worries) { _, new in
+                        if new.count > rehearsalIntakeTextMax { draft.worries = String(new.prefix(rehearsalIntakeTextMax)) }
+                    }
+                Text("\(RehearsalIntakeCopy.worriesNote) \(draft.worries.count)/\(rehearsalIntakeTextMax)")
+                    .dsText(.caption).foregroundStyle(ds.inkSoft)
+                Text(RehearsalIntakeCopy.worriesExample).dsText(.footnote).foregroundStyle(ds.inkSoft)
+            }
+        }
+    }
+
+    private var buttons: some View {
+        VStack(spacing: AlphonsoDS.Space.s2) {
+            if step < RehearsalIntakeDraft.stepCount {
+                Button("Next") { step += 1 }
+                    .buttonStyle(.alphonsoPrimary(fullWidth: true))
+                    .disabled(!draft.canContinue(step: step))
+            } else {
+                Button(RehearsalIntakeCopy.makePlan) { Task { await submit() } }
+                    .buttonStyle(.alphonsoPrimary(fullWidth: true))
+                    .disabled(!draft.canContinue(step: step) || model.busy)
+                // Optional and skippable: the learner is never forced to say what worries them.
+                Button("Skip") { draft.worries = ""; Task { await submit() } }
+                    .buttonStyle(.alphonsoSecondary(fullWidth: true))
+                    .disabled(model.busy)
+            }
+            Button(step == 1 ? "Not now" : "Back") { if step == 1 { onCancel() } else { step -= 1 } }
+                .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                .frame(minHeight: AlphonsoDS.Space.minTouch)
+        }
+    }
+
+    private func submit() async {
+        error = nil
+        switch draft.validate(course: course.wireCode) {
+        case .failure: error = .invalid
+        case .success(let intake):
+            let failure: RehearsalError?
+            if let adjusting { failure = await model.adjust(id: adjusting.id, intake) } else { failure = await model.create(intake) }
+            if let failure {
+                if failure == .paywall { onPaywall() }
+                error = failure
+            } else {
+                onDone()
+            }
+        }
+    }
+}
+
+// MARK: - Plan
+
+struct RehearsalPlanView: View {
+    let model: RehearsalModel
+    let rehearsal: Rehearsal
+    let onStart: (RehearsalStage) -> Void
+    let onAdjust: () -> Void
+    let onDeleted: () -> Void
+
+    @State private var confirmingDelete = false
+    @State private var error: RehearsalError?
+    @Environment(\.alphonsoDS) private var ds
+
+    private var rows: [(stage: RehearsalStage, row: RehearsalPlan.StageRow)] {
+        RehearsalPlan.rows(progress: model.state?.progress, nextStage: model.state?.nextStage)
+    }
+
+    var body: some View {
+        let today = RehearsalDates.string(from: Date())
+        ScrollView {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                    Text(RehearsalPlan.title).dsText(.overline).foregroundStyle(ds.onHeroKick)
+                    Text(rehearsal.eventLabel).dsText(.title).foregroundStyle(ds.onHero)
+                    Text(RehearsalDates.line(eventDate: rehearsal.eventDate, today: today)).dsText(.footnote).foregroundStyle(ds.onHeroSoft)
+                    Text("With \(rehearsal.counterpart)").dsText(.footnote).foregroundStyle(ds.onHeroSoft)
+                }
+                .padding(AlphonsoDS.Space.s3)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.hero))
+                .accessibilityElement(children: .combine)
+
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, item in stageRow(item.stage, item.row) }
+
+                if let next = model.state?.nextStage {
+                    Button(RehearsalPlan.nextButton(next)) { onStart(next) }
+                        .buttonStyle(.alphonsoPrimary(fullWidth: true))
+                }
+                RehearsalErrorLine(error: error)
+                HStack {
+                    Button(RehearsalPlan.adjustLabel) { onAdjust() }
+                    Spacer()
+                    Button(RehearsalPlan.deleteLabel, role: .destructive) { confirmingDelete = true }
+                }
+                .dsText(.footnote)
+                .foregroundStyle(ds.inkSoft)
+                HStack(alignment: .top, spacing: AlphonsoDS.Space.s2) {
+                    AILabelView()
+                    Text(RehearsalPlan.footer).dsText(.caption).foregroundStyle(ds.inkSoft)
+                }
+            }
+            .padding(AlphonsoDS.Space.gutter)
+        }
+        .alphonsoChoiceDialog("Delete this rehearsal?", isPresented: $confirmingDelete) {
+            Button("Yes, delete it", role: .destructive) {
+                Task {
+                    if let failure = await model.delete(id: rehearsal.id) { error = failure } else { onDeleted() }
+                }
+            }
+            Button("Keep it", role: .cancel) {}
+        }
+    }
+
+    private func stageRow(_ stage: RehearsalStage, _ row: RehearsalPlan.StageRow) -> some View {
+        RehearsalCard {
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                ZStack {
+                    Circle().fill(row == .done ? ds.rightTint : ds.sunk).frame(width: 32, height: 32)
+                    if row == .done {
+                        Image(systemName: "checkmark").foregroundStyle(ds.rightInk)
+                    } else {
+                        Text("\(stage.number)").dsText(.footnote).foregroundStyle(ds.ink)
+                    }
+                }
+                .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(stage.label).dsText(.headline).foregroundStyle(ds.ink)
+                    Text(row == .done ? "Done \u{00B7} you can repeat it" : "\(stage.blurb) \u{00B7} about \(stage.minutes) min")
+                        .dsText(.caption).foregroundStyle(row == .done ? ds.rightInk : ds.inkSoft)
+                }
+                Spacer(minLength: AlphonsoDS.Space.s2)
+                if row == .next {
+                    Button("Next") { onStart(stage) }.buttonStyle(.alphonsoPrimary)
+                } else {
+                    Button(row == .done ? "Repeat" : "Start") { onStart(stage) }.buttonStyle(.alphonsoSecondary)
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+}
+
+// MARK: - The run: the call and its debrief
+
+struct RehearsalRunView: View {
+    let model: RehearsalModel
+    let rehearsal: Rehearsal
+    let stage: RehearsalStage
+    let course: Course
+    let session: Session
+    let onPaywall: () -> Void
+    let onRunStage: (RehearsalStage) -> Void
+    let onPlan: () -> Void
+
+    private enum Phase { case calling, finishing, debrief(RehearsalDebrief.Outcome), notSaved }
+
+    @State private var phase: Phase = .calling
+    @State private var callId = UUID().uuidString
+    @State private var startedAt = Date()
+    @State private var elapsed = 0
+    @State private var conversation = ConversationSnapshot()
+    @State private var voice = VoiceSessionController(handsFreeTuning: .practice)
+    @State private var replyVerdict = AvatarReplyVerdict()
+    @State private var notice: String?
+    @State private var cefrLevel: String?
+    @State private var pendingTurns = 0
+    @State private var ending = false
+    @State private var openerCue = 0
+    @State private var initialized = false
+    @State private var recapModel = CallRecapModel()
+    /// The stage's latest finished run before this call, so a debrief is only built from a run this call made.
+    @State private var previousFinishedAt: String?
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.alphonsoDS) private var ds
+
+    private var source: CallSource { .rehearsal(id: rehearsal.id, stage: stage) }
+
+    var body: some View {
+        Group {
+            switch phase {
+            case .calling: callScreen
+            case .finishing:
+                VStack(spacing: AlphonsoDS.Space.s3) {
+                    ProgressView("Writing your debrief\u{2026}").tint(ds.choice)
+                    Text("Alphonso (AI) is going over the conversation.").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            case .debrief(let outcome): RehearsalDebriefView(outcome: outcome, stage: stage,
+                                                              onRunStage: onRunStage, onPlan: onPlan)
+            case .notSaved:
+                VStack(spacing: AlphonsoDS.Space.s3) {
+                    Text("We could not save that run. Check your connection and try again.")
+                        .dsText(.footnote).foregroundStyle(ds.wrongInk).multilineTextAlignment(.center)
+                    Button("Run this stage again") { onRunStage(stage) }.buttonStyle(.alphonsoPrimary)
+                    Button("Back to the plan") { onPlan() }.buttonStyle(.alphonsoSecondary)
+                }
+                .padding(AlphonsoDS.Space.gutter)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .aiDisclosureGate()
+        .task(id: openerCue) {
+            guard openerCue > 0, !ending else { return }
+            await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
+            voice.applyStoredHandsFreePreference(sceneActive: scenePhase == .active)
+        }
+        .onAppear {
+            guard !initialized else { return }
+            initialized = true
+            previousFinishedAt = RehearsalPlan.latestRun(model.state?.runs ?? [], stage: stage)?.finishedAt
+            // The stage's fixed opening line, spoken by Alphonso; it is never sent to the server as his words.
+            conversation.appendOpener(stage.opener(course: course.wireCode))
+            voice.onCapture = { capture in await handle(capture) }
+            voice.appeared()
+            openerCue += 1
+        }
+        .onDisappear {
+            voice.disappeared()
+            voice.onCapture = nil
+        }
+        .task { cefrLevel = await loadCefrLevel() }
+    }
+
+    private var callScreen: some View {
+        PracticeCallView(
+            title: stage.label, scenarioID: "rehearsal", voice: voice, course: course,
+            turns: conversation.turns, replyVerdict: replyVerdict, notice: notice,
+            onPress: { if ending { return }; if voice.pressBegan() { notice = nil } },
+            onEnd: { Task { await finishCall() } },
+            rehearsalHeader: RehearsalCallHeaderInfo(
+                title: rehearsal.kind?.callTitle ?? RehearsalEventKind.other.callTitle,
+                subline: RehearsalCallHeader.subline(stage: stage), filled: RehearsalCallHeader.filledSegments(stage: stage)),
+            sheet: {
+                VStack(spacing: CGFloat.zero) {
+                    HandsFreeSwitch(voice: voice, partner: "Alphonso")
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                            ForEach(Array(conversation.turns.enumerated()), id: \.offset) { index, turn in
+                                Text(turn.content)
+                                    .dsText(.body)
+                                    .foregroundStyle(turn.role == "user" ? ds.onChoice : ds.ink)
+                                    .padding(.horizontal, AlphonsoDS.Space.s4)
+                                    .padding(.vertical, AlphonsoDS.Space.s3)
+                                    .background(turn.role == "user" ? ds.choice : ds.card,
+                                                in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))
+                                    // Alphonso's replies can be reported; the fixed opening line and the learner's turns cannot.
+                                    .reportableAIMessage(
+                                        turn.content, enabled: turn.role == "assistant" && !conversation.openerIndices.contains(index),
+                                        surface: .conversation, course: course.wireCode, scenarioID: "rehearsal", session: session)
+                                    .frame(maxWidth: .infinity, alignment: turn.role == "user" ? .trailing : .leading)
+                            }
+                        }
+                        .padding(AlphonsoDS.Space.gutter)
+                    }
+                }
+            }
+        )
+        .toolbar(.hidden, for: .tabBar)
+        .onChange(of: voice.handsFreeStatus) { _, new in
+            if new == .listening { notice = nil }
+        }
+    }
+
+    // MARK: Turns
+
+    private func handle(_ capture: VoiceCapture) async {
+        switch capture {
+        case .tooShort:
+            notice = voice.isHandsFreeOn ? nil : "Didn't catch that. Hold the button while you speak."
+        case let .audio(audio, generation, debugTiming):
+            await runTurn(audio: audio, generation: generation, debugTiming: debugTiming)
+        }
+    }
+
+    private func runTurn(audio: Data, generation: Int, debugTiming: String) async {
+        guard !ending else { return }
+        pendingTurns += 1
+        defer { pendingTurns -= 1 }
+        guard let accessToken = await session.freshAccessToken() else {
+            voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
+            return
+        }
+        let client = AIConversationClient(
+            baseURL: AppConfig.apiBaseURL, accessToken: { accessToken },
+            refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
+        do {
+            let result = try await client.transcribe(
+                audio: audio, mimeType: "audio/m4a", course: course.wireCode, debugTiming: debugTiming)
+            guard !result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                if voice.isHandsFreeOn { voice.handsFreeHeardNoWords() } else { notice = "Didn't catch that \u{2014} try again." }
+                return
+            }
+            await sendReply(result.text, confidence: result.confidence, generation: generation, client: client)
+        } catch {
+            voice.fail(generation, TutorError.from(error))
+        }
+    }
+
+    private func sendReply(_ text: String, confidence: Double?, generation: Int, client: AIConversationClient) async {
+        do {
+            conversation.turns.append(ChatMessage(role: "user", content: text))
+            voice.transcribed(generation)
+            // The rehearsal's id and stage only: the server builds the prompt from the stored rehearsal.
+            let chat = try await client.chatReply(
+                source: source, messages: source.sendableTurns(conversation), systemPrompt: nil, cefrLevel: cefrLevel,
+                course: nil, callId: callId)
+            conversation.turns.append(ChatMessage(role: "assistant", content: chat.content))
+            replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chat.verdict)
+            do {
+                let speech = try await client.synthesizeSpeech(
+                    text: chat.content, voice: VoicePrefsCache().voice(.alphonso, course: course.wireCode), course: course.wireCode)
+                if !voice.play(speech, generation: generation) { notice = "Got a reply, but couldn't play it back." }
+            } catch {
+                voice.replyWithoutAudio(generation)
+                notice = "Got a reply, but couldn't play it back."
+            }
+        } catch {
+            let failure = TutorError.from(error)
+            // The free rehearsal's runs are used up: the Pro sheet, with the learner's turn left where it was.
+            if failure == .notEntitled { onPaywall() }
+            voice.fail(generation, failure)
+            notice = failure == .notEntitled ? RehearsalError.paywall.userMessage : failure.userMessage()
+        }
+    }
+
+    private func loadCefrLevel() async -> String? {
+        guard let accessToken = session.accessToken else { return nil }
+        let client = ProgressSyncClient(
+            supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        return (try? await client.fetchCefrLevel(course: course.wireCode)) ?? nil
+    }
+
+    // MARK: Finish
+
+    private func finishCall() async {
+        guard !ending else { return }
+        ending = true
+        voice.disappeared()
+        while pendingTurns > 0 { try? await Task.sleep(for: .milliseconds(50)) }
+        elapsed = Int(Date().timeIntervalSince(startedAt))
+        let learnerReplies = conversation.turns.filter { $0.role == "user" }.count
+        // Nothing said: nothing to keep, straight back to the plan.
+        if learnerReplies == 0 { onPlan(); return }
+        phase = .finishing
+        do {
+            // Finishing the call is what lets the server count it as a run; a rehearsal has no stars to show.
+            _ = try await practiceClient(session).finishPractice(callId: callId)
+        } catch {
+            phase = .notSaved
+            return
+        }
+        recapModel = CallRecapModel()
+        recapModel.start(session: session, callId: callId, transcript: source.sendableTurns(conversation),
+                         cefrLevel: cefrLevel, scene: nil)
+        // The server writes the run's memory when the recap finishes; wait for it, then read the state again.
+        while recapModel.status == .pending { try? await Task.sleep(for: .milliseconds(300)) }
+        await model.refresh()
+        let added = (recapModel.status == .ready && recapModel.recap?.saved == true) ? (recapModel.recap?.reviewCount ?? 0) : 0
+        phase = .debrief(RehearsalDebrief.make(
+            stage: stage, kind: rehearsal.kind, runs: model.state?.runs ?? [], previousFinishedAt: previousFinishedAt,
+            seconds: elapsed, turns: conversation.turns.count - conversation.openerIndices.count, addedToFix: added))
+    }
+}
+
+// MARK: - Debrief
+
+struct RehearsalDebriefView: View {
+    let outcome: RehearsalDebrief.Outcome
+    let stage: RehearsalStage
+    let onRunStage: (RehearsalStage) -> Void
+    let onPlan: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
+                switch outcome {
+                case .noRun:
+                    Text("That one was too short to count").dsText(.title).foregroundStyle(ds.ink)
+                    Text("Say a few more things next time and Alphonso (AI) can write you a debrief. Nothing was lost.")
+                        .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    Button(RehearsalDebrief.againLabel) { onRunStage(stage) }.buttonStyle(.alphonsoPrimary(fullWidth: true))
+                    Button("Back to the plan") { onPlan() }.buttonStyle(.alphonsoSecondary(fullWidth: true))
+                case .debrief(let d):
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                        Text(d.heading).dsText(.overline).foregroundStyle(ds.actionText)
+                        Text(d.headline).dsText(.title).foregroundStyle(ds.ink).accessibilityAddTraits(.isHeader)
+                        Text(d.stats).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    }
+                    if !d.wentWell.isEmpty { listCard("What went well", d.wentWell, tint: ds.rightInk) }
+                    if !d.tryAgain.isEmpty { listCard("Try again next time", d.tryAgain, tint: ds.heartText) }
+                    if let fix = d.fixLine {
+                        RehearsalCard {
+                            Text(RehearsalDebrief.fixTitle).dsText(.headline).foregroundStyle(ds.heartText)
+                            Text(fix).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                        }
+                    }
+                    Button(RehearsalPlan.nextButton(d.nextStage)) { onRunStage(d.nextStage) }
+                        .buttonStyle(.alphonsoPrimary(fullWidth: true))
+                    Button(RehearsalDebrief.againLabel) { onRunStage(stage) }
+                        .buttonStyle(.alphonsoSecondary(fullWidth: true))
+                    Button("Back to the plan") { onPlan() }
+                        .dsText(.footnote).foregroundStyle(ds.inkSoft).frame(minHeight: AlphonsoDS.Space.minTouch)
+                    HStack(alignment: .top, spacing: AlphonsoDS.Space.s2) {
+                        AILabelView()
+                        Text(RehearsalDebrief.footer).dsText(.caption).foregroundStyle(ds.inkSoft)
+                    }
+                }
+            }
+            .padding(AlphonsoDS.Space.gutter)
+        }
+    }
+
+    private func listCard(_ title: String, _ lines: [String], tint: Color) -> some View {
+        RehearsalCard {
+            Text(title).dsText(.headline).foregroundStyle(tint)
+            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                Text(line).dsText(.footnote).foregroundStyle(ds.ink)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+// MARK: - How did it go?
+
+struct RehearsalOutcomeView: View {
+    let model: RehearsalModel
+    let rehearsal: Rehearsal
+    let onDone: () -> Void
+
+    @State private var moving = false
+    @State private var newDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+    @State private var error: RehearsalError?
+    @Environment(\.alphonsoDS) private var ds
+
+    private var newDay: String { RehearsalDates.string(from: newDate) }
+
+    var body: some View {
+        let today = RehearsalDates.string(from: Date())
+        ScrollView {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                Text("How did it go?").dsText(.title).foregroundStyle(ds.ink).accessibilityAddTraits(.isHeader)
+                Text("\(RehearsalDates.long(today) ?? "") \u{00B7} \(rehearsal.eventLabel)").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                if moving { movedBody } else { tapsBody }
+                RehearsalErrorLine(error: error)
+                Text(RehearsalOutcomeChoice.footer).dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            .padding(AlphonsoDS.Space.gutter)
+        }
+    }
+
+    private var tapsBody: some View {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+            Text("How did your \((rehearsal.kind?.label ?? "event").lowercased()) go?").dsText(.headline).foregroundStyle(ds.ink)
+            HStack(spacing: AlphonsoDS.Space.s2) {
+                AILabelView()
+                Text("One tap is enough. Alphonso (AI) will remember it.").dsText(.footnote).foregroundStyle(ds.inkSoft)
+            }
+            ForEach(RehearsalOutcomeChoice.allCases, id: \.self) { choice in
+                Button { tap(choice) } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(choice.title).dsText(.headline).foregroundStyle(ds.ink)
+                        if let hint = choice.hint { Text(hint).dsText(.caption).foregroundStyle(ds.inkSoft) }
+                    }
+                    .padding(AlphonsoDS.Space.s3)
+                    .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+                    .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .disabled(model.busy)
+            }
+        }
+    }
+
+    private var movedBody: some View {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+            Text(RehearsalOutcomeChoice.movedTitle).dsText(.headline).foregroundStyle(ds.ink)
+            Text("Your rehearsal continues. Stage 2 comes back before the new date.").dsText(.footnote).foregroundStyle(ds.inkSoft)
+            DatePicker("New date", selection: $newDate, in: (Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date())..., displayedComponents: .date)
+                .datePickerStyle(.graphical).labelsHidden().tint(ds.action)
+            Button(RehearsalOutcomeChoice.moveButton(newDay)) { Task { await finish { await model.outcome(id: rehearsal.id, choice: .moved, newDate: newDay) } } }
+                .buttonStyle(.alphonsoPrimary(fullWidth: true))
+                .disabled(model.busy)
+            Button(RehearsalOutcomeChoice.closeButton) { Task { await finish { await model.cancel(id: rehearsal.id) } } }
+                .dsText(.footnote).foregroundStyle(ds.inkSoft).frame(minHeight: AlphonsoDS.Space.minTouch)
+                .disabled(model.busy)
+        }
+    }
+
+    private func tap(_ choice: RehearsalOutcomeChoice) {
+        if choice == .moved { moving = true; return }
+        Task { await finish { await model.outcome(id: rehearsal.id, choice: choice) } }
+    }
+
+    private func finish(_ run: () async -> RehearsalError?) async {
+        error = nil
+        if let failure = await run() { error = failure } else { onDone() }
+    }
+}
+
+// MARK: - The Pro sheet
+
+/// "Rehearsals are part of Pro": what the learner already did, what stays free, and two equal ways out. "See Pro" opens
+/// the existing Pro paywall with the source `rehearsal_entry`.
+struct RehearsalPaywallSheet: View {
+    let copy: RehearsalPaywallCopy
+    let entitlementStore: EntitlementStore?
+    let onClose: () -> Void
+
+    @State private var showingPro = false
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        if showingPro, let entitlementStore {
+            PaywallView(entitlementStore: entitlementStore, source: .rehearsalEntry, onClose: onClose)
+        } else {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                Text(copy.title).dsText(.title).foregroundStyle(ds.ink).accessibilityAddTraits(.isHeader)
+                Text(copy.subtitle).dsText(.headline).foregroundStyle(ds.ink)
+                Text(copy.body).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                    ForEach(copy.stays, id: \.self) { line in Text(line).dsText(.footnote).foregroundStyle(ds.ink) }
+                }
+                HStack(spacing: AlphonsoDS.Space.s2) {
+                    Button(copy.primary) { showingPro = true }.buttonStyle(.alphonsoPrimary(fullWidth: true))
+                        .disabled(entitlementStore == nil)
+                    Button(copy.secondary) { onClose() }.buttonStyle(.alphonsoSecondary(fullWidth: true))
+                }
+                Text(copy.note).dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            .padding(AlphonsoDS.Space.gutter)
+            .frame(maxHeight: .infinity, alignment: .top)
+            .background(ds.surface)
+            .presentationDetents([.medium, .large])
+        }
+    }
+}
+
+// MARK: - Learn: the hero and the Today row
+
+/// On the event day the 2-minute warm-up takes the Learn hero, for that day only.
+struct RehearsalHeroCard: View {
+    let item: PathPinned
+    let onStart: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+            Text(RehearsalLearnEntry.heroTitle(kind: item.rehearsalKind)).dsText(.overline).foregroundStyle(ds.onHeroKick)
+            Text(RehearsalLearnEntry.heroSubtitle).dsText(.title).foregroundStyle(ds.onHero)
+            Text(RehearsalLearnEntry.heroLine).dsText(.footnote).foregroundStyle(ds.onHeroSoft)
+            Button(RehearsalLearnEntry.heroButton) { onStart() }
+                .buttonStyle(.alphonsoPrimary)
+                .padding(.top, AlphonsoDS.Space.s2)
+        }
+        .padding(AlphonsoDS.Space.s4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.hero))
+        .padding(.horizontal, AlphonsoDS.Space.gutter)
+        .padding(.vertical, AlphonsoDS.Space.s2)
+        .accessibilityElement(children: .contain)
+    }
+}
+
+/// The pinned rehearsal item, first in Today and highlighted so it is the first thing seen. The server's words.
+struct RehearsalPinnedRow: View {
+    let item: PathPinned
+    let onOpen: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        Button(action: onOpen) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(item.title).dsText(.headline).foregroundStyle(ds.ink)
+                Text(item.minutes > 0 ? "\(item.subtitle) \u{00B7} \(item.minutes) min" : item.subtitle)
+                    .dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            .padding(AlphonsoDS.Space.s3)
+            .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.flameTint))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(item.title). \(item.subtitle)")
+    }
+}

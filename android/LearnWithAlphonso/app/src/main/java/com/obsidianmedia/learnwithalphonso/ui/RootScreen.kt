@@ -350,9 +350,33 @@ private fun SignedInApp(
                     onOpenPlacement = { course -> nav.navigate(Routes.placement(course.code)) },
                     onOpenSettings = { nav.navigate(Routes.SETTINGS) },
                     onOpenPath = { nav.navigate(Routes.PATH) },
+                    onOpenRehearsal = { mode -> nav.navigate(Routes.rehearsal(mode)) },
+                    onOpenRehearsalStage = { id, stage -> nav.navigate(Routes.rehearsalCall(id, stage.wire)) },
+                    onOpenRehearsalPro = { nav.navigate(Routes.REHEARSAL_PRO) },
                     onBuildPath = { nav.navigate(Routes.PATH_BUILD) },
                     onOpenPathRef = openPathRef,
                 )
+            }
+            composable(Routes.REHEARSAL, arguments = listOf(androidx.navigation.navArgument("mode") { defaultValue = "" })) { entry ->
+                com.obsidianmedia.learnwithalphonso.ui.rehearsal.RehearsalScreen(
+                    container, entry.arguments?.getString("mode") ?: "", onBack = { nav.popBackStack() },
+                    onOpenStage = { id, stage -> nav.navigate(Routes.rehearsalCall(id, stage.wire)) },
+                    onOpenPaywall = { nav.navigate(Routes.REHEARSAL_PRO) },
+                )
+            }
+            composable(Routes.REHEARSAL_CALL) { entry ->
+                com.obsidianmedia.learnwithalphonso.ui.rehearsal.RehearsalCallScreen(
+                    container, entry.arguments?.getString("id") ?: "", entry.arguments?.getString("stage") ?: "", onBack = { nav.popBackStack() },
+                    // The next stage or a repeat replaces this call, so back from it returns to the plan.
+                    onOpenStage = { id, stage -> nav.navigate(Routes.rehearsalCall(id, stage.wire)) { popUpTo(Routes.REHEARSAL_CALL) { inclusive = true } } },
+                    onOpenMemory = { nav.navigate(Routes.MEMORY) },
+                )
+            }
+            composable(Routes.REHEARSAL_PRO) {
+                Column(Modifier.fillMaxSize()) {
+                    com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar("Rehearsals", { nav.popBackStack() })
+                    com.obsidianmedia.learnwithalphonso.ui.paywall.ProPaywallScreen(container, source = com.obsidianmedia.learnwithalphonso.core.logic.PaywallSource.REHEARSAL_ENTRY)
+                }
             }
             composable(Routes.PATH) { PathScreen(container, PathMode.ROAD, onBack = { nav.popBackStack() }, onOpenWeek = { nav.navigate(Routes.PATH_WEEK) }, onOpenWhy = { nav.navigate(Routes.PATH_WHY) }, onBuild = { nav.navigate(Routes.PATH_BUILD) }, onOpenRef = openPathRef) }
             composable(Routes.PATH_WEEK) { PathScreen(container, PathMode.WEEK, onBack = { nav.popBackStack() }, onOpenWeek = {}, onOpenWhy = { nav.navigate(Routes.PATH_WHY) }, onBuild = { nav.navigate(Routes.PATH_BUILD) }, onOpenRef = openPathRef) }

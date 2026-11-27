@@ -56,6 +56,8 @@ public enum PaywallSource: String, Sendable, Equatable, CaseIterable {
     case practiceCard = "practice_hector_card"
     /// The "Practice with Hector" button on the lesson-complete screen.
     case lessonComplete = "lesson_complete"
+    /// The "Rehearsals are part of Pro" sheet, after the free rehearsal is used.
+    case rehearsalEntry = "rehearsal_entry"
 
     /// The RevenueCat custom attribute key the source is written under.
     public static let attributeKey = "paywall_source"

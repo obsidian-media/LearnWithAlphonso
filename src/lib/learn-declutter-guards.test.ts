@@ -51,6 +51,8 @@ describe("iOS Learn", () => {
   });
   it("one rail replaces the Review row and the stacked path, mission and challenge sections", () => {
     expect(browser).toContain("LearnForYouRail(items: forYouItems)");
+    // Exactly one rail: the Rehearsals card joins forYouItems, it never gets a second rail.
+    expect(browser.match(/LearnForYouRail\(/g)?.length).toBe(1);
     expect(browser).not.toContain('AlphonsoRowCard(\n                        title: "Review"');
     // The sections still exist, but only as the opened card's detail.
     for (const detail of [
@@ -103,7 +105,9 @@ describe("Android Learn", () => {
     expect(climbMap.match(/"Continue lesson"/g)?.length).toBe(1);
   });
   it("one rail replaces the Review row and the stacked path, mission and challenge cards", () => {
-    expect(screen).toContain("ForYouRail(cards)");
+    // Exactly one rail call: the Rehearsals card is appended to the same list.
+    expect(screen.match(/(?<!fun )\bForYouRail\(/g)?.length).toBe(1);
+    expect(screen).toContain("ForYouRail(cards + listOfNotNull(rehearsalItem))");
     expect(screen).not.toContain('item(key = "review")');
     expect(screen).not.toContain('item(key = "team-mission")');
     expect(screen).toContain("{ onOpenReview(state.course) }");

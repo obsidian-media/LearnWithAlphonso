@@ -2,6 +2,9 @@ package com.obsidianmedia.learnwithalphonso.ui.path
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,7 +52,7 @@ import kotlinx.coroutines.launch
 
 /** What Learn shows between the map and the For you rail for a path; the count is also the list items it adds. */
 internal fun learnPathCardCount(path: LearningPath?): Int =
-    if (path == null) 0 else (if (path.goalIsSuggested) 1 else 0) + (if (path.today.items.isNotEmpty()) 1 else 0) + (if (path.fix?.items?.isNotEmpty() == true) 1 else 0)
+    if (path == null) 0 else (if (path.goalIsSuggested) 1 else 0) + (if (path.today.items.isNotEmpty() || path.todayPinned != null) 1 else 0) + (if (path.fix?.items?.isNotEmpty() == true) 1 else 0)
 
 /**
  * Learn's path cards: "Your path is ready" while the goal is only a suggestion, "Today" with the normal plan and
@@ -64,6 +67,8 @@ fun LearnPathCards(
     onBuild: () -> Unit,
     onOpenRef: (com.obsidianmedia.learnwithalphonso.core.path.PathItemRef) -> Unit,
     onOpenReview: () -> Unit,
+    /** A pinned rehearsal row in Today: a stage opens its call, "How did it go?" its page. */
+    onOpenPinned: (com.obsidianmedia.learnwithalphonso.core.rehearsal.PinnedItem) -> Unit = {},
 ) {
     val ui by vm.ui.collectAsState()
     val path = (ui as? PathUi.Ready)?.path ?: return
@@ -98,13 +103,15 @@ fun LearnPathCards(
                 if (saveFailed) Text("Couldn't save that. Try again.", modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = FootnoteType, color = ds.wrongInk)
             }
         }
-        if (path.today.items.isNotEmpty()) {
+        if (path.today.items.isNotEmpty() || path.todayPinned != null) {
             val done = path.today.items.count { it.state == "done" }
             DsCard(padding = AlphonsoTokens.Space.s3) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("Today", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
                     Text("$done of ${path.today.items.size} · ${path.today.items.sumOf { it.minutes }} min", style = CaptionType, color = ds.inkSoft)
                 }
+                // The rehearsal's item comes first, highlighted: at most one a day, never part of the plan's minutes.
+                path.todayPinned?.let { PinnedRow(it) { onOpenPinned(it) } }
                 path.today.items.forEach { item -> PathItemRow(item, onClick = item.ref?.let { { open(item) } }) }
             }
         }
@@ -132,5 +139,20 @@ private fun FixCard(fix: PathFixCard, open: (PathItem) -> Unit) {
         }
         fix.items.forEach { item -> PathItemRow(item, onClick = item.ref?.let { { open(item) } }) }
         AlphonsoPrimaryButton("Fix them now", onClick = { open(fix.items.first()) })
+    }
+}
+
+/** The rehearsal's pinned row in Today (the server's words). Highlighted so it is the first thing seen. */
+@Composable
+internal fun PinnedRow(item: com.obsidianmedia.learnwithalphonso.core.rehearsal.PinnedItem, onClick: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Column(
+        Modifier.fillMaxWidth().clip(shape).background(ds.flameTint)
+            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .defaultMinSize(minHeight = AlphonsoTokens.Space.minTouch).padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s2),
+    ) {
+        Text(item.title, style = HeadlineType, color = ds.ink)
+        Text(item.subtitle + if (item.minutes > 0) " · ${item.minutes} min" else "", style = CaptionType, color = ds.inkSoft)
     }
 }

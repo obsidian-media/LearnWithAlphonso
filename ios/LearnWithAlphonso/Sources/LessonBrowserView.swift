@@ -114,6 +114,19 @@ struct LessonBrowserView: View {
 
     private enum ForYouDetail: Hashable { case path, team, weekly }
 
+    /// Rehearsals: off unless the server's app-config says so. The model reads the course's state; a tap on the rail
+    /// card, the hero or a pinned row opens the flow, or the Pro sheet for a learner whose free rehearsal is used.
+    @State private var rehearsalsOn = false
+    @State private var rehearsalModel: RehearsalModel?
+    @State private var rehearsalLaunch: RehearsalLaunch?
+    @State private var showRehearsalPaywall = false
+    @State private var rehearsalNotice: String?
+
+    private struct RehearsalLaunch: Identifiable {
+        let id = UUID()
+        let start: RehearsalStart
+    }
+
     private struct OpenedLesson: Hashable { let id: String }
 
     /// Ordered CEFR bands -- mirrors web's `src/data/levels.ts` LEVELS
@@ -389,7 +402,51 @@ struct LessonBrowserView: View {
                 expanded: forYouDetail == .weekly,
                 action: { toggleForYou(.weekly) }))
         }
+        if rehearsalsOn {
+            let card = RehearsalLearnEntry.card(state: rehearsalModel?.state)
+            items.append(LearnForYouRail.Item(
+                id: "rehearsal", emoji: "\u{1F4AC}", title: card.title, value: card.value,
+                spoken: "\(card.title), \(card.value)",
+                action: { Task { await openRehearsal(.auto) } }))
+        }
         return items
+    }
+
+    /// Reads the state first, so the Pro sheet is decided on what the server says now: a learner who is not Pro with the
+    /// free rehearsal used and nothing going meets the sheet; everyone else opens the flow (the server still decides).
+    private func openRehearsal(_ start: RehearsalStart) async {
+        guard let model = rehearsalModel else { return }
+        rehearsalNotice = nil
+        await model.refresh()
+        guard let state = model.state else {
+            rehearsalNotice = (model.error ?? .failed).userMessage
+            return
+        }
+        // Pro comes from the app's one entitlement store (the one Hector and the paywall read). With none, it is unknown.
+        let pro: RehearsalProStatus
+        if let access = hectorAccess {
+            pro = access.entitlementStore.isPro ? .pro : .free
+        } else {
+            pro = .unknown
+        }
+        switch RehearsalEntry.decide(state: state, pro: pro) {
+        case .unavailable: rehearsalNotice = RehearsalError.retry.userMessage
+        case .paywall: showRehearsalPaywall = true
+        case .intake, .plan: rehearsalLaunch = RehearsalLaunch(start: start)
+        }
+    }
+
+    /// A pinned item opens its stage's call, or "How did it go?" for the follow-up.
+    private func openPinned(_ item: PathPinned) {
+        let start: RehearsalStart
+        if item.isFollowUp {
+            start = .outcome
+        } else if let stage = item.rehearsalStage {
+            start = .run(stage)
+        } else {
+            start = .auto
+        }
+        Task { await openRehearsal(start) }
     }
 
     var body: some View {
@@ -435,7 +492,13 @@ struct LessonBrowserView: View {
 
                 // The one map: the climbing map for the learner's unit in the band on screen (Path B). It replaces the
                 // old hero, never sits beside it. Its nodes and the start sheet open lessons through `openedLesson`.
-                if let climb = climbMap {
+                if rehearsalsOn, let hero = railPath?.path?.heroPinned {
+                    // Event day: the 2-minute warm-up takes the hero for the day only.
+                    RehearsalHeroCard(item: hero) { openPinned(hero) }
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                } else if let climb = climbMap {
                     LearnClimbMap(
                         climb: climb,
                         greeting: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())),
@@ -462,12 +525,22 @@ struct LessonBrowserView: View {
                 //
                 // Presented rather than pushed (showingReview), because ReviewQueueView owns its own
                 // NavigationStack -- pushing it would nest two.
+                if let rehearsalNotice {
+                    Text(rehearsalNotice)
+                        .dsText(.footnote)
+                        .foregroundStyle(ds.wrongInk)
+                        .padding(.horizontal, AlphonsoDS.Space.gutter)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
+
                 if let railPath {
                     LearnPathCards(
                         model: railPath, session: session, course: course,
                         onBuild: { showingPathBuild = true },
                         onOpenLesson: { openedLesson = OpenedLesson(id: $0) },
-                        onOpenReview: { showingReview = true }
+                        onOpenReview: { showingReview = true },
+                        pinnedEnabled: rehearsalsOn, onOpenPinned: { openPinned($0) }
                     )
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
@@ -612,6 +685,13 @@ struct LessonBrowserView: View {
                 railPath = made
                 await made.load()
             }
+            .task { rehearsalsOn = await RehearsalFeature.isEnabled(baseURL: AppConfig.apiBaseURL) }
+            .task(id: "\(course.wireCode)-\(rehearsalsOn)") {
+                guard rehearsalsOn else { rehearsalModel = nil; return }
+                let made = RehearsalModel(session: session, courseCode: course.wireCode)
+                rehearsalModel = made
+                await made.refresh()
+            }
             .task(id: "\(course.code)-\(onboardingSettled)") { await checkPlacement() }
             .task(id: course.code) {
                 offerDismissed = PlacementOfferLoader.isDismissed(courseCode: course.code)
@@ -667,6 +747,26 @@ struct LessonBrowserView: View {
                 PathBuildView(session: session, course: course) { lessonID in
                     openedLesson = OpenedLesson(id: lessonID)
                 }
+            }
+            .fullScreenCover(item: $rehearsalLaunch, onDismiss: {
+                // The plan, the stage ticks and today's pinned item may all have changed.
+                Task {
+                    await rehearsalModel?.refresh()
+                    await railPath?.load()
+                }
+            }) { launch in
+                if let model = rehearsalModel {
+                    RehearsalFlowView(
+                        model: model, course: course, session: session,
+                        entitlementStore: hectorAccess?.entitlementStore, start: launch.start,
+                        onClose: { rehearsalLaunch = nil })
+                }
+            }
+            .sheet(isPresented: $showRehearsalPaywall) {
+                RehearsalPaywallSheet(
+                    copy: RehearsalPaywallCopy.make(history: rehearsalModel?.state?.history ?? []),
+                    entitlementStore: hectorAccess?.entitlementStore,
+                    onClose: { showRehearsalPaywall = false })
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView(session: session, syncQueueStore: syncQueueStore)
