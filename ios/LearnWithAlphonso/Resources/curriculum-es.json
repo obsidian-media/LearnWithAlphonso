@@ -17800,7 +17800,7 @@
                     "Mañana quiero visitar el museo.",
                     "Quisiera visitar el museo mañana."
                   ],
-                  "explanation": "\"Quiero visitar el museo mañana.\" means \"I want to visit the museum tomorrow\". After \"quiero\" the next verb stays in the infinitive: quiero terminar, quiero estudiar."
+                  "explanation": "\"Quiero visitar el museo mañana.\" means \"I want to visit the museum tomorrow\". After \"quiero\" the next verb stays in the infinitive: quiero visitar."
                 },
                 "work": {
                   "prompt": "Say that you want to finish the report tonight.",
@@ -17810,7 +17810,7 @@
                     "Esta noche quiero terminar el informe.",
                     "Quisiera terminar el informe esta noche."
                   ],
-                  "explanation": "\"Quiero terminar el informe esta noche.\" means \"I want to finish the report tonight\". After \"quiero\" the next verb stays in the infinitive: quiero terminar, quiero estudiar."
+                  "explanation": "\"Quiero terminar el informe esta noche.\" means \"I want to finish the report tonight\". After \"quiero\" the next verb stays in the infinitive: quiero terminar."
                 },
                 "school": {
                   "prompt": "Say that you want to study at the library tonight.",
@@ -17820,7 +17820,7 @@
                     "Esta noche quiero estudiar en la biblioteca.",
                     "Quisiera estudiar en la biblioteca esta noche."
                   ],
-                  "explanation": "\"Quiero estudiar en la biblioteca esta noche.\" means \"I want to study at the library tonight\". After \"quiero\" the next verb stays in the infinitive: quiero terminar, quiero estudiar."
+                  "explanation": "\"Quiero estudiar en la biblioteca esta noche.\" means \"I want to study at the library tonight\". After \"quiero\" the next verb stays in the infinitive: quiero estudiar."
                 }
               }
             }
