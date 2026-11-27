@@ -43,7 +43,7 @@
  *
  * Usage: bunx tsx scripts/update-app-review-info.ts [check|apply]
  * (requires DEMO_ACCOUNT_EMAIL, REVIEW_CONTACT_EMAIL, REVIEW_CONTACT_PHONE,
- * REVIEW_DEMO_CODE_URL, REVIEW_RECORDING_URL in the environment, in addition
+ * REVIEW_DEMO_CODE_URL in the environment (REVIEW_RECORDING_URL is optional), in addition
  * to the App Store Connect API key trio)
  */
 import { createSign } from "node:crypto";
@@ -79,7 +79,6 @@ const missing = [
   !REVIEW_CONTACT_EMAIL && "REVIEW_CONTACT_EMAIL",
   !REVIEW_CONTACT_PHONE && "REVIEW_CONTACT_PHONE",
   !REVIEW_DEMO_CODE_URL && "REVIEW_DEMO_CODE_URL",
-  !REVIEW_RECORDING_URL && "REVIEW_RECORDING_URL",
 ].filter(Boolean);
 if (missing.length > 0) {
   console.error(`Missing environment variable(s): ${missing.join(", ")}`);
@@ -205,7 +204,7 @@ async function main() {
     demoAccountEmail: DEMO_ACCOUNT_EMAIL!,
     reviewContactEmail: REVIEW_CONTACT_EMAIL!,
     demoCodeURL: REVIEW_DEMO_CODE_URL!,
-    recordingURL: REVIEW_RECORDING_URL!,
+    recordingURL: REVIEW_RECORDING_URL || undefined,
     productTitle,
   };
   const notes = buildReviewNotes(notesInput);

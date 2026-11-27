@@ -50,11 +50,12 @@ describe("testflight copy", () => {
 });
 
 describe("What to Test for Reddit testers", () => {
-  it("asks for three short tasks and says the iPhone level test is English only", () => {
+  it("asks for the build's short tasks and says the iPhone level test is English only", () => {
     const t = TESTFLIGHT.whatToTest;
-    expect(t).toMatch(/1\. Sign up and take the level test\./);
-    expect(t).toMatch(/2\. Finish one lesson\./);
-    expect(t).toMatch(/3\. Save a word/);
+    expect(t).toMatch(/1\. Sign up and take the level test/);
+    expect(t).toMatch(/"Your path is ready"/);
+    expect(t).toMatch(/"Fix before it sticks"/);
+    expect(t).toMatch(/practice call with Alphonso, hang up, then call again/);
     expect(t).toMatch(/level test is in English only for now/);
     expect(t).toMatch(/support@learnwithalphonso.com/);
   });
