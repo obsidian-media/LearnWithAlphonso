@@ -62,7 +62,7 @@
           "Le prochain train part quand, s'il vous plaît ?",
           "Quand est-ce que le prochain train part, s'il vous plaît ?"
         ],
-        "explanation": "\"Quand part le prochain train, s'il vous plaît ?\" means \"When does the next train leave, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you do not know."
+        "explanation": "\"Quand part le prochain train, s'il vous plaît ?\" means \"When does the next train leave, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you address as vous."
       },
       "work": {
         "prompt": "Ask your manager politely when the meeting starts.",
@@ -72,7 +72,7 @@
           "La réunion commence quand, s'il vous plaît ?",
           "Quand est-ce que la réunion commence, s'il vous plaît ?"
         ],
-        "explanation": "\"Quand commence la réunion, s'il vous plaît ?\" means \"When does the meeting start, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you do not know."
+        "explanation": "\"Quand commence la réunion, s'il vous plaît ?\" means \"When does the meeting start, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you address as vous."
       },
       "school": {
         "prompt": "Ask your teacher politely when the class starts.",
@@ -82,7 +82,7 @@
           "Le cours commence quand, s'il vous plaît ?",
           "Quand est-ce que le cours commence, s'il vous plaît ?"
         ],
-        "explanation": "\"Quand commence le cours, s'il vous plaît ?\" means \"When does the class start, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you do not know."
+        "explanation": "\"Quand commence le cours, s'il vous plaît ?\" means \"When does the class start, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you address as vous."
       }
     }
   },
@@ -221,7 +221,7 @@
           "L'hôtel n'est pas près de la gare.",
           "L'hôtel est assez loin de la gare."
         ],
-        "explanation": "\"L'hôtel est loin de la gare.\" means \"The hotel is far from the station\". \"loin de\" joins with the article that follows: loin de la gare, loin du bureau, loin de l'école."
+        "explanation": "\"L'hôtel est loin de la gare.\" means \"The hotel is far from the station\". \"loin de\" joins with the article that follows: \"de la\" before gare."
       },
       "work": {
         "prompt": "Say that the office is far from your house.",
@@ -231,7 +231,7 @@
           "Le bureau n'est pas près de ma maison.",
           "Le bureau est assez loin de ma maison."
         ],
-        "explanation": "\"Le bureau est loin de ma maison.\" means \"The office is far from my house\". \"loin de\" joins with the article that follows: loin de la gare, loin du bureau, loin de l'école."
+        "explanation": "\"Le bureau est loin de ma maison.\" means \"The office is far from my house\". \"loin de\" joins with the article that follows: \"de\" and \"ma\" before maison."
       },
       "school": {
         "prompt": "Say that the library is far from the school.",
@@ -241,7 +241,7 @@
           "La bibliothèque n'est pas près de l'école.",
           "La bibliothèque est assez loin de l'école."
         ],
-        "explanation": "\"La bibliothèque est loin de l'école.\" means \"The library is far from the school\". \"loin de\" joins with the article that follows: loin de la gare, loin du bureau, loin de l'école."
+        "explanation": "\"La bibliothèque est loin de l'école.\" means \"The library is far from the school\". \"loin de\" joins with the article that follows: \"de l'\" before école."
       }
     }
   },
@@ -420,7 +420,7 @@
           "J'aimerais acheter une carte postale au kiosque.",
           "Au kiosque, je voudrais acheter une carte postale."
         ],
-        "explanation": "\"Je voudrais acheter une carte postale au kiosque.\" means \"I would like to buy a postcard at the kiosk\". \"à\" joins with the article that follows: au kiosque, à la librairie, au magasin."
+        "explanation": "\"Je voudrais acheter une carte postale au kiosque.\" means \"I would like to buy a postcard at the kiosk\". \"à\" joins with the article that follows: \"au\" before a masculine word like kiosque."
       },
       "work": {
         "prompt": "Say that you would like to buy office supplies at the store.",
@@ -430,7 +430,7 @@
           "J'aimerais acheter des fournitures de bureau au magasin.",
           "Au magasin, je voudrais acheter des fournitures de bureau."
         ],
-        "explanation": "\"Je voudrais acheter des fournitures de bureau au magasin.\" means \"I would like to buy office supplies at the store\". \"à\" joins with the article that follows: au kiosque, à la librairie, au magasin."
+        "explanation": "\"Je voudrais acheter des fournitures de bureau au magasin.\" means \"I would like to buy office supplies at the store\". \"à\" joins with the article that follows: \"au\" before a masculine word like magasin."
       },
       "school": {
         "prompt": "Say that you would like to buy a notebook at the bookstore.",
@@ -440,7 +440,7 @@
           "J'aimerais acheter un cahier à la librairie.",
           "À la librairie, je voudrais acheter un cahier."
         ],
-        "explanation": "\"Je voudrais acheter un cahier à la librairie.\" means \"I would like to buy a notebook at the bookstore\". \"à\" joins with the article that follows: au kiosque, à la librairie, au magasin."
+        "explanation": "\"Je voudrais acheter un cahier à la librairie.\" means \"I would like to buy a notebook at the bookstore\". \"à\" joins with the article that follows: \"à la\" before a feminine word like librairie."
       }
     }
   },
@@ -526,7 +526,7 @@
           "Je prendrai la soupe, s'il vous plaît.",
           "La soupe, s'il vous plaît."
         ],
-        "explanation": "\"Je voudrais la soupe, s'il vous plaît.\" means \"I would like the soup, please\". \"Je voudrais\" is the polite way to ask for something, and \"le\" goes with a masculine dish."
+        "explanation": "\"Je voudrais la soupe, s'il vous plaît.\" means \"I would like the soup, please\". \"Je voudrais\" is the polite way to ask for something, and \"la\" goes with a feminine dish like soupe."
       },
       "work": {
         "prompt": "At a business lunch, tell the waiter politely that you would like the fish.",
@@ -536,7 +536,7 @@
           "Je prendrai le poisson, s'il vous plaît.",
           "Le poisson, s'il vous plaît."
         ],
-        "explanation": "\"Je voudrais le poisson, s'il vous plaît.\" means \"I would like the fish, please\". \"Je voudrais\" is the polite way to ask for something, and \"le\" goes with a masculine dish."
+        "explanation": "\"Je voudrais le poisson, s'il vous plaît.\" means \"I would like the fish, please\". \"Je voudrais\" is the polite way to ask for something, and \"le\" goes with a masculine dish like poisson."
       },
       "school": {
         "prompt": "At the school cafeteria, tell the server politely that you would like the chicken.",
@@ -546,7 +546,7 @@
           "Je prendrai le poulet, s'il vous plaît.",
           "Le poulet, s'il vous plaît."
         ],
-        "explanation": "\"Je voudrais le poulet, s'il vous plaît.\" means \"I would like the chicken, please\". \"Je voudrais\" is the polite way to ask for something, and \"le\" goes with a masculine dish."
+        "explanation": "\"Je voudrais le poulet, s'il vous plaît.\" means \"I would like the chicken, please\". \"Je voudrais\" is the polite way to ask for something, and \"le\" goes with a masculine dish like poulet."
       }
     }
   },
@@ -702,7 +702,7 @@
           "La clé est à l'intérieur de la chambre.",
           "La clé se trouve à l'intérieur de la chambre."
         ],
-        "explanation": "\"La clé est dans la chambre.\" means \"The key is in the room\". \"dans\" means in or inside, and the article agrees with the place: dans la chambre, dans la salle."
+        "explanation": "\"La clé est dans la chambre.\" means \"The key is in the room\". \"dans\" means in or inside, and the article agrees with the place: \"la\" before chambre."
       },
       "work": {
         "prompt": "Say that the report is in the meeting room.",
@@ -712,7 +712,7 @@
           "Le rapport est à l'intérieur de la salle de réunion.",
           "Le rapport se trouve à l'intérieur de la salle de réunion."
         ],
-        "explanation": "\"Le rapport est dans la salle de réunion.\" means \"The report is in the meeting room\". \"dans\" means in or inside, and the article agrees with the place: dans la chambre, dans la salle."
+        "explanation": "\"Le rapport est dans la salle de réunion.\" means \"The report is in the meeting room\". \"dans\" means in or inside, and the article agrees with the place: \"la\" before salle."
       },
       "school": {
         "prompt": "Say that the dictionary is in the library.",
@@ -722,7 +722,7 @@
           "Le dictionnaire est à l'intérieur de la bibliothèque.",
           "Le dictionnaire se trouve à l'intérieur de la bibliothèque."
         ],
-        "explanation": "\"Le dictionnaire est dans la bibliothèque.\" means \"The dictionary is in the library\". \"dans\" means in or inside, and the article agrees with the place: dans la chambre, dans la salle."
+        "explanation": "\"Le dictionnaire est dans la bibliothèque.\" means \"The dictionary is in the library\". \"dans\" means in or inside, and the article agrees with the place: \"la\" before bibliothèque."
       }
     }
   },
@@ -795,7 +795,7 @@
           "J'ai besoin d'une carte de la ville.",
           "Il me faut une carte de la ville."
         ],
-        "explanation": "\"J'ai besoin d'un plan de la ville.\" means \"I need a map of the city\". \"avoir besoin de\" always keeps \"de\", and it joins with the article: du rapport, d'un plan."
+        "explanation": "\"J'ai besoin d'un plan de la ville.\" means \"I need a map of the city\". The expression avoir besoin de always keeps \"de\", which becomes \"d'\" before \"un\"."
       },
       "work": {
         "prompt": "Say that you need the report for the meeting.",
@@ -805,7 +805,7 @@
           "Pour la réunion, j'ai besoin du rapport.",
           "Pour la réunion, il me faut le rapport."
         ],
-        "explanation": "\"J'ai besoin du rapport pour la réunion.\" means \"I need the report for the meeting\". \"avoir besoin de\" always keeps \"de\", and it joins with the article: du rapport, d'un plan."
+        "explanation": "\"J'ai besoin du rapport pour la réunion.\" means \"I need the report for the meeting\". The expression avoir besoin de always keeps \"de\", which joins with \"le\" to make \"du\"."
       },
       "school": {
         "prompt": "Say that you need the dictionary for the class.",
@@ -815,7 +815,7 @@
           "Pour le cours, j'ai besoin du dictionnaire.",
           "Pour le cours, il me faut le dictionnaire."
         ],
-        "explanation": "\"J'ai besoin du dictionnaire pour le cours.\" means \"I need the dictionary for the class\". \"avoir besoin de\" always keeps \"de\", and it joins with the article: du rapport, d'un plan."
+        "explanation": "\"J'ai besoin du dictionnaire pour le cours.\" means \"I need the dictionary for the class\". The expression avoir besoin de always keeps \"de\", which joins with \"le\" to make \"du\"."
       }
     }
   },
@@ -1085,7 +1085,7 @@
           "Je me rends à la plage à vélo.",
           "À vélo, je vais à la plage."
         ],
-        "explanation": "\"Je vais à la plage à vélo.\" means \"I go to the beach by bike\". \"à\" joins with the article of the place (à la plage, au bureau, à l'école), and \"à vélo\" says how you go."
+        "explanation": "\"Je vais à la plage à vélo.\" means \"I go to the beach by bike\". \"à\" joins with the article of the place, here \"à la\" before plage, and \"à vélo\" says how you go."
       },
       "work": {
         "prompt": "Say that you go to the office by bike.",
@@ -1095,7 +1095,7 @@
           "Je me rends au bureau à vélo.",
           "À vélo, je vais au bureau."
         ],
-        "explanation": "\"Je vais au bureau à vélo.\" means \"I go to the office by bike\". \"à\" joins with the article of the place (à la plage, au bureau, à l'école), and \"à vélo\" says how you go."
+        "explanation": "\"Je vais au bureau à vélo.\" means \"I go to the office by bike\". \"à\" joins with the article of the place, here \"au\" before bureau, and \"à vélo\" says how you go."
       },
       "school": {
         "prompt": "Say that you go to school by bike.",
@@ -1105,7 +1105,7 @@
           "Je me rends à l'école à vélo.",
           "À vélo, je vais à l'école."
         ],
-        "explanation": "\"Je vais à l'école à vélo.\" means \"I go to school by bike\". \"à\" joins with the article of the place (à la plage, au bureau, à l'école), and \"à vélo\" says how you go."
+        "explanation": "\"Je vais à l'école à vélo.\" means \"I go to school by bike\". \"à\" joins with the article of the place, here \"à l'\" before école, and \"à vélo\" says how you go."
       }
     }
   },
@@ -1170,9 +1170,9 @@
           "Les touristes voyagent en train.",
           "Les touristes se déplacent en train.",
           "Les touristes prennent le train.",
-          "Les touristes voyagent par le train."
+          "Les touristes prennent le train pour voyager."
         ],
-        "explanation": "\"Les touristes voyagent en train.\" means \"The tourists are traveling by train\". With a plural subject the verb takes its plural ending: \"voyagent\" and \"vont\"."
+        "explanation": "\"Les touristes voyagent en train.\" means \"The tourists are traveling by train\". With a plural subject the verb takes its plural ending: \"voyagent\"."
       },
       "work": {
         "prompt": "Say that the employees are traveling by subway.",
@@ -1180,9 +1180,9 @@
           "Les employés voyagent en métro.",
           "Les employés se déplacent en métro.",
           "Les employés prennent le métro.",
-          "Les employés voyagent par le métro."
+          "Les employés prennent le métro pour voyager."
         ],
-        "explanation": "\"Les employés voyagent en métro.\" means \"The employees are traveling by subway\". With a plural subject the verb takes its plural ending: \"voyagent\" and \"vont\"."
+        "explanation": "\"Les employés voyagent en métro.\" means \"The employees are traveling by subway\". With a plural subject the verb takes its plural ending: \"voyagent\"."
       },
       "school": {
         "prompt": "Say that the students are going to school by bus.",
@@ -1192,7 +1192,7 @@
           "Les élèves prennent le bus pour l'école.",
           "Les élèves se rendent à l'école en bus."
         ],
-        "explanation": "\"Les élèves vont à l'école en bus.\" means \"The students are going to school by bus\". With a plural subject the verb takes its plural ending: \"voyagent\" and \"vont\"."
+        "explanation": "\"Les élèves vont à l'école en bus.\" means \"The students are going to school by bus\". With a plural subject the verb takes its plural ending: \"vont\"."
       }
     }
   },
@@ -1240,7 +1240,7 @@
           "Je suis du Canada et je suis en vacances.",
           "Je viens du Canada, je suis ici en vacances."
         ],
-        "explanation": "\"Je viens du Canada et je suis en vacances.\" means \"I come from Canada and I am on vacation\". \"venir de\" says where you come from, and \"pour\" says why you are here."
+        "explanation": "\"Je viens du Canada et je suis en vacances.\" means \"I come from Canada and I am on vacation\". \"venir de\" says where you come from, and \"en vacances\" says why you are here."
       },
       "work": {
         "prompt": "Say that you come from Canada and that you are here for work.",
@@ -1397,7 +1397,7 @@
           "Il porte un chapeau blanc."
         ],
         "answer": "Elle porte un chapeau blanc.",
-        "explanation": "\"Elle porte un chapeau blanc.\" means \"She is wearing a white hat\". The adjective agrees with the noun, so \"blanc\" with a masculine word and \"noire\" with a feminine one."
+        "explanation": "\"Elle porte un chapeau blanc.\" means \"She is wearing a white hat\". The adjective agrees with the noun: \"chapeau\" is masculine, so \"blanc\"."
       },
       "work": {
         "prompt": "What did you hear?",
@@ -1409,7 +1409,7 @@
           "Il porte une veste noire."
         ],
         "answer": "Elle porte une veste noire.",
-        "explanation": "\"Elle porte une veste noire.\" means \"She is wearing a black jacket\". The adjective agrees with the noun, so \"blanc\" with a masculine word and \"noire\" with a feminine one."
+        "explanation": "\"Elle porte une veste noire.\" means \"She is wearing a black jacket\". The adjective agrees with the noun: \"veste\" is feminine, so \"noire\"."
       },
       "school": {
         "prompt": "What did you hear?",
@@ -1421,7 +1421,7 @@
           "Il porte un sac bleu."
         ],
         "answer": "Elle porte un sac bleu.",
-        "explanation": "\"Elle porte un sac bleu.\" means \"She is carrying a blue bag\". The adjective agrees with the noun, so \"blanc\" with a masculine word and \"noire\" with a feminine one."
+        "explanation": "\"Elle porte un sac bleu.\" means \"She is carrying a blue bag\". The adjective agrees with the noun: \"sac\" is masculine, so \"bleu\"."
       }
     }
   },
@@ -1522,7 +1522,7 @@
           "J'ai mal à la jambe après le vol."
         ],
         "answer": "J'ai mal à la tête après le vol.",
-        "explanation": "\"J'ai mal à la tête après le vol.\" means \"I have a headache after the flight\". \"avoir mal à\" joins with the body part, and the other choices change the body part or the moment."
+        "explanation": "\"J'ai mal à la tête après le vol.\" means \"I have a headache after the flight\". avoir mal à joins with the body part, and the other choices change the body part or the moment."
       },
       "work": {
         "prompt": "What did you hear?",
@@ -1534,7 +1534,7 @@
           "J'ai mal à la jambe après la réunion."
         ],
         "answer": "J'ai mal à la tête après la réunion.",
-        "explanation": "\"J'ai mal à la tête après la réunion.\" means \"I have a headache after the meeting\". \"avoir mal à\" joins with the body part, and the other choices change the body part or the moment."
+        "explanation": "\"J'ai mal à la tête après la réunion.\" means \"I have a headache after the meeting\". avoir mal à joins with the body part, and the other choices change the body part or the moment."
       },
       "school": {
         "prompt": "What did you hear?",
@@ -1546,7 +1546,7 @@
           "J'ai mal à la jambe après le cours."
         ],
         "answer": "J'ai mal à la tête après le cours.",
-        "explanation": "\"J'ai mal à la tête après le cours.\" means \"I have a headache after class\". \"avoir mal à\" joins with the body part, and the other choices change the body part or the moment."
+        "explanation": "\"J'ai mal à la tête après le cours.\" means \"I have a headache after class\". avoir mal à joins with the body part, and the other choices change the body part or the moment."
       }
     }
   },
@@ -1560,7 +1560,7 @@
           "Mes pieds me font mal après la promenade.",
           "Après la promenade, mes pieds me font mal."
         ],
-        "explanation": "\"J'ai mal aux pieds après la promenade.\" means \"My feet hurt after the walk\". \"avoir mal à\" joins with the body part: \"au\" before a masculine word, \"aux\" before a plural."
+        "explanation": "\"J'ai mal aux pieds après la promenade.\" means \"My feet hurt after the walk\". With the body part, \"à\" joins with the article: \"aux\" before a plural like pieds."
       },
       "work": {
         "prompt": "Say that your back hurts after the meeting.",
@@ -1570,7 +1570,7 @@
           "Mon dos me fait mal après la réunion.",
           "Après la réunion, mon dos me fait mal."
         ],
-        "explanation": "\"J'ai mal au dos après la réunion.\" means \"My back hurts after the meeting\". \"avoir mal à\" joins with the body part: \"au\" before a masculine word, \"aux\" before a plural."
+        "explanation": "\"J'ai mal au dos après la réunion.\" means \"My back hurts after the meeting\". With the body part, \"à\" joins with the article: \"au\" before a masculine word like dos."
       },
       "school": {
         "prompt": "Say that your arm hurts after sports class.",
@@ -1580,7 +1580,7 @@
           "Mon bras me fait mal après le cours de sport.",
           "Après le cours de sport, mon bras me fait mal."
         ],
-        "explanation": "\"J'ai mal au bras après le cours de sport.\" means \"My arm hurts after sports class\". \"avoir mal à\" joins with the body part: \"au\" before a masculine word, \"aux\" before a plural."
+        "explanation": "\"J'ai mal au bras après le cours de sport.\" means \"My arm hurts after sports class\". With the body part, \"à\" joins with the article: \"au\" before a masculine word like bras."
       }
     }
   },
@@ -1611,7 +1611,7 @@
           "Mon hôtel est près de la gare.",
           "Je séjourne dans un hôtel près de la gare."
         ],
-        "explanation": "\"Je suis dans un hôtel près de la gare.\" means \"I am in a hotel near the station\". \"dans\" means in or inside and goes before the article: dans un, dans une."
+        "explanation": "\"Je suis dans un hôtel près de la gare.\" means \"I am in a hotel near the station\". \"dans\" means in or inside and goes before the article, here \"un\" for a masculine word."
       },
       "work": {
         "prompt": "Say that you work in an office downtown.",
@@ -1621,17 +1621,17 @@
           "Mon bureau est en ville.",
           "Je travaille en ville, dans un bureau."
         ],
-        "explanation": "\"Je travaille dans un bureau en ville.\" means \"I work in an office downtown\". \"dans\" means in or inside and goes before the article: dans un, dans une."
+        "explanation": "\"Je travaille dans un bureau en ville.\" means \"I work in an office downtown\". \"dans\" means in or inside and goes before the article, here \"un\" for a masculine word."
       },
       "school": {
         "prompt": "Say that you live in a student apartment.",
         "acceptableAnswers": [
           "J'habite dans un appartement d'étudiants.",
           "Je vis dans un appartement d'étudiants.",
-          "J'habite dans un appartement étudiant.",
-          "Je vis dans un appartement étudiant."
+          "J'habite dans un logement d'étudiants.",
+          "Je vis dans un logement d'étudiants."
         ],
-        "explanation": "\"J'habite dans un appartement d'étudiants.\" means \"I live in a student apartment\". \"dans\" means in or inside and goes before the article: dans un, dans une."
+        "explanation": "\"J'habite dans un appartement d'étudiants.\" means \"I live in a student apartment\". \"dans\" means in or inside and goes before the article, here \"un\" for a masculine word."
       }
     }
   },
@@ -1844,7 +1844,7 @@
           "J'aimerais aider un touriste.",
           "Je souhaite aider un touriste."
         ],
-        "explanation": "\"Je veux aider un touriste.\" means \"I want to help a tourist\". \"aider\" takes the person directly, and the possessive agrees with the noun: \"mon\" before a masculine word."
+        "explanation": "\"Je veux aider un touriste.\" means \"I want to help a tourist\". \"aider\" takes the person directly, with no preposition, and \"un\" goes with a masculine noun."
       },
       "work": {
         "prompt": "Say that you want to help your colleague.",
