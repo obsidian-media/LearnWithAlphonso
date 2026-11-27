@@ -251,3 +251,21 @@ export const STAGE_BLURBS: Record<Stage, string> = {
   conversation: "The whole conversation, start to finish.",
   hard_moments: "The tough question, a misunderstanding, being interrupted.",
 };
+
+/** About how long one run of a stage takes, in minutes (the plan screen and the path say it). */
+export const STAGE_MINUTES: Record<Stage, number> = {
+  warmup: 5,
+  conversation: 10,
+  hard_moments: 8,
+};
+
+/** The event as a short noun after "your" ("the 2-minute warm-up before your interview"). */
+export const EVENT_SHORT: Record<EventKind, string> = {
+  interview: "interview",
+  meeting: "meeting",
+  presentation: "presentation",
+  appointment: "appointment",
+  housing: "meeting with the landlord",
+  first_day: "first day",
+  other: "conversation",
+};

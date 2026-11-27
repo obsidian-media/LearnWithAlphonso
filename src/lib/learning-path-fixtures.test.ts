@@ -69,6 +69,29 @@ const scenarios: Record<string, PathData> = {
       },
     ],
   },
+  // Rehearsals: an active rehearsal adds one pinned item (outside the mix). Next stage, then the event day itself.
+  rehearsalStage: {
+    ...base,
+    rehearsal: {
+      id: "11111111-1111-4111-8111-111111111111",
+      eventKind: "interview",
+      eventDate: "2026-11-16",
+      nextStage: "conversation",
+      allDone: false,
+      lastRunDay: "2026-11-09",
+    },
+  },
+  rehearsalEventDay: {
+    ...base,
+    rehearsal: {
+      id: "11111111-1111-4111-8111-111111111111",
+      eventKind: "interview",
+      eventDate: "2026-11-11",
+      nextStage: "hard_moments",
+      allDone: false,
+      lastRunDay: "2026-11-09",
+    },
+  },
   noRestDay: { ...base, profile: { ...base.profile, pathRestDay: "none" } },
   // v2: no saved goal. The path is built from a SUGGESTED one (goal.suggested) and nothing is saved.
   noGoal: { ...base, goal: null },
@@ -136,6 +159,17 @@ describe("learning path contract fixtures", () => {
     expect(stops).toHaveLength(1);
     expect(stops[0].ref).toEqual({ kind: "video", id: "vid-order" });
     expect(built.behind?.mix.find((m) => m.type === "video")?.minutes).toBe(0);
+  });
+  it("the rehearsal scenarios carry one pinned item, and nothing else changes", () => {
+    expect(built.rehearsalStage?.pinned).toHaveLength(1);
+    expect(built.rehearsalStage?.pinned[0]).toMatchObject({ kind: "stage", stage: "conversation" });
+    expect(built.rehearsalEventDay?.pinned[0]).toMatchObject({
+      kind: "warmup_today",
+      hero: true,
+      minutes: 2,
+    });
+    expect(built.behind?.pinned).toEqual([]);
+    expect(built.rehearsalStage?.today).toEqual(built.behind?.today);
   });
   it("the no-goal scenario is a suggested path: the next level, an ok date, flagged suggested", () => {
     const p = built.noGoal!;

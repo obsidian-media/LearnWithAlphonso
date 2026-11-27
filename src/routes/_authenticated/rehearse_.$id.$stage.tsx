@@ -98,6 +98,7 @@ function RehearseCallPage() {
           onRetry={() => setAttempt((a) => a + 1)}
           source={{ kind: "rehearsal", id: rehearsal.id, stage: stageName }}
           backTo="/rehearse"
+          rehearsalTitle={`${EVENT_KIND_LABELS[rehearsal.eventKind]} rehearsal`}
         />
       </AiConsentGate>
     </SaveWordProvider>

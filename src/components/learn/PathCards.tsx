@@ -5,6 +5,7 @@ import { saveGoal } from "@/lib/learning-goal-client";
 import { usePath } from "@/lib/learning-path-client";
 import type { LearningPath } from "@/lib/path-plan";
 import { ItemLink, ItemRow } from "../path/PathParts";
+import { PinnedRows } from "./PinnedRehearsal";
 
 const CARD = "rounded-[18px] border-2 border-ds-line bg-ds-card p-3";
 
@@ -65,7 +66,8 @@ export function PathReadyCard({
 /** "Today": the normal plan. The weak-spot items are not here; they have their own card below. */
 export function TodayCard({ path }: { path: LearningPath }) {
   const items = path.today.items;
-  if (items.length === 0) return null;
+  const pinned = path.pinned ?? [];
+  if (items.length === 0 && pinned.length === 0) return null;
   const done = items.filter((i) => i.state === "done").length;
   return (
     <section aria-label="Today" className={`${CARD} grid gap-2`}>
@@ -76,6 +78,8 @@ export function TodayCard({ path }: { path: LearningPath }) {
         </span>
       </div>
       <ul className="grid gap-2">
+        {/* The rehearsal's one item for today comes first, highlighted. It is not part of the minutes above. */}
+        <PinnedRows pinned={pinned} />
         {items.map((item) => (
           <li key={`${item.type}-${item.id}`}>
             <ItemRow item={item} />
