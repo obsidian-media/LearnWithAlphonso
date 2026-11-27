@@ -14402,7 +14402,42 @@
               ],
               "answer": 0,
               "explanation": "The subject \"je\" takes the -e ending for regular -er verbs, so parler becomes \"parle\"; \"parles\", \"parlent\" and \"parlez\" belong to tu, ils and vous.",
-              "meaning": "I speak"
+              "meaning": "I speak",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (parler) français à l'hôtel.",
+                  "choices": [
+                    "parle",
+                    "parles",
+                    "parlent",
+                    "parlez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"parler\" is \"parle\". A regular -er verb ends in -e after \"je\". Je parle français à l'hôtel. (I speak French at the hotel)"
+                },
+                "work": {
+                  "prompt": "Je ___ (parler) français avec mes clients.",
+                  "choices": [
+                    "parle",
+                    "parles",
+                    "parlent",
+                    "parlez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"parler\" is \"parle\". A regular -er verb ends in -e after \"je\". Je parle français avec mes clients. (I speak French with my clients)"
+                },
+                "school": {
+                  "prompt": "Je ___ (parler) français en classe.",
+                  "choices": [
+                    "parle",
+                    "parles",
+                    "parlent",
+                    "parlez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"parler\" is \"parle\". A regular -er verb ends in -e after \"je\". Je parle français en classe. (I speak French in class)"
+                }
+              }
             },
             {
               "id": "fra2p1q1",
@@ -14416,7 +14451,42 @@
               ],
               "answer": "mange",
               "explanation": "With \"je\", a regular -er verb like manger drops -er and adds -e, giving \"mange\"; the other forms go with tu, ils or nous.",
-              "meaning": "I eat"
+              "meaning": "I eat",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (manger) au restaurant de l'hôtel.",
+                  "bank": [
+                    "manges",
+                    "mangent",
+                    "mange",
+                    "mangeons"
+                  ],
+                  "answer": "mange",
+                  "explanation": "With \"je\", the present tense of \"manger\" is \"mange\". A regular -er verb ends in -e after \"je\". Je mange au restaurant de l'hôtel. (I eat at the hotel restaurant)"
+                },
+                "work": {
+                  "prompt": "Je ___ (manger) à la cantine de l'entreprise.",
+                  "bank": [
+                    "manges",
+                    "mangent",
+                    "mange",
+                    "mangeons"
+                  ],
+                  "answer": "mange",
+                  "explanation": "With \"je\", the present tense of \"manger\" is \"mange\". A regular -er verb ends in -e after \"je\". Je mange à la cantine de l'entreprise. (I eat at the company cafeteria)"
+                },
+                "school": {
+                  "prompt": "Je ___ (manger) à la cantine de l'école.",
+                  "bank": [
+                    "manges",
+                    "mangent",
+                    "mange",
+                    "mangeons"
+                  ],
+                  "answer": "mange",
+                  "explanation": "With \"je\", the present tense of \"manger\" is \"mange\". A regular -er verb ends in -e after \"je\". Je mange à la cantine de l'école. (I eat at the school cafeteria)"
+                }
+              }
             },
             {
               "id": "fra2p1q2",
@@ -14431,7 +14501,42 @@
               "answer": 2,
               "explanation": "The irregular verb avoir has the form \"ai\" for \"je\" (written j'ai before a vowel); \"a\", \"avons\" and \"ont\" go with il, nous and ils.",
               "meaning": "I have, with je",
-              "example": "J'ai faim ce matin."
+              "example": "J'ai faim ce matin.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "J'___ (avoir) une réservation à l'hôtel.",
+                  "choices": [
+                    "ont",
+                    "avons",
+                    "ai",
+                    "a"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"avoir\" is \"ai\". \"avoir\" is irregular in the \"je\" form. J'ai une réservation à l'hôtel. (I have a reservation at the hotel)"
+                },
+                "work": {
+                  "prompt": "J'___ (avoir) une réunion à dix heures.",
+                  "choices": [
+                    "ont",
+                    "avons",
+                    "ai",
+                    "a"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"avoir\" is \"ai\". \"avoir\" is irregular in the \"je\" form. J'ai une réunion à dix heures. (I have a meeting at ten o'clock)"
+                },
+                "school": {
+                  "prompt": "J'___ (avoir) un cours de maths demain.",
+                  "choices": [
+                    "ont",
+                    "avons",
+                    "ai",
+                    "a"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"avoir\" is \"ai\". \"avoir\" is irregular in the \"je\" form. J'ai un cours de maths demain. (I have a math class tomorrow)"
+                }
+              }
             },
             {
               "id": "fra2p1q3",
@@ -14445,7 +14550,42 @@
               ],
               "answer": "suis",
               "explanation": "The irregular verb être has the form \"suis\" for \"je\"; \"es\" goes with tu, \"sommes\" with nous and \"êtes\" with vous.",
-              "meaning": "I am"
+              "meaning": "I am",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (être) à l'aéroport.",
+                  "bank": [
+                    "êtes",
+                    "es",
+                    "suis",
+                    "sommes"
+                  ],
+                  "answer": "suis",
+                  "explanation": "With \"je\", the present tense of \"être\" is \"suis\". \"être\" is irregular in the \"je\" form. Je suis à l'aéroport. (I am at the airport)"
+                },
+                "work": {
+                  "prompt": "Je ___ (être) au bureau.",
+                  "bank": [
+                    "êtes",
+                    "es",
+                    "suis",
+                    "sommes"
+                  ],
+                  "answer": "suis",
+                  "explanation": "With \"je\", the present tense of \"être\" is \"suis\". \"être\" is irregular in the \"je\" form. Je suis au bureau. (I am at the office)"
+                },
+                "school": {
+                  "prompt": "Je ___ (être) à l'école.",
+                  "bank": [
+                    "êtes",
+                    "es",
+                    "suis",
+                    "sommes"
+                  ],
+                  "answer": "suis",
+                  "explanation": "With \"je\", the present tense of \"être\" is \"suis\". \"être\" is irregular in the \"je\" form. Je suis à l'école. (I am at school)"
+                }
+              }
             },
             {
               "id": "fra2p1q4",
@@ -14459,7 +14599,42 @@
               ],
               "answer": 0,
               "explanation": "Aller is irregular, and its \"je\" form is \"vais\"; \"vas\" is the tu form, \"va\" the il/elle form and \"allez\" the vous form.",
-              "meaning": "I go, I am going"
+              "meaning": "I go, I am going",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (aller) à la gare.",
+                  "choices": [
+                    "vais",
+                    "va",
+                    "allez",
+                    "vas"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"aller\" is \"vais\". \"aller\" is irregular in the \"je\" form. Je vais à la gare. (I go to the train station)"
+                },
+                "work": {
+                  "prompt": "Je ___ (aller) à la réunion.",
+                  "choices": [
+                    "vais",
+                    "va",
+                    "allez",
+                    "vas"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"aller\" is \"vais\". \"aller\" is irregular in the \"je\" form. Je vais à la réunion. (I go to the meeting)"
+                },
+                "school": {
+                  "prompt": "Je ___ (aller) à la bibliothèque.",
+                  "choices": [
+                    "vais",
+                    "va",
+                    "allez",
+                    "vas"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"aller\" is \"vais\". \"aller\" is irregular in the \"je\" form. Je vais à la bibliothèque. (I go to the library)"
+                }
+              }
             },
             {
               "id": "lx1",
@@ -14513,7 +14688,42 @@
               ],
               "answer": "fais",
               "explanation": "The irregular verb faire has the form \"fais\" for \"je\" (and tu); \"fait\" is il/elle, \"faisons\" nous and \"font\" ils.",
-              "meaning": "I do, I make"
+              "meaning": "I do, I make",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (faire) ma valise.",
+                  "bank": [
+                    "font",
+                    "fais",
+                    "faisons",
+                    "fait"
+                  ],
+                  "answer": "fais",
+                  "explanation": "With \"je\", the present tense of \"faire\" is \"fais\". \"faire\" is irregular in the \"je\" form. Je fais ma valise. (I pack my suitcase)"
+                },
+                "work": {
+                  "prompt": "Je ___ (faire) mon travail.",
+                  "bank": [
+                    "font",
+                    "fais",
+                    "faisons",
+                    "fait"
+                  ],
+                  "answer": "fais",
+                  "explanation": "With \"je\", the present tense of \"faire\" is \"fais\". \"faire\" is irregular in the \"je\" form. Je fais mon travail. (I do my job)"
+                },
+                "school": {
+                  "prompt": "Je ___ (faire) mes exercices de maths.",
+                  "bank": [
+                    "font",
+                    "fais",
+                    "faisons",
+                    "fait"
+                  ],
+                  "answer": "fais",
+                  "explanation": "With \"je\", the present tense of \"faire\" is \"fais\". \"faire\" is irregular in the \"je\" form. Je fais mes exercices de maths. (I do my math exercises)"
+                }
+              }
             },
             {
               "id": "fra2p1q6",
@@ -14527,7 +14737,42 @@
               ],
               "answer": 2,
               "explanation": "Vouloir is irregular and its \"je\" form is \"veux\"; \"veut\" goes with il/elle, while \"voulons\" and \"voulez\" go with nous and vous.",
-              "meaning": "I want"
+              "meaning": "I want",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (vouloir) une chambre double.",
+                  "choices": [
+                    "voulons",
+                    "voulez",
+                    "veux",
+                    "veut"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"vouloir\" is \"veux\". \"vouloir\" is irregular in the \"je\" form. Je veux une chambre double. (I want a double room)"
+                },
+                "work": {
+                  "prompt": "Je ___ (vouloir) parler au directeur.",
+                  "choices": [
+                    "voulons",
+                    "voulez",
+                    "veux",
+                    "veut"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"vouloir\" is \"veux\". \"vouloir\" is irregular in the \"je\" form. Je veux parler au directeur. (I want to talk to the manager)"
+                },
+                "school": {
+                  "prompt": "Je ___ (vouloir) un nouveau cahier.",
+                  "choices": [
+                    "voulons",
+                    "voulez",
+                    "veux",
+                    "veut"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"vouloir\" is \"veux\". \"vouloir\" is irregular in the \"je\" form. Je veux un nouveau cahier. (I want a new notebook)"
+                }
+              }
             },
             {
               "id": "fra2p1q7",
@@ -14541,7 +14786,42 @@
               ],
               "answer": "peux",
               "explanation": "Pouvoir is irregular and its \"je\" form is \"peux\"; \"pouvons\", \"pouvez\" and \"peuvent\" go with nous, vous and ils.",
-              "meaning": "I can, I am able to"
+              "meaning": "I can, I am able to",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (pouvoir) t'aider avec tes bagages.",
+                  "bank": [
+                    "peux",
+                    "peuvent",
+                    "pouvez",
+                    "pouvons"
+                  ],
+                  "answer": "peux",
+                  "explanation": "With \"je\", the present tense of \"pouvoir\" is \"peux\". \"pouvoir\" is irregular in the \"je\" form. Je peux t'aider avec tes bagages. (I can help you with your luggage)"
+                },
+                "work": {
+                  "prompt": "Je ___ (pouvoir) t'aider avec ce dossier.",
+                  "bank": [
+                    "peux",
+                    "peuvent",
+                    "pouvez",
+                    "pouvons"
+                  ],
+                  "answer": "peux",
+                  "explanation": "With \"je\", the present tense of \"pouvoir\" is \"peux\". \"pouvoir\" is irregular in the \"je\" form. Je peux t'aider avec ce dossier. (I can help you with this file)"
+                },
+                "school": {
+                  "prompt": "Je ___ (pouvoir) t'aider avec tes devoirs.",
+                  "bank": [
+                    "peux",
+                    "peuvent",
+                    "pouvez",
+                    "pouvons"
+                  ],
+                  "answer": "peux",
+                  "explanation": "With \"je\", the present tense of \"pouvoir\" is \"peux\". \"pouvoir\" is irregular in the \"je\" form. Je peux t'aider avec tes devoirs. (I can help you with your homework)"
+                }
+              }
             },
             {
               "id": "fra2p1q8",
@@ -14555,7 +14835,42 @@
               ],
               "answer": 0,
               "explanation": "Savoir is irregular and its \"je\" form is \"sais\"; \"sait\" is il/elle, \"savez\" vous and \"savent\" ils.",
-              "meaning": "I know"
+              "meaning": "I know",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (savoir) où est la gare.",
+                  "choices": [
+                    "sais",
+                    "sait",
+                    "savent",
+                    "savez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"savoir\" is \"sais\". \"savoir\" is irregular in the \"je\" form. Je sais où est la gare. (I know where the train station is)"
+                },
+                "work": {
+                  "prompt": "Je ___ (savoir) l'heure de la réunion.",
+                  "choices": [
+                    "sais",
+                    "sait",
+                    "savent",
+                    "savez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"savoir\" is \"sais\". \"savoir\" is irregular in the \"je\" form. Je sais l'heure de la réunion. (I know the time of the meeting)"
+                },
+                "school": {
+                  "prompt": "Je ___ (savoir) ma leçon.",
+                  "choices": [
+                    "sais",
+                    "sait",
+                    "savent",
+                    "savez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"savoir\" is \"sais\". \"savoir\" is irregular in the \"je\" form. Je sais ma leçon. (I know my lesson)"
+                }
+              }
             },
             {
               "id": "fra2p1q9",
@@ -14569,7 +14884,42 @@
               ],
               "answer": "prends",
               "explanation": "Prendre takes \"prends\" with \"je\" (and tu); \"prend\" is il/elle, \"prenons\" nous and \"prennent\" ils.",
-              "meaning": "I take"
+              "meaning": "I take",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (prendre) le train pour Lyon.",
+                  "bank": [
+                    "prenons",
+                    "prend",
+                    "prennent",
+                    "prends"
+                  ],
+                  "answer": "prends",
+                  "explanation": "With \"je\", the present tense of \"prendre\" is \"prends\". \"prendre\" is irregular in the \"je\" form. Je prends le train pour Lyon. (I take the train to Lyon)"
+                },
+                "work": {
+                  "prompt": "Je ___ (prendre) le métro pour aller au bureau.",
+                  "bank": [
+                    "prenons",
+                    "prend",
+                    "prennent",
+                    "prends"
+                  ],
+                  "answer": "prends",
+                  "explanation": "With \"je\", the present tense of \"prendre\" is \"prends\". \"prendre\" is irregular in the \"je\" form. Je prends le métro pour aller au bureau. (I take the subway to go to the office)"
+                },
+                "school": {
+                  "prompt": "Je ___ (prendre) le bus scolaire.",
+                  "bank": [
+                    "prenons",
+                    "prend",
+                    "prennent",
+                    "prends"
+                  ],
+                  "answer": "prends",
+                  "explanation": "With \"je\", the present tense of \"prendre\" is \"prends\". \"prendre\" is irregular in the \"je\" form. Je prends le bus scolaire. (I take the school bus)"
+                }
+              }
             },
             {
               "id": "lx1",
@@ -14601,7 +14951,39 @@
                 "Aujourd'hui, je peux aider mon copain.",
                 "Aujourd'hui, je peux aider ma copine."
               ],
-              "explanation": "With \"je\", pouvoir becomes \"peux\" and is followed by an infinitive: \"Je peux t'aider aujourd'hui.\" Here \"t'\" means \"you\" before the verb."
+              "explanation": "With \"je\", pouvoir becomes \"peux\" and is followed by an infinitive: \"Je peux t'aider aujourd'hui.\" Here \"t'\" means \"you\" before the verb.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you can help the tourists today.",
+                  "acceptableAnswers": [
+                    "Je peux aider les touristes aujourd'hui.",
+                    "Aujourd'hui, je peux aider les touristes.",
+                    "Je peux donner un coup de main aux touristes aujourd'hui.",
+                    "Je suis en mesure d'aider les touristes aujourd'hui."
+                  ],
+                  "explanation": "\"Je peux aider les touristes aujourd'hui.\" means \"I can help the tourists today\". \"aider\" takes the person directly, and \"je peux\" is the je form of \"pouvoir\"."
+                },
+                "work": {
+                  "prompt": "Say that you can help your colleague today.",
+                  "acceptableAnswers": [
+                    "Je peux aider mon collègue aujourd'hui.",
+                    "Aujourd'hui, je peux aider mon collègue.",
+                    "Je peux donner un coup de main à mon collègue aujourd'hui.",
+                    "Je peux aider ma collègue aujourd'hui."
+                  ],
+                  "explanation": "\"Je peux aider mon collègue aujourd'hui.\" means \"I can help my colleague today\". \"aider\" takes the person directly, and \"je peux\" is the je form of \"pouvoir\"."
+                },
+                "school": {
+                  "prompt": "Say that you can help your classmate today.",
+                  "acceptableAnswers": [
+                    "Je peux aider mon camarade aujourd'hui.",
+                    "Aujourd'hui, je peux aider mon camarade.",
+                    "Je peux donner un coup de main à mon camarade aujourd'hui.",
+                    "Je peux aider mon camarade de classe aujourd'hui."
+                  ],
+                  "explanation": "\"Je peux aider mon camarade aujourd'hui.\" means \"I can help my classmate today\". \"aider\" takes the person directly, and \"je peux\" is the je form of \"pouvoir\"."
+                }
+              }
             }
           ]
         },
@@ -14622,7 +15004,42 @@
               ],
               "answer": "vois",
               "explanation": "Voir takes \"vois\" with \"je\"; \"voit\" is il/elle, \"voyons\" nous and \"voient\" ils.",
-              "meaning": "I see"
+              "meaning": "I see",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (voir) la mer depuis l'hôtel.",
+                  "bank": [
+                    "vois",
+                    "voyons",
+                    "voit",
+                    "voient"
+                  ],
+                  "answer": "vois",
+                  "explanation": "With \"je\", the present tense of \"voir\" is \"vois\". \"voir\" is irregular in the \"je\" form. Je vois la mer depuis l'hôtel. (I see the sea from the hotel)"
+                },
+                "work": {
+                  "prompt": "Je ___ (voir) mon directeur demain.",
+                  "bank": [
+                    "vois",
+                    "voyons",
+                    "voit",
+                    "voient"
+                  ],
+                  "answer": "vois",
+                  "explanation": "With \"je\", the present tense of \"voir\" is \"vois\". \"voir\" is irregular in the \"je\" form. Je vois mon directeur demain. (I see my manager tomorrow)"
+                },
+                "school": {
+                  "prompt": "Je ___ (voir) mes amis à l'école.",
+                  "bank": [
+                    "vois",
+                    "voyons",
+                    "voit",
+                    "voient"
+                  ],
+                  "answer": "vois",
+                  "explanation": "With \"je\", the present tense of \"voir\" is \"vois\". \"voir\" is irregular in the \"je\" form. Je vois mes amis à l'école. (I see my friends at school)"
+                }
+              }
             },
             {
               "id": "fra2p1q11",
@@ -14636,7 +15053,42 @@
               ],
               "answer": 2,
               "explanation": "Venir is irregular and its \"je\" form is \"viens\"; \"vient\" goes with il/elle, \"venons\" with nous and \"venez\" with vous.",
-              "meaning": "I come, I am coming"
+              "meaning": "I come, I am coming",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (venir) à l'hôtel demain.",
+                  "choices": [
+                    "venons",
+                    "venez",
+                    "viens",
+                    "vient"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"venir\" is \"viens\". \"venir\" is irregular in the \"je\" form. Je viens à l'hôtel demain. (I come to the hotel tomorrow)"
+                },
+                "work": {
+                  "prompt": "Je ___ (venir) au bureau demain.",
+                  "choices": [
+                    "venons",
+                    "venez",
+                    "viens",
+                    "vient"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"venir\" is \"viens\". \"venir\" is irregular in the \"je\" form. Je viens au bureau demain. (I come to the office tomorrow)"
+                },
+                "school": {
+                  "prompt": "Je ___ (venir) à l'école demain.",
+                  "choices": [
+                    "venons",
+                    "venez",
+                    "viens",
+                    "vient"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"venir\" is \"viens\". \"venir\" is irregular in the \"je\" form. Je viens à l'école demain. (I come to school tomorrow)"
+                }
+              }
             },
             {
               "id": "fra2p1q12",
@@ -14664,7 +15116,42 @@
               ],
               "answer": 0,
               "explanation": "Regular -ir verbs like finir take -s with \"je\": \"finis\". \"finit\" goes with il/elle, \"finissez\" with vous and \"finissent\" with ils/elles.",
-              "meaning": "I finish"
+              "meaning": "I finish",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (finir) ma visite du musée à midi.",
+                  "choices": [
+                    "finis",
+                    "finit",
+                    "finissent",
+                    "finissez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"finir\" is \"finis\". A regular -ir verb ends in -is after \"je\". Je finis ma visite du musée à midi. (I finish my museum visit at noon)"
+                },
+                "work": {
+                  "prompt": "Je ___ (finir) mon rapport ce soir.",
+                  "choices": [
+                    "finis",
+                    "finit",
+                    "finissent",
+                    "finissez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"finir\" is \"finis\". A regular -ir verb ends in -is after \"je\". Je finis mon rapport ce soir. (I finish my report tonight)"
+                },
+                "school": {
+                  "prompt": "Je ___ (finir) mes devoirs ce soir.",
+                  "choices": [
+                    "finis",
+                    "finit",
+                    "finissent",
+                    "finissez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"finir\" is \"finis\". A regular -ir verb ends in -is after \"je\". Je finis mes devoirs ce soir. (I finish my homework tonight)"
+                }
+              }
             },
             {
               "id": "fra2p1q14",
@@ -14737,7 +15224,42 @@
               ],
               "answer": 2,
               "explanation": "Boire is irregular and the singular stem is \"bois\" (je bois). \"buvons\" and \"buvez\" are plural, and \"boit\" is the il/elle form.",
-              "meaning": "I drink"
+              "meaning": "I drink",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (boire) de l'eau à l'aéroport.",
+                  "choices": [
+                    "buvons",
+                    "buvez",
+                    "bois",
+                    "boit"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"boire\" is \"bois\". \"boire\" is irregular in the \"je\" form. Je bois de l'eau à l'aéroport. (I drink water at the airport)"
+                },
+                "work": {
+                  "prompt": "Je ___ (boire) de l'eau au bureau.",
+                  "choices": [
+                    "buvons",
+                    "buvez",
+                    "bois",
+                    "boit"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"boire\" is \"bois\". \"boire\" is irregular in the \"je\" form. Je bois de l'eau au bureau. (I drink water at the office)"
+                },
+                "school": {
+                  "prompt": "Je ___ (boire) de l'eau à l'école.",
+                  "choices": [
+                    "buvons",
+                    "buvez",
+                    "bois",
+                    "boit"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"boire\" is \"bois\". \"boire\" is irregular in the \"je\" form. Je bois de l'eau à l'école. (I drink water at school)"
+                }
+              }
             },
             {
               "id": "fra2p1q16",
@@ -14751,7 +15273,42 @@
               ],
               "answer": "lis",
               "explanation": "Lire gives \"lis\" with \"je\" (je lis). \"lisons\", \"lisez\" and \"lisent\" are the nous, vous and ils forms.",
-              "meaning": "I read"
+              "meaning": "I read",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (lire) un guide de voyage.",
+                  "bank": [
+                    "lisons",
+                    "lis",
+                    "lisez",
+                    "lisent"
+                  ],
+                  "answer": "lis",
+                  "explanation": "With \"je\", the present tense of \"lire\" is \"lis\". \"lire\" is irregular in the \"je\" form. Je lis un guide de voyage. (I read a travel guide)"
+                },
+                "work": {
+                  "prompt": "Je ___ (lire) un rapport.",
+                  "bank": [
+                    "lisons",
+                    "lis",
+                    "lisez",
+                    "lisent"
+                  ],
+                  "answer": "lis",
+                  "explanation": "With \"je\", the present tense of \"lire\" is \"lis\". \"lire\" is irregular in the \"je\" form. Je lis un rapport. (I read a report)"
+                },
+                "school": {
+                  "prompt": "Je ___ (lire) un livre d'histoire.",
+                  "bank": [
+                    "lisons",
+                    "lis",
+                    "lisez",
+                    "lisent"
+                  ],
+                  "answer": "lis",
+                  "explanation": "With \"je\", the present tense of \"lire\" is \"lis\". \"lire\" is irregular in the \"je\" form. Je lis un livre d'histoire. (I read a history book)"
+                }
+              }
             },
             {
               "id": "fra2p1q17",
@@ -14765,7 +15322,42 @@
               ],
               "answer": 0,
               "explanation": "Écrire takes \"-s\" after \"j'\": j'\"écris\". \"écrit\" is il/elle, \"écrivez\" is vous and \"écrivent\" is ils/elles.",
-              "meaning": "I write"
+              "meaning": "I write",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "J'___ (écrire) une carte postale à ma mère.",
+                  "choices": [
+                    "écris",
+                    "écrit",
+                    "écrivent",
+                    "écrivez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"écrire\" is \"écris\". \"écrire\" is irregular in the \"je\" form. J'écris une carte postale à ma mère. (I write a postcard to my mother)"
+                },
+                "work": {
+                  "prompt": "J'___ (écrire) un e-mail à mon client.",
+                  "choices": [
+                    "écris",
+                    "écrit",
+                    "écrivent",
+                    "écrivez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"écrire\" is \"écris\". \"écrire\" is irregular in the \"je\" form. J'écris un e-mail à mon client. (I write an email to my client)"
+                },
+                "school": {
+                  "prompt": "J'___ (écrire) une rédaction pour mon professeur.",
+                  "choices": [
+                    "écris",
+                    "écrit",
+                    "écrivent",
+                    "écrivez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"écrire\" is \"écris\". \"écrire\" is irregular in the \"je\" form. J'écris une rédaction pour mon professeur. (I write an essay for my teacher)"
+                }
+              }
             },
             {
               "id": "fra2p1q18",
@@ -14842,7 +15434,42 @@
               "answer": 2,
               "explanation": "Regular -re verbs like attendre take -s with \"je\": j'\"attends\". \"attend\" (no -s) is il/elle, while \"attendons\" and \"attendez\" are plural.",
               "meaning": "I wait for",
-              "example": "Je vous attends devant la gare."
+              "example": "Je vous attends devant la gare.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "J'___ (attendre) mon taxi devant l'hôtel.",
+                  "choices": [
+                    "attendons",
+                    "attendez",
+                    "attends",
+                    "attend"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"attendre\" is \"attends\". A regular -re verb ends in -s after \"je\". J'attends mon taxi devant l'hôtel. (I wait for my taxi in front of the hotel)"
+                },
+                "work": {
+                  "prompt": "J'___ (attendre) mon client à la réception.",
+                  "choices": [
+                    "attendons",
+                    "attendez",
+                    "attends",
+                    "attend"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"attendre\" is \"attends\". A regular -re verb ends in -s after \"je\". J'attends mon client à la réception. (I wait for my client at the reception desk)"
+                },
+                "school": {
+                  "prompt": "J'___ (attendre) le bus devant l'école.",
+                  "choices": [
+                    "attendons",
+                    "attendez",
+                    "attends",
+                    "attend"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"attendre\" is \"attends\". A regular -re verb ends in -s after \"je\". J'attends le bus devant l'école. (I wait for the bus in front of the school)"
+                }
+              }
             },
             {
               "id": "fra2p1q21",
@@ -14870,7 +15497,42 @@
               ],
               "answer": 0,
               "explanation": "Regular -ir verbs like choisir take -s with \"je\": \"choisis\". \"choisit\" is il/elle, and \"choisissez\" and \"choisissent\" are vous and ils/elles.",
-              "meaning": "I choose"
+              "meaning": "I choose",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (choisir) une chambre avec vue.",
+                  "choices": [
+                    "choisis",
+                    "choisit",
+                    "choisissent",
+                    "choisissez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"choisir\" is \"choisis\". A regular -ir verb ends in -is after \"je\". Je choisis une chambre avec vue. (I choose a room with a view)"
+                },
+                "work": {
+                  "prompt": "Je ___ (choisir) un nouvel ordinateur.",
+                  "choices": [
+                    "choisis",
+                    "choisit",
+                    "choisissent",
+                    "choisissez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"choisir\" is \"choisis\". A regular -ir verb ends in -is after \"je\". Je choisis un nouvel ordinateur. (I choose a new computer)"
+                },
+                "school": {
+                  "prompt": "Je ___ (choisir) un livre à la bibliothèque.",
+                  "choices": [
+                    "choisis",
+                    "choisit",
+                    "choisissent",
+                    "choisissez"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"je\", the present tense of \"choisir\" is \"choisis\". A regular -ir verb ends in -is after \"je\". Je choisis un livre à la bibliothèque. (I choose a book at the library)"
+                }
+              }
             },
             {
               "id": "fra2p1q23",
@@ -14884,7 +15546,42 @@
               ],
               "answer": "comprends",
               "explanation": "Comprendre follows prendre, so \"je\" takes \"comprends\" (singular stem, -s ending). \"comprenons\", \"comprenez\" and \"comprennent\" are the nous, vous and ils forms.",
-              "meaning": "I understand"
+              "meaning": "I understand",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (comprendre) le plan de la ville.",
+                  "bank": [
+                    "comprenez",
+                    "comprends",
+                    "comprennent",
+                    "comprenons"
+                  ],
+                  "answer": "comprends",
+                  "explanation": "With \"je\", the present tense of \"comprendre\" is \"comprends\". \"comprendre\" is irregular in the \"je\" form. Je comprends le plan de la ville. (I understand the city map)"
+                },
+                "work": {
+                  "prompt": "Je ___ (comprendre) ton e-mail.",
+                  "bank": [
+                    "comprenez",
+                    "comprends",
+                    "comprennent",
+                    "comprenons"
+                  ],
+                  "answer": "comprends",
+                  "explanation": "With \"je\", the present tense of \"comprendre\" is \"comprends\". \"comprendre\" is irregular in the \"je\" form. Je comprends ton e-mail. (I understand your email)"
+                },
+                "school": {
+                  "prompt": "Je ___ (comprendre) mon cours.",
+                  "bank": [
+                    "comprenez",
+                    "comprends",
+                    "comprennent",
+                    "comprenons"
+                  ],
+                  "answer": "comprends",
+                  "explanation": "With \"je\", the present tense of \"comprendre\" is \"comprends\". \"comprendre\" is irregular in the \"je\" form. Je comprends mon cours. (I understand my class)"
+                }
+              }
             },
             {
               "id": "fra2p1q24",
@@ -14899,7 +15596,42 @@
               "answer": 2,
               "explanation": "With \"je\", the present tense of connaître ends in -s: \"connais\". The forms \"connaissons\", \"connaissez\" and \"connaît\" belong to nous, vous and il/elle.",
               "meaning": "I know a person or place",
-              "example": "Je connais bien cette ville."
+              "example": "Je connais bien cette ville.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Je ___ (connaître) bien ce quartier.",
+                  "choices": [
+                    "connaissons",
+                    "connaissez",
+                    "connais",
+                    "connaît"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"connaître\" is \"connais\". \"connaître\" is irregular in the \"je\" form. Je connais bien ce quartier. (I know this neighborhood well)"
+                },
+                "work": {
+                  "prompt": "Je ___ (connaître) bien ce client.",
+                  "choices": [
+                    "connaissons",
+                    "connaissez",
+                    "connais",
+                    "connaît"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"connaître\" is \"connais\". \"connaître\" is irregular in the \"je\" form. Je connais bien ce client. (I know this client well)"
+                },
+                "school": {
+                  "prompt": "Je ___ (connaître) bien cette école.",
+                  "choices": [
+                    "connaissons",
+                    "connaissez",
+                    "connais",
+                    "connaît"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"je\", the present tense of \"connaître\" is \"connais\". \"connaître\" is irregular in the \"je\" form. Je connais bien cette école. (I know this school well)"
+                }
+              }
             },
             {
               "id": "lx1",
@@ -14920,7 +15652,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je connais bien cette ville.",
-              "explanation": "The je form of connaître ends in a silent -s, so \"Je connais bien cette ville.\" means you know the city well, in the sense of being familiar with it."
+              "explanation": "The je form of connaître ends in a silent -s, so \"Je connais bien cette ville.\" means you know the city well, in the sense of being familiar with it.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je connais bien cette gare.",
+                  "explanation": "\"Je connais bien cette gare.\" means \"I know this station well\". \"connaître\" is for knowing a person or a place, and the demonstrative agrees with the noun: \"cette\" for a feminine word."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je connais bien ce client.",
+                  "explanation": "\"Je connais bien ce client.\" means \"I know this client well\". \"connaître\" is for knowing a person or a place, and the demonstrative agrees with the noun: \"cette\" for a feminine word."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je connais bien cette école.",
+                  "explanation": "\"Je connais bien cette école.\" means \"I know this school well\". \"connaître\" is for knowing a person or a place, and the demonstrative agrees with the noun: \"cette\" for a feminine word."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -14939,7 +15688,39 @@
                 "En ce moment, je termine mes devoirs.",
                 "Je suis en train de finir mes devoirs maintenant."
               ],
-              "explanation": "Regular -ir verbs like finir take -s with \"je\", so you say \"Je finis mes devoirs maintenant.\""
+              "explanation": "Regular -ir verbs like finir take -s with \"je\", so you say \"Je finis mes devoirs maintenant.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you are finishing packing your suitcase now.",
+                  "acceptableAnswers": [
+                    "Je finis de faire ma valise maintenant.",
+                    "Maintenant, je finis de faire ma valise.",
+                    "Je termine de faire ma valise maintenant.",
+                    "Je finis de préparer ma valise maintenant."
+                  ],
+                  "explanation": "\"Je finis de faire ma valise maintenant.\" means \"I am finishing packing my suitcase now\". \"finir\" is a regular -ir verb, so with je it ends in -is, and \"de\" links it to the infinitive that follows."
+                },
+                "work": {
+                  "prompt": "Say that you are finishing your report now.",
+                  "acceptableAnswers": [
+                    "Je finis mon rapport maintenant.",
+                    "Maintenant, je finis mon rapport.",
+                    "Je termine mon rapport maintenant.",
+                    "Je finis d'écrire mon rapport maintenant."
+                  ],
+                  "explanation": "\"Je finis mon rapport maintenant.\" means \"I am finishing my report now\". \"finir\" is a regular -ir verb, so with je it ends in -is, and the possessive agrees with the noun."
+                },
+                "school": {
+                  "prompt": "Say that you are finishing your essay now.",
+                  "acceptableAnswers": [
+                    "Je finis ma rédaction maintenant.",
+                    "Maintenant, je finis ma rédaction.",
+                    "Je termine ma rédaction maintenant.",
+                    "Je finis d'écrire ma rédaction maintenant."
+                  ],
+                  "explanation": "\"Je finis ma rédaction maintenant.\" means \"I am finishing my essay now\". \"finir\" is a regular -ir verb, so with je it ends in -is, and the possessive agrees with the noun."
+                }
+              }
             }
           ]
         }
@@ -15424,7 +16205,39 @@
                 "Pourrais-je avoir un café et un gâteau ?",
                 "J'aimerais un gâteau et un café, s'il vous plaît."
               ],
-              "explanation": "\"Je voudrais un café et un gâteau, s'il vous plaît.\" uses \"je voudrais\" for a polite order, and both \"café\" and \"gâteau\" are masculine, so they take \"un\"."
+              "explanation": "\"Je voudrais un café et un gâteau, s'il vous plaît.\" uses \"je voudrais\" for a polite order, and both \"café\" and \"gâteau\" are masculine, so they take \"un\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Politely tell the waiter at the hotel breakfast that you would like a coffee and a croissant.",
+                  "acceptableAnswers": [
+                    "Je voudrais un café et un croissant, s'il vous plaît.",
+                    "Je voudrais un café et un croissant.",
+                    "Un café et un croissant, s'il vous plaît.",
+                    "J'aimerais un café et un croissant, s'il vous plaît."
+                  ],
+                  "explanation": "\"Je voudrais un café et un croissant, s'il vous plaît.\" means \"I would like a coffee and a croissant, please\". \"Je voudrais\" is the polite way to order, and \"s'il vous plaît\" keeps it polite with staff."
+                },
+                "work": {
+                  "prompt": "Politely tell the waiter at a business lunch that you would like a salad and some water.",
+                  "acceptableAnswers": [
+                    "Je voudrais une salade et de l'eau, s'il vous plaît.",
+                    "Je voudrais une salade et de l'eau.",
+                    "Une salade et de l'eau, s'il vous plaît.",
+                    "J'aimerais une salade et de l'eau, s'il vous plaît."
+                  ],
+                  "explanation": "\"Je voudrais une salade et de l'eau, s'il vous plaît.\" means \"I would like a salad and some water, please\". \"Je voudrais\" is the polite way to order, and \"s'il vous plaît\" keeps it polite with staff."
+                },
+                "school": {
+                  "prompt": "Politely tell the cafeteria server that you would like a sandwich and a juice.",
+                  "acceptableAnswers": [
+                    "Je voudrais un sandwich et un jus, s'il vous plaît.",
+                    "Je voudrais un sandwich et un jus.",
+                    "Un sandwich et un jus, s'il vous plaît.",
+                    "J'aimerais un sandwich et un jus, s'il vous plaît."
+                  ],
+                  "explanation": "\"Je voudrais un sandwich et un jus, s'il vous plaît.\" means \"I would like a sandwich and a juice, please\". \"Je voudrais\" is the polite way to order, and \"s'il vous plaît\" keeps it polite with staff."
+                }
+              }
             }
           ]
         },
@@ -15650,7 +16463,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Le café est en face de la poste",
-              "explanation": "\"Le café est en face de la poste\" uses \"en face de\" to say the café is opposite the post office."
+              "explanation": "\"Le café est en face de la poste\" uses \"en face de\" to say the café is opposite the post office.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "L'hôtel est en face de la gare",
+                  "explanation": "\"L'hôtel est en face de la gare\" means \"The hotel is opposite the station\". \"en face de\" means opposite, and \"de\" joins with the article that follows."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Le bureau est en face de la banque",
+                  "explanation": "\"Le bureau est en face de la banque\" means \"The office is opposite the bank\". \"en face de\" means opposite, and \"de\" joins with the article that follows."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "L'école est en face du parc",
+                  "explanation": "\"L'école est en face du parc\" means \"The school is opposite the park\". The phrase en face de means opposite, and \"de\" joins with \"le\" to make \"du\"."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -15782,7 +16612,39 @@
                 "La pharmacie se trouve à côté de l'arrêt d'autobus.",
                 "La pharmacie est juste à côté de l'arrêt d'autobus."
               ],
-              "explanation": "\"La pharmacie est à côté de l'arrêt de bus.\" uses \"à côté de\" for next to, followed by \"l'arrêt de bus\" for the bus stop."
+              "explanation": "\"La pharmacie est à côté de l'arrêt de bus.\" uses \"à côté de\" for next to, followed by \"l'arrêt de bus\" for the bus stop.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that the hotel is next to the bus stop.",
+                  "acceptableAnswers": [
+                    "L'hôtel est à côté de l'arrêt de bus.",
+                    "L'hôtel se trouve à côté de l'arrêt de bus.",
+                    "L'hôtel est juste à côté de l'arrêt de bus.",
+                    "L'arrêt de bus est à côté de l'hôtel."
+                  ],
+                  "explanation": "\"L'hôtel est à côté de l'arrêt de bus.\" means \"The hotel is next to the bus stop\". \"à côté de\" means next to, and \"de\" joins with the article that follows: de l'arrêt."
+                },
+                "work": {
+                  "prompt": "Say that the office is next to the bus stop.",
+                  "acceptableAnswers": [
+                    "Le bureau est à côté de l'arrêt de bus.",
+                    "Le bureau se trouve à côté de l'arrêt de bus.",
+                    "Le bureau est juste à côté de l'arrêt de bus.",
+                    "L'arrêt de bus est à côté du bureau."
+                  ],
+                  "explanation": "\"Le bureau est à côté de l'arrêt de bus.\" means \"The office is next to the bus stop\". \"à côté de\" means next to, and \"de\" joins with the article that follows: de l'arrêt."
+                },
+                "school": {
+                  "prompt": "Say that the school is next to the bus stop.",
+                  "acceptableAnswers": [
+                    "L'école est à côté de l'arrêt de bus.",
+                    "L'école se trouve à côté de l'arrêt de bus.",
+                    "L'école est juste à côté de l'arrêt de bus.",
+                    "L'arrêt de bus est à côté de l'école."
+                  ],
+                  "explanation": "\"L'école est à côté de l'arrêt de bus.\" means \"The school is next to the bus stop\". \"à côté de\" means next to, and \"de\" joins with the article that follows: de l'arrêt."
+                }
+              }
             }
           ]
         },
@@ -15873,7 +16735,45 @@
                 "Prenez la rue à gauche après le pont."
               ],
               "answer": "Prenez la rue à droite après le pont.",
-              "explanation": "The speaker says \"Prenez la rue à droite après le pont.\" Listen carefully: \"rue\" has the French u sound and no final t, while \"route\" has an ou sound and ends in t; the other choices change \"pont\" to \"feu\" or \"droite\" to \"gauche\"."
+              "explanation": "The speaker says \"Prenez la rue à droite après le pont.\" Listen carefully: \"rue\" has the French u sound and no final t, while \"route\" has an ou sound and ends in t; the other choices change \"pont\" to \"feu\" or \"droite\" to \"gauche\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Prenez la rue à gauche après la gare.",
+                  "choices": [
+                    "Prenez la rue à gauche après la gare.",
+                    "Prenez la rue à droite après la gare.",
+                    "Prenez la route à gauche après la gare.",
+                    "Prenez la rue à gauche avant la gare."
+                  ],
+                  "answer": "Prenez la rue à gauche après la gare.",
+                  "explanation": "\"Prenez la rue à gauche après la gare.\" means \"Take the street on the left after the train station\". \"Prenez\" is the vous command, and the other choices change the direction, the place or the time word."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Prenez le couloir à droite après la réception.",
+                  "choices": [
+                    "Prenez le couloir à gauche après la réception.",
+                    "Prenez le couloir à droite avant la réception.",
+                    "Prenez le couloir à droite après la réception.",
+                    "Prenez le couloir à droite après la cantine."
+                  ],
+                  "answer": "Prenez le couloir à droite après la réception.",
+                  "explanation": "\"Prenez le couloir à droite après la réception.\" means \"Take the hallway on the right after the reception desk\". \"Prenez\" is the vous command, and the other choices change the direction, the place or the time word."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Prenez le couloir à gauche après la bibliothèque.",
+                  "choices": [
+                    "Prenez le couloir à gauche après la bibliothèque.",
+                    "Prenez le couloir à droite après la bibliothèque.",
+                    "Prenez le couloir à gauche avant la bibliothèque.",
+                    "Prenez le couloir à gauche après la cantine."
+                  ],
+                  "answer": "Prenez le couloir à gauche après la bibliothèque.",
+                  "explanation": "\"Prenez le couloir à gauche après la bibliothèque.\" means \"Take the hallway on the left after the library\". \"Prenez\" is the vous command, and the other choices change the direction, the place or the time word."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -15900,7 +16800,39 @@
                 "Continuez jusqu'au feu, tout droit.",
                 "Allez tout droit jusqu'au feu tricolore."
               ],
-              "explanation": "\"Allez tout droit jusqu'au feu.\" uses the polite vous command form, with \"tout droit\" for straight ahead and \"jusqu'au\" for as far as."
+              "explanation": "\"Allez tout droit jusqu'au feu.\" uses the polite vous command form, with \"tout droit\" for straight ahead and \"jusqu'au\" for as far as.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Tell a stranger politely to go straight ahead as far as the train station.",
+                  "acceptableAnswers": [
+                    "Allez tout droit jusqu'à la gare.",
+                    "Allez tout droit jusqu'à la gare, s'il vous plaît.",
+                    "Continuez tout droit jusqu'à la gare.",
+                    "Allez droit devant vous jusqu'à la gare."
+                  ],
+                  "explanation": "\"Allez tout droit jusqu'à la gare.\" means \"Go straight ahead to the train station\". The vous command is the vous form without the pronoun: \"Allez\" from \"aller\"."
+                },
+                "work": {
+                  "prompt": "Tell a visitor politely to go straight ahead as far as the reception desk.",
+                  "acceptableAnswers": [
+                    "Allez tout droit jusqu'à la réception.",
+                    "Allez tout droit jusqu'à la réception, s'il vous plaît.",
+                    "Continuez tout droit jusqu'à la réception.",
+                    "Allez droit devant vous jusqu'à la réception."
+                  ],
+                  "explanation": "\"Allez tout droit jusqu'à la réception.\" means \"Go straight ahead to the reception desk\". The vous command is the vous form without the pronoun: \"Allez\" from \"aller\"."
+                },
+                "school": {
+                  "prompt": "Tell a new student politely (use vous) to go straight ahead as far as the library.",
+                  "acceptableAnswers": [
+                    "Allez tout droit jusqu'à la bibliothèque.",
+                    "Allez tout droit jusqu'à la bibliothèque, s'il vous plaît.",
+                    "Continuez tout droit jusqu'à la bibliothèque.",
+                    "Allez droit devant vous jusqu'à la bibliothèque."
+                  ],
+                  "explanation": "\"Allez tout droit jusqu'à la bibliothèque.\" means \"Go straight ahead to the library\". The vous command is the vous form without the pronoun: \"Allez\" from \"aller\"."
+                }
+              }
             }
           ]
         },
@@ -15993,7 +16925,45 @@
                 "Le musée est juste au coin de la rue."
               ],
               "answer": "Le magasin est juste au coin de la rue.",
-              "explanation": "\"Le magasin est juste au coin de la rue.\" means the shop is right at the corner of the street; the other choices change one word: musée instead of magasin, bout instead of coin, or place instead of rue."
+              "explanation": "\"Le magasin est juste au coin de la rue.\" means the shop is right at the corner of the street; the other choices change one word: musée instead of magasin, bout instead of coin, or place instead of rue.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "L'hôtel est juste au coin de la rue.",
+                  "choices": [
+                    "L'hôtel est juste au coin de la rue.",
+                    "L'hôtel est juste au bout de la rue.",
+                    "L'hôtel est juste en face de la rue.",
+                    "L'hôtel est juste au coin de la gare."
+                  ],
+                  "answer": "L'hôtel est juste au coin de la rue.",
+                  "explanation": "\"L'hôtel est juste au coin de la rue.\" means \"The hotel is just around the corner\". \"juste au coin de\" means just around the corner from, and the other choices change the place word or the building."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Le bureau est juste au coin de la rue.",
+                  "choices": [
+                    "Le bureau est juste au bout de la rue.",
+                    "Le bureau est juste en face de la rue.",
+                    "Le bureau est juste au coin de la rue.",
+                    "Le garage est juste au coin de la rue."
+                  ],
+                  "answer": "Le bureau est juste au coin de la rue.",
+                  "explanation": "\"Le bureau est juste au coin de la rue.\" means \"The office is just around the corner\". \"juste au coin de\" means just around the corner from, and the other choices change the place word or the building."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "L'école est juste au coin de la rue.",
+                  "choices": [
+                    "L'école est juste au bout de la rue.",
+                    "L'école est juste au coin de la rue.",
+                    "L'école est juste en face de la rue.",
+                    "L'église est juste au coin de la rue."
+                  ],
+                  "answer": "L'école est juste au coin de la rue.",
+                  "explanation": "\"L'école est juste au coin de la rue.\" means \"The school is just around the corner\". \"juste au coin de\" means just around the corner from, and the other choices change the place word or the building."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -16131,7 +17101,39 @@
                 "Je vis dans un quartier tranquille et calme.",
                 "J'habite un quartier paisible."
               ],
-              "explanation": "\"J'habite dans un quartier calme.\" uses \"quartier\" (masculine, so \"un\") with the adjective \"calme\" to describe a quiet neighbourhood."
+              "explanation": "\"J'habite dans un quartier calme.\" uses \"quartier\" (masculine, so \"un\") with the adjective \"calme\" to describe a quiet neighbourhood.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that your hotel is in a quiet neighborhood.",
+                  "acceptableAnswers": [
+                    "Mon hôtel est dans un quartier calme.",
+                    "Mon hôtel se trouve dans un quartier calme.",
+                    "Mon hôtel est dans un quartier tranquille.",
+                    "Mon hôtel est situé dans un quartier calme."
+                  ],
+                  "explanation": "\"Mon hôtel est dans un quartier calme.\" means \"My hotel is in a quiet neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"calme\" needs no change."
+                },
+                "work": {
+                  "prompt": "Say that your office is in a lively neighborhood.",
+                  "acceptableAnswers": [
+                    "Mon bureau est dans un quartier animé.",
+                    "Mon bureau se trouve dans un quartier animé.",
+                    "Mon bureau est dans un quartier vivant.",
+                    "Mon bureau est situé dans un quartier animé."
+                  ],
+                  "explanation": "\"Mon bureau est dans un quartier animé.\" means \"My office is in a lively neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"animé\" needs no change."
+                },
+                "school": {
+                  "prompt": "Say that your school is in a quiet neighborhood.",
+                  "acceptableAnswers": [
+                    "Mon école est dans un quartier calme.",
+                    "Mon école se trouve dans un quartier calme.",
+                    "Mon école est dans un quartier tranquille.",
+                    "Mon école est située dans un quartier calme."
+                  ],
+                  "explanation": "\"Mon école est dans un quartier calme.\" means \"My school is in a quiet neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"calme\" needs no change."
+                }
+              }
             }
           ]
         }
@@ -16361,7 +17363,39 @@
                 "Ce matin, il fait beaucoup de vent.",
                 "Il y a un vent fort ce matin."
               ],
-              "explanation": "\"Il y a beaucoup de vent ce matin.\" uses \"il y a\" with \"beaucoup de\" and a noun to describe the weather, just like \"il y a du vent\"."
+              "explanation": "\"Il y a beaucoup de vent ce matin.\" uses \"il y a\" with \"beaucoup de\" and a noun to describe the weather, just like \"il y a du vent\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that there is a lot of wind at the beach this morning.",
+                  "acceptableAnswers": [
+                    "Il y a beaucoup de vent à la plage ce matin.",
+                    "Ce matin, il y a beaucoup de vent à la plage.",
+                    "Il y a énormément de vent à la plage ce matin.",
+                    "Il y a beaucoup de vent sur la plage ce matin."
+                  ],
+                  "explanation": "\"Il y a beaucoup de vent à la plage ce matin.\" means \"There is a lot of wind at the beach this morning\". \"Il y a\" introduces what exists, and \"beaucoup de\" is followed by the noun with no article."
+                },
+                "work": {
+                  "prompt": "Say that there is a lot of wind on the way to the office this morning.",
+                  "acceptableAnswers": [
+                    "Il y a beaucoup de vent sur la route du bureau ce matin.",
+                    "Ce matin, il y a beaucoup de vent sur la route du bureau.",
+                    "Il y a énormément de vent sur la route du bureau ce matin.",
+                    "Il y a beaucoup de vent sur le chemin du bureau ce matin."
+                  ],
+                  "explanation": "\"Il y a beaucoup de vent sur la route du bureau ce matin.\" means \"There is a lot of wind on the way to the office this morning\". \"Il y a\" introduces what exists, and \"beaucoup de\" is followed by the noun with no article."
+                },
+                "school": {
+                  "prompt": "Say that there is a lot of wind at school this morning.",
+                  "acceptableAnswers": [
+                    "Il y a beaucoup de vent à l'école ce matin.",
+                    "Ce matin, il y a beaucoup de vent à l'école.",
+                    "Il y a énormément de vent à l'école ce matin.",
+                    "Il y a beaucoup de vent dans la cour de l'école ce matin."
+                  ],
+                  "explanation": "\"Il y a beaucoup de vent à l'école ce matin.\" means \"There is a lot of wind at school this morning\". \"Il y a\" introduces what exists, and \"beaucoup de\" is followed by the noun with no article."
+                }
+              }
             }
           ]
         },
@@ -18087,7 +19121,39 @@
                 "Ce soir, je vais téléphoner à ma maman.",
                 "Ce soir, je vais appeler ma maman."
               ],
-              "explanation": "The near future is formed with aller and an infinitive, so \"Je vais téléphoner à ma mère ce soir.\" says what you are about to do."
+              "explanation": "The near future is formed with aller and an infinitive, so \"Je vais téléphoner à ma mère ce soir.\" says what you are about to do.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you are going to call the hotel this evening.",
+                  "acceptableAnswers": [
+                    "Je vais téléphoner à l'hôtel ce soir.",
+                    "Ce soir, je vais téléphoner à l'hôtel.",
+                    "Je vais appeler l'hôtel ce soir.",
+                    "Je vais passer un coup de fil à l'hôtel ce soir."
+                  ],
+                  "explanation": "\"Je vais téléphoner à l'hôtel ce soir.\" means \"I am going to call the hotel this evening\". \"aller\" plus an infinitive builds the near future, and \"téléphoner\" takes \"à\" before the person."
+                },
+                "work": {
+                  "prompt": "Say that you are going to call a client this evening.",
+                  "acceptableAnswers": [
+                    "Je vais téléphoner à un client ce soir.",
+                    "Ce soir, je vais téléphoner à un client.",
+                    "Je vais appeler un client ce soir.",
+                    "Je vais passer un coup de fil à un client ce soir."
+                  ],
+                  "explanation": "\"Je vais téléphoner à un client ce soir.\" means \"I am going to call a client this evening\". \"aller\" plus an infinitive builds the near future, and \"téléphoner\" takes \"à\" before the person."
+                },
+                "school": {
+                  "prompt": "Say that you are going to call your teacher this evening.",
+                  "acceptableAnswers": [
+                    "Je vais téléphoner à mon professeur ce soir.",
+                    "Ce soir, je vais téléphoner à mon professeur.",
+                    "Je vais appeler mon professeur ce soir.",
+                    "Je vais passer un coup de fil à mon professeur ce soir."
+                  ],
+                  "explanation": "\"Je vais téléphoner à mon professeur ce soir.\" means \"I am going to call my teacher this evening\". \"aller\" plus an infinitive builds the near future, and \"téléphoner\" takes \"à\" before the person."
+                }
+              }
             }
           ]
         },
@@ -18187,7 +19253,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je vais appeler ma sœur ce soir",
-              "explanation": "\"Je vais appeler ma sœur ce soir\" uses vais plus the infinitive appeler to say what you are about to do."
+              "explanation": "\"Je vais appeler ma sœur ce soir\" uses vais plus the infinitive appeler to say what you are about to do.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je vais appeler l'hôtel ce soir",
+                  "explanation": "\"Je vais appeler l'hôtel ce soir\" means \"I am going to call the hotel tonight\". \"aller\" plus an infinitive is the near future, and \"appeler\" takes the person directly."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je vais appeler mon client ce soir",
+                  "explanation": "\"Je vais appeler mon client ce soir\" means \"I am going to call my client tonight\". \"aller\" plus an infinitive is the near future, and \"appeler\" takes the person directly."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je vais appeler mon professeur ce soir",
+                  "explanation": "\"Je vais appeler mon professeur ce soir\" means \"I am going to call my teacher tonight\". \"aller\" plus an infinitive is the near future, and \"appeler\" takes the person directly."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -18311,7 +19394,39 @@
                 "Mon ami et moi, on va dîner au restaurant ce soir.",
                 "Ce soir, mon ami et moi allons dîner au restaurant."
               ],
-              "explanation": "The near future is built with aller plus an infinitive, so \"Nous allons dîner au restaurant ce soir.\" uses \"allons\" with \"dîner\"; \"on va\" is the everyday spoken alternative."
+              "explanation": "The near future is built with aller plus an infinitive, so \"Nous allons dîner au restaurant ce soir.\" uses \"allons\" with \"dîner\"; \"on va\" is the everyday spoken alternative.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that your friend and you are going to visit the museum tomorrow.",
+                  "acceptableAnswers": [
+                    "Nous allons visiter le musée demain.",
+                    "Demain, nous allons visiter le musée.",
+                    "On va visiter le musée demain.",
+                    "Nous allons aller au musée demain."
+                  ],
+                  "explanation": "\"Nous allons visiter le musée demain.\" means \"We are going to visit the museum tomorrow\". With \"nous\", the verb \"aller\" is \"allons\", and the infinitive follows it for the near future."
+                },
+                "work": {
+                  "prompt": "Say that your colleague and you are going to have a meeting tomorrow.",
+                  "acceptableAnswers": [
+                    "Nous allons avoir une réunion demain.",
+                    "Demain, nous allons avoir une réunion.",
+                    "On va avoir une réunion demain.",
+                    "Nous allons faire une réunion demain."
+                  ],
+                  "explanation": "\"Nous allons avoir une réunion demain.\" means \"We are going to have a meeting tomorrow\". With \"nous\", the verb \"aller\" is \"allons\", and the infinitive follows it for the near future."
+                },
+                "school": {
+                  "prompt": "Say that your classmate and you are going to study at the library tonight.",
+                  "acceptableAnswers": [
+                    "Nous allons étudier à la bibliothèque ce soir.",
+                    "Ce soir, nous allons étudier à la bibliothèque.",
+                    "On va étudier à la bibliothèque ce soir.",
+                    "Nous allons travailler à la bibliothèque ce soir."
+                  ],
+                  "explanation": "\"Nous allons étudier à la bibliothèque ce soir.\" means \"We are going to study at the library tonight\". With \"nous\", the verb \"aller\" is \"allons\", and the infinitive follows it for the near future."
+                }
+              }
             }
           ]
         },
@@ -18644,7 +19759,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "J'ai mal à la gorge depuis hier",
-              "explanation": "\"J'ai mal à la gorge depuis hier\" means 'I have had a sore throat since yesterday', using avoir mal à la plus a feminine body part."
+              "explanation": "\"J'ai mal à la gorge depuis hier\" means 'I have had a sore throat since yesterday', using avoir mal à la plus a feminine body part.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "J'ai mal au dos depuis le vol",
+                  "explanation": "\"J'ai mal au dos depuis le vol\" means \"My back has hurt since the flight\". \"avoir mal\" joins with the body part, and \"depuis\" says how long it has hurt."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "J'ai mal au dos depuis la réunion",
+                  "explanation": "\"J'ai mal au dos depuis la réunion\" means \"My back has hurt since the meeting\". \"avoir mal\" joins with the body part, and \"depuis\" says how long it has hurt."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "J'ai mal à la tête depuis le cours",
+                  "explanation": "\"J'ai mal à la tête depuis le cours\" means \"I have had a headache since class\". \"avoir mal\" joins with the body part, and \"depuis\" says how long it has hurt."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -18661,7 +19793,39 @@
                 "Docteur, j'ai vraiment mal au dos.",
                 "Docteur, mon dos me fait très mal."
               ],
-              "explanation": "\"J'ai très mal au dos.\" uses avoir mal à plus the masculine noun dos, which contracts to au, and très adds 'a lot'."
+              "explanation": "\"J'ai très mal au dos.\" uses avoir mal à plus the masculine noun dos, which contracts to au, and très adds 'a lot'.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Tell the hotel receptionist that your back hurts a lot after the flight.",
+                  "acceptableAnswers": [
+                    "J'ai très mal au dos après le vol.",
+                    "Après le vol, j'ai très mal au dos.",
+                    "J'ai vraiment mal au dos après le vol.",
+                    "Mon dos me fait très mal après le vol."
+                  ],
+                  "explanation": "\"J'ai très mal au dos après le vol.\" means \"My back hurts a lot after the flight\". The expression avoir mal à joins with the body part: \"au\" before a masculine word like dos."
+                },
+                "work": {
+                  "prompt": "Tell your manager that your back hurts a lot after the meeting.",
+                  "acceptableAnswers": [
+                    "J'ai très mal au dos après la réunion.",
+                    "Après la réunion, j'ai très mal au dos.",
+                    "J'ai vraiment mal au dos après la réunion.",
+                    "Mon dos me fait très mal après la réunion."
+                  ],
+                  "explanation": "\"J'ai très mal au dos après la réunion.\" means \"My back hurts a lot after the meeting\". The expression avoir mal à joins with the body part: \"au\" before a masculine word like dos."
+                },
+                "school": {
+                  "prompt": "Tell the school nurse that your stomach hurts a lot.",
+                  "acceptableAnswers": [
+                    "J'ai très mal au ventre.",
+                    "J'ai vraiment mal au ventre.",
+                    "Mon ventre me fait très mal.",
+                    "J'ai très mal au ventre depuis ce matin."
+                  ],
+                  "explanation": "\"J'ai très mal au ventre.\" means \"My stomach hurts a lot\". The expression avoir mal à joins with the body part: \"au\" before a masculine word like ventre."
+                }
+              }
             }
           ]
         },
@@ -19251,7 +20415,39 @@
                 "Le blouson est trop grand pour moi.",
                 "La veste est trop large pour moi."
               ],
-              "explanation": "\"Cette veste est trop grande pour moi.\" uses \"trop\" before the adjective, which agrees with the feminine noun \"veste\" as \"grande\"."
+              "explanation": "\"Cette veste est trop grande pour moi.\" uses \"trop\" before the adjective, which agrees with the feminine noun \"veste\" as \"grande\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Tell the shop assistant that this souvenir T-shirt is too small for you.",
+                  "acceptableAnswers": [
+                    "Ce tee-shirt souvenir est trop petit pour moi.",
+                    "Ce tee-shirt est trop petit pour moi.",
+                    "Ce tee-shirt est vraiment trop petit pour moi.",
+                    "Ce tee-shirt est trop petit pour moi, malheureusement."
+                  ],
+                  "explanation": "\"Ce tee-shirt souvenir est trop petit pour moi.\" means \"This souvenir T-shirt is too small for me\". \"trop\" goes before the adjective, and the adjective agrees with the noun: \"tee-shirt\" is masculine, so \"petit\"."
+                },
+                "work": {
+                  "prompt": "Tell the shop assistant that this suit jacket is too big for you.",
+                  "acceptableAnswers": [
+                    "Cette veste de costume est trop grande pour moi.",
+                    "Cette veste de costume est vraiment trop grande pour moi.",
+                    "Cette veste est trop grande pour moi.",
+                    "Cette veste de costume est beaucoup trop grande pour moi."
+                  ],
+                  "explanation": "\"Cette veste de costume est trop grande pour moi.\" means \"This suit jacket is too big for me\". \"trop\" goes before the adjective, and the adjective agrees with the noun: \"veste\" is feminine, so \"grande\"."
+                },
+                "school": {
+                  "prompt": "Tell the shop assistant that this uniform shirt is too big for you.",
+                  "acceptableAnswers": [
+                    "Cette chemise d'uniforme est trop grande pour moi.",
+                    "Cette chemise d'uniforme est vraiment trop grande pour moi.",
+                    "Cette chemise est trop grande pour moi.",
+                    "Cette chemise d'uniforme est beaucoup trop grande pour moi."
+                  ],
+                  "explanation": "\"Cette chemise d'uniforme est trop grande pour moi.\" means \"This uniform shirt is too big for me\". \"trop\" goes before the adjective, and the adjective agrees with the noun: \"chemise\" is feminine, so \"grande\"."
+                }
+              }
             }
           ]
         },
@@ -19586,7 +20782,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Avez-vous quelque chose de plus petit ?",
-              "explanation": "You say \"Avez-vous quelque chose de plus petit ?\" to ask a shop assistant for a smaller size; the adjective stays masculine singular after \"quelque chose de\"."
+              "explanation": "You say \"Avez-vous quelque chose de plus petit ?\" to ask a shop assistant for a smaller size; the adjective stays masculine singular after \"quelque chose de\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Avez-vous une chambre plus calme ?",
+                  "explanation": "\"Avez-vous une chambre plus calme ?\" means \"Do you have a quieter room\". \"plus\" before an adjective makes a comparison, and the adjective agrees with the noun."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Avez-vous un bureau plus grand ?",
+                  "explanation": "\"Avez-vous un bureau plus grand ?\" means \"Do you have a bigger desk\". \"plus\" before an adjective makes a comparison, and the adjective agrees with the noun."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Avez-vous un cahier plus grand ?",
+                  "explanation": "\"Avez-vous un cahier plus grand ?\" means \"Do you have a bigger notebook\". \"plus\" before an adjective makes a comparison, and the adjective agrees with the noun."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -19709,7 +20922,45 @@
                 "On se retrouve devant le cinéma à huit heures."
               ],
               "answer": "On se retrouve devant le cinéma à huit heures.",
-              "explanation": "The speaker suggests meeting in front of the cinema at eight: \"On se retrouve devant le cinéma à huit heures.\" The other choices change the place, the time or \"devant\" (in front of)."
+              "explanation": "The speaker suggests meeting in front of the cinema at eight: \"On se retrouve devant le cinéma à huit heures.\" The other choices change the place, the time or \"devant\" (in front of).",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "On se retrouve devant le musée à huit heures.",
+                  "choices": [
+                    "On se retrouve devant le musée à neuf heures.",
+                    "On se retrouve devant le musée à huit heures.",
+                    "On se retrouve derrière le musée à huit heures.",
+                    "On se retrouve devant le marché à huit heures."
+                  ],
+                  "answer": "On se retrouve devant le musée à huit heures.",
+                  "explanation": "\"On se retrouve devant le musée à huit heures.\" means \"We meet in front of the museum at eight o'clock\". \"On se retrouve\" says where you will meet, and the other choices change the time, the position or the place."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "On se retrouve devant le bureau à huit heures.",
+                  "choices": [
+                    "On se retrouve devant le bureau à neuf heures.",
+                    "On se retrouve derrière le bureau à huit heures.",
+                    "On se retrouve devant le garage à huit heures.",
+                    "On se retrouve devant le bureau à huit heures."
+                  ],
+                  "answer": "On se retrouve devant le bureau à huit heures.",
+                  "explanation": "\"On se retrouve devant le bureau à huit heures.\" means \"We meet in front of the office at eight o'clock\". \"On se retrouve\" says where you will meet, and the other choices change the time, the position or the place."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "On se retrouve devant le collège à huit heures.",
+                  "choices": [
+                    "On se retrouve devant le collège à neuf heures.",
+                    "On se retrouve derrière le collège à huit heures.",
+                    "On se retrouve devant le collège à huit heures.",
+                    "On se retrouve devant le lycée à huit heures."
+                  ],
+                  "answer": "On se retrouve devant le collège à huit heures.",
+                  "explanation": "\"On se retrouve devant le collège à huit heures.\" means \"We meet in front of the middle school at eight o'clock\". \"On se retrouve\" says where you will meet, and the other choices change the time, the position or the place."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -19850,7 +21101,51 @@
                 "Je ne peux pas venir samedi, je suis pris.",
                 "Je ne peux pas venir samedi, je suis prise."
               ],
-              "explanation": "\"Je ne peux pas venir samedi parce que je suis occupé.\" uses the modal \"je ne peux pas\" followed by the infinitive \"venir\", and \"parce que\" to give the reason."
+              "explanation": "\"Je ne peux pas venir samedi parce que je suis occupé.\" uses the modal \"je ne peux pas\" followed by the infinitive \"venir\", and \"parce que\" to give the reason.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you cannot come to the tour on Saturday because you are busy.",
+                  "acceptableAnswers": [
+                    "Je ne peux pas venir à la visite samedi parce que je suis occupé.",
+                    "Samedi, je ne peux pas venir à la visite parce que je suis occupé.",
+                    "Je ne peux pas venir à la visite samedi car je suis occupé.",
+                    "Je ne peux pas venir à la visite samedi, je suis occupé.",
+                    "Je ne peux pas venir à la visite samedi parce que je suis occupée.",
+                    "Samedi, je ne peux pas venir à la visite parce que je suis occupée.",
+                    "Je ne peux pas venir à la visite samedi car je suis occupée.",
+                    "Je ne peux pas venir à la visite samedi, je suis occupée."
+                  ],
+                  "explanation": "\"Je ne peux pas venir à la visite samedi parce que je suis occupé.\" means \"I cannot come to the tour on Saturday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
+                },
+                "work": {
+                  "prompt": "Say that you cannot come to the meeting on Friday because you are busy.",
+                  "acceptableAnswers": [
+                    "Je ne peux pas venir à la réunion vendredi parce que je suis occupé.",
+                    "Vendredi, je ne peux pas venir à la réunion parce que je suis occupé.",
+                    "Je ne peux pas venir à la réunion vendredi car je suis occupé.",
+                    "Je ne peux pas venir à la réunion vendredi, je suis occupé.",
+                    "Je ne peux pas venir à la réunion vendredi parce que je suis occupée.",
+                    "Vendredi, je ne peux pas venir à la réunion parce que je suis occupée.",
+                    "Je ne peux pas venir à la réunion vendredi car je suis occupée.",
+                    "Je ne peux pas venir à la réunion vendredi, je suis occupée."
+                  ],
+                  "explanation": "\"Je ne peux pas venir à la réunion vendredi parce que je suis occupé.\" means \"I cannot come to the meeting on Friday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
+                },
+                "school": {
+                  "prompt": "Say that you cannot come to the study session on Saturday because you are busy.",
+                  "acceptableAnswers": [
+                    "Je ne peux pas venir à la séance de révision samedi parce que je suis occupé.",
+                    "Samedi, je ne peux pas venir à la séance de révision parce que je suis occupé.",
+                    "Je ne peux pas venir à la séance de révision samedi car je suis occupé.",
+                    "Je ne peux pas venir à la séance de révision samedi, je suis occupé.",
+                    "Je ne peux pas venir à la séance de révision samedi parce que je suis occupée.",
+                    "Samedi, je ne peux pas venir à la séance de révision parce que je suis occupée.",
+                    "Je ne peux pas venir à la séance de révision samedi car je suis occupée.",
+                    "Je ne peux pas venir à la séance de révision samedi, je suis occupée."
+                  ],
+                  "explanation": "\"Je ne peux pas venir à la séance de révision samedi parce que je suis occupé.\" means \"I cannot come to the study session on Saturday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
+                }
+              }
             }
           ]
         },
@@ -20063,7 +21358,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "On se donne rendez-vous à midi",
-              "explanation": "\"On se donne rendez-vous à midi\" is the natural way to say you agree to meet at noon."
+              "explanation": "\"On se donne rendez-vous à midi\" is the natural way to say you agree to meet at noon.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "On se donne rendez-vous à l'hôtel",
+                  "explanation": "\"On se donne rendez-vous à l'hôtel\" means \"Let's meet at the hotel\". \"On se donne rendez-vous\" is the everyday way to agree on a meeting place, and \"à\" joins with the article."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "On se donne rendez-vous au bureau",
+                  "explanation": "\"On se donne rendez-vous au bureau\" means \"Let's meet at the office\". \"On se donne rendez-vous\" is the everyday way to agree on a meeting place, and \"à\" joins with the article."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "On se donne rendez-vous à l'école",
+                  "explanation": "\"On se donne rendez-vous à l'école\" means \"Let's meet at school\". \"On se donne rendez-vous\" is the everyday way to agree on a meeting place, and \"à\" joins with the article."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -20322,7 +21634,39 @@
                 "Je voudrais faire un retrait.",
                 "Je voudrais faire un retrait, s'il vous plaît."
               ],
-              "explanation": "\"Je voudrais retirer de l'argent.\" uses the polite \"je voudrais\" followed by the infinitive \"retirer\" to ask to withdraw money; \"je veux\" and \"j'aimerais\" work too."
+              "explanation": "\"Je voudrais retirer de l'argent.\" uses the polite \"je voudrais\" followed by the infinitive \"retirer\" to ask to withdraw money; \"je veux\" and \"j'aimerais\" work too.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Tell the bank employee that you want to exchange some money.",
+                  "acceptableAnswers": [
+                    "Je voudrais changer de l'argent.",
+                    "Je voudrais changer un peu d'argent.",
+                    "J'aimerais changer de l'argent.",
+                    "Je veux changer de l'argent."
+                  ],
+                  "explanation": "\"Je voudrais changer de l'argent.\" means \"I would like to exchange some money\". \"Je voudrais\" plus an infinitive is the polite way to say what you want to do at a counter."
+                },
+                "work": {
+                  "prompt": "Tell the bank employee that you want to deposit a check.",
+                  "acceptableAnswers": [
+                    "Je voudrais déposer un chèque.",
+                    "J'aimerais déposer un chèque.",
+                    "Je veux déposer un chèque.",
+                    "Je souhaite déposer un chèque."
+                  ],
+                  "explanation": "\"Je voudrais déposer un chèque.\" means \"I would like to deposit a check\". \"Je voudrais\" plus an infinitive is the polite way to say what you want to do at a counter."
+                },
+                "school": {
+                  "prompt": "Tell the bank employee that you want to open a student account.",
+                  "acceptableAnswers": [
+                    "Je voudrais ouvrir un compte étudiant.",
+                    "J'aimerais ouvrir un compte étudiant.",
+                    "Je veux ouvrir un compte étudiant.",
+                    "Je souhaite ouvrir un compte pour étudiants."
+                  ],
+                  "explanation": "\"Je voudrais ouvrir un compte étudiant.\" means \"I would like to open a student account\". \"Je voudrais\" plus an infinitive is the polite way to say what you want to do at a counter."
+                }
+              }
             }
           ]
         },
@@ -20416,7 +21760,45 @@
                 "Je voudrais retirer de l'argent à la banque."
               ],
               "answer": "Je voudrais retirer de l'argent à la banque.",
-              "explanation": "The speaker says \"Je voudrais retirer de l'argent à la banque.\" (I'd like to withdraw money at the bank); the other choices change the verb (envoyer) or the place (gare, pharmacie)."
+              "explanation": "The speaker says \"Je voudrais retirer de l'argent à la banque.\" (I'd like to withdraw money at the bank); the other choices change the verb (envoyer) or the place (gare, pharmacie).",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je voudrais changer de l'argent à l'hôtel.",
+                  "choices": [
+                    "Je voudrais retirer de l'argent à l'hôtel.",
+                    "Je voudrais changer de l'argent à l'hôtel.",
+                    "Je voudrais changer de l'argent à l'aéroport.",
+                    "Je voudrais envoyer de l'argent à l'hôtel."
+                  ],
+                  "answer": "Je voudrais changer de l'argent à l'hôtel.",
+                  "explanation": "\"Je voudrais changer de l'argent à l'hôtel.\" means \"I would like to exchange some money at the hotel\". \"Je voudrais\" plus an infinitive is the polite way to say what you want to do, and the other choices change the verb or the place."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je voudrais déposer un chèque à la banque.",
+                  "choices": [
+                    "Je voudrais déposer un chèque à la poste.",
+                    "Je voudrais déposer un chèque à la banque.",
+                    "Je voudrais déposer un colis à la banque.",
+                    "Je voudrais encaisser un chèque à la banque."
+                  ],
+                  "answer": "Je voudrais déposer un chèque à la banque.",
+                  "explanation": "\"Je voudrais déposer un chèque à la banque.\" means \"I would like to deposit a check at the bank\". \"Je voudrais\" plus an infinitive is the polite way to say what you want to do, and the other choices change the verb or the place."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je voudrais ouvrir un compte à la banque.",
+                  "choices": [
+                    "Je voudrais fermer un compte à la banque.",
+                    "Je voudrais ouvrir un compte à la banque.",
+                    "Je voudrais ouvrir un compte à la poste.",
+                    "Je voudrais ouvrir un livret à la banque."
+                  ],
+                  "answer": "Je voudrais ouvrir un compte à la banque.",
+                  "explanation": "\"Je voudrais ouvrir un compte à la banque.\" means \"I would like to open an account at the bank\". \"Je voudrais\" plus an infinitive is the polite way to say what you want to do, and the other choices change the verb or the place."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -20538,7 +21920,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je dois envoyer un colis à Lyon.",
-              "explanation": "\"Je dois envoyer un colis à Lyon.\" uses \"devoir\" plus an infinitive to say 'I have to send a package to Lyon', a common thing to say at the post office counter."
+              "explanation": "\"Je dois envoyer un colis à Lyon.\" uses \"devoir\" plus an infinitive to say 'I have to send a package to Lyon', a common thing to say at the post office counter.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je dois envoyer une carte à ma mère.",
+                  "explanation": "\"Je dois envoyer une carte à ma mère.\" means \"I have to send a card to my mother\". \"devoir\" plus an infinitive means have to, and \"envoyer\" takes the thing directly."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je dois envoyer un e-mail au client.",
+                  "explanation": "\"Je dois envoyer un e-mail au client.\" means \"I have to send an email to the client\". \"devoir\" plus an infinitive means have to, and \"envoyer\" takes the thing directly."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je dois envoyer un devoir au professeur.",
+                  "explanation": "\"Je dois envoyer un devoir au professeur.\" means \"I have to send an assignment to the teacher\". \"devoir\" plus an infinitive means have to, and \"envoyer\" takes the thing directly."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -20668,7 +22067,39 @@
                 "Je voudrais envoyer une lettre pour le Canada.",
                 "Je veux envoyer une lettre pour le Canada."
               ],
-              "explanation": "\"Je voudrais envoyer une lettre au Canada.\" uses \"Je voudrais\" (I would like) followed by the infinitive \"envoyer\", and \"au\" is used with masculine countries like le Canada."
+              "explanation": "\"Je voudrais envoyer une lettre au Canada.\" uses \"Je voudrais\" (I would like) followed by the infinitive \"envoyer\", and \"au\" is used with masculine countries like le Canada.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you want to send a postcard to Canada.",
+                  "acceptableAnswers": [
+                    "Je voudrais envoyer une carte postale au Canada.",
+                    "Je veux envoyer une carte postale au Canada.",
+                    "J'aimerais envoyer une carte postale au Canada.",
+                    "Je souhaite envoyer une carte postale au Canada."
+                  ],
+                  "explanation": "\"Je voudrais envoyer une carte postale au Canada.\" means \"I would like to send a postcard to Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the place: \"au\" before Canada."
+                },
+                "work": {
+                  "prompt": "Say that you want to send a package to a client in Canada.",
+                  "acceptableAnswers": [
+                    "Je voudrais envoyer un colis à un client au Canada.",
+                    "Je veux envoyer un colis à un client au Canada.",
+                    "J'aimerais envoyer un colis à un client au Canada.",
+                    "Je souhaite envoyer un colis à un client au Canada."
+                  ],
+                  "explanation": "\"Je voudrais envoyer un colis à un client au Canada.\" means \"I would like to send a package to a client in Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the person: \"à un client\"."
+                },
+                "school": {
+                  "prompt": "Say that you want to send a letter to a friend in Canada.",
+                  "acceptableAnswers": [
+                    "Je voudrais envoyer une lettre à une amie au Canada.",
+                    "Je veux envoyer une lettre à une amie au Canada.",
+                    "J'aimerais envoyer une lettre à une amie au Canada.",
+                    "Je voudrais envoyer une lettre à un ami au Canada."
+                  ],
+                  "explanation": "\"Je voudrais envoyer une lettre à une amie au Canada.\" means \"I would like to send a letter to a friend in Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the person: \"à une amie\"."
+                }
+              }
             }
           ]
         },
@@ -21122,7 +22553,45 @@
                 "Je dois ranger ma chambre après le dîner."
               ],
               "answer": "Je dois ranger ma chambre avant le dîner.",
-              "explanation": "The speaker says \"Je dois ranger ma chambre avant le dîner.\", meaning they have to tidy their bedroom before dinner; the other choices change the verb, the time or the room."
+              "explanation": "The speaker says \"Je dois ranger ma chambre avant le dîner.\", meaning they have to tidy their bedroom before dinner; the other choices change the verb, the time or the room.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je dois ranger ma valise avant le départ.",
+                  "choices": [
+                    "Je dois ranger ma valise après le départ.",
+                    "Je dois ranger ma chambre avant le départ.",
+                    "Je dois ranger ma valise avant le départ.",
+                    "Je dois fermer ma valise avant le départ."
+                  ],
+                  "answer": "Je dois ranger ma valise avant le départ.",
+                  "explanation": "\"Je dois ranger ma valise avant le départ.\" means \"I have to pack my suitcase before departure\". \"Je dois\" plus an infinitive means I have to, and the other choices change the object, the verb or the moment."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je dois ranger mon bureau avant la réunion.",
+                  "choices": [
+                    "Je dois ranger mon bureau après la réunion.",
+                    "Je dois nettoyer mon bureau avant la réunion.",
+                    "Je dois ranger ma chambre avant la réunion.",
+                    "Je dois ranger mon bureau avant la réunion."
+                  ],
+                  "answer": "Je dois ranger mon bureau avant la réunion.",
+                  "explanation": "\"Je dois ranger mon bureau avant la réunion.\" means \"I have to tidy my desk before the meeting\". \"Je dois\" plus an infinitive means I have to, and the other choices change the object, the verb or the moment."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je dois ranger mon sac avant le cours.",
+                  "choices": [
+                    "Je dois ranger mon sac après le cours.",
+                    "Je dois ouvrir mon sac avant le cours.",
+                    "Je dois ranger mon casier avant le cours.",
+                    "Je dois ranger mon sac avant le cours."
+                  ],
+                  "answer": "Je dois ranger mon sac avant le cours.",
+                  "explanation": "\"Je dois ranger mon sac avant le cours.\" means \"I have to tidy my bag before class\". \"Je dois\" plus an infinitive means I have to, and the other choices change the object, the verb or the moment."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -21711,7 +23180,45 @@
                 "Nous partons en voyage dans deux jours."
               ],
               "answer": "Nous partons en vacances dans deux jours.",
-              "explanation": "\"Nous partons en vacances dans deux jours.\" uses \"dans\" to say how long from now something will happen, so the holiday starts in two days' time."
+              "explanation": "\"Nous partons en vacances dans deux jours.\" uses \"dans\" to say how long from now something will happen, so the holiday starts in two days' time.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Nous partons en croisière dans deux jours.",
+                  "choices": [
+                    "Nous partons en croisière dans trois jours.",
+                    "Nous revenons de croisière dans deux jours.",
+                    "Nous partons en croisière dans deux jours.",
+                    "Nous partons en croisière dans deux semaines."
+                  ],
+                  "answer": "Nous partons en croisière dans deux jours.",
+                  "explanation": "\"Nous partons en croisière dans deux jours.\" means \"We leave on a cruise in two days\". \"dans\" before a length of time means from now, and the other choices change the number, the unit or the verb."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Nous partons en mission dans deux jours.",
+                  "choices": [
+                    "Nous partons en mission dans trois jours.",
+                    "Nous partons en mission dans deux jours.",
+                    "Nous revenons de mission dans deux jours.",
+                    "Nous partons en mission dans deux semaines."
+                  ],
+                  "answer": "Nous partons en mission dans deux jours.",
+                  "explanation": "\"Nous partons en mission dans deux jours.\" means \"We leave on an assignment in two days\". \"dans\" before a length of time means from now, and the other choices change the number, the unit or the verb."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Nous avons un contrôle dans deux jours.",
+                  "choices": [
+                    "Nous avons un contrôle dans trois jours.",
+                    "Nous avons un cours dans deux jours.",
+                    "Nous avons un contrôle dans deux semaines.",
+                    "Nous avons un contrôle dans deux jours."
+                  ],
+                  "answer": "Nous avons un contrôle dans deux jours.",
+                  "explanation": "\"Nous avons un contrôle dans deux jours.\" means \"We have a test in two days\". \"dans\" before a length of time means from now, and the other choices change the number, the unit or the verb."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -21735,7 +23242,39 @@
                 "Ma sœur arrive d'ici deux jours.",
                 "Ma sœur arrivera d'ici deux jours."
               ],
-              "explanation": "\"dans\" plus a length of time says how long from now something happens, so \"Ma sœur arrive dans deux jours.\" means she will arrive in two days' time."
+              "explanation": "\"dans\" plus a length of time says how long from now something happens, so \"Ma sœur arrive dans deux jours.\" means she will arrive in two days' time.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that your flight leaves in two days.",
+                  "acceptableAnswers": [
+                    "Mon vol part dans deux jours.",
+                    "Mon vol décolle dans deux jours.",
+                    "Mon avion part dans deux jours.",
+                    "Dans deux jours, mon vol part."
+                  ],
+                  "explanation": "\"Mon vol part dans deux jours.\" means \"My flight leaves in two days\". \"dans\" before a length of time means from now: \"dans deux jours\" is in two days."
+                },
+                "work": {
+                  "prompt": "Say that the project ends in two days.",
+                  "acceptableAnswers": [
+                    "Le projet finit dans deux jours.",
+                    "Le projet se termine dans deux jours.",
+                    "Le projet est fini dans deux jours.",
+                    "Dans deux jours, le projet finit."
+                  ],
+                  "explanation": "\"Le projet finit dans deux jours.\" means \"The project ends in two days\". \"dans\" before a length of time means from now: \"dans deux jours\" is in two days."
+                },
+                "school": {
+                  "prompt": "Say that the French test is in two days.",
+                  "acceptableAnswers": [
+                    "Le contrôle de français est dans deux jours.",
+                    "Le contrôle de français a lieu dans deux jours.",
+                    "Nous avons un contrôle de français dans deux jours.",
+                    "Dans deux jours, il y a un contrôle de français."
+                  ],
+                  "explanation": "\"Le contrôle de français est dans deux jours.\" means \"The French test is in two days\". \"dans\" before a length of time means from now: \"dans deux jours\" is in two days."
+                }
+              }
             }
           ]
         },
@@ -22779,7 +24318,39 @@
                 "Je n'ai plus de temps libre aujourd'hui.",
                 "Aujourd'hui je n'ai plus le temps."
               ],
-              "explanation": "\"Je n'ai plus de temps aujourd'hui.\" uses \"ne … plus\" for no longer, and \"de\" replaces the article after a negation."
+              "explanation": "\"Je n'ai plus de temps aujourd'hui.\" uses \"ne … plus\" for no longer, and \"de\" replaces the article after a negation.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you have no more money for the trip.",
+                  "acceptableAnswers": [
+                    "Je n'ai plus d'argent pour le voyage.",
+                    "Je n'ai plus d'argent pour partir en voyage.",
+                    "Il ne me reste plus d'argent pour le voyage.",
+                    "Pour le voyage, je n'ai plus d'argent."
+                  ],
+                  "explanation": "\"Je n'ai plus d'argent pour le voyage.\" means \"I no longer have any money for the trip\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: \"plus d'argent\"."
+                },
+                "work": {
+                  "prompt": "Say that you have no more time for this project.",
+                  "acceptableAnswers": [
+                    "Je n'ai plus de temps pour ce projet.",
+                    "Pour ce projet, je n'ai plus de temps.",
+                    "Il ne me reste plus de temps pour ce projet.",
+                    "Je n'ai plus de temps à consacrer à ce projet."
+                  ],
+                  "explanation": "\"Je n'ai plus de temps pour ce projet.\" means \"I no longer have any time for this project\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: \"plus de temps\"."
+                },
+                "school": {
+                  "prompt": "Say that you have no more time for homework.",
+                  "acceptableAnswers": [
+                    "Je n'ai plus de temps pour mes devoirs.",
+                    "Pour mes devoirs, je n'ai plus de temps.",
+                    "Il ne me reste plus de temps pour mes devoirs.",
+                    "Je n'ai plus de temps à consacrer à mes devoirs."
+                  ],
+                  "explanation": "\"Je n'ai plus de temps pour mes devoirs.\" means \"I no longer have any time for my homework\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: \"plus de temps\"."
+                }
+              }
             }
           ]
         },
@@ -23324,7 +24895,45 @@
                 "Est-ce que vous avez choisi le travail ?"
               ],
               "answer": "Est-ce que vous avez fini le travail ?",
-              "explanation": "\"Est-ce que vous avez fini le travail ?\" asks whether you have finished the work. Listen for the past participle \"fini\" and the noun \"travail\": the other choices swap in \"vu\", \"choisi\" or \"repas\", which sound clearly different."
+              "explanation": "\"Est-ce que vous avez fini le travail ?\" asks whether you have finished the work. Listen for the past participle \"fini\" and the noun \"travail\": the other choices swap in \"vu\", \"choisi\" or \"repas\", which sound clearly different.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Est-ce que vous avez réservé la chambre ?",
+                  "choices": [
+                    "Est-ce que vous avez payé la chambre ?",
+                    "Est-ce que vous avez réservé la table ?",
+                    "Est-ce que vous avez réservé le taxi ?",
+                    "Est-ce que vous avez réservé la chambre ?"
+                  ],
+                  "answer": "Est-ce que vous avez réservé la chambre ?",
+                  "explanation": "\"Est-ce que vous avez réservé la chambre ?\" means \"Did you book the room?\" \"Est-ce que vous avez\" opens a polite question about what was done, and the other choices change the verb or the thing."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Est-ce que vous avez envoyé le rapport ?",
+                  "choices": [
+                    "Est-ce que vous avez envoyé le rapport ?",
+                    "Est-ce que vous avez reçu le rapport ?",
+                    "Est-ce que vous avez envoyé le contrat ?",
+                    "Est-ce que vous avez lu le rapport ?"
+                  ],
+                  "answer": "Est-ce que vous avez envoyé le rapport ?",
+                  "explanation": "\"Est-ce que vous avez envoyé le rapport ?\" means \"Did you send the report?\" \"Est-ce que vous avez\" opens a polite question about what was done, and the other choices change the verb or the thing."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Est-ce que vous avez fait les devoirs ?",
+                  "choices": [
+                    "Est-ce que vous avez lu les devoirs ?",
+                    "Est-ce que vous avez corrigé les devoirs ?",
+                    "Est-ce que vous avez fait les devoirs ?",
+                    "Est-ce que vous avez fait les exercices ?"
+                  ],
+                  "answer": "Est-ce que vous avez fait les devoirs ?",
+                  "explanation": "\"Est-ce que vous avez fait les devoirs ?\" means \"Did you do the homework?\" \"Est-ce que vous avez\" opens a polite question about what was done, and the other choices change the verb or the thing."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -23574,7 +25183,36 @@
                 "Est-ce que vous pouvez venir demain, s'il vous plaît ?",
                 "Est-ce que vous pourriez venir demain, s'il vous plaît ?"
               ],
-              "explanation": "With a stranger you use vous, and est-ce que simply goes in front of a normal statement to make a question: \"Est-ce que vous pouvez venir demain ?\""
+              "explanation": "With a stranger you use vous, and est-ce que simply goes in front of a normal statement to make a question: \"Est-ce que vous pouvez venir demain ?\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Ask the tour guide politely, using est-ce que, whether he can come to the hotel tomorrow.",
+                  "acceptableAnswers": [
+                    "Est-ce que vous pouvez venir à l'hôtel demain ?",
+                    "Est-ce que vous pourriez venir à l'hôtel demain ?",
+                    "Est-ce que vous pouvez venir à l'hôtel demain, s'il vous plaît ?"
+                  ],
+                  "explanation": "\"Est-ce que vous pouvez venir à l'hôtel demain ?\" means \"Can you come to the hotel tomorrow?\" \"Est-ce que\" turns a statement into a polite question without changing the word order."
+                },
+                "work": {
+                  "prompt": "Ask your manager politely, using est-ce que, whether he can come to the meeting tomorrow.",
+                  "acceptableAnswers": [
+                    "Est-ce que vous pouvez venir à la réunion demain ?",
+                    "Est-ce que vous pourriez venir à la réunion demain ?",
+                    "Est-ce que vous pouvez venir à la réunion demain, s'il vous plaît ?"
+                  ],
+                  "explanation": "\"Est-ce que vous pouvez venir à la réunion demain ?\" means \"Can you come to the meeting tomorrow?\" \"Est-ce que\" turns a statement into a polite question without changing the word order."
+                },
+                "school": {
+                  "prompt": "Ask your teacher politely, using est-ce que, whether she can come to the school party tomorrow.",
+                  "acceptableAnswers": [
+                    "Est-ce que vous pouvez venir à la fête de l'école demain ?",
+                    "Est-ce que vous pourriez venir à la fête de l'école demain ?",
+                    "Est-ce que vous pouvez venir à la fête de l'école demain, s'il vous plaît ?"
+                  ],
+                  "explanation": "\"Est-ce que vous pouvez venir à la fête de l'école demain ?\" means \"Can you come to the school party tomorrow?\" \"Est-ce que\" turns a statement into a polite question without changing the word order."
+                }
+              }
             }
           ]
         },
@@ -23796,7 +25434,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je ne mange jamais de poisson",
-              "explanation": "\"Je ne mange jamais de poisson\" means I never eat fish. \"Ne … jamais\" wraps the verb, and \"de\" replaces \"du/des\" after a negation."
+              "explanation": "\"Je ne mange jamais de poisson\" means I never eat fish. \"Ne … jamais\" wraps the verb, and \"de\" replaces \"du/des\" after a negation.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je ne mange jamais de viande à l'hôtel",
+                  "explanation": "\"Je ne mange jamais de viande à l'hôtel\" means \"I never eat meat at the hotel\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je ne mange jamais de viande au bureau",
+                  "explanation": "\"Je ne mange jamais de viande au bureau\" means \"I never eat meat at the office\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je ne mange jamais de viande à la cantine",
+                  "explanation": "\"Je ne mange jamais de viande à la cantine\" means \"I never eat meat at the cafeteria\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -23813,7 +25468,39 @@
                 "Le matin, je prends toujours du café.",
                 "Le matin, je prends toujours un café."
               ],
-              "explanation": "\"Je bois toujours du café le matin.\" uses toujours (always), placed right after the verb, to say how often you drink coffee."
+              "explanation": "\"Je bois toujours du café le matin.\" uses toujours (always), placed right after the verb, to say how often you drink coffee.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you always drink coffee at the hotel in the morning.",
+                  "acceptableAnswers": [
+                    "Je bois toujours du café à l'hôtel le matin.",
+                    "Le matin, je bois toujours du café à l'hôtel.",
+                    "Je bois toujours du café à l'hôtel chaque matin.",
+                    "Je prends toujours un café à l'hôtel le matin."
+                  ],
+                  "explanation": "\"Je bois toujours du café à l'hôtel le matin.\" means \"I always drink coffee at the hotel in the morning\". \"toujours\" goes right after the verb, and \"du\" or \"de l'\" is the partitive for something you drink."
+                },
+                "work": {
+                  "prompt": "Say that you always drink coffee at the office in the morning.",
+                  "acceptableAnswers": [
+                    "Je bois toujours du café au bureau le matin.",
+                    "Le matin, je bois toujours du café au bureau.",
+                    "Je bois toujours du café au bureau chaque matin.",
+                    "Je prends toujours un café au bureau le matin."
+                  ],
+                  "explanation": "\"Je bois toujours du café au bureau le matin.\" means \"I always drink coffee at the office in the morning\". \"toujours\" goes right after the verb, and \"du\" or \"de l'\" is the partitive for something you drink."
+                },
+                "school": {
+                  "prompt": "Say that you always drink water at school.",
+                  "acceptableAnswers": [
+                    "Je bois toujours de l'eau à l'école.",
+                    "À l'école, je bois toujours de l'eau.",
+                    "Je bois toujours de l'eau en classe.",
+                    "À l'école, je bois toujours un verre d'eau."
+                  ],
+                  "explanation": "\"Je bois toujours de l'eau à l'école.\" means \"I always drink water at school\". \"toujours\" goes right after the verb, and \"du\" or \"de l'\" is the partitive for something you drink."
+                }
+              }
             }
           ]
         },
@@ -24140,7 +25827,45 @@
                 "Je vais au marché chaque matin avec ma mère."
               ],
               "answer": "Je vais au marché chaque semaine avec ma mère.",
-              "explanation": "The sentence is \"Je vais au marché chaque semaine avec ma mère.\" and \"chaque semaine\" means every week. Listen for the word after \"chaque\": année (year), matin (morning) and soir (evening) all sound different."
+              "explanation": "The sentence is \"Je vais au marché chaque semaine avec ma mère.\" and \"chaque semaine\" means every week. Listen for the word after \"chaque\": année (year), matin (morning) and soir (evening) all sound different.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je vais au musée chaque matin avec ma sœur.",
+                  "choices": [
+                    "Je vais au musée chaque soir avec ma sœur.",
+                    "Je vais au musée chaque matin avec ma sœur.",
+                    "Je vais au marché chaque matin avec ma sœur.",
+                    "Je vais au musée chaque matin avec mon frère."
+                  ],
+                  "answer": "Je vais au musée chaque matin avec ma sœur.",
+                  "explanation": "\"Je vais au musée chaque matin avec ma sœur.\" means \"I go to the museum every morning with my sister\". \"chaque matin\" means every morning, and the other choices change the time, the place or the person."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je vais au bureau chaque matin avec mon collègue.",
+                  "choices": [
+                    "Je vais au bureau chaque soir avec mon collègue.",
+                    "Je vais au bureau chaque matin avec mon collègue.",
+                    "Je vais au bureau chaque matin avec mon patron.",
+                    "Je vais au bureau chaque lundi avec mon collègue."
+                  ],
+                  "answer": "Je vais au bureau chaque matin avec mon collègue.",
+                  "explanation": "\"Je vais au bureau chaque matin avec mon collègue.\" means \"I go to the office every morning with my colleague\". \"chaque matin\" means every morning, and the other choices change the time, the place or the person."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je vais à l'école chaque matin avec mon frère.",
+                  "choices": [
+                    "Je vais à l'école chaque soir avec mon frère.",
+                    "Je vais à l'école chaque matin avec ma sœur.",
+                    "Je vais à l'école chaque lundi avec mon frère.",
+                    "Je vais à l'école chaque matin avec mon frère."
+                  ],
+                  "answer": "Je vais à l'école chaque matin avec mon frère.",
+                  "explanation": "\"Je vais à l'école chaque matin avec mon frère.\" means \"I go to school every morning with my brother\". \"chaque matin\" means every morning, and the other choices change the time, the place or the person."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -25088,7 +26813,45 @@
                 "Je dois envoyer ce rapport au client demain."
               ],
               "answer": "Je dois envoyer ce courriel au client demain.",
-              "explanation": "\"Je dois envoyer ce courriel au client demain.\" Listen for \"courriel\" (email), \"client\" and \"demain\" (tomorrow); similar words like \"rapport\", \"bureau\" and \"hier\" change the meaning."
+              "explanation": "\"Je dois envoyer ce courriel au client demain.\" Listen for \"courriel\" (email), \"client\" and \"demain\" (tomorrow); similar words like \"rapport\", \"bureau\" and \"hier\" change the meaning.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je dois envoyer ce courriel à l'hôtel demain.",
+                  "choices": [
+                    "Je dois envoyer ce colis à l'hôtel demain.",
+                    "Je dois envoyer ce courriel à l'hôtel demain.",
+                    "Je dois envoyer ce courriel à l'hôtel hier.",
+                    "Je dois recevoir ce courriel à l'hôtel demain."
+                  ],
+                  "answer": "Je dois envoyer ce courriel à l'hôtel demain.",
+                  "explanation": "\"Je dois envoyer ce courriel à l'hôtel demain.\" means \"I have to send this email to the hotel tomorrow\". \"Je dois envoyer\" means I have to send, and the other choices change the thing, the person or the day."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je dois envoyer ce devis au client demain.",
+                  "choices": [
+                    "Je dois envoyer ce contrat au client demain.",
+                    "Je dois envoyer ce devis au client demain.",
+                    "Je dois envoyer ce devis au patron demain.",
+                    "Je dois envoyer ce devis au client lundi."
+                  ],
+                  "answer": "Je dois envoyer ce devis au client demain.",
+                  "explanation": "\"Je dois envoyer ce devis au client demain.\" means \"I have to send this quote to the client tomorrow\". \"Je dois envoyer\" means I have to send, and the other choices change the thing, the person or the day."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Je dois envoyer ce devoir au professeur demain.",
+                  "choices": [
+                    "Je dois envoyer ce devoir au directeur demain.",
+                    "Je dois rendre ce devoir au professeur demain.",
+                    "Je dois envoyer ce devoir au professeur lundi.",
+                    "Je dois envoyer ce devoir au professeur demain."
+                  ],
+                  "answer": "Je dois envoyer ce devoir au professeur demain.",
+                  "explanation": "\"Je dois envoyer ce devoir au professeur demain.\" means \"I have to send this assignment to the teacher tomorrow\". \"Je dois envoyer\" means I have to send, and the other choices change the thing, the person or the day."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -25104,7 +26867,39 @@
                 "La date limite du projet, c'est la semaine prochaine.",
                 "La date butoir du projet est la semaine prochaine."
               ],
-              "explanation": "\"La date limite du projet est la semaine prochaine.\" uses \"la date limite\" (the deadline) with \"du projet\" (of the project) and \"la semaine prochaine\" for next week."
+              "explanation": "\"La date limite du projet est la semaine prochaine.\" uses \"la date limite\" (the deadline) with \"du projet\" (of the project) and \"la semaine prochaine\" for next week.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that your flight is next week.",
+                  "acceptableAnswers": [
+                    "Mon vol est la semaine prochaine.",
+                    "Mon vol a lieu la semaine prochaine.",
+                    "Mon avion part la semaine prochaine.",
+                    "La semaine prochaine, j'ai mon vol."
+                  ],
+                  "explanation": "\"Mon vol est la semaine prochaine.\" means \"My flight is next week\". \"la semaine prochaine\" means next week, and the verb agrees with the thing: \"est\"."
+                },
+                "work": {
+                  "prompt": "Say that the deadline for the report is next week.",
+                  "acceptableAnswers": [
+                    "La date limite du rapport est la semaine prochaine.",
+                    "La date limite pour le rapport est la semaine prochaine.",
+                    "Le rapport est à rendre la semaine prochaine.",
+                    "La semaine prochaine, c'est la date limite du rapport."
+                  ],
+                  "explanation": "\"La date limite du rapport est la semaine prochaine.\" means \"The deadline for the report is next week\". \"la semaine prochaine\" means next week, and the verb agrees with the thing: \"est\"."
+                },
+                "school": {
+                  "prompt": "Say that the test is next week.",
+                  "acceptableAnswers": [
+                    "Le contrôle est la semaine prochaine.",
+                    "Le contrôle a lieu la semaine prochaine.",
+                    "Nous avons un contrôle la semaine prochaine.",
+                    "La semaine prochaine, il y a un contrôle."
+                  ],
+                  "explanation": "\"Le contrôle est la semaine prochaine.\" means \"The test is next week\". \"la semaine prochaine\" means next week, and the verb agrees with the thing: \"est\"."
+                }
+              }
             }
           ]
         },
@@ -25207,7 +27002,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Je dois finir le rapport ce soir",
-              "explanation": "\"Je dois finir le rapport ce soir\" means 'I have to finish the report tonight'. Devoir plus an infinitive says what you must do."
+              "explanation": "\"Je dois finir le rapport ce soir\" means 'I have to finish the report tonight'. Devoir plus an infinitive says what you must do.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je dois faire ma valise ce soir",
+                  "explanation": "\"Je dois faire ma valise ce soir\" means \"I have to pack my suitcase tonight\". \"devoir\" plus an infinitive means have to, and the possessive agrees with the noun."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je dois finir le rapport demain",
+                  "explanation": "\"Je dois finir le rapport demain\" means \"I have to finish the report tomorrow\". \"devoir\" plus an infinitive means have to, and the possessive agrees with the noun."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Je dois finir mes devoirs ce soir",
+                  "explanation": "\"Je dois finir mes devoirs ce soir\" means \"I have to finish my homework tonight\". \"devoir\" plus an infinitive means have to, and the possessive agrees with the noun."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -25800,7 +27612,39 @@
                 "Je vais à l'hôtel de ville en métro.",
                 "Je prends le métro pour aller à l'hôtel de ville."
               ],
-              "explanation": "\"Je vais prendre le métro pour aller à la mairie.\" uses \"aller\" plus an infinitive for the near future, and \"prendre le métro\" for taking the subway."
+              "explanation": "\"Je vais prendre le métro pour aller à la mairie.\" uses \"aller\" plus an infinitive for the near future, and \"prendre le métro\" for taking the subway.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you are going to take the subway to the museum.",
+                  "acceptableAnswers": [
+                    "Je vais prendre le métro pour aller au musée.",
+                    "Je vais aller au musée en métro.",
+                    "Je vais prendre le métro jusqu'au musée.",
+                    "Pour aller au musée, je vais prendre le métro."
+                  ],
+                  "explanation": "\"Je vais prendre le métro pour aller au musée.\" means \"I am going to take the subway to the museum\". \"aller\" plus an infinitive is the near future, and pour aller followed by \"au\" gives the goal: au musée."
+                },
+                "work": {
+                  "prompt": "Say that you are going to take the subway to the office.",
+                  "acceptableAnswers": [
+                    "Je vais prendre le métro pour aller au bureau.",
+                    "Je vais aller au bureau en métro.",
+                    "Je vais prendre le métro jusqu'au bureau.",
+                    "Pour aller au bureau, je vais prendre le métro."
+                  ],
+                  "explanation": "\"Je vais prendre le métro pour aller au bureau.\" means \"I am going to take the subway to the office\". \"aller\" plus an infinitive is the near future, and pour aller followed by \"au\" gives the goal: au bureau."
+                },
+                "school": {
+                  "prompt": "Say that you are going to take the subway to the university.",
+                  "acceptableAnswers": [
+                    "Je vais prendre le métro pour aller à l'université.",
+                    "Je vais aller à l'université en métro.",
+                    "Je vais prendre le métro jusqu'à l'université.",
+                    "Pour aller à l'université, je vais prendre le métro."
+                  ],
+                  "explanation": "\"Je vais prendre le métro pour aller à l'université.\" means \"I am going to take the subway to the university\". \"aller\" plus an infinitive is the near future, and pour aller followed by \"à l'\" gives the goal: à l'université."
+                }
+              }
             }
           ]
         },
@@ -26129,7 +27973,39 @@
                 "J'ai oublié mes clés à la maison.",
                 "Mes clés, je les ai oubliées."
               ],
-              "explanation": "\"J'ai oublié mes clés.\" uses the passé composé of \"oublier\" with \"avoir\" for a finished action. Keys are plural, so you say \"mes clés\"."
+              "explanation": "\"J'ai oublié mes clés.\" uses the passé composé of \"oublier\" with \"avoir\" for a finished action. Keys are plural, so you say \"mes clés\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you forgot your passport at the hotel.",
+                  "acceptableAnswers": [
+                    "J'ai oublié mon passeport à l'hôtel.",
+                    "J'ai laissé mon passeport à l'hôtel.",
+                    "À l'hôtel, j'ai oublié mon passeport.",
+                    "J'ai oublié mon passeport dans ma chambre d'hôtel."
+                  ],
+                  "explanation": "\"J'ai oublié mon passeport à l'hôtel.\" means \"I forgot my passport at the hotel\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon\" before passeport."
+                },
+                "work": {
+                  "prompt": "Say that you forgot your badge at home.",
+                  "acceptableAnswers": [
+                    "J'ai oublié mon badge à la maison.",
+                    "J'ai laissé mon badge à la maison.",
+                    "À la maison, j'ai oublié mon badge.",
+                    "J'ai oublié mon badge chez moi."
+                  ],
+                  "explanation": "\"J'ai oublié mon badge à la maison.\" means \"I forgot my badge at home\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon\" before badge."
+                },
+                "school": {
+                  "prompt": "Say that you forgot your notebook at home.",
+                  "acceptableAnswers": [
+                    "J'ai oublié mon cahier à la maison.",
+                    "J'ai laissé mon cahier à la maison.",
+                    "À la maison, j'ai oublié mon cahier.",
+                    "J'ai oublié mon cahier chez moi."
+                  ],
+                  "explanation": "\"J'ai oublié mon cahier à la maison.\" means \"I forgot my notebook at home\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon\" before cahier."
+                }
+              }
             },
             {
               "id": "fra2p21q6",
@@ -26202,7 +28078,39 @@
                 "Le bus est parti sans moi.",
                 "J'ai manqué le bus."
               ],
-              "explanation": "\"J'ai raté le bus.\" uses the passé composé of \"rater\", the everyday verb for missing a bus or train (\"manquer\" is a little more formal)."
+              "explanation": "\"J'ai raté le bus.\" uses the passé composé of \"rater\", the everyday verb for missing a bus or train (\"manquer\" is a little more formal).",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Explain that you missed the train.",
+                  "acceptableAnswers": [
+                    "J'ai raté le train.",
+                    "J'ai manqué le train.",
+                    "Mon train est parti sans moi.",
+                    "J'ai raté mon train."
+                  ],
+                  "explanation": "\"J'ai raté le train.\" means \"I missed the train\". \"rater\" takes the thing directly, and the passé composé uses \"avoir\": \"j'ai raté\"."
+                },
+                "work": {
+                  "prompt": "Explain that you missed the meeting.",
+                  "acceptableAnswers": [
+                    "J'ai raté la réunion.",
+                    "J'ai manqué la réunion.",
+                    "Je n'ai pas assisté à la réunion.",
+                    "Je n'ai pas pu venir à la réunion."
+                  ],
+                  "explanation": "\"J'ai raté la réunion.\" means \"I missed the meeting\". \"rater\" takes the thing directly, and the passé composé uses \"avoir\": \"j'ai raté\"."
+                },
+                "school": {
+                  "prompt": "Explain that you missed the class.",
+                  "acceptableAnswers": [
+                    "J'ai raté le cours.",
+                    "J'ai manqué le cours.",
+                    "Je n'ai pas assisté au cours.",
+                    "Je n'ai pas pu venir au cours."
+                  ],
+                  "explanation": "\"J'ai raté le cours.\" means \"I missed the class\". \"rater\" takes the thing directly, and the passé composé uses \"avoir\": \"j'ai raté\"."
+                }
+              }
             },
             {
               "id": "fra2p21q12",
