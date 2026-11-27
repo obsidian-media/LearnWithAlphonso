@@ -46,6 +46,12 @@ Say the Picture shows a real photo and asks you to name it out loud. Say it righ
 KEEP GOING
 Set a learning goal and see how many lessons a week it takes. Tap a word in a tutor reply to save it to your review. Keep a daily streak and earn XP.
 
+YOUR OWN PATH
+A suggested learning path plans your week from your level, your goal and the mistakes you make, with one short refresher lesson when something keeps tripping you up. Some lessons have a version written for your goal: travel, work or school.
+
+ALPHONSO REMEMBERS
+After a practice call, Alphonso keeps a short note of what you worked on and the phrases you fixed, and starts your next call from there. You can see or clear what he remembers in Settings at any time.
+
 LEARN WITH OTHERS, IF YOU WANT TO
 Friends, leagues, teams with weekly team missions, duels, and study buddies who keep a weekly streak together. Study buddies can send each other only preset messages. You choose your public display name, and you can block or report any learner.
 
