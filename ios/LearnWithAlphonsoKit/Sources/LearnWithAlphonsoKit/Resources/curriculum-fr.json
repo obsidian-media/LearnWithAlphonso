@@ -15691,14 +15691,14 @@
               "explanation": "Regular -ir verbs like finir take -s with \"je\", so you say \"Je finis mes devoirs maintenant.\"",
               "goalVariants": {
                 "travel": {
-                  "prompt": "Say that you are packing your suitcase now.",
+                  "prompt": "Say that you are finishing packing your suitcase now.",
                   "acceptableAnswers": [
-                    "Je fais ma valise maintenant.",
-                    "Maintenant, je fais ma valise.",
-                    "Je prépare ma valise maintenant.",
-                    "Je suis en train de faire ma valise maintenant."
+                    "Je finis de faire ma valise maintenant.",
+                    "Maintenant, je finis de faire ma valise.",
+                    "Je termine de faire ma valise maintenant.",
+                    "Je finis de préparer ma valise maintenant."
                   ],
-                  "explanation": "\"Je fais ma valise maintenant.\" means \"I am packing my suitcase now\". \"faire\" is irregular with je: \"fais\", and the possessive agrees with the noun."
+                  "explanation": "\"Je finis de faire ma valise maintenant.\" means \"I am finishing packing my suitcase now\". \"finir\" is a regular -ir verb, so with je it ends in -is, and \"de\" links it to the infinitive that follows."
                 },
                 "work": {
                   "prompt": "Say that you are finishing your report now.",
@@ -21110,7 +21110,10 @@
                     "Samedi, je ne peux pas venir à la visite parce que je suis occupé.",
                     "Je ne peux pas venir à la visite samedi car je suis occupé.",
                     "Je ne peux pas venir à la visite samedi, je suis occupé.",
-                    "Je ne peux pas venir à la visite samedi parce que je suis occupée."
+                    "Je ne peux pas venir à la visite samedi parce que je suis occupée.",
+                    "Samedi, je ne peux pas venir à la visite parce que je suis occupée.",
+                    "Je ne peux pas venir à la visite samedi car je suis occupée.",
+                    "Je ne peux pas venir à la visite samedi, je suis occupée."
                   ],
                   "explanation": "\"Je ne peux pas venir à la visite samedi parce que je suis occupé.\" means \"I cannot come to the tour on Saturday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
                 },
@@ -21121,7 +21124,10 @@
                     "Vendredi, je ne peux pas venir à la réunion parce que je suis occupé.",
                     "Je ne peux pas venir à la réunion vendredi car je suis occupé.",
                     "Je ne peux pas venir à la réunion vendredi, je suis occupé.",
-                    "Je ne peux pas venir à la réunion vendredi parce que je suis occupée."
+                    "Je ne peux pas venir à la réunion vendredi parce que je suis occupée.",
+                    "Vendredi, je ne peux pas venir à la réunion parce que je suis occupée.",
+                    "Je ne peux pas venir à la réunion vendredi car je suis occupée.",
+                    "Je ne peux pas venir à la réunion vendredi, je suis occupée."
                   ],
                   "explanation": "\"Je ne peux pas venir à la réunion vendredi parce que je suis occupé.\" means \"I cannot come to the meeting on Friday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
                 },
@@ -21132,7 +21138,10 @@
                     "Samedi, je ne peux pas venir à la séance de révision parce que je suis occupé.",
                     "Je ne peux pas venir à la séance de révision samedi car je suis occupé.",
                     "Je ne peux pas venir à la séance de révision samedi, je suis occupé.",
-                    "Je ne peux pas venir à la séance de révision samedi parce que je suis occupée."
+                    "Je ne peux pas venir à la séance de révision samedi parce que je suis occupée.",
+                    "Samedi, je ne peux pas venir à la séance de révision parce que je suis occupée.",
+                    "Je ne peux pas venir à la séance de révision samedi car je suis occupée.",
+                    "Je ne peux pas venir à la séance de révision samedi, je suis occupée."
                   ],
                   "explanation": "\"Je ne peux pas venir à la séance de révision samedi parce que je suis occupé.\" means \"I cannot come to the study session on Saturday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
                 }
