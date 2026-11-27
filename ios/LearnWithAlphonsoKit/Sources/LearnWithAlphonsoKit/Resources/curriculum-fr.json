@@ -15691,14 +15691,14 @@
               "explanation": "Regular -ir verbs like finir take -s with \"je\", so you say \"Je finis mes devoirs maintenant.\"",
               "goalVariants": {
                 "travel": {
-                  "prompt": "Say that you are finishing your packing now.",
+                  "prompt": "Say that you are packing your suitcase now.",
                   "acceptableAnswers": [
-                    "Je finis ma valise maintenant.",
-                    "Maintenant, je finis ma valise.",
-                    "Je termine ma valise maintenant.",
-                    "Je finis de faire ma valise maintenant."
+                    "Je fais ma valise maintenant.",
+                    "Maintenant, je fais ma valise.",
+                    "Je prépare ma valise maintenant.",
+                    "Je suis en train de faire ma valise maintenant."
                   ],
-                  "explanation": "\"Je finis ma valise maintenant.\" means \"I am finishing my packing now\". \"finir\" is a regular -ir verb, so with je it ends in -is, and the possessive agrees with the noun."
+                  "explanation": "\"Je fais ma valise maintenant.\" means \"I am packing my suitcase now\". \"faire\" is irregular with je: \"fais\", and the possessive agrees with the noun."
                 },
                 "work": {
                   "prompt": "Say that you are finishing your report now.",
@@ -16478,7 +16478,7 @@
                 "school": {
                   "prompt": "Say this aloud:",
                   "answer": "L'école est en face du parc",
-                  "explanation": "\"L'école est en face du parc\" means \"The school is opposite the park\". \"en face de\" means opposite, and \"de\" joins with the article that follows."
+                  "explanation": "\"L'école est en face du parc\" means \"The school is opposite the park\". The phrase en face de means opposite, and \"de\" joins with \"le\" to make \"du\"."
                 }
               }
             },
@@ -17111,7 +17111,7 @@
                     "Mon hôtel est dans un quartier tranquille.",
                     "Mon hôtel est situé dans un quartier calme."
                   ],
-                  "explanation": "\"Mon hôtel est dans un quartier calme.\" means \"My hotel is in a quiet neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"calme\" and \"animé\" need no change."
+                  "explanation": "\"Mon hôtel est dans un quartier calme.\" means \"My hotel is in a quiet neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"calme\" needs no change."
                 },
                 "work": {
                   "prompt": "Say that your office is in a lively neighborhood.",
@@ -17121,7 +17121,7 @@
                     "Mon bureau est dans un quartier vivant.",
                     "Mon bureau est situé dans un quartier animé."
                   ],
-                  "explanation": "\"Mon bureau est dans un quartier animé.\" means \"My office is in a lively neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"calme\" and \"animé\" need no change."
+                  "explanation": "\"Mon bureau est dans un quartier animé.\" means \"My office is in a lively neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"animé\" needs no change."
                 },
                 "school": {
                   "prompt": "Say that your school is in a quiet neighborhood.",
@@ -17131,7 +17131,7 @@
                     "Mon école est dans un quartier tranquille.",
                     "Mon école est située dans un quartier calme."
                   ],
-                  "explanation": "\"Mon école est dans un quartier calme.\" means \"My school is in a quiet neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"calme\" and \"animé\" need no change."
+                  "explanation": "\"Mon école est dans un quartier calme.\" means \"My school is in a quiet neighborhood\". The adjective agrees with the noun: \"quartier\" is masculine, so \"calme\" needs no change."
                 }
               }
             }
@@ -19129,7 +19129,7 @@
                     "Je vais téléphoner à l'hôtel ce soir.",
                     "Ce soir, je vais téléphoner à l'hôtel.",
                     "Je vais appeler l'hôtel ce soir.",
-                    "Je vais appeler l'hôtel ce soir par téléphone."
+                    "Je vais passer un coup de fil à l'hôtel ce soir."
                   ],
                   "explanation": "\"Je vais téléphoner à l'hôtel ce soir.\" means \"I am going to call the hotel this evening\". \"aller\" plus an infinitive builds the near future, and \"téléphoner\" takes \"à\" before the person."
                 },
@@ -19139,7 +19139,7 @@
                     "Je vais téléphoner à un client ce soir.",
                     "Ce soir, je vais téléphoner à un client.",
                     "Je vais appeler un client ce soir.",
-                    "Je vais appeler un client ce soir par téléphone."
+                    "Je vais passer un coup de fil à un client ce soir."
                   ],
                   "explanation": "\"Je vais téléphoner à un client ce soir.\" means \"I am going to call a client this evening\". \"aller\" plus an infinitive builds the near future, and \"téléphoner\" takes \"à\" before the person."
                 },
@@ -19149,7 +19149,7 @@
                     "Je vais téléphoner à mon professeur ce soir.",
                     "Ce soir, je vais téléphoner à mon professeur.",
                     "Je vais appeler mon professeur ce soir.",
-                    "Je vais appeler mon professeur ce soir par téléphone."
+                    "Je vais passer un coup de fil à mon professeur ce soir."
                   ],
                   "explanation": "\"Je vais téléphoner à mon professeur ce soir.\" means \"I am going to call my teacher this evening\". \"aller\" plus an infinitive builds the near future, and \"téléphoner\" takes \"à\" before the person."
                 }
@@ -19803,7 +19803,7 @@
                     "J'ai vraiment mal au dos après le vol.",
                     "Mon dos me fait très mal après le vol."
                   ],
-                  "explanation": "\"J'ai très mal au dos après le vol.\" means \"My back hurts a lot after the flight\". \"avoir mal à\" joins with the body part: \"au dos\", \"à la tête\", \"au ventre\"."
+                  "explanation": "\"J'ai très mal au dos après le vol.\" means \"My back hurts a lot after the flight\". The expression avoir mal à joins with the body part: \"au\" before a masculine word like dos."
                 },
                 "work": {
                   "prompt": "Tell your manager that your back hurts a lot after the meeting.",
@@ -19813,7 +19813,7 @@
                     "J'ai vraiment mal au dos après la réunion.",
                     "Mon dos me fait très mal après la réunion."
                   ],
-                  "explanation": "\"J'ai très mal au dos après la réunion.\" means \"My back hurts a lot after the meeting\". \"avoir mal à\" joins with the body part: \"au dos\", \"à la tête\", \"au ventre\"."
+                  "explanation": "\"J'ai très mal au dos après la réunion.\" means \"My back hurts a lot after the meeting\". The expression avoir mal à joins with the body part: \"au\" before a masculine word like dos."
                 },
                 "school": {
                   "prompt": "Tell the school nurse that your stomach hurts a lot.",
@@ -19823,7 +19823,7 @@
                     "Mon ventre me fait très mal.",
                     "J'ai très mal au ventre depuis ce matin."
                   ],
-                  "explanation": "\"J'ai très mal au ventre.\" means \"My stomach hurts a lot\". \"avoir mal à\" joins with the body part: \"au dos\", \"à la tête\", \"au ventre\"."
+                  "explanation": "\"J'ai très mal au ventre.\" means \"My stomach hurts a lot\". The expression avoir mal à joins with the body part: \"au\" before a masculine word like ventre."
                 }
               }
             }
@@ -20425,7 +20425,7 @@
                     "Ce tee-shirt est vraiment trop petit pour moi.",
                     "Ce tee-shirt est trop petit pour moi, malheureusement."
                   ],
-                  "explanation": "\"Ce tee-shirt souvenir est trop petit pour moi.\" means \"This souvenir T-shirt is too small for me\". \"trop\" goes before the adjective, and the adjective agrees with the noun: \"veste\" is feminine, so \"grande\"."
+                  "explanation": "\"Ce tee-shirt souvenir est trop petit pour moi.\" means \"This souvenir T-shirt is too small for me\". \"trop\" goes before the adjective, and the adjective agrees with the noun: \"tee-shirt\" is masculine, so \"petit\"."
                 },
                 "work": {
                   "prompt": "Tell the shop assistant that this suit jacket is too big for you.",
@@ -20445,7 +20445,7 @@
                     "Cette chemise est trop grande pour moi.",
                     "Cette chemise d'uniforme est beaucoup trop grande pour moi."
                   ],
-                  "explanation": "\"Cette chemise d'uniforme est trop grande pour moi.\" means \"This uniform shirt is too big for me\". \"trop\" goes before the adjective, and the adjective agrees with the noun: \"veste\" is feminine, so \"grande\"."
+                  "explanation": "\"Cette chemise d'uniforme est trop grande pour moi.\" means \"This uniform shirt is too big for me\". \"trop\" goes before the adjective, and the adjective agrees with the noun: \"chemise\" is feminine, so \"grande\"."
                 }
               }
             }
@@ -21109,7 +21109,8 @@
                     "Je ne peux pas venir à la visite samedi parce que je suis occupé.",
                     "Samedi, je ne peux pas venir à la visite parce que je suis occupé.",
                     "Je ne peux pas venir à la visite samedi car je suis occupé.",
-                    "Je ne peux pas venir à la visite samedi, je suis occupé."
+                    "Je ne peux pas venir à la visite samedi, je suis occupé.",
+                    "Je ne peux pas venir à la visite samedi parce que je suis occupée."
                   ],
                   "explanation": "\"Je ne peux pas venir à la visite samedi parce que je suis occupé.\" means \"I cannot come to the tour on Saturday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
                 },
@@ -21119,7 +21120,8 @@
                     "Je ne peux pas venir à la réunion vendredi parce que je suis occupé.",
                     "Vendredi, je ne peux pas venir à la réunion parce que je suis occupé.",
                     "Je ne peux pas venir à la réunion vendredi car je suis occupé.",
-                    "Je ne peux pas venir à la réunion vendredi, je suis occupé."
+                    "Je ne peux pas venir à la réunion vendredi, je suis occupé.",
+                    "Je ne peux pas venir à la réunion vendredi parce que je suis occupée."
                   ],
                   "explanation": "\"Je ne peux pas venir à la réunion vendredi parce que je suis occupé.\" means \"I cannot come to the meeting on Friday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
                 },
@@ -21129,7 +21131,8 @@
                     "Je ne peux pas venir à la séance de révision samedi parce que je suis occupé.",
                     "Samedi, je ne peux pas venir à la séance de révision parce que je suis occupé.",
                     "Je ne peux pas venir à la séance de révision samedi car je suis occupé.",
-                    "Je ne peux pas venir à la séance de révision samedi, je suis occupé."
+                    "Je ne peux pas venir à la séance de révision samedi, je suis occupé.",
+                    "Je ne peux pas venir à la séance de révision samedi parce que je suis occupée."
                   ],
                   "explanation": "\"Je ne peux pas venir à la séance de révision samedi parce que je suis occupé.\" means \"I cannot come to the study session on Saturday because I am busy\". \"ne\" and \"pas\" wrap the verb, and \"parce que\" gives the reason: \"je suis occupé\"."
                 }
@@ -22065,7 +22068,7 @@
                     "J'aimerais envoyer une carte postale au Canada.",
                     "Je souhaite envoyer une carte postale au Canada."
                   ],
-                  "explanation": "\"Je voudrais envoyer une carte postale au Canada.\" means \"I would like to send a postcard to Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the person or place: au Canada, à une amie."
+                  "explanation": "\"Je voudrais envoyer une carte postale au Canada.\" means \"I would like to send a postcard to Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the place: \"au\" before Canada."
                 },
                 "work": {
                   "prompt": "Say that you want to send a package to a client in Canada.",
@@ -22075,7 +22078,7 @@
                     "J'aimerais envoyer un colis à un client au Canada.",
                     "Je souhaite envoyer un colis à un client au Canada."
                   ],
-                  "explanation": "\"Je voudrais envoyer un colis à un client au Canada.\" means \"I would like to send a package to a client in Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the person or place: au Canada, à une amie."
+                  "explanation": "\"Je voudrais envoyer un colis à un client au Canada.\" means \"I would like to send a package to a client in Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the person: \"à un client\"."
                 },
                 "school": {
                   "prompt": "Say that you want to send a letter to a friend in Canada.",
@@ -22085,7 +22088,7 @@
                     "J'aimerais envoyer une lettre à une amie au Canada.",
                     "Je voudrais envoyer une lettre à un ami au Canada."
                   ],
-                  "explanation": "\"Je voudrais envoyer une lettre à une amie au Canada.\" means \"I would like to send a letter to a friend in Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the person or place: au Canada, à une amie."
+                  "explanation": "\"Je voudrais envoyer une lettre à une amie au Canada.\" means \"I would like to send a letter to a friend in Canada\". \"envoyer\" takes the thing directly, and \"à\" joins with the person: \"à une amie\"."
                 }
               }
             }
@@ -24316,7 +24319,7 @@
                     "Il ne me reste plus d'argent pour le voyage.",
                     "Pour le voyage, je n'ai plus d'argent."
                   ],
-                  "explanation": "\"Je n'ai plus d'argent pour le voyage.\" means \"I no longer have any money for the trip\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: plus de temps."
+                  "explanation": "\"Je n'ai plus d'argent pour le voyage.\" means \"I no longer have any money for the trip\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: \"plus d'argent\"."
                 },
                 "work": {
                   "prompt": "Say that you have no more time for this project.",
@@ -24326,7 +24329,7 @@
                     "Il ne me reste plus de temps pour ce projet.",
                     "Je n'ai plus de temps à consacrer à ce projet."
                   ],
-                  "explanation": "\"Je n'ai plus de temps pour ce projet.\" means \"I no longer have any time for this project\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: plus de temps."
+                  "explanation": "\"Je n'ai plus de temps pour ce projet.\" means \"I no longer have any time for this project\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: \"plus de temps\"."
                 },
                 "school": {
                   "prompt": "Say that you have no more time for homework.",
@@ -24336,7 +24339,7 @@
                     "Il ne me reste plus de temps pour mes devoirs.",
                     "Je n'ai plus de temps à consacrer à mes devoirs."
                   ],
-                  "explanation": "\"Je n'ai plus de temps pour mes devoirs.\" means \"I no longer have any time for my homework\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: plus de temps."
+                  "explanation": "\"Je n'ai plus de temps pour mes devoirs.\" means \"I no longer have any time for my homework\". \"ne\" and \"plus\" wrap the verb, and after it \"de\" replaces the article: \"plus de temps\"."
                 }
               }
             }
@@ -25178,8 +25181,7 @@
                   "acceptableAnswers": [
                     "Est-ce que vous pouvez venir à l'hôtel demain ?",
                     "Est-ce que vous pourriez venir à l'hôtel demain ?",
-                    "Pouvez-vous venir à l'hôtel demain ?",
-                    "Pourriez-vous venir à l'hôtel demain ?"
+                    "Est-ce que vous pouvez venir à l'hôtel demain, s'il vous plaît ?"
                   ],
                   "explanation": "\"Est-ce que vous pouvez venir à l'hôtel demain ?\" means \"Can you come to the hotel tomorrow?\" \"Est-ce que\" turns a statement into a polite question without changing the word order."
                 },
@@ -25188,8 +25190,7 @@
                   "acceptableAnswers": [
                     "Est-ce que vous pouvez venir à la réunion demain ?",
                     "Est-ce que vous pourriez venir à la réunion demain ?",
-                    "Pouvez-vous venir à la réunion demain ?",
-                    "Pourriez-vous venir à la réunion demain ?"
+                    "Est-ce que vous pouvez venir à la réunion demain, s'il vous plaît ?"
                   ],
                   "explanation": "\"Est-ce que vous pouvez venir à la réunion demain ?\" means \"Can you come to the meeting tomorrow?\" \"Est-ce que\" turns a statement into a polite question without changing the word order."
                 },
@@ -25198,8 +25199,7 @@
                   "acceptableAnswers": [
                     "Est-ce que vous pouvez venir à la fête de l'école demain ?",
                     "Est-ce que vous pourriez venir à la fête de l'école demain ?",
-                    "Pouvez-vous venir à la fête de l'école demain ?",
-                    "Pourriez-vous venir à la fête de l'école demain ?"
+                    "Est-ce que vous pouvez venir à la fête de l'école demain, s'il vous plaît ?"
                   ],
                   "explanation": "\"Est-ce que vous pouvez venir à la fête de l'école demain ?\" means \"Can you come to the school party tomorrow?\" \"Est-ce que\" turns a statement into a polite question without changing the word order."
                 }
@@ -25429,18 +25429,18 @@
               "goalVariants": {
                 "travel": {
                   "prompt": "Say this aloud:",
-                  "answer": "Je ne mange jamais au restaurant de l'hôtel",
-                  "explanation": "\"Je ne mange jamais au restaurant de l'hôtel\" means \"I never eat at the hotel restaurant\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
+                  "answer": "Je ne mange jamais de viande à l'hôtel",
+                  "explanation": "\"Je ne mange jamais de viande à l'hôtel\" means \"I never eat meat at the hotel\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
                 },
                 "work": {
                   "prompt": "Say this aloud:",
-                  "answer": "Je ne mange jamais à mon bureau",
-                  "explanation": "\"Je ne mange jamais à mon bureau\" means \"I never eat at my desk\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
+                  "answer": "Je ne mange jamais de viande au bureau",
+                  "explanation": "\"Je ne mange jamais de viande au bureau\" means \"I never eat meat at the office\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
                 },
                 "school": {
                   "prompt": "Say this aloud:",
-                  "answer": "Je ne mange jamais à la cantine",
-                  "explanation": "\"Je ne mange jamais à la cantine\" means \"I never eat at the cafeteria\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
+                  "answer": "Je ne mange jamais de viande à la cantine",
+                  "explanation": "\"Je ne mange jamais de viande à la cantine\" means \"I never eat meat at the cafeteria\". \"ne\" and \"jamais\" wrap the verb and mean never, and after it \"de\" replaces the article."
                 }
               }
             },
@@ -26997,8 +26997,8 @@
               "goalVariants": {
                 "travel": {
                   "prompt": "Say this aloud:",
-                  "answer": "Je dois finir ma valise ce soir",
-                  "explanation": "\"Je dois finir ma valise ce soir\" means \"I have to finish my packing tonight\". \"devoir\" plus an infinitive means have to, and the possessive agrees with the noun."
+                  "answer": "Je dois faire ma valise ce soir",
+                  "explanation": "\"Je dois faire ma valise ce soir\" means \"I have to pack my suitcase tonight\". \"devoir\" plus an infinitive means have to, and the possessive agrees with the noun."
                 },
                 "work": {
                   "prompt": "Say this aloud:",
@@ -27613,7 +27613,7 @@
                     "Je vais prendre le métro jusqu'au musée.",
                     "Pour aller au musée, je vais prendre le métro."
                   ],
-                  "explanation": "\"Je vais prendre le métro pour aller au musée.\" means \"I am going to take the subway to the museum\". \"aller\" plus an infinitive is the near future, and \"pour aller à\" gives the goal: au musée, au bureau."
+                  "explanation": "\"Je vais prendre le métro pour aller au musée.\" means \"I am going to take the subway to the museum\". \"aller\" plus an infinitive is the near future, and pour aller followed by \"au\" gives the goal: au musée."
                 },
                 "work": {
                   "prompt": "Say that you are going to take the subway to the office.",
@@ -27623,7 +27623,7 @@
                     "Je vais prendre le métro jusqu'au bureau.",
                     "Pour aller au bureau, je vais prendre le métro."
                   ],
-                  "explanation": "\"Je vais prendre le métro pour aller au bureau.\" means \"I am going to take the subway to the office\". \"aller\" plus an infinitive is the near future, and \"pour aller à\" gives the goal: au musée, au bureau."
+                  "explanation": "\"Je vais prendre le métro pour aller au bureau.\" means \"I am going to take the subway to the office\". \"aller\" plus an infinitive is the near future, and pour aller followed by \"au\" gives the goal: au bureau."
                 },
                 "school": {
                   "prompt": "Say that you are going to take the subway to the university.",
@@ -27633,7 +27633,7 @@
                     "Je vais prendre le métro jusqu'à l'université.",
                     "Pour aller à l'université, je vais prendre le métro."
                   ],
-                  "explanation": "\"Je vais prendre le métro pour aller à l'université.\" means \"I am going to take the subway to the university\". \"aller\" plus an infinitive is the near future, and \"pour aller à\" gives the goal: au musée, au bureau."
+                  "explanation": "\"Je vais prendre le métro pour aller à l'université.\" means \"I am going to take the subway to the university\". \"aller\" plus an infinitive is the near future, and pour aller followed by \"à l'\" gives the goal: à l'université."
                 }
               }
             }
@@ -27974,7 +27974,7 @@
                     "À l'hôtel, j'ai oublié mon passeport.",
                     "J'ai oublié mon passeport dans ma chambre d'hôtel."
                   ],
-                  "explanation": "\"J'ai oublié mon passeport à l'hôtel.\" means \"I forgot my passport at the hotel\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon passeport\", \"ma carte\"."
+                  "explanation": "\"J'ai oublié mon passeport à l'hôtel.\" means \"I forgot my passport at the hotel\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon\" before passeport."
                 },
                 "work": {
                   "prompt": "Say that you forgot your badge at home.",
@@ -27984,7 +27984,7 @@
                     "À la maison, j'ai oublié mon badge.",
                     "J'ai oublié mon badge chez moi."
                   ],
-                  "explanation": "\"J'ai oublié mon badge à la maison.\" means \"I forgot my badge at home\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon passeport\", \"ma carte\"."
+                  "explanation": "\"J'ai oublié mon badge à la maison.\" means \"I forgot my badge at home\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon\" before badge."
                 },
                 "school": {
                   "prompt": "Say that you forgot your notebook at home.",
@@ -27994,7 +27994,7 @@
                     "À la maison, j'ai oublié mon cahier.",
                     "J'ai oublié mon cahier chez moi."
                   ],
-                  "explanation": "\"J'ai oublié mon cahier à la maison.\" means \"I forgot my notebook at home\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon passeport\", \"ma carte\"."
+                  "explanation": "\"J'ai oublié mon cahier à la maison.\" means \"I forgot my notebook at home\". \"oublier\" takes the thing directly, and the possessive agrees with the noun: \"mon\" before cahier."
                 }
               }
             },
