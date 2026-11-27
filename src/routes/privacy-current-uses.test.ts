@@ -89,7 +89,9 @@ describe("privacy page: current data uses", () => {
     expect(page).toMatch(/never contain the words you said/);
     expect(page).toMatch(/Rehearsals are included in your data export/);
     expect(page).toMatch(/Delete this rehearsal/);
-    expect(page).toMatch(/only the fact that your free rehearsal was used/);
+    expect(page).toMatch(/does not remove what the\s+rehearsal calls added to Alphonso's memory/);
+    expect(page).toMatch(/clear Alphonso's memory in Settings/);
+    expect(page).toMatch(/fact that your free rehearsal was used/);
     expect(page).toMatch(/do not send what you write to analytics/);
   });
 });

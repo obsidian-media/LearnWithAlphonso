@@ -272,9 +272,12 @@ function Privacy() {
           Your answers are sent to our AI provider to write the plan, and the calls work like other
           practice calls, as described above. Rehearsals are included in your data export. You can
           delete a rehearsal at any time with Delete this rehearsal: that removes its answers, plan,
-          run notes and memory line. We keep only the fact that your free rehearsal was used, so it
-          cannot be used twice; that fact is removed when you delete your account, which also
-          removes everything else.
+          run notes and the one outcome line in Alphonso's memory. It does not remove what the
+          rehearsal calls added to Alphonso's memory (the mistake topics and phrases from each call,
+          like any practice call) or the record of those calls; clear Alphonso's memory in Settings
+          to remove the memory lines, or delete your account to remove everything. We also keep the
+          fact that your free rehearsal was used, so it cannot be used twice; that fact is removed
+          only when you delete your account.
         </p>
       </Section>
 
