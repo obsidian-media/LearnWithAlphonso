@@ -32,7 +32,9 @@ describe("what the Pro sheet says the learner already did", () => {
 
   it("never shows a score or a readiness number", () => {
     for (const kind of EVENT_KINDS)
-      expect(paywallSummary(done({ eventKind: kind }))).not.toMatch(/score|ready|readiness|%|stars/i);
+      expect(paywallSummary(done({ eventKind: kind }))).not.toMatch(
+        /score|ready|readiness|%|stars/i,
+      );
   });
 });
 

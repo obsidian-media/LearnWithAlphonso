@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
-import { cancelRehearsal, rehearsalOutcome, type Rehearsal, type RehearsalError } from "@/lib/rehearsal-api";
+import {
+  cancelRehearsal,
+  rehearsalOutcome,
+  type Rehearsal,
+  type RehearsalError,
+} from "@/lib/rehearsal-api";
 import { REHEARSAL_ERROR_TEXT } from "@/lib/rehearsal-copy";
 import { addDaysTo, localToday, longDay, shortDay } from "@/lib/rehearsal-dates";
 import { EVENT_KIND_LABELS, type OutcomeChoice } from "@/lib/rehearsal-rules";
@@ -41,7 +46,8 @@ export function HowDidItGo({
     else setError(r.error ?? "failed");
   }
 
-  const tap = "flex w-full items-center gap-3 rounded-2xl border border-ds-line bg-ds-card p-4 text-left disabled:opacity-50";
+  const tap =
+    "flex w-full items-center gap-3 rounded-2xl border border-ds-line bg-ds-card p-4 text-left disabled:opacity-50";
 
   return (
     <section className="flex flex-col gap-5 px-5 py-6" aria-label="How did it go?">
@@ -58,11 +64,7 @@ export function HowDidItGo({
           <p className="ds-type-footnote text-ds-ink-soft">
             Your rehearsal continues. Stage 2 comes back before the new date.
           </p>
-          <MonthPicker
-            value={date}
-            min={addDaysTo(today, 1)}
-            onChange={setDate}
-          />
+          <MonthPicker value={date} min={addDaysTo(today, 1)} onChange={setDate} />
           <button
             type="button"
             disabled={date === null || busy}
@@ -82,7 +84,9 @@ export function HowDidItGo({
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <p className="ds-type-headline font-semibold text-ds-ink">How did your {kind.toLowerCase()} go?</p>
+          <p className="ds-type-headline font-semibold text-ds-ink">
+            How did your {kind.toLowerCase()} go?
+          </p>
           <p className="flex items-center gap-2 ds-type-footnote text-ds-ink-soft">
             <AiLabel /> One tap is enough. Alphonso (AI) will remember it.
           </p>

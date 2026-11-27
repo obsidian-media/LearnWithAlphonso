@@ -178,6 +178,62 @@ describe("a rehearsal stage as a call", () => {
     expect(screen.queryByRole("log")).toBeNull();
   });
 
+  it("the call screen's header is the event, with Alphonso, the stage and a three-segment bar", async () => {
+    localStorage.setItem("showAlphonsoWhilePractising", "true");
+    await renderPage();
+    expect(screen.getByText("Job interview rehearsal")).toBeInTheDocument();
+    expect(screen.getByText("Alphonso · Stage 2 of 3: The real conversation")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: "Rehearsal stage" })).toHaveAttribute(
+      "aria-valuenow",
+      "2",
+    );
+  });
+
+  it("finishing a run shows the rehearsal debrief with the stage header, never a stars result", async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "Good morning{Enter}");
+    await waitFor(() => expect(chatCalls()).toHaveLength(1));
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("Please, take a seat."));
+    rehearsalApi.fetchRehearsals.mockResolvedValue({
+      ok: true,
+      value: {
+        active,
+        progress: { warmup: "todo", conversation: "done", hard_moments: "todo" },
+        nextStage: "hard_moments",
+        runs: [
+          {
+            stage: "conversation",
+            finishedAt: "2026-11-27T10:00:00Z",
+            momentsShown: [],
+            wentWell: ["You greeted them well"],
+            corrections: [],
+          },
+        ],
+        history: [],
+        freeAvailable: false,
+      },
+    });
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).includes("/api/practice"))
+        return jsonResponse({
+          stars: 2,
+          replies: 1,
+          rightReplies: 1,
+          shortReplies: 0,
+          englishReplies: 0,
+          bestBefore: 0,
+          bestAfter: 2,
+        });
+      return jsonResponse({ recap: null });
+    }) as typeof fetch;
+    await user.click(await screen.findByRole("button", { name: "Finish" }));
+    expect(await screen.findByText("You greeted them well")).toBeInTheDocument();
+    expect(screen.getByText(/Nothing here is a score/)).toBeInTheDocument();
+    expect(document.querySelector("[data-practice-result]")).toBeNull();
+    expect(screen.getByRole("link", { name: "Next: The hard moments" })).toBeInTheDocument();
+  });
+
   it("sends no Practice telemetry for a rehearsal call", async () => {
     await renderPage();
     expect(track).not.toHaveBeenCalledWith("practice_call_started", expect.anything());

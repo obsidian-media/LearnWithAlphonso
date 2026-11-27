@@ -71,7 +71,12 @@ describe("ActiveRehearsal (the plan screen)", () => {
 
   it("with no date says so, and offers Adjust", async () => {
     const user = userEvent.setup();
-    render(<ActiveRehearsal {...props} rehearsal={{ ...(rehearsal as object), eventDate: null } as never} />);
+    render(
+      <ActiveRehearsal
+        {...props}
+        rehearsal={{ ...(rehearsal as object), eventDate: null } as never}
+      />,
+    );
     expect(screen.getByText(/Date not set yet/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Adjust" }));
     expect(props.onAdjust).toHaveBeenCalledTimes(1);

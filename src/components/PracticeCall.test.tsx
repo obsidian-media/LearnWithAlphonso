@@ -245,3 +245,44 @@ describe("the character is a parameter", () => {
     expect(getByLabelText("Conversation so far").textContent).toContain("Alphonso: Hello!");
   });
 });
+
+describe("the rehearsal call header (event as the title, stage with a three-segment bar)", () => {
+  const rehearsal = { title: "Interview rehearsal", stage: "conversation" as const };
+
+  it("shows the event as the title, labelled AI, and Alphonso with the stage under it", () => {
+    const { getByText, container } = render(
+      <PracticeCall {...base} scenarioId={null} rehearsal={rehearsal} />,
+    );
+    expect(getByText("Interview rehearsal")).toBeTruthy();
+    expect(container.querySelector("[data-ai-label]")).toBeTruthy();
+    expect(getByText("Alphonso · Stage 2 of 3: The real conversation")).toBeTruthy();
+  });
+
+  it("has a three-segment bar that fills up to the current stage", () => {
+    const at = (stage: "warmup" | "conversation" | "hard_moments") => {
+      const { getByRole, unmount } = render(
+        <PracticeCall {...base} scenarioId={null} rehearsal={{ ...rehearsal, stage }} />,
+      );
+      const bar = getByRole("progressbar", { name: "Rehearsal stage" });
+      const out = {
+        now: bar.getAttribute("aria-valuenow"),
+        max: bar.getAttribute("aria-valuemax"),
+        filled: bar.querySelectorAll("[data-filled='true']").length,
+      };
+      unmount();
+      return out;
+    };
+    expect(at("warmup")).toEqual({ now: "1", max: "3", filled: 1 });
+    expect(at("conversation")).toEqual({ now: "2", max: "3", filled: 2 });
+    expect(at("hard_moments")).toEqual({ now: "3", max: "3", filled: 3 });
+  });
+
+  it("a scenario call keeps its own header: no bar, no AI label", () => {
+    const { queryByRole, container, getByText } = render(
+      <PracticeCall {...base} scenarioId="coffee" />,
+    );
+    expect(queryByRole("progressbar")).toBeNull();
+    expect(container.querySelector("[data-ai-label]")).toBeNull();
+    expect(getByText("Alphonso")).toBeTruthy();
+  });
+});

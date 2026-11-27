@@ -39,7 +39,9 @@ export function RehearsalRailCard({ course }: { course: Course }) {
         <button type="button" aria-label={label} onClick={() => setSheet(true)} className={CARD}>
           <CardBody icon="speech_balloon" label="Rehearse" value="a real talk" />
         </button>
-        {sheet && <RehearsalPaywallSheet done={history[0] ?? null} onClose={() => setSheet(false)} />}
+        {sheet && (
+          <RehearsalPaywallSheet done={history[0] ?? null} onClose={() => setSheet(false)} />
+        )}
       </>
     );
   }

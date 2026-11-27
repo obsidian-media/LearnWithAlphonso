@@ -132,7 +132,9 @@ describe("RehearsePage", () => {
       value: { ...empty, freeAvailable: false, history: state.history },
     });
     render(<RehearsePage course="en" today="2026-11-26" />);
-    expect(await screen.findByRole("dialog", { name: "Rehearsals are part of Pro" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("dialog", { name: "Rehearsals are part of Pro" }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/3 of 3 stages/)).toBeInTheDocument(); // the history stays readable
     expect(screen.queryByRole("form")).toBeNull();
   });

@@ -5,7 +5,15 @@ import type { PinnedItem } from "@/lib/path-plan";
 import { EVENT_SHORT } from "@/lib/rehearsal-rules";
 
 /** Where a pinned item opens: a stage (or the event-day warm-up) is that stage's call; "How did it go?" is the page. */
-function Target({ item, className, children }: { item: PinnedItem; className: string; children: React.ReactNode }) {
+function Target({
+  item,
+  className,
+  children,
+}: {
+  item: PinnedItem;
+  className: string;
+  children: React.ReactNode;
+}) {
   if (item.stage === null)
     return (
       <Link to="/rehearse" className={className}>

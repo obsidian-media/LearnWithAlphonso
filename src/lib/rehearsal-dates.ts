@@ -65,7 +65,11 @@ export function longDay(day: string): string {
 
 export const monthTitle = (year: number, month: number) => `${MONTHS[month]} ${year}`;
 
-export function addMonths(year: number, month: number, by: number): { year: number; month: number } {
+export function addMonths(
+  year: number,
+  month: number,
+  by: number,
+): { year: number; month: number } {
   const total = year * 12 + month + by;
   return { year: Math.floor(total / 12), month: ((total % 12) + 12) % 12 };
 }

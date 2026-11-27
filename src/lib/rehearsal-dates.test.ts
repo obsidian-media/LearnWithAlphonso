@@ -35,7 +35,15 @@ describe("rehearsal dates (the learner's own calendar, Monday first)", () => {
 
   it("builds a Monday-first month grid padded with empty cells", () => {
     const g = monthGrid(2026, 11); // December 2026 starts on a Tuesday
-    expect(g[0]).toEqual([null, "2026-12-01", "2026-12-02", "2026-12-03", "2026-12-04", "2026-12-05", "2026-12-06"]);
+    expect(g[0]).toEqual([
+      null,
+      "2026-12-01",
+      "2026-12-02",
+      "2026-12-03",
+      "2026-12-04",
+      "2026-12-05",
+      "2026-12-06",
+    ]);
     expect(g.flat().filter(Boolean)).toHaveLength(31);
     expect(g.every((w) => w.length === 7)).toBe(true);
   });

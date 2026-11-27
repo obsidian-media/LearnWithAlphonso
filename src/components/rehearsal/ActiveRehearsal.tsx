@@ -84,7 +84,9 @@ export function ActiveRehearsal({
                 {done ? "✓" : i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="ds-type-headline font-semibold text-ds-ink">{STAGE_LABELS[stage]}</h2>
+                <h2 className="ds-type-headline font-semibold text-ds-ink">
+                  {STAGE_LABELS[stage]}
+                </h2>
                 <p className="ds-type-caption text-ds-ink-soft">
                   {done
                     ? "Done · you can repeat it"

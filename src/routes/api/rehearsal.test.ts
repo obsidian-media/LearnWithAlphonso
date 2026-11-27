@@ -207,7 +207,7 @@ describe("create", () => {
     expect(h.rpcs).toEqual([]);
   });
 
-  it("delete, then create again as a non-Pro learner, is 402 not a second free one (Review focus 3)", async () => {
+  it("delete, then create again as a non-Pro learner, is 402 not a second free one", async () => {
     // The free rehearsal exists and is deleted; the marker (rehearsal_free_used) outlives it.
     h.freeUsed = true;
     h.active = { id: ID };

@@ -256,7 +256,7 @@ describe("the rehearsal RPCs", () => {
     expect(await marker(U)).toBe(1);
   });
 
-  it("deleting the free rehearsal, then creating a free one again, is refused (Review focus 3)", async () => {
+  it("deleting the free rehearsal, then creating a free one again, is refused", async () => {
     await server(() => db.query(`DELETE FROM public.rehearsals WHERE user_id = '${U}'`));
     expect(await n(`SELECT count(*)::text n FROM public.rehearsals WHERE user_id = '${U}'`)).toBe(
       0,

@@ -30,7 +30,8 @@ export function useRehearsalEntry(course: Course): RehearsalEntry {
     void rehearsalsOn().then(async (on) => {
       if (!on) return live && setEntry({ status: "off", state: null });
       const r = await fetchRehearsals(course);
-      if (live) setEntry(r.ok ? { status: "ready", state: r.value } : { status: "off", state: null });
+      if (live)
+        setEntry(r.ok ? { status: "ready", state: r.value } : { status: "off", state: null });
     });
     return () => {
       live = false;
