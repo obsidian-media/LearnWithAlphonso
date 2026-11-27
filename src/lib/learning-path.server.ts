@@ -12,6 +12,9 @@ import { LEVEL_ORDER } from "@/lib/learning-goal";
 import { localDay } from "@/lib/local-day";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import { isPathCallKind, type PathData } from "@/lib/learning-path-data";
+import type { RehearsalPathInput } from "@/lib/path-plan";
+import { rehearsalPathInput } from "@/lib/rehearsal-path";
+import { rehearsalsEnabled } from "@/lib/rehearsals-flag";
 
 type Admin = typeof supabaseAdmin;
 type VideoPathRow = {
@@ -27,6 +30,27 @@ const HISTORY_DAYS = 90;
 const fail = (what: string, error: { message: string } | null) => {
   if (error) throw new Error(`${what}: ${error.message}`);
 };
+
+/**
+ * The active rehearsal for the path's pinned item. Only while Rehearsals is on. It is an extra on the page, so a failed
+ * read leaves it out rather than failing the whole path (the rest of the plan is still right without it).
+ */
+async function loadRehearsalForPath(
+  db: SupabaseClient,
+  userId: string,
+  course: Course,
+  timeZone: string | null,
+): Promise<RehearsalPathInput | undefined> {
+  if (!rehearsalsEnabled()) return undefined;
+  try {
+    const { loadActiveRehearsal, loadRuns } = await import("@/lib/rehearsals.server");
+    const row = await loadActiveRehearsal(db, userId, course);
+    if (!row) return undefined;
+    return rehearsalPathInput(row, await loadRuns(db, userId, row.id), timeZone);
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Loads the rows the learning path needs for one learner and course. Throws on any database error so the route answers
@@ -146,10 +170,14 @@ export async function loadPathData(
   ]);
   for (const [what, r] of Object.entries({ due, events, memory }))
     fail(what, r.error as { message: string } | null);
+  const timeZone = zone.error
+    ? null
+    : ((zone.data as { time_zone?: string } | null)?.time_zone ?? null);
   return {
     course,
     now,
-    timeZone: zone.error ? null : ((zone.data as { time_zone?: string } | null)?.time_zone ?? null),
+    timeZone,
+    rehearsal: await loadRehearsalForPath(untyped, userId, course, timeZone),
     currentLevel: known && LEVEL_ORDER.includes(known) ? known : "A1",
     goal: saved
       ? {

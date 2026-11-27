@@ -1,7 +1,7 @@
 import type { Course } from "@/data/course-meta";
 import { authHeaders } from "./auth-headers";
 import type { RehearsalBrief } from "./rehearsal-brief";
-import type { EventKind, OutcomeChoice, Stage, StageProgress } from "./rehearsal-rules";
+import type { EventKind, OutcomeChoice, RunMemory, Stage, StageProgress } from "./rehearsal-rules";
 
 /**
  * The browser side of /api/rehearsal (src/routes/api/rehearsal.ts). The shapes here are what the server returns, so
@@ -23,7 +23,13 @@ export type Rehearsal = {
 };
 
 /** A closed rehearsal in the history list: no brief, no words of the learner's. */
-export type RehearsalSummary = Pick<
+export type RehearsalSummary = RehearsalSummaryBase & {
+  /** Finished runs, stages that have one, and corrected forms kept: what the paywall names the learner already did. */
+  runs: number;
+  stagesDone: number;
+  corrections: number;
+};
+type RehearsalSummaryBase = Pick<
   Rehearsal,
   | "id"
   | "course"
@@ -41,6 +47,8 @@ export type RehearsalState = {
   /** Which of the three stages have a finished run, and which to offer next; null with no active rehearsal. */
   progress: StageProgress | null;
   nextStage: Stage | null;
+  /** The active rehearsal's finished runs, oldest first: moment labels and corrected forms only. */
+  runs: RunMemory[];
   history: RehearsalSummary[];
   /** True while the account's one free rehearsal has not been used. */
   freeAvailable: boolean;
@@ -101,10 +109,26 @@ async function post<T>(body: Record<string, unknown>): Promise<Result<T>> {
   );
 }
 
-export const fetchRehearsals = (course: Course) =>
-  call<RehearsalState>(async () =>
+/**
+ * Checks the shape the screens read. An older server's answer has no `runs`: it reads as an empty list, so a new web
+ * build never breaks on it. Anything that is not a state is null.
+ */
+export function parseRehearsalState(v: unknown): RehearsalState | null {
+  if (typeof v !== "object" || v === null) return null;
+  const o = v as Record<string, unknown>;
+  if (!("active" in o) || !Array.isArray(o.history) || typeof o.freeAvailable !== "boolean")
+    return null;
+  return { ...o, runs: Array.isArray(o.runs) ? o.runs : [] } as RehearsalState;
+}
+
+export async function fetchRehearsals(course: Course): Promise<Result<RehearsalState>> {
+  const r = await call<unknown>(async () =>
     fetch(`/api/rehearsal?course=${course}`, { headers: await authHeaders() }),
   );
+  if (!r.ok) return r;
+  const state = parseRehearsalState(r.value);
+  return state ? { ok: true, value: state } : { ok: false, error: "failed" };
+}
 
 export const createRehearsal = (intake: RehearsalIntake) =>
   post<{ rehearsal: Rehearsal }>({ action: "create", ...intake });

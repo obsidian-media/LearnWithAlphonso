@@ -591,6 +591,44 @@ describe("GET /api/rehearsal?course=", () => {
     );
   });
 
+  it("returns the active rehearsal's finished runs (labels and corrected forms only) for the debrief", async () => {
+    h.active = rowFor({});
+    h.runs = [
+      {
+        stage: "conversation",
+        finished_at: "2026-11-27T10:00:00Z",
+        moments_shown: ["The salary question"],
+        went_well: ["You asked a question back"],
+        corrections: ["I am hoping for around 3000"],
+      },
+    ];
+    const body = (await (await get("?course=en")).json()) as { runs: unknown[] };
+    expect(body.runs).toEqual([
+      {
+        stage: "conversation",
+        finishedAt: "2026-11-27T10:00:00Z",
+        momentsShown: ["The salary question"],
+        wentWell: ["You asked a question back"],
+        corrections: ["I am hoping for around 3000"],
+      },
+    ]);
+  });
+
+  it("each closed rehearsal in the history says how many runs, stages and corrections it had (for the paywall)", async () => {
+    h.history = [
+      { ...rowFor({}), id: OTHER_ID, status: "done", closed_at: "2026-11-01T00:00:00Z" },
+    ];
+    h.runs = [
+      { rehearsal_id: OTHER_ID, stage: "warmup", corrections: ["a"] },
+      { rehearsal_id: OTHER_ID, stage: "warmup", corrections: ["b", "c"] },
+      { rehearsal_id: OTHER_ID, stage: "conversation", corrections: [] },
+    ];
+    const body = (await (await get("?course=en")).json()) as {
+      history: { runs: number; stagesDone: number; corrections: number }[];
+    };
+    expect(body.history[0]).toMatchObject({ runs: 3, stagesDone: 2, corrections: 3 });
+  });
+
   it("no active rehearsal: no progress and no next stage", async () => {
     expect(await (await get("?course=en")).json()).toMatchObject({
       active: null,
