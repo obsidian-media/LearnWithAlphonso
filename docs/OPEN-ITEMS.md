@@ -104,6 +104,7 @@ Items keep their old numbers; gaps are closed items (see E and Recently closed).
     - Goal-flavoured lessons, content: English A2 now has 60 hand-written questions for travel, work and school added to the A1 pilot (`src/data/goal-variants/en.json`); French A2 and Spanish A2 are still empty.
     - Goal-flavoured lessons, content: Spanish A2 now has 60 hand-written questions for travel, work and school (`src/data/goal-variants/es.json`); with English A2 and French A2 in their own PRs, every shipped course-level has variants once those merge, and the Spanish wording needs a native read.
     - Goal-flavoured lessons, content: French A1 now has 60 hand-written questions for travel, work and school (`src/data/goal-variants/fr.json`); French A2 and Spanish are still empty, and the French wording needs a native read.
+    - Goal-flavoured lessons, content: Spanish A1 now has 60 hand-written questions for travel, work and school (`src/data/goal-variants/es.json`); French A2 and Spanish A2 are still empty, and the Spanish wording needs a native read.
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
 

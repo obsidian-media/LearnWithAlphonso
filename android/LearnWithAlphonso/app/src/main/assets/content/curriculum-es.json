@@ -600,7 +600,39 @@
                 "Yo tengo 4 libros.",
                 "Tengo 4 libros."
               ],
-              "explanation": "\"Tengo cuatro libros.\" uses tengo (I have) plus cuatro (four) before the plural noun libros; no article is needed."
+              "explanation": "\"Tengo cuatro libros.\" uses tengo (I have) plus cuatro (four) before the plural noun libros; no article is needed.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you have four tickets.",
+                  "acceptableAnswers": [
+                    "Tengo cuatro boletos.",
+                    "Yo tengo cuatro boletos.",
+                    "Tengo cuatro pasajes.",
+                    "Cuento con cuatro boletos."
+                  ],
+                  "explanation": "\"Tengo cuatro boletos.\" means \"I have four tickets\". \"Tengo\" is \"tener\" with yo, and the number comes before the noun, which takes a plural -s."
+                },
+                "work": {
+                  "prompt": "Say that you have four reports.",
+                  "acceptableAnswers": [
+                    "Tengo cuatro informes.",
+                    "Yo tengo cuatro informes.",
+                    "Tengo cuatro reportes.",
+                    "Cuento con cuatro informes."
+                  ],
+                  "explanation": "\"Tengo cuatro informes.\" means \"I have four reports\". \"Tengo\" is \"tener\" with yo, and the number comes before the noun, which takes a plural -s."
+                },
+                "school": {
+                  "prompt": "Say that you have four notebooks.",
+                  "acceptableAnswers": [
+                    "Tengo cuatro cuadernos.",
+                    "Yo tengo cuatro cuadernos.",
+                    "Tengo cuatro libretas.",
+                    "Cuento con cuatro cuadernos."
+                  ],
+                  "explanation": "\"Tengo cuatro cuadernos.\" means \"I have four notebooks\". \"Tengo\" is \"tener\" with yo, and the number comes before the noun, which takes a plural -s."
+                }
+              }
             }
           ]
         },
@@ -1170,7 +1202,39 @@
                 "Es una casa muy grande.",
                 "La casa es bastante grande."
               ],
-              "explanation": "\"La casa es grande.\" uses \"grande\" (big), which stays the same for masculine and feminine nouns. You can also say \"Es una casa grande.\" to describe it."
+              "explanation": "\"La casa es grande.\" uses \"grande\" (big), which stays the same for masculine and feminine nouns. You can also say \"Es una casa grande.\" to describe it.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that the hotel is big.",
+                  "acceptableAnswers": [
+                    "El hotel es grande.",
+                    "Es un hotel grande.",
+                    "Este hotel es grande.",
+                    "El hotel es muy grande."
+                  ],
+                  "explanation": "\"El hotel es grande.\" means \"The hotel is big\". \"ser\" describes what something is like, and the adjective agrees: \"grande\" works for masculine and feminine."
+                },
+                "work": {
+                  "prompt": "Say that the office is big.",
+                  "acceptableAnswers": [
+                    "La oficina es grande.",
+                    "Es una oficina grande.",
+                    "Esta oficina es grande.",
+                    "La oficina es muy grande."
+                  ],
+                  "explanation": "\"La oficina es grande.\" means \"The office is big\". \"ser\" describes what something is like, and the adjective agrees: \"grande\" works for masculine and feminine."
+                },
+                "school": {
+                  "prompt": "Say that the school is big.",
+                  "acceptableAnswers": [
+                    "La escuela es grande.",
+                    "Es una escuela grande.",
+                    "Esta escuela es grande.",
+                    "La escuela es muy grande."
+                  ],
+                  "explanation": "\"La escuela es grande.\" means \"The school is big\". \"ser\" describes what something is like, and the adjective agrees: \"grande\" works for masculine and feminine."
+                }
+              }
             }
           ]
         },
@@ -1288,7 +1352,39 @@
                 "La niña está muy triste.",
                 "La muchacha se siente triste."
               ],
-              "explanation": "\"La niña está triste.\" uses estar because sadness here is a feeling right now, and triste stays the same for a feminine noun; \"es triste\" would mean she is a sad person by nature."
+              "explanation": "\"La niña está triste.\" uses estar because sadness here is a feeling right now, and triste stays the same for a feminine noun; \"es triste\" would mean she is a sad person by nature.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that the tourist (a woman) is tired.",
+                  "acceptableAnswers": [
+                    "La turista está cansada.",
+                    "Está cansada la turista.",
+                    "La turista se siente cansada.",
+                    "La turista está muy cansada."
+                  ],
+                  "explanation": "\"La turista está cansada.\" means \"The tourist is tired\". \"estar\" describes a state that can change, like being tired, and the adjective agrees with the person: \"cansada\" for a woman."
+                },
+                "work": {
+                  "prompt": "Say that the manager (a woman) is tired.",
+                  "acceptableAnswers": [
+                    "La gerente está cansada.",
+                    "Está cansada la gerente.",
+                    "La gerente se siente cansada.",
+                    "La gerente está muy cansada."
+                  ],
+                  "explanation": "\"La gerente está cansada.\" means \"The manager is tired\". \"estar\" describes a state that can change, like being tired, and the adjective agrees with the person: \"cansada\" for a woman."
+                },
+                "school": {
+                  "prompt": "Say that the student (a girl) is tired.",
+                  "acceptableAnswers": [
+                    "La estudiante está cansada.",
+                    "Está cansada la estudiante.",
+                    "La estudiante se siente cansada.",
+                    "La estudiante está muy cansada."
+                  ],
+                  "explanation": "\"La estudiante está cansada.\" means \"The student is tired\". \"estar\" describes a state that can change, like being tired, and the adjective agrees with the person: \"cansada\" for a woman."
+                }
+              }
             }
           ]
         },
@@ -1889,7 +1985,42 @@
               ],
               "answer": "hablo",
               "explanation": "The subject \"Yo\" needs the first-person ending -o on the stem of hablar, giving \"hablo\"; \"hablas\", \"habla\" and \"hablan\" belong to tú, he/she and they.",
-              "meaning": "I speak"
+              "meaning": "I speak",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (hablar) español en el hotel.",
+                  "bank": [
+                    "hablan",
+                    "hablas",
+                    "hablo",
+                    "habla"
+                  ],
+                  "answer": "hablo",
+                  "explanation": "With \"yo\", the present tense of \"hablar\" is \"hablo\". A regular -ar verb ends in -o after \"yo\". Yo hablo español en el hotel. (I speak Spanish at the hotel)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (hablar) español con mis clientes.",
+                  "bank": [
+                    "hablan",
+                    "hablas",
+                    "hablo",
+                    "habla"
+                  ],
+                  "answer": "hablo",
+                  "explanation": "With \"yo\", the present tense of \"hablar\" is \"hablo\". A regular -ar verb ends in -o after \"yo\". Yo hablo español con mis clientes. (I speak Spanish with my clients)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (hablar) español en la clase.",
+                  "bank": [
+                    "hablan",
+                    "hablas",
+                    "hablo",
+                    "habla"
+                  ],
+                  "answer": "hablo",
+                  "explanation": "With \"yo\", the present tense of \"hablar\" is \"hablo\". A regular -ar verb ends in -o after \"yo\". Yo hablo español en la clase. (I speak Spanish in class)"
+                }
+              }
             },
             {
               "id": "esa1p5q1",
@@ -1903,7 +2034,42 @@
               ],
               "answer": 2,
               "explanation": "With \"Yo\", regular -er verbs like comer take the ending -o, giving \"como\"; \"comes\" is tú, \"come\" is he/she and \"comemos\" is we.",
-              "meaning": "I eat"
+              "meaning": "I eat",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (comer) en el restaurante del hotel.",
+                  "choices": [
+                    "come",
+                    "comemos",
+                    "como",
+                    "comes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"comer\" is \"como\". A regular -er verb ends in -o after \"yo\". Yo como en el restaurante del hotel. (I eat at the hotel restaurant)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (comer) con mis compañeros de trabajo.",
+                  "choices": [
+                    "come",
+                    "comemos",
+                    "como",
+                    "comes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"comer\" is \"como\". A regular -er verb ends in -o after \"yo\". Yo como con mis compañeros de trabajo. (I eat with my coworkers)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (comer) en la cafetería de la escuela.",
+                  "choices": [
+                    "come",
+                    "comemos",
+                    "como",
+                    "comes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"comer\" is \"como\". A regular -er verb ends in -o after \"yo\". Yo como en la cafetería de la escuela. (I eat in the school cafeteria)"
+                }
+              }
             },
             {
               "id": "esa1p5q2",
@@ -1917,7 +2083,42 @@
               ],
               "answer": "tengo",
               "explanation": "Tener has an irregular yo form with -g-, so \"Yo\" takes \"tengo\"; \"tiene\", \"tienen\" and \"tenemos\" match other subjects.",
-              "meaning": "I have"
+              "meaning": "I have",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (tener) una reservación en el hotel.",
+                  "bank": [
+                    "tengo",
+                    "tiene",
+                    "tienen",
+                    "tenemos"
+                  ],
+                  "answer": "tengo",
+                  "explanation": "With \"yo\", the present tense of \"tener\" is \"tengo\". \"tener\" is irregular in the \"yo\" form. Yo tengo una reservación en el hotel. (I have a reservation at the hotel)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (tener) una reunión a las diez.",
+                  "bank": [
+                    "tengo",
+                    "tiene",
+                    "tienen",
+                    "tenemos"
+                  ],
+                  "answer": "tengo",
+                  "explanation": "With \"yo\", the present tense of \"tener\" is \"tengo\". \"tener\" is irregular in the \"yo\" form. Yo tengo una reunión a las diez. (I have a meeting at ten)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (tener) una clase de inglés hoy.",
+                  "bank": [
+                    "tengo",
+                    "tiene",
+                    "tienen",
+                    "tenemos"
+                  ],
+                  "answer": "tengo",
+                  "explanation": "With \"yo\", the present tense of \"tener\" is \"tengo\". \"tener\" is irregular in the \"yo\" form. Yo tengo una clase de inglés hoy. (I have an English class today)"
+                }
+              }
             },
             {
               "id": "esa1p5q3",
@@ -1932,7 +2133,42 @@
               "answer": 0,
               "explanation": "Estar is irregular in the yo form: \"Yo\" goes with \"estoy\", and it fits here because tiredness is a temporary state; \"estás\", \"están\" and \"estamos\" belong to other subjects.",
               "meaning": "I am, for a state or feeling",
-              "example": "Estoy cansado hoy."
+              "example": "Estoy cansado hoy.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (estar) en el aeropuerto.",
+                  "choices": [
+                    "estoy",
+                    "estás",
+                    "están",
+                    "estamos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"estar\" is \"estoy\". \"estar\" is irregular in the \"yo\" form. Yo estoy en el aeropuerto. (I am at the airport)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (estar) en la oficina.",
+                  "choices": [
+                    "estoy",
+                    "estás",
+                    "están",
+                    "estamos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"estar\" is \"estoy\". \"estar\" is irregular in the \"yo\" form. Yo estoy en la oficina. (I am at the office)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (estar) en la escuela.",
+                  "choices": [
+                    "estoy",
+                    "estás",
+                    "están",
+                    "estamos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"estar\" is \"estoy\". \"estar\" is irregular in the \"yo\" form. Yo estoy en la escuela. (I am at school)"
+                }
+              }
             },
             {
               "id": "esa1p5q4",
@@ -1947,7 +2183,42 @@
               "answer": "soy",
               "explanation": "Ser is irregular and its yo form is \"soy\", used here to say what you are (a student); \"eres\", \"es\" and \"son\" go with tú, he/she and they.",
               "meaning": "I am, for identity or traits",
-              "example": "Soy estudiante de español."
+              "example": "Soy estudiante de español.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (ser) turista en México.",
+                  "bank": [
+                    "soy",
+                    "eres",
+                    "es",
+                    "son"
+                  ],
+                  "answer": "soy",
+                  "explanation": "With \"yo\", the present tense of \"ser\" is \"soy\". \"ser\" is irregular in the \"yo\" form. Yo soy turista en México. (I am a tourist in Mexico)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (ser) gerente en una empresa.",
+                  "bank": [
+                    "soy",
+                    "eres",
+                    "es",
+                    "son"
+                  ],
+                  "answer": "soy",
+                  "explanation": "With \"yo\", the present tense of \"ser\" is \"soy\". \"ser\" is irregular in the \"yo\" form. Yo soy gerente en una empresa. (I am a manager at a company)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (ser) estudiante en esta escuela.",
+                  "bank": [
+                    "soy",
+                    "eres",
+                    "es",
+                    "son"
+                  ],
+                  "answer": "soy",
+                  "explanation": "With \"yo\", the present tense of \"ser\" is \"soy\". \"ser\" is irregular in the \"yo\" form. Yo soy estudiante en esta escuela. (I am a student at this school)"
+                }
+              }
             },
             {
               "id": "lx1",
@@ -2003,7 +2274,42 @@
               ],
               "answer": 2,
               "explanation": "Ir is completely irregular and its yo form is \"voy\"; \"vas\" is tú, \"va\" is he/she and \"vamos\" is we.",
-              "meaning": "I go"
+              "meaning": "I go",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (ir) al aeropuerto.",
+                  "choices": [
+                    "va",
+                    "vamos",
+                    "voy",
+                    "vas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"ir\" is \"voy\". \"ir\" is irregular in the \"yo\" form. Yo voy al aeropuerto. (I go to the airport)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (ir) a la reunión.",
+                  "choices": [
+                    "va",
+                    "vamos",
+                    "voy",
+                    "vas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"ir\" is \"voy\". \"ir\" is irregular in the \"yo\" form. Yo voy a la reunión. (I go to the meeting)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (ir) a la escuela.",
+                  "choices": [
+                    "va",
+                    "vamos",
+                    "voy",
+                    "vas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"ir\" is \"voy\". \"ir\" is irregular in the \"yo\" form. Yo voy a la escuela. (I go to school)"
+                }
+              }
             },
             {
               "id": "esa1p5q6",
@@ -2017,7 +2323,42 @@
               ],
               "answer": "hago",
               "explanation": "Hacer has an irregular yo form with -g-, so \"Yo\" takes \"hago\"; \"hace\", \"hacen\" and \"hacemos\" match other subjects.",
-              "meaning": "I do, I make"
+              "meaning": "I do, I make",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (hacer) mi maleta.",
+                  "bank": [
+                    "hago",
+                    "hace",
+                    "hacen",
+                    "hacemos"
+                  ],
+                  "answer": "hago",
+                  "explanation": "With \"yo\", the present tense of \"hacer\" is \"hago\". \"hacer\" is irregular in the \"yo\" form. Yo hago mi maleta. (I pack my suitcase)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (hacer) mi trabajo.",
+                  "bank": [
+                    "hago",
+                    "hace",
+                    "hacen",
+                    "hacemos"
+                  ],
+                  "answer": "hago",
+                  "explanation": "With \"yo\", the present tense of \"hacer\" is \"hago\". \"hacer\" is irregular in the \"yo\" form. Yo hago mi trabajo. (I do my job)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (hacer) mi tarea de matemáticas.",
+                  "bank": [
+                    "hago",
+                    "hace",
+                    "hacen",
+                    "hacemos"
+                  ],
+                  "answer": "hago",
+                  "explanation": "With \"yo\", the present tense of \"hacer\" is \"hago\". \"hacer\" is irregular in the \"yo\" form. Yo hago mi tarea de matemáticas. (I do my math homework)"
+                }
+              }
             },
             {
               "id": "esa1p5q7",
@@ -2031,7 +2372,42 @@
               ],
               "answer": 0,
               "explanation": "Querer changes e to ie in the stem for yo, so \"Yo\" takes \"quiero\"; \"quieres\", \"quieren\" and \"queremos\" belong to other subjects.",
-              "meaning": "I want"
+              "meaning": "I want",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (querer) una habitación doble.",
+                  "choices": [
+                    "quiero",
+                    "quieres",
+                    "quieren",
+                    "queremos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"querer\" is \"quiero\". \"querer\" is irregular in the \"yo\" form. Yo quiero una habitación doble. (I want a double room)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (querer) hablar con el gerente.",
+                  "choices": [
+                    "quiero",
+                    "quieres",
+                    "quieren",
+                    "queremos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"querer\" is \"quiero\". \"querer\" is irregular in the \"yo\" form. Yo quiero hablar con el gerente. (I want to talk to the manager)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (querer) un lápiz nuevo.",
+                  "choices": [
+                    "quiero",
+                    "quieres",
+                    "quieren",
+                    "queremos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"querer\" is \"quiero\". \"querer\" is irregular in the \"yo\" form. Yo quiero un lápiz nuevo. (I want a new pencil)"
+                }
+              }
             },
             {
               "id": "esa1p5q8",
@@ -2060,7 +2436,42 @@
               "answer": 2,
               "explanation": "Saber has a unique irregular yo form, \"sé\", written with an accent; \"sabes\", \"sabe\" and \"sabemos\" belong to other subjects.",
               "meaning": "I know, a fact",
-              "example": "Sé la respuesta."
+              "example": "Sé la respuesta.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (saber) dónde está la estación.",
+                  "choices": [
+                    "sabe",
+                    "sabemos",
+                    "sé",
+                    "sabes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"saber\" is \"sé\". \"saber\" is irregular in the \"yo\" form. Yo sé dónde está la estación. (I know where the station is)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (saber) la hora de la reunión.",
+                  "choices": [
+                    "sabe",
+                    "sabemos",
+                    "sé",
+                    "sabes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"saber\" is \"sé\". \"saber\" is irregular in the \"yo\" form. Yo sé la hora de la reunión. (I know the time of the meeting)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (saber) la lección de hoy.",
+                  "choices": [
+                    "sabe",
+                    "sabemos",
+                    "sé",
+                    "sabes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"saber\" is \"sé\". \"saber\" is irregular in the \"yo\" form. Yo sé la lección de hoy. (I know today's lesson)"
+                }
+              }
             },
             {
               "id": "lx1",
@@ -2090,7 +2501,39 @@
                 "Yo quisiera un café.",
                 "Quiero café."
               ],
-              "explanation": "Querer changes e to ie in the yo form, so the answer is \"Yo quiero un café.\" The subject yo can be dropped in everyday speech."
+              "explanation": "Querer changes e to ie in the yo form, so the answer is \"Yo quiero un café.\" The subject yo can be dropped in everyday speech.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you want a ticket for Cancún.",
+                  "acceptableAnswers": [
+                    "Yo quiero un boleto para Cancún.",
+                    "Quiero un boleto para Cancún.",
+                    "Yo quiero un pasaje para Cancún.",
+                    "Quiero un pasaje para Cancún."
+                  ],
+                  "explanation": "\"Yo quiero un boleto para Cancún.\" means \"I want a ticket for Cancún\". \"Quiero\" is \"querer\" with yo, and the noun that follows takes \"un\" or \"una\"."
+                },
+                "work": {
+                  "prompt": "Say that you want a new computer.",
+                  "acceptableAnswers": [
+                    "Yo quiero una computadora nueva.",
+                    "Quiero una computadora nueva.",
+                    "Yo quiero una computadora nueva para el trabajo.",
+                    "Quiero una nueva computadora."
+                  ],
+                  "explanation": "\"Yo quiero una computadora nueva.\" means \"I want a new computer\". \"Quiero\" is \"querer\" with yo, and the noun that follows takes \"un\" or \"una\"."
+                },
+                "school": {
+                  "prompt": "Say that you want a new notebook.",
+                  "acceptableAnswers": [
+                    "Yo quiero un cuaderno nuevo.",
+                    "Quiero un cuaderno nuevo.",
+                    "Yo quiero una libreta nueva.",
+                    "Quiero una libreta nueva."
+                  ],
+                  "explanation": "\"Yo quiero un cuaderno nuevo.\" means \"I want a new notebook\". \"Quiero\" is \"querer\" with yo, and the noun that follows takes \"un\" or \"una\"."
+                }
+              }
             }
           ]
         },
@@ -2112,7 +2555,42 @@
               "answer": 2,
               "explanation": "Regular -ar verbs like tomar take -o for yo, giving \"tomo\"; \"tomas\", \"toma\" and \"tomamos\" match other subjects.",
               "meaning": "I take or I drink",
-              "example": "Tomo el autobús todos los días."
+              "example": "Tomo el autobús todos los días.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (tomar) el tren a Guadalajara.",
+                  "choices": [
+                    "toma",
+                    "tomamos",
+                    "tomo",
+                    "tomas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"tomar\" is \"tomo\". A regular -ar verb ends in -o after \"yo\". Yo tomo el tren a Guadalajara. (I take the train to Guadalajara)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (tomar) el metro para ir a la oficina.",
+                  "choices": [
+                    "toma",
+                    "tomamos",
+                    "tomo",
+                    "tomas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"tomar\" is \"tomo\". A regular -ar verb ends in -o after \"yo\". Yo tomo el metro para ir a la oficina. (I take the subway to go to the office)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (tomar) el autobús escolar.",
+                  "choices": [
+                    "toma",
+                    "tomamos",
+                    "tomo",
+                    "tomas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"tomar\" is \"tomo\". A regular -ar verb ends in -o after \"yo\". Yo tomo el autobús escolar. (I take the school bus)"
+                }
+              }
             },
             {
               "id": "esa1p5q11",
@@ -2126,7 +2604,42 @@
               ],
               "answer": "veo",
               "explanation": "Ver has an irregular yo form, \"veo\", which keeps the e and adds -o; \"ve\", \"ven\" and \"vemos\" belong to he/she, they and we.",
-              "meaning": "I see"
+              "meaning": "I see",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (ver) el mar desde el hotel.",
+                  "bank": [
+                    "ve",
+                    "vemos",
+                    "ven",
+                    "veo"
+                  ],
+                  "answer": "veo",
+                  "explanation": "With \"yo\", the present tense of \"ver\" is \"veo\". \"ver\" is irregular in the \"yo\" form. Yo veo el mar desde el hotel. (I see the sea from the hotel)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (ver) el informe en mi computadora.",
+                  "bank": [
+                    "ve",
+                    "vemos",
+                    "ven",
+                    "veo"
+                  ],
+                  "answer": "veo",
+                  "explanation": "With \"yo\", the present tense of \"ver\" is \"veo\". \"ver\" is irregular in the \"yo\" form. Yo veo el informe en mi computadora. (I see the report on my computer)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (ver) el mapa en la clase.",
+                  "bank": [
+                    "ve",
+                    "vemos",
+                    "ven",
+                    "veo"
+                  ],
+                  "answer": "veo",
+                  "explanation": "With \"yo\", the present tense of \"ver\" is \"veo\". \"ver\" is irregular in the \"yo\" form. Yo veo el mapa en la clase. (I see the map in class)"
+                }
+              }
             },
             {
               "id": "esa1p5q12",
@@ -2140,7 +2653,42 @@
               ],
               "answer": 0,
               "explanation": "The subject is \"Yo\", so venir takes its irregular first-person form \"vengo\" (with a g), unlike \"vienes\" or \"vienen\".",
-              "meaning": "I come"
+              "meaning": "I come",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (venir) al hotel mañana.",
+                  "choices": [
+                    "vengo",
+                    "vienes",
+                    "vienen",
+                    "venimos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"venir\" is \"vengo\". \"venir\" is irregular in the \"yo\" form. Yo vengo al hotel mañana. (I come to the hotel tomorrow)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (venir) a la oficina mañana.",
+                  "choices": [
+                    "vengo",
+                    "vienes",
+                    "vienen",
+                    "venimos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"venir\" is \"vengo\". \"venir\" is irregular in the \"yo\" form. Yo vengo a la oficina mañana. (I come to the office tomorrow)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (venir) a la escuela mañana.",
+                  "choices": [
+                    "vengo",
+                    "vienes",
+                    "vienen",
+                    "venimos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"venir\" is \"vengo\". \"venir\" is irregular in the \"yo\" form. Yo vengo a la escuela mañana. (I come to school tomorrow)"
+                }
+              }
             },
             {
               "id": "esa1p5q13",
@@ -2168,7 +2716,42 @@
               ],
               "answer": 2,
               "explanation": "\"Yo\" takes the -o ending on the regular -ir verb vivir, giving \"vivo\"; \"vive\" and \"vives\" are for él and tú.",
-              "meaning": "I live"
+              "meaning": "I live",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (vivir) en Oaxaca.",
+                  "choices": [
+                    "vive",
+                    "vivimos",
+                    "vivo",
+                    "vives"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"vivir\" is \"vivo\". A regular -ir verb ends in -o after \"yo\". Yo vivo en Oaxaca. (I live in Oaxaca)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (vivir) cerca de la oficina.",
+                  "choices": [
+                    "vive",
+                    "vivimos",
+                    "vivo",
+                    "vives"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"vivir\" is \"vivo\". A regular -ir verb ends in -o after \"yo\". Yo vivo cerca de la oficina. (I live near the office)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (vivir) cerca de la escuela.",
+                  "choices": [
+                    "vive",
+                    "vivimos",
+                    "vivo",
+                    "vives"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"vivir\" is \"vivo\". A regular -ir verb ends in -o after \"yo\". Yo vivo cerca de la escuela. (I live near the school)"
+                }
+              }
             },
             {
               "id": "lx1",
@@ -2209,7 +2792,39 @@
                 "Mañana voy a ir a casa.",
                 "Mañana yo voy a la casa."
               ],
-              "explanation": "Ir has the irregular yo form \"voy\", so \"Yo voy a casa mañana.\" means 'I am going home tomorrow'; the pronoun yo can be dropped."
+              "explanation": "Ir has the irregular yo form \"voy\", so \"Yo voy a casa mañana.\" means 'I am going home tomorrow'; the pronoun yo can be dropped.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you are going to the beach tomorrow (use the verb ir).",
+                  "acceptableAnswers": [
+                    "Yo voy a la playa mañana.",
+                    "Voy a la playa mañana.",
+                    "Mañana yo voy a la playa.",
+                    "Mañana voy a la playa."
+                  ],
+                  "explanation": "\"Yo voy a la playa mañana.\" means \"I am going to the beach tomorrow\". \"voy\" is \"ir\" with yo, and \"a\" before a place; \"a\" and \"el\" together become \"al\"."
+                },
+                "work": {
+                  "prompt": "Say that you are going to the office tomorrow (use the verb ir).",
+                  "acceptableAnswers": [
+                    "Yo voy a la oficina mañana.",
+                    "Voy a la oficina mañana.",
+                    "Mañana yo voy a la oficina.",
+                    "Mañana voy a la oficina."
+                  ],
+                  "explanation": "\"Yo voy a la oficina mañana.\" means \"I am going to the office tomorrow\". \"voy\" is \"ir\" with yo, and \"a\" before a place; \"a\" and \"el\" together become \"al\"."
+                },
+                "school": {
+                  "prompt": "Say that you are going to the library tomorrow (use the verb ir).",
+                  "acceptableAnswers": [
+                    "Yo voy a la biblioteca mañana.",
+                    "Voy a la biblioteca mañana.",
+                    "Mañana yo voy a la biblioteca.",
+                    "Mañana voy a la biblioteca."
+                  ],
+                  "explanation": "\"Yo voy a la biblioteca mañana.\" means \"I am going to the library tomorrow\". \"voy\" is \"ir\" with yo, and \"a\" before a place; \"a\" and \"el\" together become \"al\"."
+                }
+              }
             }
           ]
         },
@@ -2244,7 +2859,42 @@
               ],
               "answer": 0,
               "explanation": "Regular -er verbs end in -o for \"yo\", so beber becomes \"bebo\"; \"bebes\" and \"beben\" belong to tú and ellos.",
-              "meaning": "I drink"
+              "meaning": "I drink",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (beber) agua en el aeropuerto.",
+                  "choices": [
+                    "bebo",
+                    "bebes",
+                    "beben",
+                    "bebemos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"beber\" is \"bebo\". A regular -er verb ends in -o after \"yo\". Yo bebo agua en el aeropuerto. (I drink water at the airport)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (beber) agua en la oficina.",
+                  "choices": [
+                    "bebo",
+                    "bebes",
+                    "beben",
+                    "bebemos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"beber\" is \"bebo\". A regular -er verb ends in -o after \"yo\". Yo bebo agua en la oficina. (I drink water at the office)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (beber) agua en la escuela.",
+                  "choices": [
+                    "bebo",
+                    "bebes",
+                    "beben",
+                    "bebemos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"beber\" is \"bebo\". A regular -er verb ends in -o after \"yo\". Yo bebo agua en la escuela. (I drink water at school)"
+                }
+              }
             },
             {
               "id": "esa1p5q17",
@@ -2258,7 +2908,42 @@
               ],
               "answer": "leo",
               "explanation": "The \"yo\" form of the regular -er verb leer is \"leo\"; \"lees\" is tú, \"lee\" is él, and \"leen\" is ellos.",
-              "meaning": "I read"
+              "meaning": "I read",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (leer) un mapa de la ciudad.",
+                  "bank": [
+                    "leen",
+                    "lees",
+                    "leo",
+                    "lee"
+                  ],
+                  "answer": "leo",
+                  "explanation": "With \"yo\", the present tense of \"leer\" is \"leo\". A regular -er verb ends in -o after \"yo\". Yo leo un mapa de la ciudad. (I read a map of the city)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (leer) un informe.",
+                  "bank": [
+                    "leen",
+                    "lees",
+                    "leo",
+                    "lee"
+                  ],
+                  "answer": "leo",
+                  "explanation": "With \"yo\", the present tense of \"leer\" is \"leo\". A regular -er verb ends in -o after \"yo\". Yo leo un informe. (I read a report)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (leer) un libro de historia.",
+                  "bank": [
+                    "leen",
+                    "lees",
+                    "leo",
+                    "lee"
+                  ],
+                  "answer": "leo",
+                  "explanation": "With \"yo\", the present tense of \"leer\" is \"leo\". A regular -er verb ends in -o after \"yo\". Yo leo un libro de historia. (I read a history book)"
+                }
+              }
             },
             {
               "id": "esa1p5q18",
@@ -2272,7 +2957,42 @@
               ],
               "answer": 2,
               "explanation": "For \"yo\", the regular -ir verb escribir drops -ir and adds -o, giving \"escribo\"; \"escribe\" and \"escribes\" fit other subjects.",
-              "meaning": "I write"
+              "meaning": "I write",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (escribir) una postal.",
+                  "choices": [
+                    "escribe",
+                    "escribimos",
+                    "escribo",
+                    "escribes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"escribir\" is \"escribo\". A regular -ir verb ends in -o after \"yo\". Yo escribo una postal. (I write a postcard)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (escribir) un correo.",
+                  "choices": [
+                    "escribe",
+                    "escribimos",
+                    "escribo",
+                    "escribes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"escribir\" is \"escribo\". A regular -ir verb ends in -o after \"yo\". Yo escribo un correo. (I write an email)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (escribir) una redacción.",
+                  "choices": [
+                    "escribe",
+                    "escribimos",
+                    "escribo",
+                    "escribes"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"escribir\" is \"escribo\". A regular -ir verb ends in -o after \"yo\". Yo escribo una redacción. (I write an essay)"
+                }
+              }
             },
             {
               "id": "esa1p5q19",
@@ -2347,7 +3067,42 @@
               ],
               "answer": 2,
               "explanation": "With \"Yo\", the regular -ar verb trabajar ends in -o: \"trabajo\"; \"trabaja\" and \"trabajas\" do not agree with yo.",
-              "meaning": "I work"
+              "meaning": "I work",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (trabajar) en un hotel.",
+                  "choices": [
+                    "trabaja",
+                    "trabajamos",
+                    "trabajo",
+                    "trabajas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"trabajar\" is \"trabajo\". A regular -ar verb ends in -o after \"yo\". Yo trabajo en un hotel. (I work at a hotel)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (trabajar) en una oficina.",
+                  "choices": [
+                    "trabaja",
+                    "trabajamos",
+                    "trabajo",
+                    "trabajas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"trabajar\" is \"trabajo\". A regular -ar verb ends in -o after \"yo\". Yo trabajo en una oficina. (I work in an office)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (trabajar) en la biblioteca de la escuela.",
+                  "choices": [
+                    "trabaja",
+                    "trabajamos",
+                    "trabajo",
+                    "trabajas"
+                  ],
+                  "answer": 2,
+                  "explanation": "With \"yo\", the present tense of \"trabajar\" is \"trabajo\". A regular -ar verb ends in -o after \"yo\". Yo trabajo en la biblioteca de la escuela. (I work in the school library)"
+                }
+              }
             },
             {
               "id": "esa1p5q22",
@@ -2361,7 +3116,42 @@
               ],
               "answer": "estudio",
               "explanation": "The \"yo\" form of the regular -ar verb estudiar ends in -o, giving \"estudio\"; \"estudia\" and \"estudias\" are for él and tú.",
-              "meaning": "I study"
+              "meaning": "I study",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (estudiar) español antes del viaje.",
+                  "bank": [
+                    "estudian",
+                    "estudia",
+                    "estudias",
+                    "estudio"
+                  ],
+                  "answer": "estudio",
+                  "explanation": "With \"yo\", the present tense of \"estudiar\" is \"estudio\". A regular -ar verb ends in -o after \"yo\". Yo estudio español antes del viaje. (I study Spanish before the trip)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (estudiar) español para el trabajo.",
+                  "bank": [
+                    "estudian",
+                    "estudia",
+                    "estudias",
+                    "estudio"
+                  ],
+                  "answer": "estudio",
+                  "explanation": "With \"yo\", the present tense of \"estudiar\" is \"estudio\". A regular -ar verb ends in -o after \"yo\". Yo estudio español para el trabajo. (I study Spanish for work)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (estudiar) español en la escuela.",
+                  "bank": [
+                    "estudian",
+                    "estudia",
+                    "estudias",
+                    "estudio"
+                  ],
+                  "answer": "estudio",
+                  "explanation": "With \"yo\", the present tense of \"estudiar\" is \"estudio\". A regular -ar verb ends in -o after \"yo\". Yo estudio español en la escuela. (I study Spanish at school)"
+                }
+              }
             },
             {
               "id": "esa1p5q23",
@@ -2375,7 +3165,42 @@
               ],
               "answer": 0,
               "explanation": "Regular -ar verbs end in -o for \"yo\", so llegar becomes \"llego\"; \"llegas\" and \"llegan\" don't match the subject yo.",
-              "meaning": "I arrive"
+              "meaning": "I arrive",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (llegar) tarde al aeropuerto.",
+                  "choices": [
+                    "llego",
+                    "llegas",
+                    "llegan",
+                    "llegamos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"llegar\" is \"llego\". A regular -ar verb ends in -o after \"yo\". Yo llego tarde al aeropuerto. (I arrive late at the airport)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (llegar) tarde a la reunión.",
+                  "choices": [
+                    "llego",
+                    "llegas",
+                    "llegan",
+                    "llegamos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"llegar\" is \"llego\". A regular -ar verb ends in -o after \"yo\". Yo llego tarde a la reunión. (I arrive late to the meeting)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (llegar) tarde a la escuela.",
+                  "choices": [
+                    "llego",
+                    "llegas",
+                    "llegan",
+                    "llegamos"
+                  ],
+                  "answer": 0,
+                  "explanation": "With \"yo\", the present tense of \"llegar\" is \"llego\". A regular -ar verb ends in -o after \"yo\". Yo llego tarde a la escuela. (I arrive late to school)"
+                }
+              }
             },
             {
               "id": "esa1p5q24",
@@ -2389,7 +3214,42 @@
               ],
               "answer": "empiezo",
               "explanation": "\"empiezo\" is the yo form of empezar, which changes e to ie in the stem and ends in -o. The other options belong to él, nosotros or ellos.",
-              "meaning": "I start, I begin"
+              "meaning": "I start, I begin",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Yo ___ (empezar) mi viaje ahora.",
+                  "bank": [
+                    "empieza",
+                    "empezamos",
+                    "empiezo",
+                    "empiezan"
+                  ],
+                  "answer": "empiezo",
+                  "explanation": "With \"yo\", the present tense of \"empezar\" is \"empiezo\". \"empezar\" is irregular in the \"yo\" form. Yo empiezo mi viaje ahora. (I start my trip now)"
+                },
+                "work": {
+                  "prompt": "Yo ___ (empezar) mi trabajo ahora.",
+                  "bank": [
+                    "empieza",
+                    "empezamos",
+                    "empiezo",
+                    "empiezan"
+                  ],
+                  "answer": "empiezo",
+                  "explanation": "With \"yo\", the present tense of \"empezar\" is \"empiezo\". \"empezar\" is irregular in the \"yo\" form. Yo empiezo mi trabajo ahora. (I start my work now)"
+                },
+                "school": {
+                  "prompt": "Yo ___ (empezar) mi tarea ahora.",
+                  "bank": [
+                    "empieza",
+                    "empezamos",
+                    "empiezo",
+                    "empiezan"
+                  ],
+                  "answer": "empiezo",
+                  "explanation": "With \"yo\", the present tense of \"empezar\" is \"empiezo\". \"empezar\" is irregular in the \"yo\" form. Yo empiezo mi tarea ahora. (I start my homework now)"
+                }
+              }
             },
             {
               "id": "lx1",
@@ -2538,7 +3398,39 @@
                 "Es lunes hoy.",
                 "Hoy es día lunes."
               ],
-              "explanation": "To state the day of the week, Spanish uses \"Hoy es lunes.\" with no article needed after \"es\"."
+              "explanation": "To state the day of the week, Spanish uses \"Hoy es lunes.\" with no article needed after \"es\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that your flight is on Monday.",
+                  "acceptableAnswers": [
+                    "Mi vuelo es el lunes.",
+                    "Mi vuelo sale el lunes.",
+                    "El vuelo es el lunes.",
+                    "Mi avión sale el lunes."
+                  ],
+                  "explanation": "\"Mi vuelo es el lunes.\" means \"My flight is on Monday\". \"el\" before a day of the week names that one coming day, and \"ser\" gives the day."
+                },
+                "work": {
+                  "prompt": "Say that the meeting is on Monday.",
+                  "acceptableAnswers": [
+                    "La reunión es el lunes.",
+                    "La reunión es este lunes.",
+                    "Tenemos reunión el lunes.",
+                    "Hay una reunión el lunes."
+                  ],
+                  "explanation": "\"La reunión es el lunes.\" means \"The meeting is on Monday\". \"el\" before a day of the week names that one coming day, and \"ser\" gives the day."
+                },
+                "school": {
+                  "prompt": "Say that the class is on Monday.",
+                  "acceptableAnswers": [
+                    "La clase es el lunes.",
+                    "La clase es este lunes.",
+                    "Tenemos clase el lunes.",
+                    "Hay clase el lunes."
+                  ],
+                  "explanation": "\"La clase es el lunes.\" means \"The class is on Monday\". \"el\" before a day of the week names that one coming day, and \"ser\" gives the day."
+                }
+              }
             }
           ]
         },
@@ -2872,7 +3764,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Estudio por la tarde y descanso por la noche",
-              "explanation": "The phrase \"Estudio por la tarde y descanso por la noche\" means 'I study in the afternoon and rest at night', using \"por la tarde\" and \"por la noche\" for parts of the day."
+              "explanation": "The phrase \"Estudio por la tarde y descanso por la noche\" means 'I study in the afternoon and rest at night', using \"por la tarde\" and \"por la noche\" for parts of the day.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Por la tarde visito la ciudad.",
+                  "explanation": "\"Por la tarde visito la ciudad.\" means \"In the afternoon I visit the city\". \"Por la tarde\" says when something happens, and the verb ends in -o with yo."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Por la tarde tengo una reunión.",
+                  "explanation": "\"Por la tarde tengo una reunión.\" means \"In the afternoon I have a meeting\". \"Por la tarde\" says when something happens, and \"tengo\" is the verb \"tener\" in its yo form."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Por la tarde tengo clase de inglés.",
+                  "explanation": "\"Por la tarde tengo clase de inglés.\" means \"In the afternoon I have English class\". \"Por la tarde\" says when something happens, and \"tengo\" is the verb \"tener\" in its yo form."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -2892,7 +3801,39 @@
                 "En la mañana trabajo.",
                 "Yo trabajo de mañana."
               ],
-              "explanation": "\"Trabajo por la mañana.\" uses \"por la mañana\" for 'in the morning' after the verb \"trabajo\" (I work)."
+              "explanation": "\"Trabajo por la mañana.\" uses \"por la mañana\" for 'in the morning' after the verb \"trabajo\" (I work).",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you visit the museum in the morning.",
+                  "acceptableAnswers": [
+                    "Visito el museo por la mañana.",
+                    "Visito el museo en la mañana.",
+                    "Por la mañana visito el museo.",
+                    "En la mañana visito el museo."
+                  ],
+                  "explanation": "\"Visito el museo por la mañana.\" means \"I visit the museum in the morning\". \"por la mañana\" says when something happens, and the verb ends in -o with yo."
+                },
+                "work": {
+                  "prompt": "Say that you have meetings in the morning.",
+                  "acceptableAnswers": [
+                    "Tengo reuniones por la mañana.",
+                    "Tengo reuniones en la mañana.",
+                    "Por la mañana tengo reuniones.",
+                    "En la mañana tengo reuniones."
+                  ],
+                  "explanation": "\"Tengo reuniones por la mañana.\" means \"I have meetings in the morning\". \"por la mañana\" says when something happens, and the verb ends in -o with yo."
+                },
+                "school": {
+                  "prompt": "Say that you have classes in the morning.",
+                  "acceptableAnswers": [
+                    "Tengo clases por la mañana.",
+                    "Tengo clases en la mañana.",
+                    "Por la mañana tengo clases.",
+                    "En la mañana tengo clases."
+                  ],
+                  "explanation": "\"Tengo clases por la mañana.\" means \"I have classes in the morning\". \"por la mañana\" says when something happens, and the verb ends in -o with yo."
+                }
+              }
             }
           ]
         }
@@ -3118,7 +4059,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "La silla está en la habitación.",
-              "explanation": "\"La silla está en la habitación.\" means \"The chair is in the room.\" You use \"silla\" for chair, \"habitación\" for room, and \"está\" to say where something is."
+              "explanation": "\"La silla está en la habitación.\" means \"The chair is in the room.\" You use \"silla\" for chair, \"habitación\" for room, and \"está\" to say where something is.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "La maleta está en la habitación.",
+                  "explanation": "\"La maleta está en la habitación.\" means \"The suitcase is in the room\". \"está\" says where something is, and \"en\" gives the place."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "La computadora está en la oficina.",
+                  "explanation": "\"La computadora está en la oficina.\" means \"The computer is in the office\". \"está\" says where something is, and \"en\" gives the place."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "La mochila está en el salón.",
+                  "explanation": "\"La mochila está en el salón.\" means \"The backpack is in the classroom\". \"está\" says where something is, and \"en\" gives the place."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -3606,7 +4564,39 @@
                 "Me está doliendo el brazo.",
                 "A mí me duele el brazo."
               ],
-              "explanation": "\"Me duele el brazo.\" is the natural way to say your arm hurts; Spanish uses the article (el) instead of 'my' with body parts."
+              "explanation": "\"Me duele el brazo.\" is the natural way to say your arm hurts; Spanish uses the article (el) instead of 'my' with body parts.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that your feet hurt after the walk.",
+                  "acceptableAnswers": [
+                    "Me duelen los pies después del paseo.",
+                    "Después del paseo me duelen los pies.",
+                    "Me duelen los pies después de la caminata.",
+                    "Después de la caminata me duelen los pies."
+                  ],
+                  "explanation": "\"Me duelen los pies después del paseo.\" means \"My feet hurt after the walk\". \"Me duele\" goes with one thing and \"me duelen\" with several: los pies."
+                },
+                "work": {
+                  "prompt": "Say that your back hurts after the meeting.",
+                  "acceptableAnswers": [
+                    "Me duele la espalda después de la reunión.",
+                    "Después de la reunión me duele la espalda.",
+                    "Me duele la espalda tras la reunión.",
+                    "Tras la reunión me duele la espalda."
+                  ],
+                  "explanation": "\"Me duele la espalda después de la reunión.\" means \"My back hurts after the meeting\". \"Me duele\" goes with one thing and \"me duelen\" with several: la espalda."
+                },
+                "school": {
+                  "prompt": "Say that your head hurts after class.",
+                  "acceptableAnswers": [
+                    "Me duele la cabeza después de la clase.",
+                    "Después de la clase me duele la cabeza.",
+                    "Me duele la cabeza tras la clase.",
+                    "Tras la clase me duele la cabeza."
+                  ],
+                  "explanation": "\"Me duele la cabeza después de la clase.\" means \"My head hurts after class\". \"Me duele\" goes with one thing and \"me duelen\" with several: la cabeza."
+                }
+              }
             }
           ]
         },
@@ -4196,7 +5186,39 @@
                 "El libro vale ochenta.",
                 "Este libro cuesta ochenta."
               ],
-              "explanation": "The natural sentence is \"El libro cuesta ochenta pesos.\" It uses cuesta (costs) with ochenta (eighty) before the word for the money."
+              "explanation": "The natural sentence is \"El libro cuesta ochenta pesos.\" It uses cuesta (costs) with ochenta (eighty) before the word for the money.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that the taxi costs eighty pesos.",
+                  "acceptableAnswers": [
+                    "El taxi cuesta ochenta pesos.",
+                    "El taxi vale ochenta pesos.",
+                    "El taxi sale en ochenta pesos.",
+                    "Un taxi cuesta ochenta pesos."
+                  ],
+                  "explanation": "\"El taxi cuesta ochenta pesos.\" means \"The taxi costs eighty pesos\". \"cuesta\" is \"costar\" with a single thing, and the price follows with the currency: ochenta pesos."
+                },
+                "work": {
+                  "prompt": "Say that the lunch costs eighty pesos.",
+                  "acceptableAnswers": [
+                    "El almuerzo cuesta ochenta pesos.",
+                    "El almuerzo vale ochenta pesos.",
+                    "La comida cuesta ochenta pesos.",
+                    "Un almuerzo cuesta ochenta pesos."
+                  ],
+                  "explanation": "\"El almuerzo cuesta ochenta pesos.\" means \"The lunch costs eighty pesos\". \"cuesta\" is \"costar\" with a single thing, and the price follows with the currency: ochenta pesos."
+                },
+                "school": {
+                  "prompt": "Say that the notebook costs forty pesos.",
+                  "acceptableAnswers": [
+                    "El cuaderno cuesta cuarenta pesos.",
+                    "El cuaderno vale cuarenta pesos.",
+                    "La libreta cuesta cuarenta pesos.",
+                    "Un cuaderno cuesta cuarenta pesos."
+                  ],
+                  "explanation": "\"El cuaderno cuesta cuarenta pesos.\" means \"The notebook costs forty pesos\". \"cuesta\" is \"costar\" with a single thing, and the price follows with the currency: cuarenta pesos."
+                }
+              }
             }
           ]
         }
@@ -4901,7 +5923,39 @@
                 "Hoy está haciendo mucho frío.",
                 "Está haciendo mucho frío hoy."
               ],
-              "explanation": "Spanish uses \"hacer\" for weather: \"Hoy hace mucho frío.\" literally 'today it makes a lot of cold', and mucho agrees with the noun frío."
+              "explanation": "Spanish uses \"hacer\" for weather: \"Hoy hace mucho frío.\" literally 'today it makes a lot of cold', and mucho agrees with the noun frío.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that it is very cold in the city today.",
+                  "acceptableAnswers": [
+                    "Hoy hace mucho frío en la ciudad.",
+                    "En la ciudad hace mucho frío hoy.",
+                    "Hace mucho frío hoy en la ciudad.",
+                    "Hoy en la ciudad hace mucho frío."
+                  ],
+                  "explanation": "\"Hoy hace mucho frío en la ciudad.\" means \"Today it is very cold in the city\". \"hace\" is used for the weather, and \"mucho\" goes before \"frío\" because cold is a noun here."
+                },
+                "work": {
+                  "prompt": "Say that it is very cold in the office today.",
+                  "acceptableAnswers": [
+                    "Hoy hace mucho frío en la oficina.",
+                    "En la oficina hace mucho frío hoy.",
+                    "Hace mucho frío hoy en la oficina.",
+                    "Hoy en la oficina hace mucho frío."
+                  ],
+                  "explanation": "\"Hoy hace mucho frío en la oficina.\" means \"Today it is very cold in the office\". \"hace\" is used for the weather, and \"mucho\" goes before \"frío\" because cold is a noun here."
+                },
+                "school": {
+                  "prompt": "Say that it is very cold in the classroom today.",
+                  "acceptableAnswers": [
+                    "Hoy hace mucho frío en el salón.",
+                    "En el salón hace mucho frío hoy.",
+                    "Hace mucho frío hoy en el salón.",
+                    "Hoy en el salón hace mucho frío."
+                  ],
+                  "explanation": "\"Hoy hace mucho frío en el salón.\" means \"Today it is very cold in the classroom\". \"hace\" is used for the weather, and \"mucho\" goes before \"frío\" because cold is a noun here."
+                }
+              }
             }
           ]
         },
@@ -5148,7 +6202,39 @@
                 "Traigo puesto un vestido.",
                 "Yo uso un vestido."
               ],
-              "explanation": "\"Llevo un vestido.\" uses llevar ('to wear') in the yo form, followed by un because vestido is masculine."
+              "explanation": "\"Llevo un vestido.\" uses llevar ('to wear') in the yo form, followed by un because vestido is masculine.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you are wearing a hat and sunglasses.",
+                  "acceptableAnswers": [
+                    "Llevo un sombrero y lentes.",
+                    "Llevo un sombrero y gafas.",
+                    "Tengo puesto un sombrero y lentes.",
+                    "Llevo puesto un sombrero y lentes."
+                  ],
+                  "explanation": "\"Llevo un sombrero y lentes.\" means \"I am wearing a hat and sunglasses\". \"Llevo\" is \"llevar\" with yo and means wearing, and the clothes follow with \"un\", \"una\" or no article for a plural."
+                },
+                "work": {
+                  "prompt": "Say that you are wearing a suit and a tie.",
+                  "acceptableAnswers": [
+                    "Llevo un traje y una corbata.",
+                    "Tengo puesto un traje y una corbata.",
+                    "Llevo puesto un traje y una corbata.",
+                    "Visto un traje y una corbata."
+                  ],
+                  "explanation": "\"Llevo un traje y una corbata.\" means \"I am wearing a suit and a tie\". \"Llevo\" is \"llevar\" with yo and means wearing, and the clothes follow with \"un\", \"una\" or no article for a plural."
+                },
+                "school": {
+                  "prompt": "Say that you are wearing a school uniform.",
+                  "acceptableAnswers": [
+                    "Llevo un uniforme escolar.",
+                    "Llevo puesto un uniforme escolar.",
+                    "Tengo puesto un uniforme escolar.",
+                    "Visto un uniforme escolar."
+                  ],
+                  "explanation": "\"Llevo un uniforme escolar.\" means \"I am wearing a school uniform\". \"Llevo\" is \"llevar\" with yo and means wearing, and the clothes follow with \"un\", \"una\" or no article for a plural."
+                }
+              }
             }
           ]
         },
@@ -5615,7 +6701,45 @@
                 "Tengo una goma en la mochila."
               ],
               "answer": "Tengo un cuaderno en la mochila.",
-              "explanation": "The speaker says \"Tengo un cuaderno en la mochila.\" meaning 'I have a notebook in the backpack.' The other choices change the object or the place."
+              "explanation": "The speaker says \"Tengo un cuaderno en la mochila.\" meaning 'I have a notebook in the backpack.' The other choices change the object or the place.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Tengo un pasaporte en la mochila.",
+                  "choices": [
+                    "Tengo un pasaporte en la mochila.",
+                    "Tengo un boleto en la mochila.",
+                    "Tengo un pasaporte en la maleta.",
+                    "Tengo un pasaporte en la bolsa."
+                  ],
+                  "answer": "Tengo un pasaporte en la mochila.",
+                  "explanation": "\"Tengo un pasaporte en la mochila.\" means \"I have a passport in my backpack\". \"Tengo\" is \"tener\" with yo, and \"en\" says where it is; the other choices change the object or the place."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Tengo una computadora en la mochila.",
+                  "choices": [
+                    "Tengo una carpeta en la mochila.",
+                    "Tengo una computadora en la oficina.",
+                    "Tengo una computadora en la mochila.",
+                    "Tengo una computadora en la maleta."
+                  ],
+                  "answer": "Tengo una computadora en la mochila.",
+                  "explanation": "\"Tengo una computadora en la mochila.\" means \"I have a computer in my backpack\". \"Tengo\" is \"tener\" with yo, and \"en\" says where it is; the other choices change the object or the place."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Tengo una regla en la mochila.",
+                  "choices": [
+                    "Tengo una goma en la mochila.",
+                    "Tengo una regla en la caja.",
+                    "Tengo una regla en la mesa.",
+                    "Tengo una regla en la mochila."
+                  ],
+                  "answer": "Tengo una regla en la mochila.",
+                  "explanation": "\"Tengo una regla en la mochila.\" means \"I have a ruler in my backpack\". \"Tengo\" is \"tener\" with yo, and \"en\" says where it is; the other choices change the object or the place."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -5735,7 +6859,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Necesito tijeras y pegamento",
-              "explanation": "\"Necesito tijeras y pegamento\" means \"I need scissors and glue.\" \"Necesito\" is the \"I\" form of necesitar (to need), and \"tijeras\" is always plural, like English \"scissors.\""
+              "explanation": "\"Necesito tijeras y pegamento\" means \"I need scissors and glue.\" \"Necesito\" is the \"I\" form of necesitar (to need), and \"tijeras\" is always plural, like English \"scissors.\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Necesito mi pasaporte y mi boleto.",
+                  "explanation": "\"Necesito mi pasaporte y mi boleto.\" means \"I need my passport and my ticket\". \"Necesito\" is \"necesitar\" with yo, and \"y\" joins the two things you need."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Necesito mi computadora y mi celular.",
+                  "explanation": "\"Necesito mi computadora y mi celular.\" means \"I need my computer and my cell phone\". \"Necesito\" is \"necesitar\" with yo, and \"y\" joins the two things you need."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Necesito un lápiz y un cuaderno.",
+                  "explanation": "\"Necesito un lápiz y un cuaderno.\" means \"I need a pencil and a notebook\". \"Necesito\" is \"necesitar\" with yo, and \"y\" joins the two things you need."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -5973,7 +7114,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Mi hermana es artista",
-              "explanation": "\"Mi hermana es artista\" means \"My sister is an artist.\" The word \"artista\" stays the same for a man or a woman, so you don't change it for \"hermana\"."
+              "explanation": "\"Mi hermana es artista\" means \"My sister is an artist.\" The word \"artista\" stays the same for a man or a woman, so you don't change it for \"hermana\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Mi hermana es guía en un museo.",
+                  "explanation": "\"Mi hermana es guía en un museo.\" means \"My sister is a guide in a museum\". After \"es\" a job needs no \"un\" or \"una\", and \"en\" says where."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Mi hermana es gerente en un banco.",
+                  "explanation": "\"Mi hermana es gerente en un banco.\" means \"My sister is a manager at a bank\". After \"es\" a job needs no \"un\" or \"una\", and \"en\" says where."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Mi hermana es maestra en una escuela.",
+                  "explanation": "\"Mi hermana es maestra en una escuela.\" means \"My sister is a teacher at a school\". After \"es\" a job needs no \"un\" or \"una\", and \"en\" says where."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -5989,7 +7147,39 @@
                 "La cocinera trabaja en un restaurant",
                 "La cocinera trabaja en el restaurant"
               ],
-              "explanation": "\"El cocinero trabaja en un restaurante\" uses \"trabaja en\" for works in; use \"cocinera\" if the cook is a woman."
+              "explanation": "\"El cocinero trabaja en un restaurante\" uses \"trabaja en\" for works in; use \"cocinera\" if the cook is a woman.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that the guide works in a museum.",
+                  "acceptableAnswers": [
+                    "El guía trabaja en un museo.",
+                    "El guía trabaja en el museo.",
+                    "El guía está trabajando en un museo.",
+                    "El guía labora en un museo."
+                  ],
+                  "explanation": "\"El guía trabaja en un museo.\" means \"The guide works in a museum\". \"en\" says where someone works, and \"un\" or \"una\" goes with the place."
+                },
+                "work": {
+                  "prompt": "Say that the accountant works in a bank.",
+                  "acceptableAnswers": [
+                    "El contador trabaja en un banco.",
+                    "El contador trabaja en el banco.",
+                    "El contador está trabajando en un banco.",
+                    "El contador labora en un banco."
+                  ],
+                  "explanation": "\"El contador trabaja en un banco.\" means \"The accountant works in a bank\". \"en\" says where someone works, and \"un\" or \"una\" goes with the place."
+                },
+                "school": {
+                  "prompt": "Say that the teacher works in a school.",
+                  "acceptableAnswers": [
+                    "El maestro trabaja en una escuela.",
+                    "El maestro trabaja en la escuela.",
+                    "El profesor trabaja en una escuela.",
+                    "El maestro labora en una escuela."
+                  ],
+                  "explanation": "\"El maestro trabaja en una escuela.\" means \"The teacher works in a school\". \"en\" says where someone works, and \"un\" or \"una\" goes with the place."
+                }
+              }
             }
           ]
         },
@@ -6099,7 +7289,39 @@
                 "Mi hermana trabaja como mesera.",
                 "Mi hermana trabaja como camarera."
               ],
-              "explanation": "\"Mi hermana es camarera.\" uses \"ser\" with a profession and no article, and a woman's job ends in -a; many Latin American speakers also say \"mesera\"."
+              "explanation": "\"Mi hermana es camarera.\" uses \"ser\" with a profession and no article, and a woman's job ends in -a; many Latin American speakers also say \"mesera\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that your sister works as a flight attendant.",
+                  "acceptableAnswers": [
+                    "Mi hermana es azafata.",
+                    "Mi hermana es auxiliar de vuelo.",
+                    "Mi hermana trabaja como azafata.",
+                    "Mi hermana trabaja de azafata."
+                  ],
+                  "explanation": "\"Mi hermana es azafata.\" means \"My sister is a flight attendant\". After \"ser\" a job needs no \"un\" or \"una\", and many job words change with the person: \"camarera\", \"contadora\"."
+                },
+                "work": {
+                  "prompt": "Say that your sister works as an accountant.",
+                  "acceptableAnswers": [
+                    "Mi hermana es contadora.",
+                    "Mi hermana trabaja como contadora.",
+                    "Mi hermana trabaja de contadora.",
+                    "Mi hermana se dedica a la contabilidad."
+                  ],
+                  "explanation": "\"Mi hermana es contadora.\" means \"My sister is an accountant\". After \"ser\" a job needs no \"un\" or \"una\", and many job words change with the person: \"camarera\", \"contadora\"."
+                },
+                "school": {
+                  "prompt": "Say that your sister works as a teacher.",
+                  "acceptableAnswers": [
+                    "Mi hermana es maestra.",
+                    "Mi hermana es profesora.",
+                    "Mi hermana trabaja como maestra.",
+                    "Mi hermana trabaja de maestra."
+                  ],
+                  "explanation": "\"Mi hermana es maestra.\" means \"My sister is a teacher\". After \"ser\" a job needs no \"un\" or \"una\", and many job words change with the person: \"camarera\", \"contadora\"."
+                }
+              }
             }
           ]
         }
@@ -6705,7 +7927,39 @@
                 "Me siento asustado esta noche.",
                 "Me siento asustada esta noche."
               ],
-              "explanation": "\"Estoy asustado esta noche.\" uses estar plus asustado to say you feel scared, and esta noche means tonight."
+              "explanation": "\"Estoy asustado esta noche.\" uses estar plus asustado to say you feel scared, and esta noche means tonight.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you are nervous before the flight (you are a man).",
+                  "acceptableAnswers": [
+                    "Estoy nervioso antes del vuelo.",
+                    "Antes del vuelo estoy nervioso.",
+                    "Estoy nervioso por el vuelo.",
+                    "Yo estoy nervioso antes del vuelo."
+                  ],
+                  "explanation": "\"Estoy nervioso antes del vuelo.\" means \"I am nervous before the flight\". \"estoy\" is \"estar\" with yo for a feeling, and the adjective takes the speaker's gender: \"nervioso\" for a man."
+                },
+                "work": {
+                  "prompt": "Say that you are nervous before the meeting (you are a man).",
+                  "acceptableAnswers": [
+                    "Estoy nervioso antes de la reunión.",
+                    "Antes de la reunión estoy nervioso.",
+                    "Estoy nervioso por la reunión.",
+                    "Yo estoy nervioso antes de la reunión."
+                  ],
+                  "explanation": "\"Estoy nervioso antes de la reunión.\" means \"I am nervous before the meeting\". \"estoy\" is \"estar\" with yo for a feeling, and the adjective takes the speaker's gender: \"nervioso\" for a man."
+                },
+                "school": {
+                  "prompt": "Say that you are nervous before the test (you are a man).",
+                  "acceptableAnswers": [
+                    "Estoy nervioso antes de la prueba.",
+                    "Antes de la prueba estoy nervioso.",
+                    "Estoy nervioso por la prueba.",
+                    "Yo estoy nervioso antes de la prueba."
+                  ],
+                  "explanation": "\"Estoy nervioso antes de la prueba.\" means \"I am nervous before the test\". \"estoy\" is \"estar\" with yo for a feeling, and the adjective takes the speaker's gender: \"nervioso\" for a man."
+                }
+              }
             }
           ]
         },
@@ -6917,7 +8171,45 @@
                 "Hoy estoy muy enojado."
               ],
               "answer": "Hoy estoy muy cansado.",
-              "explanation": "The sentence is \"Hoy estoy muy cansado.\", meaning \"Today I am very tired\". The other choices swap in different feelings: happy, nervous and angry."
+              "explanation": "The sentence is \"Hoy estoy muy cansado.\", meaning \"Today I am very tired\". The other choices swap in different feelings: happy, nervous and angry.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Hoy estoy muy cansado después del viaje.",
+                  "choices": [
+                    "Hoy estoy muy contento después del viaje.",
+                    "Hoy estoy muy cansado después del viaje.",
+                    "Hoy estoy muy cansado antes del viaje.",
+                    "Hoy estoy muy ocupado después del viaje."
+                  ],
+                  "answer": "Hoy estoy muy cansado después del viaje.",
+                  "explanation": "\"Hoy estoy muy cansado después del viaje.\" means \"Today I am very tired after the trip\". \"estoy\" is \"estar\" with yo for a feeling, and \"después de\" means after."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Hoy estoy muy cansado después del trabajo.",
+                  "choices": [
+                    "Hoy estoy muy contento después del trabajo.",
+                    "Hoy estoy muy cansado antes del trabajo.",
+                    "Hoy estoy muy cansado después del trabajo.",
+                    "Hoy estoy muy ocupado después del trabajo."
+                  ],
+                  "answer": "Hoy estoy muy cansado después del trabajo.",
+                  "explanation": "\"Hoy estoy muy cansado después del trabajo.\" means \"Today I am very tired after work\". \"estoy\" is \"estar\" with yo for a feeling, and \"después de\" means after."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Hoy estoy muy cansado después de clase.",
+                  "choices": [
+                    "Hoy estoy muy cansado después de clase.",
+                    "Hoy estoy muy contento después de clase.",
+                    "Hoy estoy muy cansado antes de clase.",
+                    "Hoy estoy muy ocupado después de clase."
+                  ],
+                  "answer": "Hoy estoy muy cansado después de clase.",
+                  "explanation": "\"Hoy estoy muy cansado después de clase.\" means \"Today I am very tired after class\". \"estoy\" is \"estar\" with yo for a feeling, and \"después de\" means after."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -7161,7 +8453,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "¿Cuántos libros tienes?",
-              "explanation": "\"¿Cuántos libros tienes?\" asks how many books someone has. Cuántos is the plural form of cuánto, used when you count things."
+              "explanation": "\"¿Cuántos libros tienes?\" asks how many books someone has. Cuántos is the plural form of cuánto, used when you count things.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "¿Cuántas maletas tienes?",
+                  "explanation": "\"¿Cuántas maletas tienes?\" means \"How many suitcases do you have\". \"Cuántos\" or \"Cuántas\" agrees with the noun it counts, so \"Cuántas\" goes with the feminine word maletas."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "¿Cuántos clientes tienes?",
+                  "explanation": "\"¿Cuántos clientes tienes?\" means \"How many clients do you have\". \"Cuántos\" or \"Cuántas\" agrees with the noun it counts, so \"Cuántos\" goes with the masculine word clientes."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "¿Cuántos amigos tienes?",
+                  "explanation": "\"¿Cuántos amigos tienes?\" means \"How many friends do you have\". \"Cuántos\" or \"Cuántas\" agrees with the noun it counts, so \"Cuántos\" goes with the masculine word amigos."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -7282,7 +8591,45 @@
                 "Son las seis y media."
               ],
               "answer": "Son las cinco y media.",
-              "explanation": "\"Son las cinco y media.\" means it is half past five; the other choices change the hour or the minutes, which sound clearly different."
+              "explanation": "\"Son las cinco y media.\" means it is half past five; the other choices change the hour or the minutes, which sound clearly different.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "El vuelo sale a las cinco y media.",
+                  "choices": [
+                    "El vuelo sale a las cinco y cuarto.",
+                    "El vuelo sale a las seis y media.",
+                    "El tren sale a las cinco y media.",
+                    "El vuelo sale a las cinco y media."
+                  ],
+                  "answer": "El vuelo sale a las cinco y media.",
+                  "explanation": "\"El vuelo sale a las cinco y media.\" means \"The flight leaves at half past five\". \"a las\" says the hour, and the other choices change the time or the event."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "La llamada es a las cinco y media.",
+                  "choices": [
+                    "La llamada es a las cinco y media.",
+                    "La llamada es a las cinco y cuarto.",
+                    "La llamada es a las seis y media.",
+                    "La cena es a las cinco y media."
+                  ],
+                  "answer": "La llamada es a las cinco y media.",
+                  "explanation": "\"La llamada es a las cinco y media.\" means \"The call is at half past five\". \"a las\" says the hour, and the other choices change the time or the event."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "La escuela cierra a las cinco y media.",
+                  "choices": [
+                    "La escuela cierra a las cinco y cuarto.",
+                    "La escuela cierra a las cinco y media.",
+                    "La escuela cierra a las seis y media.",
+                    "La tienda cierra a las cinco y media."
+                  ],
+                  "answer": "La escuela cierra a las cinco y media.",
+                  "explanation": "\"La escuela cierra a las cinco y media.\" means \"The school closes at half past five\". \"a las\" says the hour, and the other choices change the time or the event."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -7400,7 +8747,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Son las tres y media de la tarde",
-              "explanation": "\"Son las tres y media de la tarde\" means it is half past three in the afternoon. You use \"y media\" for half past, and \"de la tarde\" for the afternoon hours."
+              "explanation": "\"Son las tres y media de la tarde\" means it is half past three in the afternoon. You use \"y media\" for half past, and \"de la tarde\" for the afternoon hours.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "El tren sale a las ocho y media.",
+                  "explanation": "\"El tren sale a las ocho y media.\" means \"The train leaves at half past eight\". \"a las\" says the hour, and \"media\" means half past."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "La reunión es a las nueve y media.",
+                  "explanation": "\"La reunión es a las nueve y media.\" means \"The meeting is at half past nine\". \"a las\" says the hour, and \"media\" means half past."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "La clase empieza a las ocho y media.",
+                  "explanation": "\"La clase empieza a las ocho y media.\" means \"The class starts at half past eight\". \"a las\" says the hour, and \"media\" means half past."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -7532,7 +8896,39 @@
                 "El tren llega a la 1:00 p. m.",
                 "El tren llega a las 13:00."
               ],
-              "explanation": "\"El tren llega a la una de la tarde.\" uses \"a la una\" (singular, because one o'clock is only one hour) for 'at one', and \"de la tarde\" for 'in the afternoon'."
+              "explanation": "\"El tren llega a la una de la tarde.\" uses \"a la una\" (singular, because one o'clock is only one hour) for 'at one', and \"de la tarde\" for 'in the afternoon'.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that the flight arrives at three in the afternoon.",
+                  "acceptableAnswers": [
+                    "El vuelo llega a las tres de la tarde.",
+                    "El avión llega a las tres de la tarde.",
+                    "A las tres de la tarde llega el vuelo.",
+                    "El vuelo aterriza a las tres de la tarde."
+                  ],
+                  "explanation": "\"El vuelo llega a las tres de la tarde.\" means \"The flight arrives at three in the afternoon\". \"a las\" says the hour something happens, and \"de la tarde\" tells the part of the day."
+                },
+                "work": {
+                  "prompt": "Say that the meeting starts at ten in the morning.",
+                  "acceptableAnswers": [
+                    "La reunión empieza a las diez de la mañana.",
+                    "La reunión comienza a las diez de la mañana.",
+                    "A las diez de la mañana empieza la reunión.",
+                    "La reunión es a las diez de la mañana."
+                  ],
+                  "explanation": "\"La reunión empieza a las diez de la mañana.\" means \"The meeting starts at ten in the morning\". \"a las\" says the hour something happens, and \"de la mañana\" tells the part of the day."
+                },
+                "school": {
+                  "prompt": "Say that the class starts at eight in the morning.",
+                  "acceptableAnswers": [
+                    "La clase empieza a las ocho de la mañana.",
+                    "La clase comienza a las ocho de la mañana.",
+                    "A las ocho de la mañana empieza la clase.",
+                    "La clase es a las ocho de la mañana."
+                  ],
+                  "explanation": "\"La clase empieza a las ocho de la mañana.\" means \"The class starts at eight in the morning\". \"a las\" says the hour something happens, and \"de la mañana\" tells the part of the day."
+                }
+              }
             }
           ]
         }
@@ -7644,7 +9040,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "El libro está al lado de la puerta",
-              "explanation": "\"El libro está al lado de la puerta\" uses \"al lado de\" to say the book is right next to the door."
+              "explanation": "\"El libro está al lado de la puerta\" uses \"al lado de\" to say the book is right next to the door.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "El hotel está al lado de la estación.",
+                  "explanation": "\"El hotel está al lado de la estación.\" means \"The hotel is next to the station\". \"al lado de\" means next to, and \"de\" joins with \"el\" to make \"del\"."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "La oficina está al lado del banco.",
+                  "explanation": "\"La oficina está al lado del banco.\" means \"The office is next to the bank\". \"al lado de\" means next to, and \"de\" joins with \"el\" to make \"del\"."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "La escuela está al lado del parque.",
+                  "explanation": "\"La escuela está al lado del parque.\" means \"The school is next to the park\". \"al lado de\" means next to, and \"de\" joins with \"el\" to make \"del\"."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -7765,7 +9178,39 @@
                 "Las llaves se encuentran dentro de la caja.",
                 "Las llaves están en el interior de la caja."
               ],
-              "explanation": "\"Las llaves están dentro de la caja.\" uses \"dentro de\" for inside; \"en\" can also work as a simpler way to say in."
+              "explanation": "\"Las llaves están dentro de la caja.\" uses \"dentro de\" for inside; \"en\" can also work as a simpler way to say in.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that the passport is inside the bag.",
+                  "acceptableAnswers": [
+                    "El pasaporte está dentro de la bolsa.",
+                    "El pasaporte está adentro de la bolsa.",
+                    "El pasaporte está en la bolsa.",
+                    "El pasaporte se encuentra dentro de la bolsa."
+                  ],
+                  "explanation": "\"El pasaporte está dentro de la bolsa.\" means \"The passport is inside the bag\". \"dentro de\" means inside, and \"de\" joins with the article that follows: dentro de la bolsa."
+                },
+                "work": {
+                  "prompt": "Say that the documents are inside the box.",
+                  "acceptableAnswers": [
+                    "Los documentos están dentro de la caja.",
+                    "Los documentos están adentro de la caja.",
+                    "Los documentos están en la caja.",
+                    "Los documentos se encuentran dentro de la caja."
+                  ],
+                  "explanation": "\"Los documentos están dentro de la caja.\" means \"The documents are inside the box\". \"dentro de\" means inside, and \"de\" joins with the article that follows: dentro de la caja."
+                },
+                "school": {
+                  "prompt": "Say that the pencils are inside the case.",
+                  "acceptableAnswers": [
+                    "Los lápices están dentro del estuche.",
+                    "Los lápices están adentro del estuche.",
+                    "Los lápices están en el estuche.",
+                    "Los lápices se encuentran dentro del estuche."
+                  ],
+                  "explanation": "\"Los lápices están dentro del estuche.\" means \"The pencils are inside the case\". \"dentro de\" means inside, and \"de\" joins with \"el\" to make \"del\": dentro del estuche."
+                }
+              }
             }
           ]
         },
@@ -7861,7 +9306,45 @@
                 "El gato está encima de la silla."
               ],
               "answer": "El gato está debajo de la silla.",
-              "explanation": "\"El gato está debajo de la silla.\" uses \"debajo de\" (under), the opposite of \"encima de\" (on top of). Listen for the position word that tells you where the cat is."
+              "explanation": "\"El gato está debajo de la silla.\" uses \"debajo de\" (under), the opposite of \"encima de\" (on top of). Listen for the position word that tells you where the cat is.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "La maleta está debajo de la cama.",
+                  "choices": [
+                    "La maleta está encima de la cama.",
+                    "La mochila está debajo de la cama.",
+                    "La maleta está debajo de la mesa.",
+                    "La maleta está debajo de la cama."
+                  ],
+                  "answer": "La maleta está debajo de la cama.",
+                  "explanation": "\"La maleta está debajo de la cama.\" means \"The suitcase is under the bed\". \"debajo de\" means under, and the other choices change the place word or the object."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "La carpeta está debajo del escritorio.",
+                  "choices": [
+                    "La carpeta está debajo del escritorio.",
+                    "La carpeta está encima del escritorio.",
+                    "La carpeta está dentro del escritorio.",
+                    "La caja está debajo del escritorio."
+                  ],
+                  "answer": "La carpeta está debajo del escritorio.",
+                  "explanation": "\"La carpeta está debajo del escritorio.\" means \"The folder is under the desk\". \"debajo de\" means under, and the other choices change the place word or the object."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "La mochila está debajo de la silla.",
+                  "choices": [
+                    "La mochila está encima de la silla.",
+                    "La mochila está debajo de la silla.",
+                    "La mochila está detrás de la silla.",
+                    "El cuaderno está debajo de la silla."
+                  ],
+                  "answer": "La mochila está debajo de la silla.",
+                  "explanation": "\"La mochila está debajo de la silla.\" means \"The backpack is under the chair\". \"debajo de\" means under, and the other choices change the place word or the object."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -7986,7 +9469,45 @@
                 "El lago está cerca de la playa."
               ],
               "answer": "El lago está cerca de la playa.",
-              "explanation": "The sentence \"El lago está cerca de la playa.\" means the lake is near the beach; the other choices change one word (roca, cielo, lejos)."
+              "explanation": "The sentence \"El lago está cerca de la playa.\" means the lake is near the beach; the other choices change one word (roca, cielo, lejos).",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "El hotel está cerca de la playa.",
+                  "choices": [
+                    "El hotel está lejos de la playa.",
+                    "El hotel está cerca de la playa.",
+                    "El hotel está cerca de la plaza.",
+                    "El museo está cerca de la playa."
+                  ],
+                  "answer": "El hotel está cerca de la playa.",
+                  "explanation": "\"El hotel está cerca de la playa.\" means \"The hotel is near the beach\". \"cerca de\" means near, and the other choices change the distance word or the place."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "La oficina está cerca de la estación.",
+                  "choices": [
+                    "La oficina está lejos de la estación.",
+                    "La oficina está cerca de la escuela.",
+                    "La oficina está cerca de la estación.",
+                    "La tienda está cerca de la estación."
+                  ],
+                  "answer": "La oficina está cerca de la estación.",
+                  "explanation": "\"La oficina está cerca de la estación.\" means \"The office is near the station\". \"cerca de\" means near, and the other choices change the distance word or the place."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "La escuela está cerca del parque.",
+                  "choices": [
+                    "La escuela está lejos del parque.",
+                    "La escuela está cerca del lago.",
+                    "La tienda está cerca del parque.",
+                    "La escuela está cerca del parque."
+                  ],
+                  "answer": "La escuela está cerca del parque.",
+                  "explanation": "\"La escuela está cerca del parque.\" means \"The school is near the park\". \"cerca de\" means near, and the other choices change the distance word or the place."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -8332,7 +9853,45 @@
                 "Quiero una manzana, por favor."
               ],
               "answer": "Quiero una manzana, por favor.",
-              "explanation": "The speaker says \"Quiero una manzana, por favor.\", asking politely for an apple at the market. The other choices name different fruits."
+              "explanation": "The speaker says \"Quiero una manzana, por favor.\", asking politely for an apple at the market. The other choices name different fruits.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Quiero una habitación, por favor.",
+                  "choices": [
+                    "Quiero otra habitación, por favor.",
+                    "Quiero una reservación, por favor.",
+                    "Quiero una habitación, por favor.",
+                    "Quiero una mesa, por favor."
+                  ],
+                  "answer": "Quiero una habitación, por favor.",
+                  "explanation": "\"Quiero una habitación, por favor.\" means \"I want a room, please\". \"Quiero\" says what you want, and the other choices change the thing you ask for."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Quiero una copia, por favor.",
+                  "choices": [
+                    "Quiero otra copia, por favor.",
+                    "Quiero una copia, por favor.",
+                    "Quiero una cita, por favor.",
+                    "Quiero una cuenta, por favor."
+                  ],
+                  "answer": "Quiero una copia, por favor.",
+                  "explanation": "\"Quiero una copia, por favor.\" means \"I want a copy, please\". \"Quiero\" says what you want, and the other choices change the thing you ask for."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "Quiero una hoja, por favor.",
+                  "choices": [
+                    "Quiero una hoja, por favor.",
+                    "Quiero otra hoja, por favor.",
+                    "Quiero una goma, por favor.",
+                    "Quiero una regla, por favor."
+                  ],
+                  "answer": "Quiero una hoja, por favor.",
+                  "explanation": "\"Quiero una hoja, por favor.\" means \"I want a sheet of paper, please\". \"Quiero\" says what you want, and the other choices change the thing you ask for."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -8359,7 +9918,39 @@
                 "Quiero un guineo.",
                 "Yo quisiera una banana."
               ],
-              "explanation": "\"Quiero un plátano.\" uses quiero (I want) with un, because plátano is masculine; in many countries you will also hear \"una banana\" or \"un banano\"."
+              "explanation": "\"Quiero un plátano.\" uses quiero (I want) with un, because plátano is masculine; in many countries you will also hear \"una banana\" or \"un banano\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you want a bottle of water.",
+                  "acceptableAnswers": [
+                    "Quiero una botella de agua.",
+                    "Yo quiero una botella de agua.",
+                    "Quisiera una botella de agua.",
+                    "Me gustaría una botella de agua."
+                  ],
+                  "explanation": "\"Quiero una botella de agua.\" means \"I want a bottle of water\". \"Quiero\" is the direct way to say what you want, and \"un\" or \"una\" agrees with the noun."
+                },
+                "work": {
+                  "prompt": "Say that you want a cup of tea.",
+                  "acceptableAnswers": [
+                    "Quiero una taza de té.",
+                    "Yo quiero una taza de té.",
+                    "Quisiera una taza de té.",
+                    "Me gustaría una taza de té."
+                  ],
+                  "explanation": "\"Quiero una taza de té.\" means \"I want a cup of tea\". \"Quiero\" is the direct way to say what you want, and \"un\" or \"una\" agrees with the noun."
+                },
+                "school": {
+                  "prompt": "Say that you want a sandwich.",
+                  "acceptableAnswers": [
+                    "Quiero un sándwich.",
+                    "Yo quiero un sándwich.",
+                    "Quisiera un sándwich.",
+                    "Me gustaría un sándwich."
+                  ],
+                  "explanation": "\"Quiero un sándwich.\" means \"I want a sandwich\". \"Quiero\" is the direct way to say what you want, and \"un\" or \"una\" agrees with the noun."
+                }
+              }
             }
           ]
         },
@@ -9502,7 +11093,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Quiero más agua, por favor",
-              "explanation": "The phrase \"Quiero más agua, por favor\" means 'I want more water, please'; \"más\" means more."
+              "explanation": "The phrase \"Quiero más agua, por favor\" means 'I want more water, please'; \"más\" means more.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Quiero más información, por favor.",
+                  "explanation": "\"Quiero más información, por favor.\" means \"I want more information, please\". \"más\" means more, and \"por favor\" keeps the request polite."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Quiero más tiempo, por favor.",
+                  "explanation": "\"Quiero más tiempo, por favor.\" means \"I want more time, please\". \"más\" means more, and \"por favor\" keeps the request polite."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Quiero más ejemplos, por favor.",
+                  "explanation": "\"Quiero más ejemplos, por favor.\" means \"I want more examples, please\". \"más\" means more, and \"por favor\" keeps the request polite."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -9629,7 +11237,39 @@
                 "Tengo bastante plata.",
                 "Tengo plata suficiente."
               ],
-              "explanation": "\"Tengo suficiente dinero.\" uses \"suficiente\" (enough) before the noun, and you can drop the subject \"yo\" because \"tengo\" already shows who is speaking."
+              "explanation": "\"Tengo suficiente dinero.\" uses \"suficiente\" (enough) before the noun, and you can drop the subject \"yo\" because \"tengo\" already shows who is speaking.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say that you have enough money for the trip.",
+                  "acceptableAnswers": [
+                    "Tengo suficiente dinero para el viaje.",
+                    "Tengo dinero suficiente para el viaje.",
+                    "Tengo bastante dinero para el viaje.",
+                    "Me alcanza el dinero para el viaje."
+                  ],
+                  "explanation": "\"Tengo suficiente dinero para el viaje.\" means \"I have enough money for the trip\". \"suficiente\" means enough and stays the same with any noun; \"para\" says what the money is for."
+                },
+                "work": {
+                  "prompt": "Say that you have enough money for the project.",
+                  "acceptableAnswers": [
+                    "Tengo suficiente dinero para el proyecto.",
+                    "Tengo dinero suficiente para el proyecto.",
+                    "Tengo bastante dinero para el proyecto.",
+                    "Me alcanza el dinero para el proyecto."
+                  ],
+                  "explanation": "\"Tengo suficiente dinero para el proyecto.\" means \"I have enough money for the project\". \"suficiente\" means enough and stays the same with any noun; \"para\" says what the money is for."
+                },
+                "school": {
+                  "prompt": "Say that you have enough money for the books.",
+                  "acceptableAnswers": [
+                    "Tengo suficiente dinero para los libros.",
+                    "Tengo dinero suficiente para los libros.",
+                    "Tengo bastante dinero para los libros.",
+                    "Me alcanza el dinero para los libros."
+                  ],
+                  "explanation": "\"Tengo suficiente dinero para los libros.\" means \"I have enough money for the books\". \"suficiente\" means enough and stays the same with any noun; \"para\" says what the money is for."
+                }
+              }
             }
           ]
         },
@@ -10204,7 +11844,45 @@
                 "¿Puedes comer más despacio, por favor?"
               ],
               "answer": "¿Puedes hablar más despacio, por favor?",
-              "explanation": "You hear \"¿Puedes hablar más despacio, por favor?\", which politely asks someone to speak more slowly. Listen for the one word that changes in the other choices: louder (\"alto\"), eat (\"comer\"), or \"otra vez\" instead of \"por favor\"."
+              "explanation": "You hear \"¿Puedes hablar más despacio, por favor?\", which politely asks someone to speak more slowly. Listen for the one word that changes in the other choices: louder (\"alto\"), eat (\"comer\"), or \"otra vez\" instead of \"por favor\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "What did you hear?",
+                  "audioText": "¿Puede hablar más despacio, por favor?",
+                  "choices": [
+                    "¿Puede hablar más rápido, por favor?",
+                    "¿Puede hablar más despacio, por favor?",
+                    "¿Puede escribir más despacio, por favor?",
+                    "¿Puede hablar más alto, por favor?"
+                  ],
+                  "answer": "¿Puede hablar más despacio, por favor?",
+                  "explanation": "\"¿Puede hablar más despacio, por favor?\" means \"Can you speak more slowly, please?\" \"Puede\" is the usted form and \"puedes\" the tú form; the other choices change the action or the thing."
+                },
+                "work": {
+                  "prompt": "What did you hear?",
+                  "audioText": "¿Puede enviar el correo, por favor?",
+                  "choices": [
+                    "¿Puede enviar el informe, por favor?",
+                    "¿Puede leer el correo, por favor?",
+                    "¿Puede abrir el correo, por favor?",
+                    "¿Puede enviar el correo, por favor?"
+                  ],
+                  "answer": "¿Puede enviar el correo, por favor?",
+                  "explanation": "\"¿Puede enviar el correo, por favor?\" means \"Can you send the email, please?\" \"Puede\" is the usted form and \"puedes\" the tú form; the other choices change the action or the thing."
+                },
+                "school": {
+                  "prompt": "What did you hear?",
+                  "audioText": "¿Puedes abrir la ventana, por favor?",
+                  "choices": [
+                    "¿Puedes abrir la puerta, por favor?",
+                    "¿Puedes abrir la ventana, por favor?",
+                    "¿Puedes cerrar la ventana, por favor?",
+                    "¿Puedes abrir la mochila, por favor?"
+                  ],
+                  "answer": "¿Puedes abrir la ventana, por favor?",
+                  "explanation": "\"¿Puedes abrir la ventana, por favor?\" means \"Can you open the window, please?\" \"Puede\" is the usted form and \"puedes\" the tú form; the other choices change the action or the thing."
+                }
+              }
             },
             {
               "id": "sx1",
@@ -11283,7 +12961,39 @@
                 "Espérate aquí.",
                 "Espérate acá."
               ],
-              "explanation": "\"Espera aquí.\" uses espera, the tú command of esperar (to wait), plus aquí (here), because you are talking to a friend."
+              "explanation": "\"Espera aquí.\" uses espera, the tú command of esperar (to wait), plus aquí (here), because you are talking to a friend.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Tell a friend to wait at the hotel.",
+                  "acceptableAnswers": [
+                    "Espera en el hotel.",
+                    "Espera en el hotel, por favor.",
+                    "Por favor, espera en el hotel.",
+                    "¿Puedes esperar en el hotel?"
+                  ],
+                  "explanation": "\"Espera en el hotel.\" means \"Wait at the hotel\". With a friend you use the tú command, which for \"esperar\" is \"espera\", and \"en\" gives the place."
+                },
+                "work": {
+                  "prompt": "Tell a colleague (use tú) to wait in the office.",
+                  "acceptableAnswers": [
+                    "Espera en la oficina.",
+                    "Espera en la oficina, por favor.",
+                    "Por favor, espera en la oficina.",
+                    "¿Puedes esperar en la oficina?"
+                  ],
+                  "explanation": "\"Espera en la oficina.\" means \"Wait in the office\". With a friend you use the tú command, which for \"esperar\" is \"espera\", and \"en\" gives the place."
+                },
+                "school": {
+                  "prompt": "Tell a classmate to wait in the library.",
+                  "acceptableAnswers": [
+                    "Espera en la biblioteca.",
+                    "Espera en la biblioteca, por favor.",
+                    "Por favor, espera en la biblioteca.",
+                    "¿Puedes esperar en la biblioteca?"
+                  ],
+                  "explanation": "\"Espera en la biblioteca.\" means \"Wait in the library\". With a friend you use the tú command, which for \"esperar\" is \"espera\", and \"en\" gives the place."
+                }
+              }
             }
           ]
         },
@@ -11386,7 +13096,24 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Cierra la puerta, por favor.",
-              "explanation": "\"Cierra la puerta, por favor.\" uses cierra, the tú command of cerrar (to close), plus por favor to make the request polite."
+              "explanation": "\"Cierra la puerta, por favor.\" uses cierra, the tú command of cerrar (to close), plus por favor to make the request polite.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Abre la maleta, por favor.",
+                  "explanation": "\"Abre la maleta, por favor.\" means \"Open the suitcase, please\". With a friend you use the tú command, and \"por favor\" keeps it polite."
+                },
+                "work": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Abre el archivo, por favor.",
+                  "explanation": "\"Abre el archivo, por favor.\" means \"Open the file, please\". With a friend you use the tú command, and \"por favor\" keeps it polite."
+                },
+                "school": {
+                  "prompt": "Say this aloud:",
+                  "answer": "Abre tu cuaderno, por favor.",
+                  "explanation": "\"Abre tu cuaderno, por favor.\" means \"Open your notebook, please\". With a friend you use the tú command, and \"por favor\" keeps it polite."
+                }
+              }
             },
             {
               "id": "tx1",
@@ -11400,7 +13127,39 @@
                 "Cierra la ventana ahora.",
                 "Cierra esa ventana."
               ],
-              "explanation": "\"Cierra la ventana.\" uses cierra, the tú command of cerrar ('to close'), plus la ventana, 'the window'."
+              "explanation": "\"Cierra la ventana.\" uses cierra, the tú command of cerrar ('to close'), plus la ventana, 'the window'.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Tell a friend to close the suitcase.",
+                  "acceptableAnswers": [
+                    "Cierra la maleta.",
+                    "Cierra la maleta, por favor.",
+                    "Por favor, cierra la maleta.",
+                    "¿Puedes cerrar la maleta?"
+                  ],
+                  "explanation": "\"Cierra la maleta.\" means \"Close the suitcase\". With a friend you use the tú command, which for \"cerrar\" is \"cierra\"."
+                },
+                "work": {
+                  "prompt": "Tell a colleague (use tú) to close the door.",
+                  "acceptableAnswers": [
+                    "Cierra la puerta.",
+                    "Cierra la puerta, por favor.",
+                    "Por favor, cierra la puerta.",
+                    "¿Puedes cerrar la puerta?"
+                  ],
+                  "explanation": "\"Cierra la puerta.\" means \"Close the door\". With a friend you use the tú command, which for \"cerrar\" is \"cierra\"."
+                },
+                "school": {
+                  "prompt": "Tell a classmate to close the book.",
+                  "acceptableAnswers": [
+                    "Cierra el libro.",
+                    "Cierra el libro, por favor.",
+                    "Por favor, cierra el libro.",
+                    "¿Puedes cerrar el libro?"
+                  ],
+                  "explanation": "\"Cierra el libro.\" means \"Close the book\". With a friend you use the tú command, which for \"cerrar\" is \"cierra\"."
+                }
+              }
             }
           ]
         },
@@ -12058,7 +13817,39 @@
                 "¿Dónde queda el baño?",
                 "¿Dónde puedo encontrar el baño?"
               ],
-              "explanation": "\"¿Dónde está el baño?\" uses estar because Spanish uses estar to give the location of things. \"Baño\" is the usual word for bathroom in Latin America."
+              "explanation": "\"¿Dónde está el baño?\" uses estar because Spanish uses estar to give the location of things. \"Baño\" is the usual word for bathroom in Latin America.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Ask where the airport is.",
+                  "acceptableAnswers": [
+                    "¿Dónde está el aeropuerto?",
+                    "¿Dónde queda el aeropuerto?",
+                    "¿Dónde se encuentra el aeropuerto?",
+                    "¿Sabes dónde está el aeropuerto?"
+                  ],
+                  "explanation": "\"¿Dónde está el aeropuerto?\" means \"Where is the airport?\" \"Dónde está\" asks where something is, and the article agrees with the noun."
+                },
+                "work": {
+                  "prompt": "Ask where the meeting room is.",
+                  "acceptableAnswers": [
+                    "¿Dónde está la sala de reuniones?",
+                    "¿Dónde queda la sala de reuniones?",
+                    "¿Dónde se encuentra la sala de reuniones?",
+                    "¿Sabes dónde está la sala de reuniones?"
+                  ],
+                  "explanation": "\"¿Dónde está la sala de reuniones?\" means \"Where is the meeting room?\" \"Dónde está\" asks where something is, and the article agrees with the noun."
+                },
+                "school": {
+                  "prompt": "Ask where the library is.",
+                  "acceptableAnswers": [
+                    "¿Dónde está la biblioteca?",
+                    "¿Dónde queda la biblioteca?",
+                    "¿Dónde se encuentra la biblioteca?",
+                    "¿Sabes dónde está la biblioteca?"
+                  ],
+                  "explanation": "\"¿Dónde está la biblioteca?\" means \"Where is the library?\" \"Dónde está\" asks where something is, and the article agrees with the noun."
+                }
+              }
             },
             {
               "id": "esa1p27q6",
@@ -12082,7 +13873,39 @@
                 "¿Puede repetir, por favor?",
                 "¿Puede repetirlo, por favor?"
               ],
-              "explanation": "\"¿Puedes repetir eso?\" uses poder plus an infinitive to make a request, here in the friendly tú form. With a stranger, say \"¿Puede repetir, por favor?\""
+              "explanation": "\"¿Puedes repetir eso?\" uses poder plus an infinitive to make a request, here in the friendly tú form. With a stranger, say \"¿Puede repetir, por favor?\"",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Ask the hotel receptionist (use usted) to repeat the price, please.",
+                  "acceptableAnswers": [
+                    "¿Puede repetir el precio, por favor?",
+                    "¿Podría repetir el precio, por favor?",
+                    "¿Me puede repetir el precio, por favor?",
+                    "Repita el precio, por favor."
+                  ],
+                  "explanation": "\"¿Puede repetir el precio, por favor?\" means \"Can you repeat the price, please?\" \"puede\" is the usted form and \"puedes\" the tú form, so the register follows who you talk to."
+                },
+                "work": {
+                  "prompt": "Ask your boss (use usted) to repeat the date, please.",
+                  "acceptableAnswers": [
+                    "¿Puede repetir la fecha, por favor?",
+                    "¿Podría repetir la fecha, por favor?",
+                    "¿Me puede repetir la fecha, por favor?",
+                    "Repita la fecha, por favor."
+                  ],
+                  "explanation": "\"¿Puede repetir la fecha, por favor?\" means \"Can you repeat the date, please?\" \"puede\" is the usted form and \"puedes\" the tú form, so the register follows who you talk to."
+                },
+                "school": {
+                  "prompt": "Ask a classmate (use tú) to repeat the homework, please.",
+                  "acceptableAnswers": [
+                    "¿Puedes repetir la tarea, por favor?",
+                    "¿Podrías repetir la tarea, por favor?",
+                    "¿Me puedes repetir la tarea, por favor?",
+                    "Repite la tarea, por favor."
+                  ],
+                  "explanation": "\"¿Puedes repetir la tarea, por favor?\" means \"Can you repeat the homework, please?\" \"puede\" is the usted form and \"puedes\" the tú form, so the register follows who you talk to."
+                }
+              }
             },
             {
               "id": "esa1p27q8",
@@ -12157,7 +13980,39 @@
                 "¿Tiene la hora?",
                 "¿Me dice qué hora es?"
               ],
-              "explanation": "\"¿Qué hora es?\" uses the singular \"es\" because you are asking about the hour itself; the answer changes to \"son\" for most times, as in \"Son las tres\"."
+              "explanation": "\"¿Qué hora es?\" uses the singular \"es\" because you are asking about the hour itself; the answer changes to \"son\" for most times, as in \"Son las tres\".",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Ask what time the flight leaves.",
+                  "acceptableAnswers": [
+                    "¿A qué hora sale el vuelo?",
+                    "¿A qué hora despega el vuelo?",
+                    "¿A qué hora es el vuelo?",
+                    "¿A qué hora sale el avión?"
+                  ],
+                  "explanation": "\"¿A qué hora sale el vuelo?\" means \"What time does the flight leave?\" \"A qué hora\" asks at what time, and the verb agrees with the thing you ask about."
+                },
+                "work": {
+                  "prompt": "Ask what time the meeting starts.",
+                  "acceptableAnswers": [
+                    "¿A qué hora empieza la reunión?",
+                    "¿A qué hora comienza la reunión?",
+                    "¿A qué hora es la reunión?",
+                    "¿A qué hora será la reunión?"
+                  ],
+                  "explanation": "\"¿A qué hora empieza la reunión?\" means \"What time does the meeting start?\" \"A qué hora\" asks at what time, and the verb agrees with the thing you ask about."
+                },
+                "school": {
+                  "prompt": "Ask what time the class starts.",
+                  "acceptableAnswers": [
+                    "¿A qué hora empieza la clase?",
+                    "¿A qué hora comienza la clase?",
+                    "¿A qué hora es la clase?",
+                    "¿A qué hora será la clase?"
+                  ],
+                  "explanation": "\"¿A qué hora empieza la clase?\" means \"What time does the class start?\" \"A qué hora\" asks at what time, and the verb agrees with the thing you ask about."
+                }
+              }
             },
             {
               "id": "esa1p27q14",
@@ -12281,7 +14136,39 @@
                 "¿Cuánto es?",
                 "¿Qué precio tiene?"
               ],
-              "explanation": "\"¿Cuánto cuesta?\" means \"How much does it cost?\"; use \"¿Cuánto cuestan?\" for more than one thing. Note the accent on \"cuánto\" in questions."
+              "explanation": "\"¿Cuánto cuesta?\" means \"How much does it cost?\"; use \"¿Cuánto cuestan?\" for more than one thing. Note the accent on \"cuánto\" in questions.",
+              "goalVariants": {
+                "travel": {
+                  "prompt": "Ask how much the room costs.",
+                  "acceptableAnswers": [
+                    "¿Cuánto cuesta la habitación?",
+                    "¿Cuánto vale la habitación?",
+                    "¿Cuál es el precio de la habitación?",
+                    "¿Cuánto es la habitación?"
+                  ],
+                  "explanation": "\"¿Cuánto cuesta la habitación?\" means \"How much does the room cost?\" \"Cuánto cuesta\" asks the price of one thing, and it needs no extra word for \"it\"."
+                },
+                "work": {
+                  "prompt": "Ask how much the printer costs.",
+                  "acceptableAnswers": [
+                    "¿Cuánto cuesta la impresora?",
+                    "¿Cuánto vale la impresora?",
+                    "¿Cuál es el precio de la impresora?",
+                    "¿Cuánto es la impresora?"
+                  ],
+                  "explanation": "\"¿Cuánto cuesta la impresora?\" means \"How much does the printer cost?\" \"Cuánto cuesta\" asks the price of one thing, and it needs no extra word for \"it\"."
+                },
+                "school": {
+                  "prompt": "Ask how much the dictionary costs.",
+                  "acceptableAnswers": [
+                    "¿Cuánto cuesta el diccionario?",
+                    "¿Cuánto vale el diccionario?",
+                    "¿Cuál es el precio del diccionario?",
+                    "¿Cuánto es el diccionario?"
+                  ],
+                  "explanation": "\"¿Cuánto cuesta el diccionario?\" means \"How much does the dictionary cost?\" \"Cuánto cuesta\" asks the price of one thing, and it needs no extra word for \"it\"."
+                }
+              }
             },
             {
               "id": "esa1p27q24",
