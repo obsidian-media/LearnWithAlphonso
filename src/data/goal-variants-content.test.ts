@@ -219,7 +219,7 @@ for (const course of ["en", "fr", "es"] as const) {
 // keep serving the base question). Add a level here in the PR that adds its content.
 const SHIPPED: Record<"en" | "fr" | "es", string[]> = {
   en: ["A1", "A2"],
-  fr: [],
+  fr: ["A1"],
   es: ["A2"],
 };
 
