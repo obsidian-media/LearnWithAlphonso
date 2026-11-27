@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { ForYouRail } from "../../components/learn/ForYouRail";
+import { RehearsalHero } from "../../components/learn/PinnedRehearsal";
 import { PathCards } from "../../components/learn/PathCards";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
@@ -423,6 +424,8 @@ function LearnPage() {
           />
         )}
 
+        {/* On the day of a rehearsed event, the 2-minute warm-up leads Learn (absent every other day). */}
+        <RehearsalHero course={course} />
         {climb && (
           <LearnMap
             map={climb}

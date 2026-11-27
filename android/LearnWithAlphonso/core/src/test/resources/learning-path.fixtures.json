@@ -1746,6 +1746,7 @@
       {
         "kind": "stage",
         "rehearsalId": "11111111-1111-4111-8111-111111111111",
+        "eventKind": "interview",
         "stage": "conversation",
         "title": "The real conversation",
         "subtitle": "Job interview rehearsal",
@@ -2206,6 +2207,7 @@
       {
         "kind": "warmup_today",
         "rehearsalId": "11111111-1111-4111-8111-111111111111",
+        "eventKind": "interview",
         "stage": "warmup",
         "title": "2-minute warm-up before your interview",
         "subtitle": "The key phrases, one more time",

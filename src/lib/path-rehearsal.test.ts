@@ -69,6 +69,7 @@ describe("path: the pinned rehearsal item (Rehearsals, slice 3)", () => {
     expect(p.pinned).toHaveLength(1);
     expect(p.pinned[0]).toMatchObject({
       kind: "stage",
+      eventKind: "interview",
       stage: "conversation",
       rehearsalId: rehearsal().id,
       hero: false,

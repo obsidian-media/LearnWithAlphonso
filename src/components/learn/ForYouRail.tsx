@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
-import { Icon } from "@/components/ds/Blocks";
+import { useState } from "react";
 import type { Course } from "@/data/courses";
 import { usePath } from "@/lib/learning-path-client";
 import { pathGoalCard } from "@/lib/path-goal-card";
@@ -10,32 +9,8 @@ import { useWeeklyQuests } from "@/lib/use-weekly-quests";
 import { TeamMissionCard } from "../TeamMissionCard";
 import { WeeklyChallengesCard } from "../WeeklyChallengesCard";
 import { WeeklyQuestsCard } from "../WeeklyQuestsCard";
-
-const CARD =
-  "relative flex min-h-11 w-[104px] shrink-0 flex-col gap-1 rounded-2xl border-2 border-ds-line bg-ds-card px-2.5 py-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice";
-
-function CardBody({
-  icon,
-  label,
-  value,
-  badge,
-}: {
-  icon: string;
-  label: string;
-  value: string;
-  badge?: ReactNode;
-}) {
-  return (
-    <>
-      <Icon name={icon} size={28} />
-      <span className="ds-type-footnote block font-extrabold leading-tight text-ds-ink">
-        {label}
-      </span>
-      <span className="ds-type-caption block leading-tight text-ds-ink-soft">{value}</span>
-      {badge}
-    </>
-  );
-}
+import { CARD, CardBody } from "./RailCard";
+import { RehearsalRailCard } from "./RehearsalRailCard";
 
 /**
  * Learn's "For you" rail: Review, the goal path, the team mission and this week's challenges as one row of small
@@ -170,6 +145,8 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
             />
           </button>
         )}
+        {/* Last, so Review stays first. Absent unless the server has Rehearsals on. */}
+        <RehearsalRailCard course={course} />
       </div>
       <div id="for-you-detail" data-sheet>
         {open === "team" && showTeam ? <TeamMissionCard nested /> : null}

@@ -199,6 +199,8 @@ export type RehearsalPathInput = {
 export type PinnedItem = {
   kind: "stage" | "warmup_today" | "followup";
   rehearsalId: string;
+  /** What the rehearsal is for, so a screen can say "Interview today" without parsing the title. */
+  eventKind: EventKind;
   stage: Stage | null;
   title: string;
   subtitle: string;
@@ -630,6 +632,7 @@ export function rehearsalPinned(
       {
         kind: "followup",
         rehearsalId: r.id,
+        eventKind: r.eventKind,
         stage: null,
         title: "How did it go?",
         subtitle: `Your ${noun}`,
@@ -643,6 +646,7 @@ export function rehearsalPinned(
       {
         kind: "warmup_today",
         rehearsalId: r.id,
+        eventKind: r.eventKind,
         stage: "warmup",
         title: `${WARMUP_TODAY_MINUTES}-minute warm-up before your ${noun}`,
         subtitle: "The key phrases, one more time",
@@ -662,6 +666,7 @@ export function rehearsalPinned(
     {
       kind: "stage",
       rehearsalId: r.id,
+      eventKind: r.eventKind,
       stage: r.nextStage,
       title: STAGE_LABELS[r.nextStage],
       subtitle: `${EVENT_KIND_LABELS[r.eventKind]} rehearsal`,
