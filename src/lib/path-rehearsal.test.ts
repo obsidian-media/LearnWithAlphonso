@@ -59,7 +59,7 @@ const rehearsal = (over: Partial<RehearsalPathInput> = {}): RehearsalPathInput =
   ...over,
 });
 
-describe("path: the pinned rehearsal item (Rehearsals, slice 3)", () => {
+describe("path: the pinned rehearsal item ", () => {
   it("has no pinned item without a rehearsal", () => {
     expect(planPath(input()).pinned).toEqual([]);
   });
@@ -108,6 +108,14 @@ describe("path: the pinned rehearsal item (Rehearsals, slice 3)", () => {
     const p = planPath(input({ now: new Date("2026-11-17T10:00:00Z"), rehearsal: rehearsal() }));
     expect(p.pinned).toHaveLength(1);
     expect(p.pinned[0]).toMatchObject({ kind: "followup", stage: null, title: "How did it go?" });
+  });
+
+  it("asks on day 3 after the event (the last day) and not on day 4", () => {
+    // The event is 2026-11-16: day 3 is the 19th, day 4 the 20th (a Friday, a study day).
+    const on = (day: string) =>
+      planPath(input({ now: new Date(`${day}T10:00:00Z`), rehearsal: rehearsal() })).pinned;
+    expect(on("2026-11-19")[0]?.kind).toBe("followup");
+    expect(on("2026-11-20")).toEqual([]);
   });
 
   it("stops asking after a few days, so an unanswered question does not nag", () => {

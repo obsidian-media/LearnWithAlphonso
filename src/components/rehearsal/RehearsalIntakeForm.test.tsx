@@ -113,6 +113,15 @@ describe("RehearsalIntakeForm (stepped, four screens)", () => {
     );
   });
 
+  it("the Skip tap target is at least 44px (min-h-11)", async () => {
+    const user = userEvent.setup();
+    render(<RehearsalIntakeForm course="en" onCreated={vi.fn()} />);
+    await toStep3(user);
+    await user.type(screen.getByLabelText("Who will you be talking to?"), "x");
+    await user.click(next());
+    expect(screen.getByRole("button", { name: "Skip" }).className).toMatch(/min-h-11/);
+  });
+
   it("days before today cannot be picked", async () => {
     const user = userEvent.setup();
     render(<RehearsalIntakeForm course="en" onCreated={vi.fn()} today="2026-11-26" />);

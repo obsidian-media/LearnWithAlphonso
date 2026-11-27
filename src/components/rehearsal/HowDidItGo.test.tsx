@@ -54,6 +54,27 @@ describe("HowDidItGo (four taps, no words)", () => {
     expect(screen.getByText("Alphonso can help you practise those parts")).toBeInTheDocument();
   });
 
+  it("the moved-date line names the plan's actual next stage, not a fixed one", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(
+      <HowDidItGo
+        rehearsal={rehearsal}
+        nextStage="hard_moments"
+        onDone={onDone}
+        today="2026-12-02"
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: /It didn.t happen/ }));
+    expect(screen.getByText(/The hard moments comes back before the new date/)).toBeInTheDocument();
+    expect(screen.queryByText(/Stage 2/)).toBeNull();
+    unmount();
+    render(
+      <HowDidItGo rehearsal={rehearsal} nextStage="warmup" onDone={onDone} today="2026-12-02" />,
+    );
+    await user.click(screen.getByRole("button", { name: /It didn.t happen/ }));
+    expect(screen.getByText(/Warm-up comes back before the new date/)).toBeInTheDocument();
+  });
+
   it("'moved' opens the date picker and sends the new date, keeping the rehearsal going", async () => {
     const user = userEvent.setup();
     render(<HowDidItGo rehearsal={rehearsal} onDone={onDone} today="2026-12-02" />);

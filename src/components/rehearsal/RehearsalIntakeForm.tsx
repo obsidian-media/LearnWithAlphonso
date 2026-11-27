@@ -268,7 +268,7 @@ export function RehearsalIntakeForm({
               type="button"
               disabled={busy}
               onClick={() => void submit(false)}
-              className="rounded-full px-3 py-3 ds-type-footnote font-semibold text-ds-ink-soft"
+              className="min-h-11 min-w-11 rounded-full px-3 py-3 ds-type-footnote font-semibold text-ds-ink-soft"
             >
               Skip
             </button>

@@ -26,6 +26,20 @@ describe("RehearsalPaywallSheet (the Pro sheet at the entry tap)", () => {
     expect(screen.getByText(/Recaps and Alphonso.s memory stay free/)).toBeInTheDocument();
   });
 
+  it("is a real modal: focus moves in, Escape and the backdrop close it, no raw black backdrop", async () => {
+    const onClose = vi.fn();
+    const user = userEvent.setup();
+    render(<RehearsalPaywallSheet done={done} onClose={onClose} />);
+    expect(screen.getByRole("dialog").contains(document.activeElement)).toBe(true);
+    const backdrop = document.querySelector("[data-modal-backdrop]") as HTMLElement;
+    expect(backdrop.className).not.toMatch(/black/);
+    await user.click(backdrop);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    screen.getByRole("button", { name: "Not now" }).focus();
+    await user.keyboard("{Escape}");
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
   it("'Not now' closes it, with equal weight to 'See Pro'", async () => {
     const onClose = vi.fn();
     const user = userEvent.setup();

@@ -8,7 +8,12 @@ import {
 } from "@/lib/rehearsal-api";
 import { REHEARSAL_ERROR_TEXT } from "@/lib/rehearsal-copy";
 import { addDaysTo, localToday, longDay, shortDay } from "@/lib/rehearsal-dates";
-import { EVENT_KIND_LABELS, type OutcomeChoice } from "@/lib/rehearsal-rules";
+import {
+  EVENT_KIND_LABELS,
+  STAGE_LABELS,
+  type OutcomeChoice,
+  type Stage,
+} from "@/lib/rehearsal-rules";
 import { MonthPicker } from "./MonthPicker";
 
 const TAPS: { choice: Exclude<OutcomeChoice, "moved">; label: string; sub?: string }[] = [
@@ -25,10 +30,13 @@ const TAPS: { choice: Exclude<OutcomeChoice, "moved">; label: string; sub?: stri
 export function HowDidItGo({
   rehearsal,
   onDone,
+  nextStage = null,
   today = localToday(),
 }: {
   rehearsal: Rehearsal;
   onDone: () => void;
+  /** The stage the plan offers next (the server's), so the moved-date line names the real one. */
+  nextStage?: Stage | null;
   today?: string;
 }) {
   const [moving, setMoving] = useState(false);
@@ -62,7 +70,9 @@ export function HowDidItGo({
         <div className="flex flex-col gap-3">
           <h2 className="ds-type-headline font-semibold text-ds-ink">When is it now?</h2>
           <p className="ds-type-footnote text-ds-ink-soft">
-            Your rehearsal continues. Stage 2 comes back before the new date.
+            Your rehearsal continues.{" "}
+            {nextStage ? `${STAGE_LABELS[nextStage]} comes back` : "It comes back"} before the new
+            date.
           </p>
           <MonthPicker value={date} min={addDaysTo(today, 1)} onChange={setDate} />
           <button

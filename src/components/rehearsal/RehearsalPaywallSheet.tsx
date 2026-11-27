@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { paywallSummary } from "@/lib/rehearsal-copy";
 import type { EventKind } from "@/lib/rehearsal-rules";
+import { Modal } from "../Modal";
 import { WebPaywallSheet } from "../WebPaywall";
 
 /**
@@ -16,26 +17,20 @@ export function RehearsalPaywallSheet({
   onClose: () => void;
 }) {
   const [pro, setPro] = useState(false);
-  const closeRef = useRef(onClose);
-  closeRef.current = onClose;
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeRef.current();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
 
   if (pro) return <WebPaywallSheet source="rehearsal_entry" onClose={onClose} />;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Rehearsals are part of Pro"
-        className="w-full max-w-md rounded-t-3xl bg-ds-surface px-5 pb-8 pt-6"
-      >
-        <h2 className="font-display ds-type-title font-semibold text-ds-ink">
+    <Modal
+      labelledBy="rehearsal-pro-title"
+      onEscape={onClose}
+      onBackdrop={onClose}
+      className="w-full max-w-md rounded-t-3xl bg-ds-surface px-5 pb-8 pt-6 sm:rounded-3xl"
+    >
+      <div>
+        <h2
+          id="rehearsal-pro-title"
+          className="font-display ds-type-title font-semibold text-ds-ink"
+        >
           Rehearsals are part of Pro
         </h2>
         <p className="mt-1 ds-type-headline font-semibold text-ds-ink">
@@ -67,6 +62,6 @@ export function RehearsalPaywallSheet({
           settings.
         </p>
       </div>
-    </div>
+    </Modal>
   );
 }

@@ -90,13 +90,13 @@ vi.mock("../../components/learn/ForYouRail", () => ({
   ),
 }));
 
-// The event-day hero comes from the path; this page test only checks what the page does with it.
-const heroPinned = vi.hoisted(() => ({ current: null as null | Record<string, unknown> }));
-vi.mock("../../components/learn/PinnedRehearsal", () => ({
-  useHeroPinned: () => heroPinned.current,
-  RehearsalHero: () => <section aria-label="Rehearsal today">2-minute warm-up</section>,
-  PinnedRows: () => null,
+// The event-day hero comes from the path (the REAL RehearsalHero and useHeroPinned run; only the path client is
+// stood in). PathCards has its own tests and would need a whole path here.
+const pathState = vi.hoisted(() => ({ current: { kind: "loading" } as Record<string, unknown> }));
+vi.mock("../../lib/learning-path-client", () => ({
+  usePath: () => ({ state: pathState.current }),
 }));
+vi.mock("../../components/learn/PathCards", () => ({ PathCards: () => null }));
 
 const { Route } = await import("./learn");
 const { useProgress } = await import("../../lib/progress");
@@ -128,21 +128,46 @@ beforeEach(() => {
   useProgress.getState().reset();
   sessionUser.current = { id: "u1" };
   localStorage.removeItem("lwa.placementOfferDismissed.v1.en");
-  heroPinned.current = null;
+  pathState.current = { kind: "loading" };
 });
 
-describe("Learn page: the event-day hero", () => {
-  it("on the event day the warm-up REPLACES the lesson map, and the next day the map is back", async () => {
-    heroPinned.current = { kind: "warmup_today", stage: "warmup", hero: true };
-    const first = renderPage();
-    expect(await screen.findByRole("region", { name: "Rehearsal today" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Continue lesson" })).toBeNull();
+describe("Learn page: the event-day hero (real components)", () => {
+  const warm = {
+    kind: "warmup_today",
+    rehearsalId: "11111111-1111-4111-8111-111111111111",
+    eventKind: "interview",
+    stage: "warmup",
+    title: "2-minute warm-up before your interview",
+    subtitle: "The key phrases, one more time",
+    minutes: 2,
+    hero: true,
+  };
+
+  it("on the event day the warm-up REPLACES the lesson map", async () => {
+    pathState.current = { kind: "ready", path: { pinned: [warm] } };
+    renderPage();
+    expect(await screen.findByRole("link", { name: "Start 2 minutes" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("/rehearse/11111111-1111-4111-8111-111111111111/"),
+    );
+    expect(screen.getByText("Interview today")).toBeInTheDocument();
     expect(screen.queryByText("Ready for today's lesson?")).toBeNull();
-    first.unmount();
-    heroPinned.current = null;
+  });
+
+  it.each([
+    ["no pinned item", { kind: "ready", path: { pinned: [] } }],
+    ["an older path with no pinned list", { kind: "ready", path: {} }],
+    ["the path still loading", { kind: "loading" }],
+    [
+      "an ordinary rehearsal day",
+      { kind: "ready", path: { pinned: [{ ...warm, hero: false, kind: "stage" }] } },
+    ],
+  ])("with %s the page is the ordinary Learn page, with its map", async (_n, state) => {
+    pathState.current = state;
     renderPage();
     expect(await screen.findByText("Ready for today's lesson?")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Rehearsal today" })).toBeNull();
+    expect(screen.queryByText("2-minute warm-up")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Start 2 minutes" })).toBeNull();
   });
 });
 

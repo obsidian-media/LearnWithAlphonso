@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { ForYouRail } from "../../components/learn/ForYouRail";
-import { RehearsalHero } from "../../components/learn/PinnedRehearsal";
+import { RehearsalHero, useHeroPinned } from "../../components/learn/PinnedRehearsal";
 import { PathCards } from "../../components/learn/PathCards";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
@@ -175,6 +175,7 @@ function LearnPage() {
   const placementTakenAt = useProgress((s) => s.placementTakenAt);
   const setCefrLevelLocal = useProgress((s) => s.setCefrLevelLocal);
   const course = useProgress((s) => s.course);
+  const heroPinned = useHeroPinned(course);
   const setCourse = useProgress((s) => s.setCourse);
   const hydrate = useProgress((s) => s.hydrate);
   const setLoading = useProgress((s) => s.setLoading);
@@ -424,9 +425,9 @@ function LearnPage() {
           />
         )}
 
-        {/* On the day of a rehearsed event, the 2-minute warm-up leads Learn (absent every other day). */}
-        <RehearsalHero course={course} />
-        {climb && (
+        {/* On the day of a rehearsed event the 2-minute warm-up TAKES the hero from the lesson map, that day only. */}
+        {heroPinned && <RehearsalHero item={heroPinned} />}
+        {!heroPinned && climb && (
           <LearnMap
             map={climb}
             greeting={

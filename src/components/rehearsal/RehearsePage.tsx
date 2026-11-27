@@ -85,7 +85,14 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
         />
       );
     if (active.eventDate && today > active.eventDate)
-      return <HowDidItGo rehearsal={active} today={today} onDone={() => void load()} />;
+      return (
+        <HowDidItGo
+          rehearsal={active}
+          nextStage={state.nextStage}
+          today={today}
+          onDone={() => void load()}
+        />
+      );
     return (
       <ActiveRehearsal
         rehearsal={active}
