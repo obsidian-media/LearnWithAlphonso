@@ -52,6 +52,8 @@ describe("help centre", () => {
     expect(body).toMatch(/never the words you said/);
     expect(body).toMatch(/data export/);
     expect(body).toMatch(/Delete this rehearsal/);
+    expect(body).toMatch(/does not remove what each rehearsal call added to Alphonso's memory/);
+    expect(body).toMatch(/clear Alphonso's memory in Settings/);
     expect(body).toMatch(/There is no score/);
   });
 
