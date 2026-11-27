@@ -150,6 +150,20 @@ for (const course of ["en", "fr", "es"] as const) {
                 `${lessonId}:${q.id} ${goal}: quotes "${parts[k]}", which is not in its own version`,
               );
           }
+          // Unquoted examples after the last colon of a French or Spanish note (not a cloze, whose explanation ends with the filled sentence) ("...agrees with the noun: sous le lit.") must be this version's too.
+          const afterColon =
+            course !== "en" &&
+            !String(b.prompt).includes("___") &&
+            String(b.explanation).includes(": ")
+              ? String(b.explanation).split(": ").pop()!
+              : "";
+          for (const item of afterColon.replace(/["'.?!]+\s*$/g, "").split(/,\s*/)) {
+            const f = fold(item.replace(/"/g, ""));
+            if (f && !afterColon.includes('"') && f.split(" ").length <= 4 && !own.includes(f))
+              failures.push(
+                `${lessonId}:${q.id} ${goal}: the note ends with "${item}", which is not in its own version`,
+              );
+          }
         }
       expect(failures).toEqual([]);
     });
@@ -206,7 +220,7 @@ for (const course of ["en", "fr", "es"] as const) {
 const SHIPPED: Record<"en" | "fr" | "es", string[]> = {
   en: ["A1", "A2"],
   fr: [],
-  es: [],
+  es: ["A2"],
 };
 
 describe("which course-levels ship goal variants", () => {
