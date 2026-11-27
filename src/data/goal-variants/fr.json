@@ -197,7 +197,7 @@
           "Le rapport est en dessous du dossier.",
           "Le rapport est placé sous le dossier."
         ],
-        "explanation": "\"Le rapport est sous le dossier.\" means \"The report is under the folder\". \"sous\" means under and is followed by the article and the noun: sous le lit."
+        "explanation": "\"Le rapport est sous le dossier.\" means \"The report is under the folder\". \"sous\" means under and is followed by the article and the noun: sous le dossier."
       },
       "school": {
         "prompt": "Say that the backpack is under the desk.",
@@ -207,7 +207,7 @@
           "Le sac à dos est en dessous du bureau.",
           "Le sac à dos est placé sous le bureau."
         ],
-        "explanation": "\"Le sac à dos est sous le bureau.\" means \"The backpack is under the desk\". \"sous\" means under and is followed by the article and the noun: sous le lit."
+        "explanation": "\"Le sac à dos est sous le bureau.\" means \"The backpack is under the desk\". \"sous\" means under and is followed by the article and the noun: sous le bureau."
       }
     }
   },
@@ -231,7 +231,7 @@
           "Le bureau n'est pas près de ma maison.",
           "Le bureau est assez loin de ma maison."
         ],
-        "explanation": "\"Le bureau est loin de ma maison.\" means \"The office is far from my house\". \"loin de\" joins with the article that follows: \"de\" and \"ma\" before maison."
+        "explanation": "\"Le bureau est loin de ma maison.\" means \"The office is far from my house\". \"loin de\" is followed by the possessive \"ma\" before maison, so \"de\" stays as it is."
       },
       "school": {
         "prompt": "Say that the library is far from the school.",
@@ -863,7 +863,7 @@
           "J'aime prendre des photos pendant les vacances.",
           "En vacances, j'aime prendre des photos."
         ],
-        "explanation": "\"J'aime prendre des photos en vacances.\" means \"I like taking photos on vacation\". After \"aimer\" a second verb stays in the infinitive: aimer dessiner, aimer prendre."
+        "explanation": "\"J'aime prendre des photos en vacances.\" means \"I like taking photos on vacation\". After \"aimer\" a second verb stays in the infinitive: j'aime prendre."
       },
       "work": {
         "prompt": "Say that you like drawing during meetings.",
@@ -873,7 +873,7 @@
           "J'aime dessiner pendant la réunion.",
           "Pendant les réunions, j'aime dessiner."
         ],
-        "explanation": "\"J'aime dessiner pendant les réunions.\" means \"I like drawing during meetings\". After \"aimer\" a second verb stays in the infinitive: aimer dessiner, aimer prendre."
+        "explanation": "\"J'aime dessiner pendant les réunions.\" means \"I like drawing during meetings\". After \"aimer\" a second verb stays in the infinitive: j'aime dessiner."
       },
       "school": {
         "prompt": "Say that you like drawing in class.",
@@ -883,7 +883,7 @@
           "J'aime dessiner dans la classe.",
           "En classe, j'aime dessiner."
         ],
-        "explanation": "\"J'aime dessiner en classe.\" means \"I like drawing in class\". After \"aimer\" a second verb stays in the infinitive: aimer dessiner, aimer prendre."
+        "explanation": "\"J'aime dessiner en classe.\" means \"I like drawing in class\". After \"aimer\" a second verb stays in the infinitive: j'aime dessiner."
       }
     }
   },
@@ -1023,17 +1023,17 @@
       "travel": {
         "prompt": "Say this aloud:",
         "answer": "Excusez-moi, parlez-vous anglais ici ?",
-        "explanation": "\"Excusez-moi, parlez-vous anglais ici ?\" means \"Excuse me, do you speak English here\". \"Parlez-vous\" is the polite question: vous, with the verb first."
+        "explanation": "\"Excusez-moi, parlez-vous anglais ici ?\" means \"Excuse me, do you speak English here\". \"Parlez-vous\" is the polite question, with the verb before vous."
       },
       "work": {
         "prompt": "Say this aloud:",
         "answer": "Monsieur le directeur, parlez-vous anglais ?",
-        "explanation": "\"Monsieur le directeur, parlez-vous anglais ?\" means \"Sir, do you speak English\". \"Parlez-vous\" is the polite question: vous, with the verb first."
+        "explanation": "\"Monsieur le directeur, parlez-vous anglais ?\" means \"Sir, do you speak English\". \"Parlez-vous\" is the polite question, with the verb before vous."
       },
       "school": {
         "prompt": "Say this aloud:",
         "answer": "Madame, parlez-vous anglais en classe ?",
-        "explanation": "\"Madame, parlez-vous anglais en classe ?\" means \"Madam, do you speak English in class\". \"Parlez-vous\" is the polite question: vous, with the verb first."
+        "explanation": "\"Madame, parlez-vous anglais en classe ?\" means \"Madam, do you speak English in class\". \"Parlez-vous\" is the polite question, with the verb before vous."
       }
     }
   },
@@ -1206,7 +1206,7 @@
           "Où se trouve l'aéroport ?",
           "Où se situe l'aéroport ?"
         ],
-        "explanation": "\"Où est l'aéroport ?\" means \"Where is the airport?\" \"Où est\" asks where something is, and the article agrees with the noun: la, le or l'."
+        "explanation": "\"Où est l'aéroport ?\" means \"Where is the airport?\" \"Où est\" asks where something is, and the article agrees with the noun, here \"l'\" before a vowel."
       },
       "work": {
         "prompt": "Ask where the meeting room is.",
@@ -1216,7 +1216,7 @@
           "Où se trouve la salle de réunion ?",
           "Où se situe la salle de réunion ?"
         ],
-        "explanation": "\"Où est la salle de réunion ?\" means \"Where is the meeting room?\" \"Où est\" asks where something is, and the article agrees with the noun: la, le or l'."
+        "explanation": "\"Où est la salle de réunion ?\" means \"Where is the meeting room?\" \"Où est\" asks where something is, and the article agrees with the noun, here \"la\" before a feminine word."
       },
       "school": {
         "prompt": "Ask where the cafeteria is.",
@@ -1226,7 +1226,7 @@
           "Où se trouve la cantine ?",
           "Où se situe la cantine ?"
         ],
-        "explanation": "\"Où est la cantine ?\" means \"Where is the cafeteria?\" \"Où est\" asks where something is, and the article agrees with the noun: la, le or l'."
+        "explanation": "\"Où est la cantine ?\" means \"Where is the cafeteria?\" \"Où est\" asks where something is, and the article agrees with the noun, here \"la\" before a feminine word."
       }
     }
   },
@@ -1780,7 +1780,7 @@
           "J'aimerais acheter une nouvelle imprimante.",
           "Je souhaite acheter une nouvelle imprimante."
         ],
-        "explanation": "\"Je veux acheter une nouvelle imprimante.\" means \"I want to buy a new printer\". \"acheter\" takes its object directly, with no preposition: acheter un billet."
+        "explanation": "\"Je veux acheter une nouvelle imprimante.\" means \"I want to buy a new printer\". \"acheter\" takes its object directly, with no preposition: acheter une nouvelle imprimante."
       },
       "school": {
         "prompt": "Say that you want to buy a French dictionary.",
@@ -1790,7 +1790,7 @@
           "J'aimerais acheter un dictionnaire de français.",
           "Je souhaite acheter un dictionnaire de français."
         ],
-        "explanation": "\"Je veux acheter un dictionnaire de français.\" means \"I want to buy a French dictionary\". \"acheter\" takes its object directly, with no preposition: acheter un billet."
+        "explanation": "\"Je veux acheter un dictionnaire de français.\" means \"I want to buy a French dictionary\". \"acheter\" takes its object directly, with no preposition: acheter un dictionnaire."
       }
     }
   },
