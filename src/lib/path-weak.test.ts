@@ -430,7 +430,7 @@ describe("the category to lesson mapping (path v2, B)", () => {
     expect((path.fix?.items ?? []).some((i) => i.title.startsWith("Refresher"))).toBe(false);
   });
 
-  it("only the English course reads weakness_events (they have no course): a French learner is not sent to a French unit for them", () => {
+  it("a French learner's French weak-spot events make a refresher (the loader scopes them to the course)", () => {
     const path = buildLearningPath(
       baseData({
         course: "fr",
@@ -438,7 +438,26 @@ describe("the category to lesson mapping (path v2, B)", () => {
         weak: {
           reviewDue: [],
           weaknessEvents: [1, 2, 3].map((d) => ({
-            category: "prepositions",
+            category: "gender-agreement",
+            eventType: "detected",
+            createdAt: `2026-11-0${d}T09:00:00.000Z`,
+          })),
+          mistakes: [],
+        },
+      }),
+    )!;
+    expect((path.fix?.items ?? []).some((i) => i.title.startsWith("Refresher"))).toBe(true);
+  });
+
+  it("an event whose category is not a topic of the course is ignored", () => {
+    const path = buildLearningPath(
+      baseData({
+        course: "fr",
+        completions: completedAll("fr"),
+        weak: {
+          reviewDue: [],
+          weaknessEvents: [1, 2, 3].map((d) => ({
+            category: "plurals",
             eventType: "detected",
             createdAt: `2026-11-0${d}T09:00:00.000Z`,
           })),
