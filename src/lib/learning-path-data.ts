@@ -106,7 +106,7 @@ export type PathData = {
   weak?: {
     /** Review items due today or earlier on this course. `weaknessLabel` is the call-mistake topic one came from. */
     reviewDue: { itemKey: string; weaknessLabel: string | null }[];
-    /** weakness_events rows (no course column: the English taxonomy, so only the English course reads them). */
+    /** weakness_events rows of this course (the loader filters on the course column). */
     weaknessEvents: { category: string; eventType: string; createdAt: string }[];
     /** tutor_memory "mistake" lines of this course. */
     mistakes: { topic: string; seenCount: number; createdAt: string; lastSeenAt: string }[];
@@ -195,19 +195,17 @@ function weakInput(
   );
   const dueTopics = new Set(w.reviewDue.flatMap((r) => (r.weaknessLabel ? [r.weaknessLabel] : [])));
 
-  // Category counts. weakness_events carry no course and use the English taxonomy, so only the English course reads
-  // them; detected minus resolved, like the Hector memory rule. A call-mistake line counts as many times as it was
+  // Category counts. weakness_events are read per course (the loader filters on the course column) and a category only
+  // counts when it is a topic of this course; detected minus resolved, like the Hector memory rule. A call-mistake line counts as many times as it was
   // seen when all of those sightings fall inside the window, otherwise once (it was seen again lately).
   const counts = new Map<string, number>();
-  if (course === "en") {
-    const net = new Map<string, number>();
-    for (const e of w.weaknessEvents) {
-      if (Date.parse(e.createdAt) < since) continue;
-      net.set(e.category, (net.get(e.category) ?? 0) + (e.eventType === "detected" ? 1 : -1));
-    }
-    for (const [category, n] of net)
-      if (n > 0 && topicLabel(course, category)) counts.set(category, n);
+  const net = new Map<string, number>();
+  for (const e of w.weaknessEvents) {
+    if (Date.parse(e.createdAt) < since) continue;
+    net.set(e.category, (net.get(e.category) ?? 0) + (e.eventType === "detected" ? 1 : -1));
   }
+  for (const [category, n] of net)
+    if (n > 0 && topicLabel(course, category)) counts.set(category, n);
   for (const m of mistakes) {
     const n = Date.parse(m.createdAt) >= since ? m.seenCount : 1;
     counts.set(m.topic, Math.max(counts.get(m.topic) ?? 0, n));
