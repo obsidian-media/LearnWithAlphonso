@@ -1,1 +1,1871 @@
-{}
+{
+  "fra1p10l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that your sister is a flight attendant.",
+        "acceptableAnswers": [
+          "Ma sœur est hôtesse de l'air.",
+          "Ma sœur est agente de bord.",
+          "Ma sœur travaille comme hôtesse de l'air.",
+          "Ma sœur travaille comme agente de bord."
+        ],
+        "explanation": "\"Ma sœur est hôtesse de l'air.\" means \"My sister is a flight attendant\". After \"être\" a job needs no \"un\" or \"une\", and the job word changes with the person."
+      },
+      "work": {
+        "prompt": "Say that your sister is an engineer.",
+        "acceptableAnswers": [
+          "Ma sœur est ingénieure.",
+          "Ma sœur est ingénieur.",
+          "Ma sœur travaille comme ingénieure.",
+          "Ma sœur travaille comme ingénieur."
+        ],
+        "explanation": "\"Ma sœur est ingénieure.\" means \"My sister is an engineer\". After \"être\" a job needs no \"un\" or \"une\", and the job word changes with the person."
+      },
+      "school": {
+        "prompt": "Say that your sister is a teacher.",
+        "acceptableAnswers": [
+          "Ma sœur est professeure.",
+          "Ma sœur est professeur.",
+          "Ma sœur est enseignante.",
+          "Ma sœur travaille comme professeure."
+        ],
+        "explanation": "\"Ma sœur est professeure.\" means \"My sister is a teacher\". After \"être\" a job needs no \"un\" or \"une\", and the job word changes with the person."
+      }
+    }
+  },
+  "fra1p10l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Je suis guide dans un musée.",
+        "explanation": "\"Je suis guide dans un musée.\" means \"I am a guide in a museum\". After \"je suis\" a job needs no \"un\" or \"une\"."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Je suis ingénieur dans une entreprise.",
+        "explanation": "\"Je suis ingénieur dans une entreprise.\" means \"I am an engineer in a company\". After \"je suis\" a job needs no \"un\" or \"une\"."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Je suis étudiant dans une école de langues.",
+        "explanation": "\"Je suis étudiant dans une école de langues.\" means \"I am a student in a language school\". After \"je suis\" a job needs no \"un\" or \"une\"."
+      }
+    }
+  },
+  "fra1p11l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Ask the station employee politely when the next train leaves.",
+        "acceptableAnswers": [
+          "Quand part le prochain train, s'il vous plaît ?",
+          "À quelle heure part le prochain train, s'il vous plaît ?",
+          "Le prochain train part quand, s'il vous plaît ?",
+          "Quand est-ce que le prochain train part, s'il vous plaît ?"
+        ],
+        "explanation": "\"Quand part le prochain train, s'il vous plaît ?\" means \"When does the next train leave, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you address as vous."
+      },
+      "work": {
+        "prompt": "Ask your manager politely when the meeting starts.",
+        "acceptableAnswers": [
+          "Quand commence la réunion, s'il vous plaît ?",
+          "À quelle heure commence la réunion, s'il vous plaît ?",
+          "La réunion commence quand, s'il vous plaît ?",
+          "Quand est-ce que la réunion commence, s'il vous plaît ?"
+        ],
+        "explanation": "\"Quand commence la réunion, s'il vous plaît ?\" means \"When does the meeting start, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you address as vous."
+      },
+      "school": {
+        "prompt": "Ask your teacher politely when the class starts.",
+        "acceptableAnswers": [
+          "Quand commence le cours, s'il vous plaît ?",
+          "À quelle heure commence le cours, s'il vous plaît ?",
+          "Le cours commence quand, s'il vous plaît ?",
+          "Quand est-ce que le cours commence, s'il vous plaît ?"
+        ],
+        "explanation": "\"Quand commence le cours, s'il vous plaît ?\" means \"When does the class start, please?\" \"Quand\" opens the question, and \"s'il vous plaît\" keeps it polite with someone you address as vous."
+      }
+    }
+  },
+  "fra1p11l4": {
+    "tx1": {
+      "travel": {
+        "prompt": "Politely ask the hotel receptionist where the elevator is.",
+        "acceptableAnswers": [
+          "Où est l'ascenseur, s'il vous plaît ?",
+          "L'ascenseur est où, s'il vous plaît ?",
+          "Pouvez-vous me dire où est l'ascenseur, s'il vous plaît ?",
+          "Pourriez-vous me dire où se trouve l'ascenseur, s'il vous plaît ?"
+        ],
+        "explanation": "\"Où est l'ascenseur, s'il vous plaît ?\" means \"Where is the elevator, please?\" \"Où est\" asks where something is, and \"vous\" with \"s'il vous plaît\" is the polite form."
+      },
+      "work": {
+        "prompt": "Politely ask the office manager where the printer is.",
+        "acceptableAnswers": [
+          "Où est l'imprimante, s'il vous plaît ?",
+          "L'imprimante est où, s'il vous plaît ?",
+          "Pouvez-vous me dire où est l'imprimante, s'il vous plaît ?",
+          "Pourriez-vous me dire où se trouve l'imprimante, s'il vous plaît ?"
+        ],
+        "explanation": "\"Où est l'imprimante, s'il vous plaît ?\" means \"Where is the printer, please?\" \"Où est\" asks where something is, and \"vous\" with \"s'il vous plaît\" is the polite form."
+      },
+      "school": {
+        "prompt": "Politely ask the librarian where the dictionaries are.",
+        "acceptableAnswers": [
+          "Où sont les dictionnaires, s'il vous plaît ?",
+          "Les dictionnaires sont où, s'il vous plaît ?",
+          "Pouvez-vous me dire où sont les dictionnaires, s'il vous plaît ?",
+          "Pourriez-vous me dire où se trouvent les dictionnaires, s'il vous plaît ?"
+        ],
+        "explanation": "\"Où sont les dictionnaires, s'il vous plaît ?\" means \"Where are the dictionaries, please?\" \"Où est\" asks where something is, and \"vous\" with \"s'il vous plaît\" is the polite form."
+      }
+    }
+  },
+  "fra1p11l5": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Où est la gare, s'il vous plaît ?",
+        "choices": [
+          "Où est la gare, s'il vous plaît ?",
+          "Où est la plage, s'il vous plaît ?",
+          "Où est la poste, s'il vous plaît ?",
+          "Où est la banque, s'il vous plaît ?"
+        ],
+        "answer": "Où est la gare, s'il vous plaît ?",
+        "explanation": "\"Où est la gare, s'il vous plaît ?\" means \"Where is the station, please?\" \"Où est\" asks where something is, and the other choices name a different place."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Où est la salle de réunion ?",
+        "choices": [
+          "Où est la salle de classe ?",
+          "Où est la salle de réunion ?",
+          "Où est la salle de bain ?",
+          "Où est la salle de sport ?"
+        ],
+        "answer": "Où est la salle de réunion ?",
+        "explanation": "\"Où est la salle de réunion ?\" means \"Where is the meeting room?\" \"Où est\" asks where something is, and the other choices name a different place."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Où est la bibliothèque ?",
+        "choices": [
+          "Où est la bibliothèque ?",
+          "Où est la boulangerie ?",
+          "Où est la pharmacie ?",
+          "Où est la boucherie ?"
+        ],
+        "answer": "Où est la bibliothèque ?",
+        "explanation": "\"Où est la bibliothèque ?\" means \"Where is the library?\" \"Où est\" asks where something is, and the other choices name a different place."
+      }
+    },
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Où est le métro, s'il vous plaît ?",
+        "explanation": "\"Où est le métro, s'il vous plaît ?\" means \"Where is the subway, please\". \"Où est\" asks where something is, and \"s'il vous plaît\" keeps it polite."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Où est la salle de réunion, s'il vous plaît ?",
+        "explanation": "\"Où est la salle de réunion, s'il vous plaît ?\" means \"Where is the meeting room, please\". \"Où est\" asks where something is, and \"s'il vous plaît\" keeps it polite."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Où est la salle de classe, s'il vous plaît ?",
+        "explanation": "\"Où est la salle de classe, s'il vous plaît ?\" means \"Where is the classroom, please\". \"Où est\" asks where something is, and \"s'il vous plaît\" keeps it polite."
+      }
+    }
+  },
+  "fra1p12l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the suitcase is under the bed.",
+        "acceptableAnswers": [
+          "La valise est sous le lit.",
+          "La valise se trouve sous le lit.",
+          "La valise est en dessous du lit.",
+          "La valise est placée sous le lit."
+        ],
+        "explanation": "\"La valise est sous le lit.\" means \"The suitcase is under the bed\". \"sous\" means under and is followed by the article and the noun: sous le lit."
+      },
+      "work": {
+        "prompt": "Say that the report is under the folder.",
+        "acceptableAnswers": [
+          "Le rapport est sous le dossier.",
+          "Le rapport se trouve sous le dossier.",
+          "Le rapport est en dessous du dossier.",
+          "Le rapport est placé sous le dossier."
+        ],
+        "explanation": "\"Le rapport est sous le dossier.\" means \"The report is under the folder\". \"sous\" means under and is followed by the article and the noun: sous le dossier."
+      },
+      "school": {
+        "prompt": "Say that the backpack is under the desk.",
+        "acceptableAnswers": [
+          "Le sac à dos est sous le bureau.",
+          "Le sac à dos se trouve sous le bureau.",
+          "Le sac à dos est en dessous du bureau.",
+          "Le sac à dos est placé sous le bureau."
+        ],
+        "explanation": "\"Le sac à dos est sous le bureau.\" means \"The backpack is under the desk\". \"sous\" means under and is followed by the article and the noun: sous le bureau."
+      }
+    }
+  },
+  "fra1p12l3": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the hotel is far from the station.",
+        "acceptableAnswers": [
+          "L'hôtel est loin de la gare.",
+          "L'hôtel se trouve loin de la gare.",
+          "L'hôtel n'est pas près de la gare.",
+          "L'hôtel est assez loin de la gare."
+        ],
+        "explanation": "\"L'hôtel est loin de la gare.\" means \"The hotel is far from the station\". \"loin de\" joins with the article that follows: \"de la\" before gare."
+      },
+      "work": {
+        "prompt": "Say that the office is far from your house.",
+        "acceptableAnswers": [
+          "Le bureau est loin de ma maison.",
+          "Le bureau se trouve loin de ma maison.",
+          "Le bureau n'est pas près de ma maison.",
+          "Le bureau est assez loin de ma maison."
+        ],
+        "explanation": "\"Le bureau est loin de ma maison.\" means \"The office is far from my house\". \"loin de\" is followed by the possessive \"ma\" before maison, so \"de\" stays as it is."
+      },
+      "school": {
+        "prompt": "Say that the library is far from the school.",
+        "acceptableAnswers": [
+          "La bibliothèque est loin de l'école.",
+          "La bibliothèque se trouve loin de l'école.",
+          "La bibliothèque n'est pas près de l'école.",
+          "La bibliothèque est assez loin de l'école."
+        ],
+        "explanation": "\"La bibliothèque est loin de l'école.\" means \"The library is far from the school\". \"loin de\" joins with the article that follows: \"de l'\" before école."
+      }
+    }
+  },
+  "fra1p13l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the flight leaves at midnight.",
+        "acceptableAnswers": [
+          "Le vol part à minuit.",
+          "Le vol décolle à minuit.",
+          "L'avion part à minuit.",
+          "L'avion décolle à minuit."
+        ],
+        "explanation": "\"Le vol part à minuit.\" means \"The flight leaves at midnight\". \"à\" with a time says when something happens, and \"minuit\" and \"midi\" need no \"heures\"."
+      },
+      "work": {
+        "prompt": "Say that your shift ends at noon.",
+        "acceptableAnswers": [
+          "Mon service finit à midi.",
+          "Mon service se termine à midi.",
+          "Je finis mon service à midi.",
+          "Je termine mon service à midi."
+        ],
+        "explanation": "\"Mon service finit à midi.\" means \"My shift ends at noon\". \"à\" with a time says when something happens, and \"minuit\" and \"midi\" need no \"heures\"."
+      },
+      "school": {
+        "prompt": "Say that your class ends at noon.",
+        "acceptableAnswers": [
+          "Mon cours finit à midi.",
+          "Mon cours se termine à midi.",
+          "Le cours finit à midi.",
+          "Le cours se termine à midi."
+        ],
+        "explanation": "\"Mon cours finit à midi.\" means \"My class ends at noon\". \"à\" with a time says when something happens, and \"minuit\" and \"midi\" need no \"heures\"."
+      }
+    }
+  },
+  "fra1p13l3": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Le train part à huit heures.",
+        "choices": [
+          "Le train part à huit heures.",
+          "Le train part à neuf heures.",
+          "Le train part à sept heures.",
+          "Le train arrive à huit heures."
+        ],
+        "answer": "Le train part à huit heures.",
+        "explanation": "\"Le train part à huit heures.\" means \"The train leaves at eight o'clock\". \"à\" with a time says when it happens, and the other choices change the hour or the event."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "La réunion est à neuf heures.",
+        "choices": [
+          "La réunion est à neuf heures.",
+          "La réunion est à dix heures.",
+          "La réunion est à huit heures.",
+          "Le repas est à neuf heures."
+        ],
+        "answer": "La réunion est à neuf heures.",
+        "explanation": "\"La réunion est à neuf heures.\" means \"The meeting is at nine o'clock\". \"à\" with a time says when it happens, and the other choices change the hour or the event."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Le cours est à dix heures.",
+        "choices": [
+          "Le cours est à dix heures.",
+          "Le cours est à onze heures.",
+          "Le cours est à neuf heures.",
+          "Le cours est à deux heures."
+        ],
+        "answer": "Le cours est à dix heures.",
+        "explanation": "\"Le cours est à dix heures.\" means \"The class is at ten o'clock\". \"à\" with a time says when it happens, and the other choices change the hour or the event."
+      }
+    }
+  },
+  "fra1p13l4": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you are leaving the hotel now.",
+        "acceptableAnswers": [
+          "Je pars de l'hôtel maintenant.",
+          "Je quitte l'hôtel maintenant.",
+          "Maintenant, je pars de l'hôtel.",
+          "Je pars de l'hôtel à présent."
+        ],
+        "explanation": "\"Je pars de l'hôtel maintenant.\" means \"I am leaving the hotel now\". \"partir\" takes \"de\" before the place you leave, and \"maintenant\" means now."
+      },
+      "work": {
+        "prompt": "Say that you are leaving the office now.",
+        "acceptableAnswers": [
+          "Je pars du bureau maintenant.",
+          "Je quitte le bureau maintenant.",
+          "Maintenant, je pars du bureau.",
+          "Je pars du bureau à présent."
+        ],
+        "explanation": "\"Je pars du bureau maintenant.\" means \"I am leaving the office now\". \"partir\" takes \"de\" before the place you leave, and \"maintenant\" means now."
+      },
+      "school": {
+        "prompt": "Say that you are leaving school now.",
+        "acceptableAnswers": [
+          "Je pars de l'école maintenant.",
+          "Je quitte l'école maintenant.",
+          "Maintenant, je pars de l'école.",
+          "Je pars de l'école à présent."
+        ],
+        "explanation": "\"Je pars de l'école maintenant.\" means \"I am leaving school now\". \"partir\" takes \"de\" before the place you leave, and \"maintenant\" means now."
+      }
+    }
+  },
+  "fra1p13l5": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Je me lève tôt pour visiter la ville.",
+        "explanation": "\"Je me lève tôt pour visiter la ville.\" means \"I get up early to visit the city\". \"se lever\" is reflexive, so \"me\" comes before the verb, and \"tôt\" means early."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Je me lève tôt pour aller au bureau.",
+        "explanation": "\"Je me lève tôt pour aller au bureau.\" means \"I get up early to go to the office\". \"se lever\" is reflexive, so \"me\" comes before the verb, and \"tôt\" means early."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Je me lève tôt pour aller à l'école.",
+        "explanation": "\"Je me lève tôt pour aller à l'école.\" means \"I get up early to go to school\". \"se lever\" is reflexive, so \"me\" comes before the verb, and \"tôt\" means early."
+      }
+    }
+  },
+  "fra1p14l3": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Je voudrais réserver une chambre.",
+        "choices": [
+          "Je voudrais réserver une chambre.",
+          "Je voudrais réserver une table.",
+          "Je voudrais changer une chambre.",
+          "Je voudrais réserver une suite."
+        ],
+        "answer": "Je voudrais réserver une chambre.",
+        "explanation": "\"Je voudrais réserver une chambre.\" means \"I would like to book a room\". \"Je voudrais\" is the polite way to ask, and the other choices change the verb or the thing."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Je voudrais acheter un ordinateur.",
+        "choices": [
+          "Je voudrais acheter un téléphone.",
+          "Je voudrais acheter un ordinateur.",
+          "Je voudrais vendre un ordinateur.",
+          "Je voudrais louer un ordinateur."
+        ],
+        "answer": "Je voudrais acheter un ordinateur.",
+        "explanation": "\"Je voudrais acheter un ordinateur.\" means \"I would like to buy a computer\". \"Je voudrais\" is the polite way to ask, and the other choices change the verb or the thing."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Je voudrais acheter un cahier.",
+        "choices": [
+          "Je voudrais acheter un livre.",
+          "Je voudrais acheter un cahier.",
+          "Je voudrais vendre un cahier.",
+          "Je voudrais acheter un crayon."
+        ],
+        "answer": "Je voudrais acheter un cahier.",
+        "explanation": "\"Je voudrais acheter un cahier.\" means \"I would like to buy a notebook\". \"Je voudrais\" is the polite way to ask, and the other choices change the verb or the thing."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you would like to buy a postcard at the kiosk.",
+        "acceptableAnswers": [
+          "Je voudrais acheter une carte postale au kiosque.",
+          "Je veux acheter une carte postale au kiosque.",
+          "J'aimerais acheter une carte postale au kiosque.",
+          "Au kiosque, je voudrais acheter une carte postale."
+        ],
+        "explanation": "\"Je voudrais acheter une carte postale au kiosque.\" means \"I would like to buy a postcard at the kiosk\". \"à\" joins with the article that follows: \"au\" before a masculine word like kiosque."
+      },
+      "work": {
+        "prompt": "Say that you would like to buy office supplies at the store.",
+        "acceptableAnswers": [
+          "Je voudrais acheter des fournitures de bureau au magasin.",
+          "Je veux acheter des fournitures de bureau au magasin.",
+          "J'aimerais acheter des fournitures de bureau au magasin.",
+          "Au magasin, je voudrais acheter des fournitures de bureau."
+        ],
+        "explanation": "\"Je voudrais acheter des fournitures de bureau au magasin.\" means \"I would like to buy office supplies at the store\". \"à\" joins with the article that follows: \"au\" before a masculine word like magasin."
+      },
+      "school": {
+        "prompt": "Say that you would like to buy a notebook at the bookstore.",
+        "acceptableAnswers": [
+          "Je voudrais acheter un cahier à la librairie.",
+          "Je veux acheter un cahier à la librairie.",
+          "J'aimerais acheter un cahier à la librairie.",
+          "À la librairie, je voudrais acheter un cahier."
+        ],
+        "explanation": "\"Je voudrais acheter un cahier à la librairie.\" means \"I would like to buy a notebook at the bookstore\". \"à\" joins with the article that follows: \"à la\" before a feminine word like librairie."
+      }
+    }
+  },
+  "fra1p14l4": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Je cherche mon passeport et mon billet.",
+        "explanation": "\"Je cherche mon passeport et mon billet.\" means \"I am looking for my passport and my ticket\". The possessive agrees with the noun: \"mon\" before a masculine word, \"ma\" before a feminine one."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Je cherche mon ordinateur et mon badge.",
+        "explanation": "\"Je cherche mon ordinateur et mon badge.\" means \"I am looking for my computer and my badge\". The possessive agrees with the noun: \"mon\" before a masculine word, \"ma\" before a feminine one."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Je cherche mon sac et mon cahier.",
+        "explanation": "\"Je cherche mon sac et mon cahier.\" means \"I am looking for my bag and my notebook\". The possessive agrees with the noun: \"mon\" before a masculine word, \"ma\" before a feminine one."
+      }
+    }
+  },
+  "fra1p14l5": {
+    "tx1": {
+      "travel": {
+        "prompt": "Tell the hotel receptionist that you would like to pay for the room by card.",
+        "acceptableAnswers": [
+          "Je voudrais payer la chambre par carte.",
+          "Je voudrais payer la chambre avec ma carte.",
+          "Je voudrais régler la chambre par carte.",
+          "Je veux payer la chambre par carte."
+        ],
+        "explanation": "\"Je voudrais payer la chambre par carte.\" means \"I would like to pay for the room by card\". \"payer\" takes the thing you pay for directly, and \"par carte\" says how you pay."
+      },
+      "work": {
+        "prompt": "Tell the cashier that you would like to pay for these supplies by card.",
+        "acceptableAnswers": [
+          "Je voudrais payer ces fournitures par carte.",
+          "Je voudrais payer ces fournitures avec ma carte.",
+          "Je voudrais régler ces fournitures par carte.",
+          "Je veux payer ces fournitures par carte."
+        ],
+        "explanation": "\"Je voudrais payer ces fournitures par carte.\" means \"I would like to pay for these supplies by card\". \"payer\" takes the thing you pay for directly, and \"par carte\" says how you pay."
+      },
+      "school": {
+        "prompt": "Tell the cafeteria cashier that you would like to pay for your lunch by card.",
+        "acceptableAnswers": [
+          "Je voudrais payer mon déjeuner par carte.",
+          "Je voudrais payer mon déjeuner avec ma carte.",
+          "Je voudrais régler mon déjeuner par carte.",
+          "Je veux payer mon déjeuner par carte."
+        ],
+        "explanation": "\"Je voudrais payer mon déjeuner par carte.\" means \"I would like to pay for my lunch by card\". \"payer\" takes the thing you pay for directly, and \"par carte\" says how you pay."
+      }
+    }
+  },
+  "fra1p15l1": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "J'ai une réservation pour deux nuits.",
+        "explanation": "\"J'ai une réservation pour deux nuits.\" means \"I have a reservation for two nights\". \"avoir\" with je becomes \"j'ai\", and \"un\" or \"une\" agrees with the noun."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "J'ai un rendez-vous avec la directrice.",
+        "explanation": "\"J'ai un rendez-vous avec la directrice.\" means \"I have an appointment with the director\". \"avoir\" with je becomes \"j'ai\", and \"un\" or \"une\" agrees with the noun."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "J'ai un cours de maths demain.",
+        "explanation": "\"J'ai un cours de maths demain.\" means \"I have a math class tomorrow\". \"avoir\" with je becomes \"j'ai\", and \"un\" or \"une\" agrees with the noun."
+      }
+    }
+  },
+  "fra1p15l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "At a restaurant in Lyon, tell the waiter politely that you would like the soup.",
+        "acceptableAnswers": [
+          "Je voudrais la soupe, s'il vous plaît.",
+          "Je voudrais prendre la soupe, s'il vous plaît.",
+          "Je prendrai la soupe, s'il vous plaît.",
+          "La soupe, s'il vous plaît."
+        ],
+        "explanation": "\"Je voudrais la soupe, s'il vous plaît.\" means \"I would like the soup, please\". \"Je voudrais\" is the polite way to ask for something, and \"la\" goes with a feminine dish like soupe."
+      },
+      "work": {
+        "prompt": "At a business lunch, tell the waiter politely that you would like the fish.",
+        "acceptableAnswers": [
+          "Je voudrais le poisson, s'il vous plaît.",
+          "Je voudrais prendre le poisson, s'il vous plaît.",
+          "Je prendrai le poisson, s'il vous plaît.",
+          "Le poisson, s'il vous plaît."
+        ],
+        "explanation": "\"Je voudrais le poisson, s'il vous plaît.\" means \"I would like the fish, please\". \"Je voudrais\" is the polite way to ask for something, and \"le\" goes with a masculine dish like poisson."
+      },
+      "school": {
+        "prompt": "At the school cafeteria, tell the server politely that you would like the chicken.",
+        "acceptableAnswers": [
+          "Je voudrais le poulet, s'il vous plaît.",
+          "Je voudrais prendre le poulet, s'il vous plaît.",
+          "Je prendrai le poulet, s'il vous plaît.",
+          "Le poulet, s'il vous plaît."
+        ],
+        "explanation": "\"Je voudrais le poulet, s'il vous plaît.\" means \"I would like the chicken, please\". \"Je voudrais\" is the polite way to ask for something, and \"le\" goes with a masculine dish like poulet."
+      }
+    }
+  },
+  "fra1p15l3": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Je voudrais une chambre, s'il vous plaît.",
+        "explanation": "\"Je voudrais une chambre, s'il vous plaît.\" means \"I would like a room, please\". \"Je voudrais\" is the polite way to ask for something, and \"un\" or \"une\" agrees with the noun."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Je voudrais un rendez-vous, s'il vous plaît.",
+        "explanation": "\"Je voudrais un rendez-vous, s'il vous plaît.\" means \"I would like an appointment, please\". \"Je voudrais\" is the polite way to ask for something, and \"un\" or \"une\" agrees with the noun."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Je voudrais un livre, s'il vous plaît.",
+        "explanation": "\"Je voudrais un livre, s'il vous plaît.\" means \"I would like a book, please\". \"Je voudrais\" is the polite way to ask for something, and \"un\" or \"une\" agrees with the noun."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Politely ask the waiter for a glass of water.",
+        "acceptableAnswers": [
+          "Je voudrais un verre d'eau, s'il vous plaît.",
+          "Un verre d'eau, s'il vous plaît.",
+          "Puis-je avoir un verre d'eau, s'il vous plaît ?",
+          "Pourrais-je avoir un verre d'eau, s'il vous plaît ?"
+        ],
+        "explanation": "\"Je voudrais un verre d'eau, s'il vous plaît.\" means \"I would like a glass of water, please\". After \"un verre\" you add \"de\" or \"d'\" and the drink, with no article."
+      },
+      "work": {
+        "prompt": "At a business lunch, politely ask the waiter for a glass of juice.",
+        "acceptableAnswers": [
+          "Je voudrais un verre de jus, s'il vous plaît.",
+          "Un verre de jus, s'il vous plaît.",
+          "Puis-je avoir un verre de jus, s'il vous plaît ?",
+          "Pourrais-je avoir un verre de jus, s'il vous plaît ?"
+        ],
+        "explanation": "\"Je voudrais un verre de jus, s'il vous plaît.\" means \"I would like a glass of juice, please\". After \"un verre\" you add \"de\" or \"d'\" and the drink, with no article."
+      },
+      "school": {
+        "prompt": "At the school cafeteria, politely ask the server for a glass of milk.",
+        "acceptableAnswers": [
+          "Je voudrais un verre de lait, s'il vous plaît.",
+          "Un verre de lait, s'il vous plaît.",
+          "Puis-je avoir un verre de lait, s'il vous plaît ?",
+          "Pourrais-je avoir un verre de lait, s'il vous plaît ?"
+        ],
+        "explanation": "\"Je voudrais un verre de lait, s'il vous plaît.\" means \"I would like a glass of milk, please\". After \"un verre\" you add \"de\" or \"d'\" and the drink, with no article."
+      }
+    }
+  },
+  "fra1p15l5": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Une chambre pour deux, s'il vous plaît.",
+        "choices": [
+          "Une table pour deux, s'il vous plaît.",
+          "Une chambre pour deux, s'il vous plaît.",
+          "Une chambre pour trois, s'il vous plaît.",
+          "Une chambre pour quatre, s'il vous plaît."
+        ],
+        "answer": "Une chambre pour deux, s'il vous plaît.",
+        "explanation": "\"Une chambre pour deux, s'il vous plaît.\" means \"A room for two, please\". \"s'il vous plaît\" keeps the request polite, and the other choices change the thing or the person."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Un café pour moi, s'il vous plaît.",
+        "choices": [
+          "Un thé pour moi, s'il vous plaît.",
+          "Un café pour moi, s'il vous plaît.",
+          "Un café pour vous, s'il vous plaît.",
+          "Un café pour lui, s'il vous plaît."
+        ],
+        "answer": "Un café pour moi, s'il vous plaît.",
+        "explanation": "\"Un café pour moi, s'il vous plaît.\" means \"A coffee for me, please\". \"s'il vous plaît\" keeps the request polite, and the other choices change the thing or the person."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Un sandwich pour moi, s'il vous plaît.",
+        "choices": [
+          "Un sandwich pour moi, s'il vous plaît.",
+          "Un sandwich pour lui, s'il vous plaît.",
+          "Un jus pour moi, s'il vous plaît.",
+          "Un gâteau pour moi, s'il vous plaît."
+        ],
+        "answer": "Un sandwich pour moi, s'il vous plaît.",
+        "explanation": "\"Un sandwich pour moi, s'il vous plaît.\" means \"A sandwich for me, please\". \"s'il vous plaît\" keeps the request polite, and the other choices change the thing or the person."
+      }
+    }
+  },
+  "fra1p16l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you have a passport and a ticket.",
+        "acceptableAnswers": [
+          "J'ai un passeport et un billet.",
+          "Je possède un passeport et un billet.",
+          "J'ai mon passeport et mon billet.",
+          "Voici un passeport et un billet."
+        ],
+        "explanation": "\"J'ai un passeport et un billet.\" means \"I have a passport and a ticket\". \"un\" goes with a masculine noun and \"une\" with a feminine one, and \"et\" joins the two things."
+      },
+      "work": {
+        "prompt": "Say that you have a laptop and a badge.",
+        "acceptableAnswers": [
+          "J'ai un ordinateur portable et un badge.",
+          "Je possède un ordinateur portable et un badge.",
+          "J'ai mon ordinateur portable et mon badge.",
+          "Voici un ordinateur portable et un badge."
+        ],
+        "explanation": "\"J'ai un ordinateur portable et un badge.\" means \"I have a laptop and a badge\". \"un\" goes with a masculine noun and \"une\" with a feminine one, and \"et\" joins the two things."
+      },
+      "school": {
+        "prompt": "Say that you have a ruler and an eraser.",
+        "acceptableAnswers": [
+          "J'ai une règle et une gomme.",
+          "Je possède une règle et une gomme.",
+          "J'ai ma règle et ma gomme.",
+          "Voici une règle et une gomme."
+        ],
+        "explanation": "\"J'ai une règle et une gomme.\" means \"I have a ruler and an eraser\". \"un\" goes with a masculine noun and \"une\" with a feminine one, and \"et\" joins the two things."
+      }
+    }
+  },
+  "fra1p16l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Le passeport est sur la table.",
+        "explanation": "\"Le passeport est sur la table.\" means \"The passport is on the table\". \"sur\" means on, and the article agrees with the noun."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Le dossier est sur le bureau.",
+        "explanation": "\"Le dossier est sur le bureau.\" means \"The file is on the desk\". \"sur\" means on, and the article agrees with the noun."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Le livre est sur le bureau.",
+        "explanation": "\"Le livre est sur le bureau.\" means \"The book is on the desk\". \"sur\" means on, and the article agrees with the noun."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the key is in the room.",
+        "acceptableAnswers": [
+          "La clé est dans la chambre.",
+          "La clé se trouve dans la chambre.",
+          "La clé est à l'intérieur de la chambre.",
+          "La clé se trouve à l'intérieur de la chambre."
+        ],
+        "explanation": "\"La clé est dans la chambre.\" means \"The key is in the room\". \"dans\" means in or inside, and the article agrees with the place: \"la\" before chambre."
+      },
+      "work": {
+        "prompt": "Say that the report is in the meeting room.",
+        "acceptableAnswers": [
+          "Le rapport est dans la salle de réunion.",
+          "Le rapport se trouve dans la salle de réunion.",
+          "Le rapport est à l'intérieur de la salle de réunion.",
+          "Le rapport se trouve à l'intérieur de la salle de réunion."
+        ],
+        "explanation": "\"Le rapport est dans la salle de réunion.\" means \"The report is in the meeting room\". \"dans\" means in or inside, and the article agrees with the place: \"la\" before salle."
+      },
+      "school": {
+        "prompt": "Say that the dictionary is in the library.",
+        "acceptableAnswers": [
+          "Le dictionnaire est dans la bibliothèque.",
+          "Le dictionnaire se trouve dans la bibliothèque.",
+          "Le dictionnaire est à l'intérieur de la bibliothèque.",
+          "Le dictionnaire se trouve à l'intérieur de la bibliothèque."
+        ],
+        "explanation": "\"Le dictionnaire est dans la bibliothèque.\" means \"The dictionary is in the library\". \"dans\" means in or inside, and the article agrees with the place: \"la\" before bibliothèque."
+      }
+    }
+  },
+  "fra1p16l5": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "J'ai un billet et un passeport.",
+        "choices": [
+          "J'ai un billet et un plan.",
+          "J'ai un plan et un passeport.",
+          "J'ai un billet et un portable.",
+          "J'ai un billet et un passeport."
+        ],
+        "answer": "J'ai un billet et un passeport.",
+        "explanation": "\"J'ai un billet et un passeport.\" means \"I have a ticket and a passport\". \"un\" goes with a masculine noun and \"une\" with a feminine one, and the other choices swap one object."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "J'ai un ordinateur et un badge.",
+        "choices": [
+          "J'ai un ordinateur et un stylo.",
+          "J'ai un téléphone et un badge.",
+          "J'ai un ordinateur et un sac.",
+          "J'ai un ordinateur et un badge."
+        ],
+        "answer": "J'ai un ordinateur et un badge.",
+        "explanation": "\"J'ai un ordinateur et un badge.\" means \"I have a computer and a badge\". \"un\" goes with a masculine noun and \"une\" with a feminine one, and the other choices swap one object."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "J'ai un livre et une règle.",
+        "choices": [
+          "J'ai un cahier et une règle.",
+          "J'ai un livre et une règle.",
+          "J'ai un sac et une règle.",
+          "J'ai un livre et une gomme."
+        ],
+        "answer": "J'ai un livre et une règle.",
+        "explanation": "\"J'ai un livre et une règle.\" means \"I have a book and a ruler\". \"un\" goes with a masculine noun and \"une\" with a feminine one, and the other choices swap one object."
+      }
+    }
+  },
+  "fra1p17l1": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Où est mon billet de train ?",
+        "explanation": "\"Où est mon billet de train ?\" means \"Where is my train ticket\". \"mon\" goes with a masculine noun, and \"Où est\" asks where it is."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Où est mon ordinateur portable ?",
+        "explanation": "\"Où est mon ordinateur portable ?\" means \"Where is my laptop\". \"mon\" goes with a masculine noun, and \"Où est\" asks where it is."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Où est mon cahier de maths ?",
+        "explanation": "\"Où est mon cahier de maths ?\" means \"Where is my math notebook\". \"mon\" goes with a masculine noun, and \"Où est\" asks where it is."
+      }
+    }
+  },
+  "fra1p17l4": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you need a map of the city.",
+        "acceptableAnswers": [
+          "J'ai besoin d'un plan de la ville.",
+          "Il me faut un plan de la ville.",
+          "J'ai besoin d'une carte de la ville.",
+          "Il me faut une carte de la ville."
+        ],
+        "explanation": "\"J'ai besoin d'un plan de la ville.\" means \"I need a map of the city\". The expression avoir besoin de always keeps \"de\", which becomes \"d'\" before \"un\"."
+      },
+      "work": {
+        "prompt": "Say that you need the report for the meeting.",
+        "acceptableAnswers": [
+          "J'ai besoin du rapport pour la réunion.",
+          "Il me faut le rapport pour la réunion.",
+          "Pour la réunion, j'ai besoin du rapport.",
+          "Pour la réunion, il me faut le rapport."
+        ],
+        "explanation": "\"J'ai besoin du rapport pour la réunion.\" means \"I need the report for the meeting\". The expression avoir besoin de always keeps \"de\", which joins with \"le\" to make \"du\"."
+      },
+      "school": {
+        "prompt": "Say that you need the dictionary for the class.",
+        "acceptableAnswers": [
+          "J'ai besoin du dictionnaire pour le cours.",
+          "Il me faut le dictionnaire pour le cours.",
+          "Pour le cours, j'ai besoin du dictionnaire.",
+          "Pour le cours, il me faut le dictionnaire."
+        ],
+        "explanation": "\"J'ai besoin du dictionnaire pour le cours.\" means \"I need the dictionary for the class\". The expression avoir besoin de always keeps \"de\", which joins with \"le\" to make \"du\"."
+      }
+    }
+  },
+  "fra1p17l5": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you are downloading an app for the subway.",
+        "acceptableAnswers": [
+          "Je télécharge une application pour le métro.",
+          "Je télécharge une appli pour le métro.",
+          "Je suis en train de télécharger une application pour le métro.",
+          "Je télécharge une application pour prendre le métro."
+        ],
+        "explanation": "\"Je télécharge une application pour le métro.\" means \"I am downloading an app for the subway\". \"pour\" says what the app is for, and \"télécharger\" is a regular verb in -er."
+      },
+      "work": {
+        "prompt": "Say that you are downloading an app for work.",
+        "acceptableAnswers": [
+          "Je télécharge une application pour le travail.",
+          "Je télécharge une appli pour le travail.",
+          "Je suis en train de télécharger une application pour le travail.",
+          "Je télécharge une application pour travailler."
+        ],
+        "explanation": "\"Je télécharge une application pour le travail.\" means \"I am downloading an app for work\". \"pour\" says what the app is for, and \"télécharger\" is a regular verb in -er."
+      },
+      "school": {
+        "prompt": "Say that you are downloading an app for school.",
+        "acceptableAnswers": [
+          "Je télécharge une application pour l'école.",
+          "Je télécharge une appli pour l'école.",
+          "Je suis en train de télécharger une application pour l'école.",
+          "Je télécharge une application pour étudier."
+        ],
+        "explanation": "\"Je télécharge une application pour l'école.\" means \"I am downloading an app for school\". \"pour\" says what the app is for, and \"télécharger\" is a regular verb in -er."
+      }
+    }
+  },
+  "fra1p18l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you like taking photos on vacation.",
+        "acceptableAnswers": [
+          "J'aime prendre des photos en vacances.",
+          "J'aime faire des photos en vacances.",
+          "J'aime prendre des photos pendant les vacances.",
+          "En vacances, j'aime prendre des photos."
+        ],
+        "explanation": "\"J'aime prendre des photos en vacances.\" means \"I like taking photos on vacation\". After \"aimer\" a second verb stays in the infinitive: j'aime prendre."
+      },
+      "work": {
+        "prompt": "Say that you like drawing during meetings.",
+        "acceptableAnswers": [
+          "J'aime dessiner pendant les réunions.",
+          "J'aime dessiner en réunion.",
+          "J'aime dessiner pendant la réunion.",
+          "Pendant les réunions, j'aime dessiner."
+        ],
+        "explanation": "\"J'aime dessiner pendant les réunions.\" means \"I like drawing during meetings\". After \"aimer\" a second verb stays in the infinitive: j'aime dessiner."
+      },
+      "school": {
+        "prompt": "Say that you like drawing in class.",
+        "acceptableAnswers": [
+          "J'aime dessiner en classe.",
+          "J'aime dessiner pendant le cours.",
+          "J'aime dessiner dans la classe.",
+          "En classe, j'aime dessiner."
+        ],
+        "explanation": "\"J'aime dessiner en classe.\" means \"I like drawing in class\". After \"aimer\" a second verb stays in the infinitive: j'aime dessiner."
+      }
+    }
+  },
+  "fra1p18l2": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "J'aime visiter les parcs le soir.",
+        "choices": [
+          "J'aime visiter les marchés le soir.",
+          "J'aime visiter les parcs le matin.",
+          "J'aime visiter les parcs le soir.",
+          "J'aime vendre les parcs le soir."
+        ],
+        "answer": "J'aime visiter les parcs le soir.",
+        "explanation": "\"J'aime visiter les parcs le soir.\" means \"I like visiting the parks in the evening\". \"J'aime\" is followed by an infinitive, and the other choices change the activity or the time."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "J'aime travailler le matin.",
+        "choices": [
+          "J'aime travailler le soir.",
+          "J'aime cuisiner le matin.",
+          "J'aime travailler le matin.",
+          "J'aime travailler la nuit."
+        ],
+        "answer": "J'aime travailler le matin.",
+        "explanation": "\"J'aime travailler le matin.\" means \"I like working in the morning\". \"J'aime\" is followed by an infinitive, and the other choices change the activity or the time."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "J'aime étudier le soir.",
+        "choices": [
+          "J'aime étudier le matin.",
+          "J'aime lire le soir.",
+          "J'aime étudier la nuit.",
+          "J'aime étudier le soir."
+        ],
+        "answer": "J'aime étudier le soir.",
+        "explanation": "\"J'aime étudier le soir.\" means \"I like studying in the evening\". \"J'aime\" is followed by an infinitive, and the other choices change the activity or the time."
+      }
+    }
+  },
+  "fra1p19l1": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Je suis heureux en vacances.",
+        "explanation": "\"Je suis heureux en vacances.\" means \"I am happy on vacation\". \"heureux\" describes a man, and the place says where you feel that way."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Je suis heureux au travail.",
+        "explanation": "\"Je suis heureux au travail.\" means \"I am happy at work\". \"heureux\" describes a man, and the place says where you feel that way."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Je suis heureux à l'école.",
+        "explanation": "\"Je suis heureux à l'école.\" means \"I am happy at school\". \"heureux\" describes a man, and the place says where you feel that way."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that your friend (a man) is tired after the flight.",
+        "acceptableAnswers": [
+          "Mon ami est fatigué après le vol.",
+          "Après le vol, mon ami est fatigué.",
+          "Mon ami est fatigué après son vol.",
+          "Après son vol, mon ami est fatigué."
+        ],
+        "explanation": "\"Mon ami est fatigué après le vol.\" means \"My friend is tired after the flight\". An adjective agrees with the person: \"fatigué\" for a man, \"fatiguée\" for a woman."
+      },
+      "work": {
+        "prompt": "Say that your colleague (a man) is tired after the meeting.",
+        "acceptableAnswers": [
+          "Mon collègue est fatigué après la réunion.",
+          "Après la réunion, mon collègue est fatigué.",
+          "Mon collègue est fatigué après sa réunion.",
+          "Après sa réunion, mon collègue est fatigué."
+        ],
+        "explanation": "\"Mon collègue est fatigué après la réunion.\" means \"My colleague is tired after the meeting\". An adjective agrees with the person: \"fatigué\" for a man, \"fatiguée\" for a woman."
+      },
+      "school": {
+        "prompt": "Say that your classmate (a boy) is tired after the test.",
+        "acceptableAnswers": [
+          "Mon camarade est fatigué après le contrôle.",
+          "Après le contrôle, mon camarade est fatigué.",
+          "Mon camarade est fatigué après son contrôle.",
+          "Après son contrôle, mon camarade est fatigué."
+        ],
+        "explanation": "\"Mon camarade est fatigué après le contrôle.\" means \"My classmate is tired after the test\". An adjective agrees with the person: \"fatigué\" for a man, \"fatiguée\" for a woman."
+      }
+    }
+  },
+  "fra1p19l5": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Je suis très fatigué après le vol.",
+        "choices": [
+          "Je suis très fatigué après le travail.",
+          "Je suis très fatigué après le vol.",
+          "Je suis très heureux après le vol.",
+          "Je suis très fatigué avant le vol."
+        ],
+        "answer": "Je suis très fatigué après le vol.",
+        "explanation": "\"Je suis très fatigué après le vol.\" means \"I am very tired after the flight\". \"très\" means very, and \"après\" means after: the other choices change the feeling or the moment."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Je suis très fatigué après la réunion.",
+        "choices": [
+          "Je suis très fatigué après le repas.",
+          "Je suis très fatigué après la réunion.",
+          "Je suis très content après la réunion.",
+          "Je suis très fatigué avant la réunion."
+        ],
+        "answer": "Je suis très fatigué après la réunion.",
+        "explanation": "\"Je suis très fatigué après la réunion.\" means \"I am very tired after the meeting\". \"très\" means very, and \"après\" means after: the other choices change the feeling or the moment."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Je suis très fatigué après le contrôle.",
+        "choices": [
+          "Je suis très fatigué après le repas.",
+          "Je suis très fatigué après le contrôle.",
+          "Je suis très content après le contrôle.",
+          "Je suis très fatigué avant le contrôle."
+        ],
+        "answer": "Je suis très fatigué après le contrôle.",
+        "explanation": "\"Je suis très fatigué après le contrôle.\" means \"I am very tired after the test\". \"très\" means very, and \"après\" means after: the other choices change the feeling or the moment."
+      }
+    }
+  },
+  "fra1p1l3": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Excusez-moi, parlez-vous anglais ici ?",
+        "explanation": "\"Excusez-moi, parlez-vous anglais ici ?\" means \"Excuse me, do you speak English here\". \"Parlez-vous\" is the polite question, with the verb before vous."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Monsieur le directeur, parlez-vous anglais ?",
+        "explanation": "\"Monsieur le directeur, parlez-vous anglais ?\" means \"Sir, do you speak English\". \"Parlez-vous\" is the polite question, with the verb before vous."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Madame, parlez-vous anglais en classe ?",
+        "explanation": "\"Madame, parlez-vous anglais en classe ?\" means \"Madam, do you speak English in class\". \"Parlez-vous\" is the polite question, with the verb before vous."
+      }
+    }
+  },
+  "fra1p20l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Je prends le train demain matin.",
+        "choices": [
+          "Je prends le bus demain matin.",
+          "Je prends le train demain matin.",
+          "Je prends le train demain soir.",
+          "Je prends le taxi demain matin."
+        ],
+        "answer": "Je prends le train demain matin.",
+        "explanation": "\"Je prends le train demain matin.\" means \"I am taking the train tomorrow morning\". \"Je prends\" is the verb for catching a vehicle, and the other choices change the vehicle or the goal."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Je prends le métro pour travailler.",
+        "choices": [
+          "Je prends le métro pour travailler.",
+          "Je prends le bus pour travailler.",
+          "Je prends le métro pour étudier.",
+          "Je prends le taxi pour travailler."
+        ],
+        "answer": "Je prends le métro pour travailler.",
+        "explanation": "\"Je prends le métro pour travailler.\" means \"I take the subway to work\". \"Je prends\" is the verb for catching a vehicle, and the other choices change the vehicle or the goal."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Je prends le bus pour aller à l'école.",
+        "choices": [
+          "Je prends le train pour aller à l'école.",
+          "Je prends le bus pour aller à l'école.",
+          "Je prends le bus pour aller au travail.",
+          "Je prends le bus pour aller à Paris."
+        ],
+        "answer": "Je prends le bus pour aller à l'école.",
+        "explanation": "\"Je prends le bus pour aller à l'école.\" means \"I take the bus to go to school\". \"Je prends\" is the verb for catching a vehicle, and the other choices change the vehicle or the goal."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you go to the beach by bike.",
+        "acceptableAnswers": [
+          "Je vais à la plage à vélo.",
+          "Je vais à la plage en vélo.",
+          "Je me rends à la plage à vélo.",
+          "À vélo, je vais à la plage."
+        ],
+        "explanation": "\"Je vais à la plage à vélo.\" means \"I go to the beach by bike\". \"à\" joins with the article of the place, here \"à la\" before plage, and \"à vélo\" says how you go."
+      },
+      "work": {
+        "prompt": "Say that you go to the office by bike.",
+        "acceptableAnswers": [
+          "Je vais au bureau à vélo.",
+          "Je vais au bureau en vélo.",
+          "Je me rends au bureau à vélo.",
+          "À vélo, je vais au bureau."
+        ],
+        "explanation": "\"Je vais au bureau à vélo.\" means \"I go to the office by bike\". \"à\" joins with the article of the place, here \"au\" before bureau, and \"à vélo\" says how you go."
+      },
+      "school": {
+        "prompt": "Say that you go to school by bike.",
+        "acceptableAnswers": [
+          "Je vais à l'école à vélo.",
+          "Je vais à l'école en vélo.",
+          "Je me rends à l'école à vélo.",
+          "À vélo, je vais à l'école."
+        ],
+        "explanation": "\"Je vais à l'école à vélo.\" means \"I go to school by bike\". \"à\" joins with the article of the place, here \"à l'\" before école, and \"à vélo\" says how you go."
+      }
+    }
+  },
+  "fra1p20l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Je prends le train pour Lyon.",
+        "explanation": "\"Je prends le train pour Lyon.\" means \"I take the train to Lyon\". \"prendre\" is the verb for catching a vehicle, and \"pour\" gives the goal."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Je prends le bus pour le bureau.",
+        "explanation": "\"Je prends le bus pour le bureau.\" means \"I take the bus to the office\". \"prendre\" is the verb for catching a vehicle, and \"pour\" gives the goal."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Je prends le bus pour l'école.",
+        "explanation": "\"Je prends le bus pour l'école.\" means \"I take the bus to school\". \"prendre\" is the verb for catching a vehicle, and \"pour\" gives the goal."
+      }
+    }
+  },
+  "fra1p20l3": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you are going to the airport by bus.",
+        "acceptableAnswers": [
+          "Je vais à l'aéroport en bus.",
+          "Je me rends à l'aéroport en bus.",
+          "Je vais à l'aéroport en autobus.",
+          "En bus, je vais à l'aéroport."
+        ],
+        "explanation": "\"Je vais à l'aéroport en bus.\" means \"I am going to the airport by bus\". \"en bus\" says how you travel, and \"à\" joins with the article of the place you are going to."
+      },
+      "work": {
+        "prompt": "Say that you are going to your client's office by bus.",
+        "acceptableAnswers": [
+          "Je vais au bureau de mon client en bus.",
+          "Je me rends au bureau de mon client en bus.",
+          "Je vais au bureau de mon client en autobus.",
+          "En bus, je vais au bureau de mon client."
+        ],
+        "explanation": "\"Je vais au bureau de mon client en bus.\" means \"I am going to my client's office by bus\". \"en bus\" says how you travel, and \"à\" joins with the article of the place you are going to."
+      },
+      "school": {
+        "prompt": "Say that you are going to the university by bus.",
+        "acceptableAnswers": [
+          "Je vais à l'université en bus.",
+          "Je me rends à l'université en bus.",
+          "Je vais à l'université en autobus.",
+          "En bus, je vais à l'université."
+        ],
+        "explanation": "\"Je vais à l'université en bus.\" means \"I am going to the university by bus\". \"en bus\" says how you travel, and \"à\" joins with the article of the place you are going to."
+      }
+    }
+  },
+  "fra1p20l4": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the tourists are traveling by train.",
+        "acceptableAnswers": [
+          "Les touristes voyagent en train.",
+          "Les touristes se déplacent en train.",
+          "Les touristes prennent le train.",
+          "Les touristes prennent le train pour voyager."
+        ],
+        "explanation": "\"Les touristes voyagent en train.\" means \"The tourists are traveling by train\". With a plural subject the verb takes its plural ending: \"voyagent\"."
+      },
+      "work": {
+        "prompt": "Say that the employees are traveling by subway.",
+        "acceptableAnswers": [
+          "Les employés voyagent en métro.",
+          "Les employés se déplacent en métro.",
+          "Les employés prennent le métro.",
+          "Les employés prennent le métro pour voyager."
+        ],
+        "explanation": "\"Les employés voyagent en métro.\" means \"The employees are traveling by subway\". With a plural subject the verb takes its plural ending: \"voyagent\"."
+      },
+      "school": {
+        "prompt": "Say that the students are going to school by bus.",
+        "acceptableAnswers": [
+          "Les élèves vont à l'école en bus.",
+          "Les élèves vont à l'école en autobus.",
+          "Les élèves prennent le bus pour l'école.",
+          "Les élèves se rendent à l'école en bus."
+        ],
+        "explanation": "\"Les élèves vont à l'école en bus.\" means \"The students are going to school by bus\". With a plural subject the verb takes its plural ending: \"vont\"."
+      }
+    }
+  },
+  "fra1p21l1": {
+    "fra1p21q3": {
+      "travel": {
+        "prompt": "Ask where the airport is.",
+        "acceptableAnswers": [
+          "Où est l'aéroport ?",
+          "L'aéroport est où ?",
+          "Où se trouve l'aéroport ?",
+          "Où se situe l'aéroport ?"
+        ],
+        "explanation": "\"Où est l'aéroport ?\" means \"Where is the airport?\" \"Où est\" asks where something is, and the article agrees with the noun, here \"l'\" before a vowel."
+      },
+      "work": {
+        "prompt": "Ask where the meeting room is.",
+        "acceptableAnswers": [
+          "Où est la salle de réunion ?",
+          "La salle de réunion est où ?",
+          "Où se trouve la salle de réunion ?",
+          "Où se situe la salle de réunion ?"
+        ],
+        "explanation": "\"Où est la salle de réunion ?\" means \"Where is the meeting room?\" \"Où est\" asks where something is, and the article agrees with the noun, here \"la\" before a feminine word."
+      },
+      "school": {
+        "prompt": "Ask where the cafeteria is.",
+        "acceptableAnswers": [
+          "Où est la cantine ?",
+          "La cantine est où ?",
+          "Où se trouve la cantine ?",
+          "Où se situe la cantine ?"
+        ],
+        "explanation": "\"Où est la cantine ?\" means \"Where is the cafeteria?\" \"Où est\" asks where something is, and the article agrees with the noun, here \"la\" before a feminine word."
+      }
+    }
+  },
+  "fra1p21l2": {
+    "fra1p21q6": {
+      "travel": {
+        "prompt": "Say that you come from Canada and that you are here on vacation.",
+        "acceptableAnswers": [
+          "Je viens du Canada et je suis en vacances.",
+          "Je viens du Canada, je suis en vacances.",
+          "Je suis du Canada et je suis en vacances.",
+          "Je viens du Canada, je suis ici en vacances."
+        ],
+        "explanation": "\"Je viens du Canada et je suis en vacances.\" means \"I come from Canada and I am on vacation\". \"venir de\" says where you come from, and \"en vacances\" says why you are here."
+      },
+      "work": {
+        "prompt": "Say that you come from Canada and that you are here for work.",
+        "acceptableAnswers": [
+          "Je viens du Canada pour le travail.",
+          "Je viens du Canada pour mon travail.",
+          "Je viens du Canada pour travailler.",
+          "Je suis du Canada et je suis ici pour le travail."
+        ],
+        "explanation": "\"Je viens du Canada pour le travail.\" means \"I come from Canada for work\". \"venir de\" says where you come from, and \"pour\" says why you are here."
+      },
+      "school": {
+        "prompt": "Say that you come from Canada and that you are here to study.",
+        "acceptableAnswers": [
+          "Je viens du Canada pour étudier.",
+          "Je viens du Canada pour mes études.",
+          "Je suis du Canada et je suis ici pour étudier.",
+          "Je suis du Canada et je suis ici pour mes études."
+        ],
+        "explanation": "\"Je viens du Canada pour étudier.\" means \"I come from Canada to study\". \"venir de\" says where you come from, and \"pour\" says why you are here."
+      }
+    }
+  },
+  "fra1p21l3": {
+    "fra1p21q13": {
+      "travel": {
+        "prompt": "Ask what time breakfast is.",
+        "acceptableAnswers": [
+          "À quelle heure est le petit déjeuner ?",
+          "Le petit déjeuner est à quelle heure ?",
+          "À quelle heure sert-on le petit déjeuner ?",
+          "À quelle heure est-ce que le petit déjeuner est servi ?"
+        ],
+        "explanation": "\"À quelle heure est le petit déjeuner ?\" means \"What time is breakfast?\" \"À quelle heure\" means at what time, and \"est\" links the event to its time."
+      },
+      "work": {
+        "prompt": "Ask what time the meeting is.",
+        "acceptableAnswers": [
+          "À quelle heure est la réunion ?",
+          "La réunion est à quelle heure ?",
+          "À quelle heure a lieu la réunion ?",
+          "À quelle heure est-ce que la réunion a lieu ?"
+        ],
+        "explanation": "\"À quelle heure est la réunion ?\" means \"What time is the meeting?\" \"À quelle heure\" means at what time, and \"est\" links the event to its time."
+      },
+      "school": {
+        "prompt": "Ask what time the class is.",
+        "acceptableAnswers": [
+          "À quelle heure est le cours ?",
+          "Le cours est à quelle heure ?",
+          "À quelle heure a lieu le cours ?",
+          "À quelle heure est-ce que le cours a lieu ?"
+        ],
+        "explanation": "\"À quelle heure est le cours ?\" means \"What time is the class?\" \"À quelle heure\" means at what time, and \"est\" links the event to its time."
+      }
+    }
+  },
+  "fra1p21l5": {
+    "fra1p21q21": {
+      "travel": {
+        "prompt": "Ask how much the room costs.",
+        "acceptableAnswers": [
+          "Combien coûte la chambre ?",
+          "La chambre coûte combien ?",
+          "Quel est le prix de la chambre ?",
+          "Combien est-ce que la chambre coûte ?"
+        ],
+        "explanation": "\"Combien coûte la chambre ?\" means \"How much does the room cost?\" \"Combien coûte\" asks the price, and the verb agrees with what you are asking about."
+      },
+      "work": {
+        "prompt": "Ask how much the printer costs.",
+        "acceptableAnswers": [
+          "Combien coûte l'imprimante ?",
+          "L'imprimante coûte combien ?",
+          "Quel est le prix de l'imprimante ?",
+          "Combien est-ce que l'imprimante coûte ?"
+        ],
+        "explanation": "\"Combien coûte l'imprimante ?\" means \"How much does the printer cost?\" \"Combien coûte\" asks the price, and the verb agrees with what you are asking about."
+      },
+      "school": {
+        "prompt": "Ask how much the textbook costs.",
+        "acceptableAnswers": [
+          "Combien coûte le manuel ?",
+          "Le manuel coûte combien ?",
+          "Quel est le prix du manuel ?",
+          "Combien est-ce que le manuel coûte ?"
+        ],
+        "explanation": "\"Combien coûte le manuel ?\" means \"How much does the textbook cost?\" \"Combien coûte\" asks the price, and the verb agrees with what you are asking about."
+      }
+    }
+  },
+  "fra1p2l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you have five euros for the taxi.",
+        "acceptableAnswers": [
+          "J'ai cinq euros pour le taxi.",
+          "Je dispose de cinq euros pour le taxi.",
+          "J'ai cinq euros pour payer le taxi.",
+          "Pour le taxi, j'ai cinq euros."
+        ],
+        "explanation": "\"J'ai cinq euros pour le taxi.\" means \"I have five euros for the taxi\". \"J'ai\" is avoir (to have) after je, and \"pour\" says what the money is for."
+      },
+      "work": {
+        "prompt": "Say that you have five euros for the coffee machine.",
+        "acceptableAnswers": [
+          "J'ai cinq euros pour la machine à café.",
+          "Je dispose de cinq euros pour la machine à café.",
+          "J'ai cinq euros pour payer la machine à café.",
+          "Pour la machine à café, j'ai cinq euros."
+        ],
+        "explanation": "\"J'ai cinq euros pour la machine à café.\" means \"I have five euros for the coffee machine\". \"J'ai\" is avoir (to have) after je, and \"pour\" says what the money is for."
+      },
+      "school": {
+        "prompt": "Say that you have five euros for lunch.",
+        "acceptableAnswers": [
+          "J'ai cinq euros pour le déjeuner.",
+          "Je dispose de cinq euros pour le déjeuner.",
+          "J'ai cinq euros pour payer le déjeuner.",
+          "Pour le déjeuner, j'ai cinq euros."
+        ],
+        "explanation": "\"J'ai cinq euros pour le déjeuner.\" means \"I have five euros for lunch\". \"J'ai\" is avoir (to have) after je, and \"pour\" says what the money is for."
+      }
+    }
+  },
+  "fra1p2l4": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "J'ai douze euros pour le bus.",
+        "explanation": "\"J'ai douze euros pour le bus.\" means \"I have twelve euros for the bus\". \"pour\" says what the money is for, and \"douze\" is twelve."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "J'ai douze euros pour le déjeuner.",
+        "explanation": "\"J'ai douze euros pour le déjeuner.\" means \"I have twelve euros for lunch\". \"pour\" says what the money is for, and \"douze\" is twelve."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "J'ai douze euros pour la cantine.",
+        "explanation": "\"J'ai douze euros pour la cantine.\" means \"I have twelve euros for the cafeteria\". \"pour\" says what the money is for, and \"douze\" is twelve."
+      }
+    }
+  },
+  "fra1p4l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Elle porte un chapeau blanc.",
+        "choices": [
+          "Elle porte un chapeau noir.",
+          "Elle porte un manteau blanc.",
+          "Elle porte un chapeau blanc.",
+          "Il porte un chapeau blanc."
+        ],
+        "answer": "Elle porte un chapeau blanc.",
+        "explanation": "\"Elle porte un chapeau blanc.\" means \"She is wearing a white hat\". The adjective agrees with the noun: \"chapeau\" is masculine, so \"blanc\"."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Elle porte une veste noire.",
+        "choices": [
+          "Elle porte une veste grise.",
+          "Elle porte une veste noire.",
+          "Elle porte une jupe noire.",
+          "Il porte une veste noire."
+        ],
+        "answer": "Elle porte une veste noire.",
+        "explanation": "\"Elle porte une veste noire.\" means \"She is wearing a black jacket\". The adjective agrees with the noun: \"veste\" is feminine, so \"noire\"."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Elle porte un sac bleu.",
+        "choices": [
+          "Elle porte un sac bleu.",
+          "Elle porte un sac vert.",
+          "Elle porte un pull bleu.",
+          "Il porte un sac bleu."
+        ],
+        "answer": "Elle porte un sac bleu.",
+        "explanation": "\"Elle porte un sac bleu.\" means \"She is carrying a blue bag\". The adjective agrees with the noun: \"sac\" is masculine, so \"bleu\"."
+      }
+    }
+  },
+  "fra1p4l2": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the tourist is wearing a white shirt.",
+        "acceptableAnswers": [
+          "Le touriste porte une chemise blanche.",
+          "Le touriste a une chemise blanche.",
+          "Le touriste est en chemise blanche.",
+          "Le touriste met une chemise blanche."
+        ],
+        "explanation": "\"Le touriste porte une chemise blanche.\" means \"The tourist is wearing a white shirt\". The adjective follows the noun and agrees with it: \"chemise\" is feminine, so \"blanche\"."
+      },
+      "work": {
+        "prompt": "Say that the manager is wearing a white shirt.",
+        "acceptableAnswers": [
+          "Le directeur porte une chemise blanche.",
+          "Le directeur a une chemise blanche.",
+          "Le directeur est en chemise blanche.",
+          "Le chef porte une chemise blanche."
+        ],
+        "explanation": "\"Le directeur porte une chemise blanche.\" means \"The manager is wearing a white shirt\". The adjective follows the noun and agrees with it: \"chemise\" is feminine, so \"blanche\"."
+      },
+      "school": {
+        "prompt": "Say that the teacher is wearing a white shirt.",
+        "acceptableAnswers": [
+          "Le professeur porte une chemise blanche.",
+          "Le professeur a une chemise blanche.",
+          "Le professeur est en chemise blanche.",
+          "Le prof porte une chemise blanche."
+        ],
+        "explanation": "\"Le professeur porte une chemise blanche.\" means \"The teacher is wearing a white shirt\". The adjective follows the noun and agrees with it: \"chemise\" is feminine, so \"blanche\"."
+      }
+    }
+  },
+  "fra1p5l1": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Mon vol part vendredi matin.",
+        "explanation": "\"Mon vol part vendredi matin.\" means \"My flight leaves Friday morning\". Without \"le\" a day of the week means that one coming day."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "La réunion est vendredi après-midi.",
+        "explanation": "\"La réunion est vendredi après-midi.\" means \"The meeting is Friday afternoon\". Without \"le\" a day of the week means that one coming day."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Le contrôle est vendredi matin.",
+        "explanation": "\"Le contrôle est vendredi matin.\" means \"The test is Friday morning\". Without \"le\" a day of the week means that one coming day."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that your train leaves on Wednesday.",
+        "acceptableAnswers": [
+          "Mon train part mercredi.",
+          "Le train part mercredi.",
+          "Je pars en train mercredi.",
+          "Mon train quitte la gare mercredi."
+        ],
+        "explanation": "\"Mon train part mercredi.\" means \"My train leaves on Wednesday\". A day of the week with no article means that one coming day: \"mercredi\" is this Wednesday, \"le mercredi\" is every Wednesday."
+      },
+      "work": {
+        "prompt": "Say that the meeting is on Wednesday.",
+        "acceptableAnswers": [
+          "La réunion est mercredi.",
+          "La réunion a lieu mercredi.",
+          "Nous avons une réunion mercredi.",
+          "Il y a une réunion mercredi."
+        ],
+        "explanation": "\"La réunion est mercredi.\" means \"The meeting is on Wednesday\". A day of the week with no article means that one coming day: \"mercredi\" is this Wednesday, \"le mercredi\" is every Wednesday."
+      },
+      "school": {
+        "prompt": "Say that the French test is on Wednesday.",
+        "acceptableAnswers": [
+          "Le contrôle de français est mercredi.",
+          "Le contrôle de français a lieu mercredi.",
+          "Nous avons un contrôle de français mercredi.",
+          "Il y a un contrôle de français mercredi."
+        ],
+        "explanation": "\"Le contrôle de français est mercredi.\" means \"The French test is on Wednesday\". A day of the week with no article means that one coming day: \"mercredi\" is this Wednesday, \"le mercredi\" is every Wednesday."
+      }
+    }
+  },
+  "fra1p6l1": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "J'ai mal à la tête après le vol.",
+        "choices": [
+          "J'ai mal à la main après le vol.",
+          "J'ai mal à la tête après le vol.",
+          "J'ai mal à la tête après le repas.",
+          "J'ai mal à la jambe après le vol."
+        ],
+        "answer": "J'ai mal à la tête après le vol.",
+        "explanation": "\"J'ai mal à la tête après le vol.\" means \"I have a headache after the flight\". avoir mal à joins with the body part, and the other choices change the body part or the moment."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "J'ai mal à la tête après la réunion.",
+        "choices": [
+          "J'ai mal à la main après la réunion.",
+          "J'ai mal à la tête après la réunion.",
+          "J'ai mal à la tête après le repas.",
+          "J'ai mal à la jambe après la réunion."
+        ],
+        "answer": "J'ai mal à la tête après la réunion.",
+        "explanation": "\"J'ai mal à la tête après la réunion.\" means \"I have a headache after the meeting\". avoir mal à joins with the body part, and the other choices change the body part or the moment."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "J'ai mal à la tête après le cours.",
+        "choices": [
+          "J'ai mal à la main après le cours.",
+          "J'ai mal à la tête avant le cours.",
+          "J'ai mal à la tête après le cours.",
+          "J'ai mal à la jambe après le cours."
+        ],
+        "answer": "J'ai mal à la tête après le cours.",
+        "explanation": "\"J'ai mal à la tête après le cours.\" means \"I have a headache after class\". avoir mal à joins with the body part, and the other choices change the body part or the moment."
+      }
+    }
+  },
+  "fra1p6l3": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that your feet hurt after the walk.",
+        "acceptableAnswers": [
+          "J'ai mal aux pieds après la promenade.",
+          "Après la promenade, j'ai mal aux pieds.",
+          "Mes pieds me font mal après la promenade.",
+          "Après la promenade, mes pieds me font mal."
+        ],
+        "explanation": "\"J'ai mal aux pieds après la promenade.\" means \"My feet hurt after the walk\". With the body part, \"à\" joins with the article: \"aux\" before a plural like pieds."
+      },
+      "work": {
+        "prompt": "Say that your back hurts after the meeting.",
+        "acceptableAnswers": [
+          "J'ai mal au dos après la réunion.",
+          "Après la réunion, j'ai mal au dos.",
+          "Mon dos me fait mal après la réunion.",
+          "Après la réunion, mon dos me fait mal."
+        ],
+        "explanation": "\"J'ai mal au dos après la réunion.\" means \"My back hurts after the meeting\". With the body part, \"à\" joins with the article: \"au\" before a masculine word like dos."
+      },
+      "school": {
+        "prompt": "Say that your arm hurts after sports class.",
+        "acceptableAnswers": [
+          "J'ai mal au bras après le cours de sport.",
+          "Après le cours de sport, j'ai mal au bras.",
+          "Mon bras me fait mal après le cours de sport.",
+          "Après le cours de sport, mon bras me fait mal."
+        ],
+        "explanation": "\"J'ai mal au bras après le cours de sport.\" means \"My arm hurts after sports class\". With the body part, \"à\" joins with the article: \"au\" before a masculine word like bras."
+      }
+    }
+  },
+  "fra1p7l1": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Ma chambre est à côté de l'ascenseur.",
+        "explanation": "\"Ma chambre est à côté de l'ascenseur.\" means \"My room is next to the elevator\". \"à côté de\" means next to, and \"de\" joins with the article that follows."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Mon bureau est à côté de la salle de réunion.",
+        "explanation": "\"Mon bureau est à côté de la salle de réunion.\" means \"My office is next to the meeting room\". \"à côté de\" means next to, and \"de\" joins with the article that follows."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Ma classe est à côté de la bibliothèque.",
+        "explanation": "\"Ma classe est à côté de la bibliothèque.\" means \"My classroom is next to the library\". \"à côté de\" means next to, and \"de\" joins with the article that follows."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you are in a hotel near the station.",
+        "acceptableAnswers": [
+          "Je suis dans un hôtel près de la gare.",
+          "Je suis dans un hôtel à côté de la gare.",
+          "Mon hôtel est près de la gare.",
+          "Je séjourne dans un hôtel près de la gare."
+        ],
+        "explanation": "\"Je suis dans un hôtel près de la gare.\" means \"I am in a hotel near the station\". \"dans\" means in or inside and goes before the article, here \"un\" for a masculine word."
+      },
+      "work": {
+        "prompt": "Say that you work in an office downtown.",
+        "acceptableAnswers": [
+          "Je travaille dans un bureau en ville.",
+          "Je travaille dans un bureau au centre-ville.",
+          "Mon bureau est en ville.",
+          "Je travaille en ville, dans un bureau."
+        ],
+        "explanation": "\"Je travaille dans un bureau en ville.\" means \"I work in an office downtown\". \"dans\" means in or inside and goes before the article, here \"un\" for a masculine word."
+      },
+      "school": {
+        "prompt": "Say that you live in a student apartment.",
+        "acceptableAnswers": [
+          "J'habite dans un appartement d'étudiants.",
+          "Je vis dans un appartement d'étudiants.",
+          "J'habite dans un logement d'étudiants.",
+          "Je vis dans un logement d'étudiants."
+        ],
+        "explanation": "\"J'habite dans un appartement d'étudiants.\" means \"I live in a student apartment\". \"dans\" means in or inside and goes before the article, here \"un\" for a masculine word."
+      }
+    }
+  },
+  "fra1p7l3": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "La valise est dans la chambre.",
+        "choices": [
+          "La valise est dans la cuisine.",
+          "La clé est dans la chambre.",
+          "La valise est dans la chambre.",
+          "La valise est devant la chambre."
+        ],
+        "answer": "La valise est dans la chambre.",
+        "explanation": "\"La valise est dans la chambre.\" means \"The suitcase is in the room\". \"dans\" means in, and the other choices change the place word or the thing."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Le sac est dans le bureau.",
+        "choices": [
+          "Le sac est dans le bureau.",
+          "Le sac est sur le bureau.",
+          "Le sac est dans le salon.",
+          "Le dossier est dans le bureau."
+        ],
+        "answer": "Le sac est dans le bureau.",
+        "explanation": "\"Le sac est dans le bureau.\" means \"The bag is in the office\". \"dans\" means in, and the other choices change the place word or the thing."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Le livre est dans le sac.",
+        "choices": [
+          "Le livre est sur le sac.",
+          "Le cahier est dans le sac.",
+          "Le livre est dans le bus.",
+          "Le livre est dans le sac."
+        ],
+        "answer": "Le livre est dans le sac.",
+        "explanation": "\"Le livre est dans le sac.\" means \"The book is in the bag\". \"dans\" means in, and the other choices change the place word or the thing."
+      }
+    },
+    "tx1": {
+      "travel": {
+        "prompt": "Say that the hotel has a big pool.",
+        "acceptableAnswers": [
+          "L'hôtel a une grande piscine.",
+          "L'hôtel possède une grande piscine.",
+          "Il y a une grande piscine à l'hôtel.",
+          "L'hôtel dispose d'une grande piscine."
+        ],
+        "explanation": "\"L'hôtel a une grande piscine.\" means \"The hotel has a big pool\". Short adjectives like \"grand\" go before the noun and agree with it: \"une grande\" with a feminine word."
+      },
+      "work": {
+        "prompt": "Say that the office has a big kitchen.",
+        "acceptableAnswers": [
+          "Le bureau a une grande cuisine.",
+          "Le bureau possède une grande cuisine.",
+          "Il y a une grande cuisine au bureau.",
+          "Le bureau dispose d'une grande cuisine."
+        ],
+        "explanation": "\"Le bureau a une grande cuisine.\" means \"The office has a big kitchen\". Short adjectives like \"grand\" go before the noun and agree with it: \"une grande\" with a feminine word."
+      },
+      "school": {
+        "prompt": "Say that the school has a big library.",
+        "acceptableAnswers": [
+          "L'école a une grande bibliothèque.",
+          "L'école possède une grande bibliothèque.",
+          "Il y a une grande bibliothèque à l'école.",
+          "L'école dispose d'une grande bibliothèque."
+        ],
+        "explanation": "\"L'école a une grande bibliothèque.\" means \"The school has a big library\". Short adjectives like \"grand\" go before the noun and agree with it: \"une grande\" with a feminine word."
+      }
+    }
+  },
+  "fra1p8l1": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you want to drink some water at the station.",
+        "acceptableAnswers": [
+          "Je veux boire de l'eau à la gare.",
+          "Je veux boire un peu d'eau à la gare.",
+          "À la gare, je veux boire de l'eau.",
+          "J'ai envie de boire de l'eau à la gare."
+        ],
+        "explanation": "\"Je veux boire de l'eau à la gare.\" means \"I want to drink some water at the station\". After \"vouloir\" the verb stays in the infinitive, and \"de l'eau\" is the partitive for some water."
+      },
+      "work": {
+        "prompt": "Say that you want to drink some water during the meeting.",
+        "acceptableAnswers": [
+          "Je veux boire de l'eau pendant la réunion.",
+          "Je veux boire un peu d'eau pendant la réunion.",
+          "Pendant la réunion, je veux boire de l'eau.",
+          "J'ai envie de boire de l'eau pendant la réunion."
+        ],
+        "explanation": "\"Je veux boire de l'eau pendant la réunion.\" means \"I want to drink some water during the meeting\". After \"vouloir\" the verb stays in the infinitive, and \"de l'eau\" is the partitive for some water."
+      },
+      "school": {
+        "prompt": "Say that you want to drink some water in class.",
+        "acceptableAnswers": [
+          "Je veux boire de l'eau en classe.",
+          "Je veux boire un peu d'eau en classe.",
+          "En classe, je veux boire de l'eau.",
+          "J'ai envie de boire de l'eau en classe."
+        ],
+        "explanation": "\"Je veux boire de l'eau en classe.\" means \"I want to drink some water in class\". After \"vouloir\" the verb stays in the infinitive, and \"de l'eau\" is the partitive for some water."
+      }
+    }
+  },
+  "fra1p8l2": {
+    "sx1": {
+      "travel": {
+        "prompt": "Say this aloud:",
+        "answer": "Je veux visiter le musée demain.",
+        "explanation": "\"Je veux visiter le musée demain.\" means \"I want to visit the museum tomorrow\". After \"je veux\" the next verb stays in the infinitive."
+      },
+      "work": {
+        "prompt": "Say this aloud:",
+        "answer": "Je veux parler au directeur aujourd'hui.",
+        "explanation": "\"Je veux parler au directeur aujourd'hui.\" means \"I want to talk to the manager today\". After \"je veux\" the next verb stays in the infinitive."
+      },
+      "school": {
+        "prompt": "Say this aloud:",
+        "answer": "Je veux étudier à la bibliothèque.",
+        "explanation": "\"Je veux étudier à la bibliothèque.\" means \"I want to study at the library\". After \"je veux\" the next verb stays in the infinitive."
+      }
+    }
+  },
+  "fra1p8l3": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you want to buy a train ticket.",
+        "acceptableAnswers": [
+          "Je veux acheter un billet de train.",
+          "Je voudrais acheter un billet de train.",
+          "J'aimerais acheter un billet de train.",
+          "Je souhaite acheter un billet de train."
+        ],
+        "explanation": "\"Je veux acheter un billet de train.\" means \"I want to buy a train ticket\". \"acheter\" takes its object directly, with no preposition: acheter un billet."
+      },
+      "work": {
+        "prompt": "Say that you want to buy a new printer.",
+        "acceptableAnswers": [
+          "Je veux acheter une nouvelle imprimante.",
+          "Je voudrais acheter une nouvelle imprimante.",
+          "J'aimerais acheter une nouvelle imprimante.",
+          "Je souhaite acheter une nouvelle imprimante."
+        ],
+        "explanation": "\"Je veux acheter une nouvelle imprimante.\" means \"I want to buy a new printer\". \"acheter\" takes its object directly, with no preposition: acheter une nouvelle imprimante."
+      },
+      "school": {
+        "prompt": "Say that you want to buy a French dictionary.",
+        "acceptableAnswers": [
+          "Je veux acheter un dictionnaire de français.",
+          "Je voudrais acheter un dictionnaire de français.",
+          "J'aimerais acheter un dictionnaire de français.",
+          "Je souhaite acheter un dictionnaire de français."
+        ],
+        "explanation": "\"Je veux acheter un dictionnaire de français.\" means \"I want to buy a French dictionary\". \"acheter\" takes its object directly, with no preposition: acheter un dictionnaire."
+      }
+    }
+  },
+  "fra1p8l4": {
+    "lx1": {
+      "travel": {
+        "prompt": "What did you hear?",
+        "audioText": "Je veux visiter le musée.",
+        "choices": [
+          "Je veux visiter le marché.",
+          "Je veux visiter le musée.",
+          "Je veux visiter la plage.",
+          "Je veux quitter le musée."
+        ],
+        "answer": "Je veux visiter le musée.",
+        "explanation": "\"Je veux visiter le musée.\" means \"I want to visit the museum\". \"Je veux\" is followed by an infinitive, and the other choices change the verb or the place."
+      },
+      "work": {
+        "prompt": "What did you hear?",
+        "audioText": "Je veux parler au directeur.",
+        "choices": [
+          "Je veux parler au docteur.",
+          "Je veux écrire au directeur.",
+          "Je veux parler au client.",
+          "Je veux parler au directeur."
+        ],
+        "answer": "Je veux parler au directeur.",
+        "explanation": "\"Je veux parler au directeur.\" means \"I want to talk to the manager\". \"Je veux\" is followed by an infinitive, and the other choices change the verb or the place."
+      },
+      "school": {
+        "prompt": "What did you hear?",
+        "audioText": "Je veux étudier à la bibliothèque.",
+        "choices": [
+          "Je veux étudier à la bibliothèque.",
+          "Je veux étudier à la maison.",
+          "Je veux travailler à la bibliothèque.",
+          "Je veux étudier à la plage."
+        ],
+        "answer": "Je veux étudier à la bibliothèque.",
+        "explanation": "\"Je veux étudier à la bibliothèque.\" means \"I want to study at the library\". \"Je veux\" is followed by an infinitive, and the other choices change the verb or the place."
+      }
+    }
+  },
+  "fra1p8l5": {
+    "tx1": {
+      "travel": {
+        "prompt": "Say that you want to help a tourist.",
+        "acceptableAnswers": [
+          "Je veux aider un touriste.",
+          "Je voudrais aider un touriste.",
+          "J'aimerais aider un touriste.",
+          "Je souhaite aider un touriste."
+        ],
+        "explanation": "\"Je veux aider un touriste.\" means \"I want to help a tourist\". \"aider\" takes the person directly, with no preposition, and \"un\" goes with a masculine noun."
+      },
+      "work": {
+        "prompt": "Say that you want to help your colleague.",
+        "acceptableAnswers": [
+          "Je veux aider mon collègue.",
+          "Je voudrais aider mon collègue.",
+          "J'aimerais aider mon collègue.",
+          "Je souhaite aider mon collègue."
+        ],
+        "explanation": "\"Je veux aider mon collègue.\" means \"I want to help my colleague\". \"aider\" takes the person directly, and the possessive agrees with the noun: \"mon\" before a masculine word."
+      },
+      "school": {
+        "prompt": "Say that you want to help your classmate.",
+        "acceptableAnswers": [
+          "Je veux aider mon camarade de classe.",
+          "Je voudrais aider mon camarade de classe.",
+          "J'aimerais aider mon camarade de classe.",
+          "Je veux aider mon camarade."
+        ],
+        "explanation": "\"Je veux aider mon camarade de classe.\" means \"I want to help my classmate\". \"aider\" takes the person directly, and the possessive agrees with the noun: \"mon\" before a masculine word."
+      }
+    }
+  }
+}
