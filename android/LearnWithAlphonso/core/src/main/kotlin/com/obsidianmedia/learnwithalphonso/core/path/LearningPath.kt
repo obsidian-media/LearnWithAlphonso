@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.path
 
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.PinnedItem
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -146,6 +147,8 @@ data class LearningPath(
     val goal: PathGoalInfo? = null,
     val fix: PathFixCard? = null,
     val fixOff: Boolean = false,
+    /** Rehearsals: at most one pinned item for today, kept apart from the mix. An older server omits it: none. */
+    val pinned: List<PinnedItem> = emptyList(),
     val progress: PathProgress,
     val dailyMinutes: Int,
     /** The rest day as planned: 0 (Sunday) to 6, or [PathRestDay.NONE] (-1) for seven study days. An older server omits it: Sunday. */
@@ -163,6 +166,12 @@ data class LearningPath(
     val why: List<PathWhy>,
     val streaks: List<PathStreak>,
 ) {
+    /** The pinned item that takes Learn's hero for the day (the event-day warm-up), if any. */
+    val heroPinned: PinnedItem? get() = pinned.firstOrNull { it.hero && it.isKnown }
+
+    /** The pinned item shown first in Today (a stage, the warm-up or "How did it go?"), if any. */
+    val todayPinned: PinnedItem? get() = pinned.firstOrNull { it.isKnown }
+
     /** True while the goal is only a suggestion (Learn shows "Your path is ready"). */
     val goalIsSuggested: Boolean get() = goal?.suggested == true
 

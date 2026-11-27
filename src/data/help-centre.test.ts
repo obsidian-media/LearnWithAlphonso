@@ -45,6 +45,16 @@ describe("help centre", () => {
     expect(body).toMatch(/Protected by a streak freeze/);
   });
 
+  it("explains Rehearsals: free first one, what is kept, export, delete, and that there is no score", () => {
+    const body = HELP_TOPICS.find((t) => t.id === "rehearsals")!.body;
+    expect(body).toMatch(/first rehearsal is free/);
+    expect(body).toMatch(/part of Alphonso Pro/);
+    expect(body).toMatch(/never the words you said/);
+    expect(body).toMatch(/data export/);
+    expect(body).toMatch(/Delete this rehearsal/);
+    expect(body).toMatch(/There is no score/);
+  });
+
   it("never promises a refund, credit or time", () => {
     const text = helpCentreText().toLowerCase();
     expect(text).not.toMatch(/we will refund|you will be refunded|within \d+ (hours|days) we will/);

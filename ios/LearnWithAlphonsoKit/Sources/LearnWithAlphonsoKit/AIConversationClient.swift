@@ -184,15 +184,23 @@ public final class AIConversationClient: Sendable {
     public func chatReply(
         messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil, course: String? = nil, callId: String? = nil
     ) async throws -> ChatReply {
+        try await chatReply(
+            source: .scenario, messages: messages, systemPrompt: systemPrompt, cefrLevel: cefrLevel, course: course,
+            callId: callId)
+    }
+
+    /// The same call for any `CallSource`. A rehearsal sends its id and stage and NO system prompt or course: the server
+    /// builds the prompt from the stored rehearsal.
+    public func chatReply(
+        source: CallSource, messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil,
+        course: String? = nil, callId: String? = nil
+    ) async throws -> ChatReply {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/chat"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
-        var payload: [String: Any] = ["messages": messages.map { ["role": $0.role, "content": $0.content] }]
-        if let systemPrompt { payload["systemPrompt"] = systemPrompt }
-        if let cefrLevel { payload["cefrLevel"] = cefrLevel }
-        if let course { payload["course"] = course }
-        if let callId { payload["callId"] = callId }
+        let payload = source.chatBody(
+            systemPrompt: systemPrompt, cefrLevel: cefrLevel, course: course, callId: callId, messages: messages)
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let data = try await performConversationCall(request, retryEmptyReply: true)

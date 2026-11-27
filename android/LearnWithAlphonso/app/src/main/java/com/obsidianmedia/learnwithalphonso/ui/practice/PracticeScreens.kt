@@ -325,3 +325,14 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
       }
     }
 }
+
+/**
+ * The transcript a rehearsal call shows in its sheet: the same bubbles, tap-a-word and report actions as a Practice talk.
+ * Reported replies go in as a conversation reply of the rehearsal course.
+ */
+@Composable
+internal fun RehearsalTranscript(container: AppContainer, vm: BaseConversationViewModel, course: String, modifier: Modifier = Modifier) {
+    val palette = LocalAlphonsoTokens.current
+    val reporting = ReplyReporting(container.aiReports) { message, _, reason -> AiReplyReports.scenario(message, course, "rehearsal", reason) }
+    TranscriptList(container, vm, palette.choice, palette.onHero, reporting, course, modifier)
+}

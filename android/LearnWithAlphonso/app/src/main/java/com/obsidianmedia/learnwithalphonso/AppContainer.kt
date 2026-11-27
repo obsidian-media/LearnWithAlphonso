@@ -181,6 +181,12 @@ class AppContainer(context: Context) {
     val translationGrading = TranslationGradingClient(aiApiHttp)
     val aiClient = AiConversationClient(aiApiHttp)
     val goalClient = LearningGoalClient(apiHttp)
+    /** Rehearsals (/api/rehearsal). Shown only while the server's `features.rehearsals` is true ([rehearsalsEnabled]). */
+    val rehearsalClient = com.obsidianmedia.learnwithalphonso.core.net.RehearsalClient(apiHttp)
+    private val configClient by lazy { io.ktor.client.HttpClient(engine) { expectSuccess = false; install(io.ktor.client.plugins.HttpTimeout) } }
+    private val rehearsalsFlag = com.obsidianmedia.learnwithalphonso.core.net.RehearsalsFlag({ com.obsidianmedia.learnwithalphonso.core.net.AppConfigFeatures.readRehearsals(configClient, BuildConfig.API_BASE_URL) })
+    /** The server switch, re-read every few minutes so turning it off takes effect; unreadable means hidden. */
+    suspend fun rehearsalsEnabled(): Boolean = rehearsalsFlag.enabled()
     /** The personalised learning path (/api/learning-path): one server-computed plan for web, iOS and Android. */
     val pathClient = com.obsidianmedia.learnwithalphonso.core.net.LearningPathClient(apiHttp)
     /** The first-run answers on the account (/api/learner-profile), the same checked save as the web. */

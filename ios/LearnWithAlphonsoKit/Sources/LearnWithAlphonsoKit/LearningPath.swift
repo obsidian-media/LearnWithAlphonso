@@ -183,6 +183,26 @@ public struct PathFixCard: Decodable, Equatable, Sendable {
     public let items: [PathItem]
 }
 
+/// A rehearsal item for today (Rehearsals), kept apart from the weekly mix and Today's list like the Fix card, so it never
+/// changes the plan's minutes. "stage": the next stage. "warmup_today": the 2-minute warm-up on the event day (it takes
+/// the Learn hero). "followup": "How did it go?" after the event.
+public struct PathPinned: Decodable, Equatable, Sendable {
+    public let kind: String
+    public let rehearsalId: String
+    public let stage: String?
+    public let title: String
+    public let subtitle: String
+    public let minutes: Int
+    public let hero: Bool
+    /// The rehearsal's event kind (interview, meeting, ...), so the hero can say "Interview today". Missing from an
+    /// older server; an unknown value reads as the generic event.
+    public let eventKind: String?
+
+    public var rehearsalKind: RehearsalEventKind? { eventKind.flatMap { RehearsalEventKind(wire: $0) } }
+    public var rehearsalStage: RehearsalStage? { stage.flatMap { RehearsalStage(rawValue: $0) } }
+    public var isFollowUp: Bool { kind == "followup" }
+}
+
 public struct PathToday: Decodable, Equatable, Sendable {
     public let day: String
     public let targetMinutes: Int
@@ -202,6 +222,8 @@ public struct LearningPath: Decodable, Equatable, Sendable {
     public let goal: PathGoalInfo?
     public let fix: PathFixCard?
     public let fixOff: Bool?
+    /// Rehearsal items for today, at most one. Missing from an older server (and with no active rehearsal it is empty).
+    public let pinned: [PathPinned]?
     public let progress: PathProgress
     public let dailyMinutes: Int
     /// The rest day as planned: 0 (Sunday) to 6, or `PathRestDay.none` (-1) for seven study days. Missing from an
@@ -219,6 +241,12 @@ public struct LearningPath: Decodable, Equatable, Sendable {
     public let recovery: [PathRecovery]
     public let why: [PathWhy]
     public let streaks: [PathStreak]
+
+    /// Today's pinned rehearsal item, if any.
+    public var pinnedItem: PathPinned? { pinned?.first }
+
+    /// The pinned item that takes the Learn hero for the day (the event-day warm-up), if any.
+    public var heroPinned: PathPinned? { pinned?.first(where: \.hero) }
 
     /// True while the goal is only a suggestion (Learn shows "Your path is ready").
     public var goalIsSuggested: Bool { goal?.suggested ?? false }

@@ -1,0 +1,105 @@
+{
+  "appConfig": { "features": { "rehearsals": true } },
+  "state": {
+    "active": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "course": "en",
+      "eventKind": "interview",
+      "eventDate": "2026-12-01",
+      "counterpart": "a hiring manager at a logistics company",
+      "worries": "questions about salary",
+      "brief": {
+        "setting": "A job interview for a logistics coordinator role.",
+        "persona": { "role": "hiring manager", "tone": "friendly but direct" },
+        "keyPhrases": [
+          "I have experience in",
+          "I am hoping for around",
+          "Could you repeat that, please?",
+          "I managed a team of",
+          "That is a good question",
+          "I would like to learn more about"
+        ],
+        "coreExchanges": [
+          "Tell me about yourself",
+          "Why do you want this job?",
+          "What is your biggest strength?",
+          "Describe a difficult day at work",
+          "Do you have any questions for us?"
+        ],
+        "hardMoments": [
+          {
+            "id": "salary",
+            "label": "The salary question",
+            "prompt": "Ask what salary they expect."
+          },
+          {
+            "id": "unclear",
+            "label": "A misunderstanding",
+            "prompt": "Speak quickly and use an idiom."
+          },
+          {
+            "id": "interrupt",
+            "label": "Being interrupted",
+            "prompt": "Interrupt with a follow-up."
+          }
+        ]
+      },
+      "status": "active",
+      "free": true,
+      "outcome": null,
+      "createdAt": "2026-11-26T10:00:00Z",
+      "closedAt": null
+    },
+    "progress": { "warmup": "done", "conversation": "todo", "hard_moments": "todo" },
+    "nextStage": "conversation",
+    "runs": [
+      {
+        "stage": "warmup",
+        "finishedAt": "2026-11-27T10:00:00Z",
+        "momentsShown": [],
+        "wentWell": ["You used the key phrases"],
+        "corrections": ["I am hoping for around 3000"]
+      }
+    ],
+    "history": [
+      {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "course": "en",
+        "eventKind": "meeting",
+        "eventDate": "2026-10-01",
+        "status": "done",
+        "free": false,
+        "outcome": { "choice": "well" },
+        "createdAt": "2026-09-20T10:00:00Z",
+        "closedAt": "2026-10-02T10:00:00Z",
+        "runs": 6,
+        "stagesDone": 3,
+        "corrections": 4
+      }
+    ],
+    "freeAvailable": false
+  },
+  "stateEmpty": {
+    "active": null,
+    "progress": null,
+    "nextStage": null,
+    "runs": [],
+    "history": [],
+    "freeAvailable": true
+  },
+  "errors": [
+    { "status": 402, "body": { "error": "paywall" }, "means": "paywall" },
+    { "status": 503, "body": { "error": "retry" }, "means": "retry" },
+    { "status": 400, "body": { "error": "blocked_text" }, "means": "blocked_text" },
+    { "status": 409, "body": { "error": "active_exists" }, "means": "active_exists" },
+    { "status": 409, "body": { "error": "closed" }, "means": "closed" },
+    { "status": 404, "body": { "error": "not_found" }, "means": "not_found" },
+    { "status": 404, "body": { "error": "not_enabled" }, "means": "not_enabled" },
+    { "status": 400, "body": { "error": "invalid_event_date" }, "means": "invalid" },
+    { "status": 403, "body": { "error": "consent" }, "means": "consent" },
+    { "status": 500, "body": { "error": "failed" }, "means": "failed" }
+  ],
+  "chatBody": {
+    "rehearsal": { "id": "11111111-1111-4111-8111-111111111111", "stage": "conversation" }
+  }
+}

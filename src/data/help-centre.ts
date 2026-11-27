@@ -122,6 +122,16 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     ].join("\n"),
   },
   {
+    id: "rehearsals",
+    title: "Rehearsing a real conversation",
+    body: [
+      "Rehearsals let you practise something coming up, such as a job interview, a meeting, a landlord or a first day. On Learn, open Rehearse a real talk in the For you row, answer four short questions (what is coming up, when, who you will talk to, and what worries you; the last one is optional) and Alphonso, an AI, makes a plan with three stages: a warm-up, the real conversation, and the hard moments. Each stage is a live call, and Alphonso remembers how each run went and uses it next time. There is no score.",
+      "Your first rehearsal is free. More rehearsals are part of Alphonso Pro. After your free rehearsal ends you can still read its plan and history, and recaps and Alphonso's memory stay free.",
+      "What is kept: your four answers, the plan, short notes from each finished run (hard moments, what went well, corrected forms, never the words you said) and the tap you give after the event. No need to use real names. Your rehearsals are in your data export. Delete this rehearsal, on the plan screen, removes it and its notes for good; only a note that your free rehearsal was used stays, so it cannot be used twice, until you delete your account, which removes everything.",
+      "The day after the event Alphonso asks how it went, with four taps and no typing. If it moved, pick the new date and the rehearsal carries on.",
+    ].join("\n"),
+  },
+  {
     id: "troubleshooting",
     title: "Things you can try yourself",
     body: [

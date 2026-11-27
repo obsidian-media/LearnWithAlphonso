@@ -30,6 +30,12 @@ data class PaywallPeriod(val unit: BillingPeriodUnit, val value: Int) {
     }
 }
 
+/** Where a paywall was opened from, as the analytics `source` (the web's PAYWALL_SOURCES uses the same raw values). */
+object PaywallSource {
+    const val HECTOR_TAB = "hector_tab"
+    const val REHEARSAL_ENTRY = "rehearsal_entry"
+}
+
 /** What the paywall needs from a store product. [trial] is set only when this learner is eligible for a free trial. */
 data class PaywallPlan(
     val id: String, val priceString: String, val priceMicros: Long, val currencyCode: String?,

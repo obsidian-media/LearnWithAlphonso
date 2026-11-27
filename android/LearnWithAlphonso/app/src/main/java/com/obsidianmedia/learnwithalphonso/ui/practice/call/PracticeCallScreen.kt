@@ -124,6 +124,12 @@ internal fun callInk(): Color = LocalAlphonsoTokens.current.onHero
 internal fun callEnd(): Color = LocalAlphonsoTokens.current.callEnd
 
 /**
+ * A rehearsal call header: the event as the title with an AI label, the stage under the tutor name, and a
+ * three-segment bar. Null for every other call, which keeps the name and the scene title.
+ */
+internal data class CallHeader(val title: String, val subline: String, val stage: Int, val stageCount: Int = 3)
+
+/**
  * The Practice speaking session as a full-screen call: the character's room behind him, a call bar with a timer, a
  * "You" tile with the learner's microphone level, one live caption, and the call controls. The conversation itself
  * (bubbles, hints) lives in the bottom sheet [transcript] fills.
@@ -139,6 +145,8 @@ internal fun PracticeCallScreen(
     scenarioId: String,
     /** True for a campaign scene, whose [scenarioId] is the scene's room: it keeps its older <room>.webp file. */
     campaignRoom: Boolean = false,
+    /** A rehearsal header in place of the tutor name and the scene title. */
+    header: CallHeader? = null,
     course: Course,
     vm: CallConversation,
     playback: AudioPlayback,
@@ -254,7 +262,7 @@ internal fun PracticeCallScreen(
 
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(horizontal = 18.dp)) {
             statusHost()
-            CallBar(kit.displayName, title, speaking = mode == AvatarMode.SPEAKING, seconds = seconds)
+            CallBar(kit.displayName, title, speaking = mode == AvatarMode.SPEAKING, seconds = seconds, header = header)
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) { YouTile(recording, level) }
             Box(Modifier.weight(1f))
             state.error?.let {
@@ -306,13 +314,36 @@ private fun Modifier.avatarBottomFade(): Modifier = this
     }
 
 @Composable
-private fun CallBar(name: String, title: String, speaking: Boolean, seconds: Int) {
+private fun CallBar(name: String, title: String, speaking: Boolean, seconds: Int, header: CallHeader? = null) {
     Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(name, color = callInk(), style = TitleType)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(8.dp).clip(CircleShape).background(if (speaking) callEnd() else callInk().copy(alpha = 0.55f)).clearAndSetSemantics {})
-                Text(title, color = callInk(), style = FootnoteType, maxLines = 1, modifier = Modifier.padding(start = 6.dp))
+            if (header != null) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(header.title, color = callInk(), style = TitleType, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+                    // The tutor is always labelled AI wherever he plays the other person.
+                    Text(
+                        com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalCopy.AI_LABEL, color = callInk(), style = OverlineType,
+                        modifier = Modifier.clip(CircleShape).background(callGlass()).padding(horizontal = 8.dp, vertical = 2.dp),
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(if (speaking) callEnd() else callInk().copy(alpha = 0.55f)).clearAndSetSemantics {})
+                    Text(header.subline, color = callInk(), style = FootnoteType, maxLines = 2, modifier = Modifier.padding(start = 6.dp))
+                }
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 6.dp).clearAndSetSemantics { contentDescription = "Stage ${header.stage} of ${header.stageCount}" },
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    for (i in 1..header.stageCount) {
+                        Box(Modifier.weight(1f).height(4.dp).clip(CircleShape).background(if (i <= header.stage) callMint() else callInk().copy(alpha = 0.25f)))
+                    }
+                }
+            } else {
+                Text(name, color = callInk(), style = TitleType)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(if (speaking) callEnd() else callInk().copy(alpha = 0.55f)).clearAndSetSemantics {})
+                    Text(title, color = callInk(), style = FootnoteType, maxLines = 1, modifier = Modifier.padding(start = 6.dp))
+                }
             }
         }
         Text(

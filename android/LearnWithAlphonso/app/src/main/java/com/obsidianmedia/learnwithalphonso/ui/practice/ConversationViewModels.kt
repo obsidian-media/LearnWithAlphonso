@@ -150,6 +150,9 @@ abstract class BaseConversationViewModel(
 
     protected abstract fun systemPrompt(): String
 
+    /** Where the partner comes from: a scenario sends its prompt, a rehearsal only its id and stage (the server builds the prompt). */
+    protected open val callSource: com.obsidianmedia.learnwithalphonso.core.rehearsal.CallSource get() = com.obsidianmedia.learnwithalphonso.core.rehearsal.CallSource.Scenario
+
     /** Set by a Practice scenario so its finished call is counted (analytics); a campaign scene leaves it null. */
     protected open val analyticsScenarioId: String? get() = null
 
@@ -223,7 +226,7 @@ abstract class BaseConversationViewModel(
             )
         }
         try {
-            val chatReply = try { ai.chatReply(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code, attemptId) } finally { judging = false }
+            val chatReply = try { ai.chatReply(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code, attemptId, callSource) } finally { judging = false }
             val reply = chatReply.content
             if (slip == null && chatReply.verdict == ReplyVerdict.CORRECTED) slip = text to reply
             _state.update {

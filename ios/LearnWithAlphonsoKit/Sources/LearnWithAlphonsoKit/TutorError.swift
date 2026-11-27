@@ -39,6 +39,8 @@ public enum TutorError: Error, Equatable, Sendable {
 
         switch code {
         case "not-entitled": return .notEntitled
+        // A free rehearsal's runs are used up (a 402 on /api/chat in rehearsal mode): the Pro door, like not-entitled.
+        case "free_runs_used": return .notEntitled
         case "entitlement-unavailable": return .entitlementUnavailable
         case "ai-consent-required": return .aiConsentRequired
         case "quota-exceeded": return .quotaExceeded(resetsAt: parseDate(object?["resetsAt"] as? String))
