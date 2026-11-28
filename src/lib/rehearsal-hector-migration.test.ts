@@ -168,6 +168,77 @@ describe("hard mode is Hector on the last stage, in the database too", () => {
   });
 });
 
+describe("record_practice_reply creates the call with its mode, in one call", () => {
+  const record = (n: number, stage: string, mode = "") =>
+    asServer(
+      async () =>
+        (
+          await db.query<{ r: number }>(
+            `SELECT public.record_practice_reply('${A}', '${id(n)}', 'en', 'rehearsal', '${R1}:${stage}', true, false, false${mode}) r`,
+          )
+        ).rows[0]!.r,
+    );
+  const mode = async (n: number) =>
+    (
+      await db.query<{ persona: string; hard_mode: boolean; replies: number }>(
+        `SELECT persona, hard_mode, replies FROM public.practice_calls WHERE id = '${id(n)}'`,
+      )
+    ).rows[0];
+
+  it("the first reply creates the row already holding persona and hard mode", async () => {
+    expect(await record(60, "hard_moments", ", 'hector', true")).toBe(1);
+    expect(await mode(60)).toEqual({ persona: "hector", hard_mode: true, replies: 1 });
+  });
+
+  it("the old 8-argument call (the previous deploy) still works and means Alphonso, not hard", async () => {
+    expect(await record(61, "conversation")).toBe(1);
+    expect(await mode(61)).toEqual({ persona: "alphonso", hard_mode: false, replies: 1 });
+  });
+
+  it("a later reply counts but never rewrites the mode, whatever it says", async () => {
+    expect(await record(62, "conversation", ", 'hector', false")).toBe(1);
+    expect(await record(62, "conversation", ", 'alphonso', false")).toBe(2);
+    expect(await mode(62)).toEqual({ persona: "hector", hard_mode: false, replies: 2 });
+    expect(await record(61, "conversation", ", 'hector', false")).toBe(2);
+    expect(await mode(61)).toEqual({ persona: "alphonso", hard_mode: false, replies: 2 });
+  });
+
+  it("a hard-mode row outside Hector on the last stage is refused in the same statement: nothing is created", async () => {
+    await expect(record(63, "conversation", ", 'hector', true")).rejects.toThrow();
+    await expect(record(64, "hard_moments", ", 'alphonso', true")).rejects.toThrow();
+    expect(await mode(63)).toBeUndefined();
+    expect(await mode(64)).toBeUndefined();
+  });
+
+  it("a null mode is refused, and there is exactly one function, for the server only", async () => {
+    await expect(record(65, "conversation", ", NULL, false")).rejects.toThrow();
+    const n = await db.query<{ n: string }>(
+      `SELECT count(*) n FROM pg_proc WHERE proname = 'record_practice_reply'`,
+    );
+    expect(Number(n.rows[0]!.n)).toBe(1);
+    await db.exec(`SELECT set_config('app.uid', '${A}', false); SET ROLE authenticated`);
+    try {
+      await expect(
+        db.query(
+          `SELECT public.record_practice_reply('${A}', '${id(66)}', 'en', 'rehearsal', '${R1}:warmup', true, false, false)`,
+        ),
+      ).rejects.toThrow();
+    } finally {
+      await db.exec("RESET ROLE");
+    }
+  });
+
+  it("a Hector run created by the one call finishes into a Hector run", async () => {
+    await record(70, "hard_moments", ", 'hector', true");
+    for (const n of [2, 3, 4]) await record(70, "hard_moments");
+    await record(70, "hard_moments");
+    await db.exec(`UPDATE public.practice_calls SET finished_at = now(), stars = 1 WHERE id = '${id(70)}';
+                   SELECT public.claim_call_recap('${A}', '${id(70)}');`);
+    await finish(70);
+    expect(await runOf(70)).toEqual({ persona: "hector", hard_mode: true });
+  });
+});
+
 describe("the function", () => {
   it("is still the only finish_rehearsal_recap, with the same grants: only the server may run it", async () => {
     const r = await db.query<{ n: string }>(

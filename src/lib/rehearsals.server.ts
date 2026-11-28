@@ -308,16 +308,28 @@ export async function generateBrief(
  * Can this learner start a Hector run? True when RevenueCat says Pro, false when it says not, null when it cannot be
  * told (the start itself decides: the server checks Pro once there). One RevenueCat read per state load, never per turn.
  */
+export const HECTOR_PRO_READ_MS = 1500;
+
 export async function hectorAvailableFor(
   userId: string,
   proState?: (userId: string) => Promise<"active" | "inactive" | "unavailable">,
+  timeoutMs: number = HECTOR_PRO_READ_MS,
 ): Promise<boolean | null> {
+  // Capped: this runs inside the plan's state read, which must not wait on RevenueCat's own (longer) timeout. A slow
+  // answer is "unknown", and the run's own start decides.
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const state = await (
-      proState ?? (async (u) => (await import("./call-recap.server")).proStateFor(u))
-    )(userId);
+    const read = (proState ?? (async (u) => (await import("./call-recap.server")).proStateFor(u)))(
+      userId,
+    );
+    const timeout = new Promise<"unavailable">((resolve) => {
+      timer = setTimeout(() => resolve("unavailable"), timeoutMs);
+    });
+    const state = await Promise.race([read, timeout]);
     return state === "active" ? true : state === "inactive" ? false : null;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }

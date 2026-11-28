@@ -69,14 +69,12 @@ export async function recordRehearsalReply(
     course: Course;
     learnerText: string;
     verdict: ReplyVerdict;
-    /**
-     * Who played the partner, and hard mode, with `firstTurn` true on the call's first reply. The mode is stored on the
-     * call once, with that first reply, so every later turn (and the finished run) reads the same mode.
-     */
-    run?: { persona: Persona; hard: boolean; firstTurn: boolean };
+    /** Who plays the partner, and hard mode. Stored with the call's first reply (atomically), then read back every turn. */
+    run?: { persona: Persona; hard: boolean };
   },
 ): Promise<boolean> {
-  const recorded = await recordReply(client, {
+  const run = params.run;
+  return recordReply(client, {
     userId: params.userId,
     callId: params.callId,
     course: params.course,
@@ -84,33 +82,11 @@ export async function recordRehearsalReply(
     itemKey: rehearsalItemKey(params.rehearsalId, params.stage),
     learnerText: params.learnerText,
     verdict: params.verdict,
+    // The mode is written by the same statement that creates the call (record_practice_reply), never by a second one
+    // that could fail. A later reply of the call never rewrites it. Omitted for Alphonso: the function's defaults.
+    ...(run && run.persona === "hector" ? { mode: { persona: run.persona, hard: run.hard } } : {}),
   });
-  const run = params.run;
-  if (recorded && run && run.firstTurn && (run.persona !== "alphonso" || run.hard)) {
-    try {
-      const { error } = await (client as Table)
-        .from("practice_calls")
-        .update({ persona: run.persona, hard_mode: run.hard })
-        .eq("id", params.callId as string)
-        .eq("user_id", params.userId);
-      if (error) console.warn(JSON.stringify({ event: "rehearsal_mode_not_stored" }));
-    } catch {
-      console.warn(JSON.stringify({ event: "rehearsal_mode_not_stored" }));
-    }
-  }
-  return recorded;
 }
-
-type Table = {
-  from: (t: string) => {
-    update: (v: Record<string, unknown>) => {
-      eq: (
-        k: string,
-        v: string,
-      ) => { eq: (k: string, v: string) => PromiseLike<{ error: unknown }> };
-    };
-  };
-};
 
 async function recordReply(
   client: object,
@@ -122,6 +98,7 @@ async function recordReply(
     itemKey: string;
     learnerText: string;
     verdict: ReplyVerdict;
+    mode?: { persona: Persona; hard: boolean };
   },
 ): Promise<boolean> {
   if (!isCallId(params.callId)) return false;
@@ -137,6 +114,7 @@ async function recordReply(
       _right: params.verdict === "correct",
       _short: m.short,
       _english: m.english,
+      ...(params.mode ? { _persona: params.mode.persona, _hard_mode: params.mode.hard } : {}),
     });
     if (!error) {
       // Practice replies are the speaking skill: right when the model judged it correct, wrong when it corrected

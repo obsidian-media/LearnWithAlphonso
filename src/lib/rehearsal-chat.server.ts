@@ -39,7 +39,10 @@ export type RehearsalChat =
       stage: Stage;
       /** Who plays the partner and whether it is hard mode: the call's stored mode, or the request on a run's first turn. */
       run: { persona: Persona; hard: boolean };
-      /** True on a run's first turn (the call row does not exist yet): the caller stores the mode with the first reply. */
+      /**
+       * True on the first turn of a Pro-only run (its call does not exist yet). The first recorded reply creates the call
+       * WITH its mode, in one statement; the caller gives no reply if that did not happen.
+       */
       firstTurn: boolean;
     }
   | { ok: false; response: Response };

@@ -16,7 +16,7 @@ import {
 
 vi.mock("./llm-chat.server", () => ({ llmChatCompletion: vi.fn() }));
 vi.mock("./ai-safety", () => ({}));
-const { hectorAvailableFor, loadRuns } = await import("./rehearsals.server");
+const { HECTOR_PRO_READ_MS, hectorAvailableFor, loadRuns } = await import("./rehearsals.server");
 
 const run = (over: Partial<RunMemory>): RunMemory => ({
   stage: "warmup",
@@ -143,7 +143,7 @@ describe("Hector's templates", () => {
   });
 });
 
-describe("the call stores its mode once, with the first reply", () => {
+describe("the call's mode travels with the reply that creates it (one RPC, no second write)", () => {
   const params = {
     userId: "u1",
     callId: "00000000-0000-4000-8000-0000000000c1",
@@ -154,56 +154,41 @@ describe("the call stores its mode once, with the first reply", () => {
     verdict: "correct" as const,
   };
   const make = (rpcError: unknown = null) => {
-    const updates: { v: Record<string, unknown>; eq: string[][] }[] = [];
+    const calls: Record<string, unknown>[] = [];
     const client = {
-      rpc: async () => ({ data: 1, error: rpcError }),
-      from: (t: string) => ({
-        update: (v: Record<string, unknown>) => {
-          const u = { v: { t, ...v }, eq: [] as string[][] };
-          updates.push(u);
-          const chain = {
-            eq: (k: string, val: string) => {
-              u.eq.push([k, val]);
-              return u.eq.length === 2 ? Promise.resolve({ error: null }) : chain;
-            },
-          };
-          return chain;
-        },
-      }),
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        if (fn === "record_practice_reply") calls.push(args);
+        return { data: 1, error: rpcError };
+      },
+      // Any table write would be a second, separable statement: there must be none.
+      from: () => {
+        throw new Error("no second write");
+      },
     };
-    return { client, updates };
+    return { client, calls };
   };
-  it("a Hector first turn stores persona and hard mode on that call and that learner", async () => {
-    const { client, updates } = make();
-    await recordRehearsalReply(client, {
-      ...params,
-      run: { persona: "hector", hard: true, firstTurn: true },
-    });
-    expect(updates).toHaveLength(1);
-    expect(updates[0]!.v).toEqual({ t: "practice_calls", persona: "hector", hard_mode: true });
-    expect(updates[0]!.eq).toEqual([
-      ["id", params.callId],
-      ["user_id", "u1"],
-    ]);
+  it("a Hector reply sends persona and hard mode as arguments of record_practice_reply", async () => {
+    const { client, calls } = make();
+    expect(
+      await recordRehearsalReply(client, { ...params, run: { persona: "hector", hard: true } }),
+    ).toBe(true);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ _persona: "hector", _hard_mode: true });
   });
-  it("a later turn, an Alphonso run, or a reply that was not recorded stores nothing", async () => {
-    const a = make();
-    await recordRehearsalReply(a.client, {
-      ...params,
-      run: { persona: "hector", hard: false, firstTurn: false },
-    });
-    await recordRehearsalReply(a.client, {
-      ...params,
-      run: { persona: "alphonso", hard: false, firstTurn: true },
-    });
-    await recordRehearsalReply(a.client, { ...params });
-    const b = make({ message: "refused" });
-    await recordRehearsalReply(b.client, {
-      ...params,
-      run: { persona: "hector", hard: false, firstTurn: true },
-    });
-    expect(a.updates).toHaveLength(0);
-    expect(b.updates).toHaveLength(0);
+  it("Alphonso, and a reply with no run, send no mode (the function's defaults apply)", async () => {
+    const { client, calls } = make();
+    await recordRehearsalReply(client, { ...params, run: { persona: "alphonso", hard: false } });
+    await recordRehearsalReply(client, { ...params });
+    for (const c of calls) {
+      expect(c).not.toHaveProperty("_persona");
+      expect(c).not.toHaveProperty("_hard_mode");
+    }
+  });
+  it("a failed RPC is reported as not recorded (so a first Hector turn can fail closed)", async () => {
+    const { client } = make({ message: "refused" });
+    expect(
+      await recordRehearsalReply(client, { ...params, run: { persona: "hector", hard: true } }),
+    ).toBe(false);
   });
 });
 
@@ -217,6 +202,14 @@ describe("state for the clients", () => {
         throw new Error("x");
       }),
     ).toBeNull();
+  });
+  it("a slow Pro read is unknown, not a wait (capped at 1.5 s)", async () => {
+    expect(HECTOR_PRO_READ_MS).toBe(1500);
+    const never = () => new Promise<"active">(() => {});
+    const started = Date.now();
+    expect(await hectorAvailableFor("u", never, 30)).toBeNull();
+    expect(Date.now() - started).toBeLessThan(1000);
+    expect(await hectorAvailableFor("u", async () => "active", 30)).toBe(true);
   });
   it("runs carry persona and hard mode (an older row reads as Alphonso, not hard)", async () => {
     const rows = [

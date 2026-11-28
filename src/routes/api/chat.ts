@@ -12,6 +12,8 @@ import { boundTranscript } from "@/lib/chat-transcript-limits";
 import { splitReplyVerdict, withVerdictInstruction } from "@/lib/chat-verdict";
 import { recordPracticeReply, recordRehearsalReply } from "@/lib/practice-calls.server";
 import { withRehearsalPace } from "@/lib/rehearsal-pace";
+import { trimToSentences } from "@/lib/sentence-trim";
+import { TTS_MAX_CHARS } from "@/lib/tts-limits";
 import { rehearsalsEnabled, rehearsalsEnabledFor } from "@/lib/rehearsals-flag";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
@@ -130,8 +132,12 @@ async function handleRehearsalChat(
   const refused = await access.chargeQuota?.();
   if (refused) return refused;
 
-  // Adaptive difficulty: ONE fixed pace line, chosen from the learner turns of this request's transcript.
-  const { prompt: pacedPrompt } = withRehearsalPace(resolved.prompt, messages, resolved.course);
+  // Adaptive difficulty: ONE fixed pace line, chosen from the learner turns of this request's transcript. Hard mode
+  // defines its own pace (brisk, with interruptions), so it gets no pace line: a "simplify" line would fight it. Every
+  // other run, Hector's included, keeps the pace line.
+  const pacedPrompt = resolved.run.hard
+    ? resolved.prompt
+    : withRehearsalPace(resolved.prompt, messages, resolved.course).prompt;
   const finalMessages: ChatMessage[] = [
     { role: "system", content: withVerdictInstruction(pacedPrompt) },
     ...messages,
@@ -153,8 +159,9 @@ async function handleRehearsalChat(
   });
   const replyVerdict = safe.blocked ? "none" : verdict;
   const last = messages[messages.length - 1];
+  let recorded = false;
   if (last?.role === "user") {
-    await recordRehearsalReply(supabaseAdmin, {
+    recorded = await recordRehearsalReply(supabaseAdmin, {
       userId: access.userId,
       callId: body.callId,
       rehearsalId: resolved.rehearsalId,
@@ -162,10 +169,16 @@ async function handleRehearsalChat(
       course: resolved.course,
       learnerText: last.content,
       verdict: replyVerdict,
-      run: { ...resolved.run, firstTurn: resolved.firstTurn },
+      run: resolved.run,
     });
   }
-  return noStoreJson({ content: safe.text, verdict: replyVerdict });
+  // The first turn of a Hector run stores the run's mode with the call, in the same statement. If that did not happen
+  // the call would later be prompted as Alphonso while the app plays Hector, so no reply is given: the app retries.
+  if (resolved.firstTurn && !recorded) return noStoreJson({ error: "retry" }, { status: 503 });
+  // Hector's longer debrief must fit one spoken turn: cut at a sentence boundary, so what is shown is what is spoken.
+  const content =
+    resolved.run.persona === "hector" ? trimToSentences(safe.text, TTS_MAX_CHARS) : safe.text;
+  return noStoreJson({ content, verdict: replyVerdict });
 }
 
 /** The one model call of a chat reply, for the rehearsal path. A timeout or an unreachable provider is retryable. */
