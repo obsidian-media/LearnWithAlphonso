@@ -21,6 +21,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
@@ -123,7 +124,8 @@ class AiConversationClient(private val http: ApiHttp) {
         val words = (obj["words"] as? JsonArray)?.mapNotNull { entry ->
             val o = entry as? JsonObject ?: return@mapNotNull null
             val word = o.str("word") ?: return@mapNotNull null
-            val confidence = runCatching { o["confidence"]?.jsonPrimitive?.doubleOrNull }.getOrNull() ?: return@mapNotNull null
+            // A string confidence is skipped, as the web does (typeof number).
+            val confidence = (o["confidence"] as? JsonPrimitive)?.takeIf { !it.isString }?.doubleOrNull ?: return@mapNotNull null
             SttWord(word, confidence)
         }.orEmpty()
         return SttResult(obj.str("text") ?: throw AiConversationError.InvalidPayload(), obj["confidence"]?.jsonPrimitive?.doubleOrNull, words)

@@ -23,7 +23,7 @@ class PhraseCheckTest {
     private fun words(c: JsonObject): List<SttWord>? =
         (c["words"] as? JsonArray)?.mapNotNull { e ->
             val o = e.jsonObject
-            val conf = o["confidence"]?.jsonPrimitive?.doubleOrNull ?: return@mapNotNull null
+            val conf = o["confidence"]?.jsonPrimitive?.takeIf { !it.isString }?.doubleOrNull ?: return@mapNotNull null
             SttWord(o["word"]!!.jsonPrimitive.content, conf)
         }
 

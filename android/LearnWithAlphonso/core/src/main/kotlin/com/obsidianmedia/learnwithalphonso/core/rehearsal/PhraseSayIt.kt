@@ -1,6 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.core.rehearsal
 
 import com.obsidianmedia.learnwithalphonso.core.logic.PhraseCheck
+import com.obsidianmedia.learnwithalphonso.core.net.AiConversationError
+import com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy
+import com.obsidianmedia.learnwithalphonso.core.net.SttResult
+import kotlinx.coroutines.CancellationException
 
 /**
  * The words under a phrase after "Say it" in the phrasebook. They describe how clearly the learner was UNDERSTOOD, never a
@@ -14,6 +18,22 @@ object PhraseSayIt {
     const val NOT_YET = "Not understood yet: try again"
     const val MIC_OFF = "Microphone access is off. Turn it on in Settings > Apps > Learn with Alphonso > Permissions. You can still hear each phrase."
     const val CHECK_FAILED = "Couldn't check that just now. You can still hear the phrase."
+
+    const val TAP_AGAIN = "Tap Say it again"
+    const val OFFLINE = "You're offline. You can still hear each phrase."
+
+    /**
+     * The check's upload, with its failures turned into the app's existing user copy (the turn engine shows only the
+     * exception's message). A consent refusal and a cancellation pass through untouched: the engine and the screen act on those.
+     */
+    suspend fun transcribe(call: suspend () -> SttResult): SttResult = try {
+        call()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        if ((e as? AiConversationError.Server)?.code == "ai-consent-required") throw e
+        throw IllegalStateException(AiErrorCopy.userMessage(e), e)
+    }
 
     /** The mic button's TalkBack name. */
     fun micLabel(phrase: String): String = "Say: $phrase"

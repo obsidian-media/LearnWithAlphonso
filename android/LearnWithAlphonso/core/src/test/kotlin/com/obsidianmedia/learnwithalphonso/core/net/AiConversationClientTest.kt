@@ -7,6 +7,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordResult
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryContext
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.PhraseSayIt
 import com.obsidianmedia.learnwithalphonso.core.logic.billingPeriodDescription
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -127,6 +128,26 @@ class AiConversationClientTest {
         val c = AiConversationClient(http(ArrayList()) { json.toByteArray() to HttpStatusCode.OK })
         val result = c.transcribe(ByteArray(10), "audio/m4a", course = "en")
         assertEquals(listOf(SttWord("nice", 0.95), SttWord("meet", 0.4)), result.words)
+    }
+
+    @Test
+    fun `a string confidence is skipped, not read as a number`() = runTest {
+        val json = """{"text":"hi","words":[{"word":"hi","confidence":"0.9"},{"word":"there","confidence":0.8}]}"""
+        val c = AiConversationClient(http(ArrayList()) { json.toByteArray() to HttpStatusCode.OK })
+        assertEquals(listOf(SttWord("there", 0.8)), c.transcribe(ByteArray(10)).words)
+    }
+
+    @Test
+    fun `a phrase check that hits the quota shows the quota copy, a server fault the generic copy`() = runTest {
+        val quota = AiConversationClient(http(ArrayList()) { """{"error":"quota-exceeded"}""".toByteArray() to HttpStatusCode.TooManyRequests })
+        val q = runCatching { PhraseSayIt.transcribe { quota.transcribe(ByteArray(10)) } }.exceptionOrNull()
+        assertEquals(AiErrorCopy.quotaExceededMessage(null), q?.message)
+        val fault = AiConversationClient(http(ArrayList()) { """{"error":"boom"}""".toByteArray() to HttpStatusCode.BadGateway })
+        val f = runCatching { PhraseSayIt.transcribe { fault.transcribe(ByteArray(10)) } }.exceptionOrNull()
+        assertEquals(AiErrorCopy.GENERIC, f?.message)
+        val consent = AiConversationClient(http(ArrayList()) { """{"error":"ai-consent-required"}""".toByteArray() to HttpStatusCode.Forbidden })
+        val c = runCatching { PhraseSayIt.transcribe { consent.transcribe(ByteArray(10)) } }.exceptionOrNull()
+        assertEquals("ai-consent-required", (c as AiConversationError.Server).code)
     }
 
     @Test

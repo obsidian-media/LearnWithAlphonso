@@ -68,6 +68,8 @@ import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.PhraseSayIt
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -144,10 +146,15 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
     var errorRow by remember { mutableStateOf<Int?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var showConsent by remember { mutableStateOf(false) }
+    var consentRow by remember { mutableStateOf<Int?>(null) }
+    var tapAgainRow by remember { mutableStateOf<Int?>(null) }
+    val isConnected by container.connectivity.isConnected.collectAsState()
+    val consent by container.aiConsent.state.collectAsState()
+    val consentStatus = container.aiConsent.statusOf(consent)
     val engine = remember {
         ConversationTurnEngine(
             container.newRecorder(), { container.micPermission.request() },
-            { audio, timing -> container.aiClient.transcribe(audio, "audio/m4a", course.code, timing) },
+            { audio, timing -> PhraseSayIt.transcribe { container.aiClient.transcribe(audio, "audio/m4a", course.code, timing) } },
             scope,
         )
     }
@@ -200,11 +207,24 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
     fun toggleSay(i: Int) {
         when {
             busyRow == null && phase == TurnPhase.IDLE -> {
-                // Never record the phrase being played: any Hear audio stops first.
-                stopHearing()
                 results.remove(i)
                 error = null
                 errorRow = null
+                tapAgainRow = null
+                // No clip is recorded or uploaded without a connection and the learner's AI consent.
+                if (!isConnected) { errorRow = i; error = PhraseSayIt.OFFLINE; return }
+                when (consentStatus) {
+                    AiConsentStatus.GRANTED -> Unit
+                    AiConsentStatus.LOADING -> { errorRow = i; error = AiConsentCopy.checkingSetting; return }
+                    AiConsentStatus.UNAVAILABLE -> {
+                        errorRow = i; error = AiConsentCopy.checkFailedTitle
+                        scope.launch { container.aiConsent.refresh() }
+                        return
+                    }
+                    AiConsentStatus.DENIED -> { consentRow = i; showConsent = true; return }
+                }
+                // Never record the phrase being played: any Hear audio stops first.
+                stopHearing()
                 busyRow = i
                 engine.pressBegan()
             }
@@ -230,7 +250,9 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
                 val status = when {
                     busyRow == i && phase == TurnPhase.RECORDING -> PhraseSayIt.LISTENING
                     busyRow == i -> PhraseSayIt.CHECKING
-                    else -> results[i]?.let { PhraseSayIt.resultText(it) } ?: ""
+                    results[i] != null -> PhraseSayIt.resultText(results[i]!!)
+                    tapAgainRow == i -> PhraseSayIt.TAP_AGAIN
+                    else -> ""
                 }
                 Column(
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card)
@@ -276,5 +298,5 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
             Text(Phrasebook.SAVED_NOTE, style = CaptionType, color = ds.inkSoft, modifier = Modifier.padding(bottom = AlphonsoTokens.Space.s6))
         }
     }
-    if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
+    if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false; tapAgainRow = consentRow })
 }
