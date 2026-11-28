@@ -146,7 +146,7 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
                 Text(Phrasebook.count(snapshot.entries.size), style = FootnoteType, color = ds.inkSoft)
                 DsPill(RehearsalCopy.AI_LABEL, DsPillTone.INFO)
             }
-            if (onDeviceVoice) Text(Phrasebook.HEAR_HINT, style = FootnoteType, color = ds.inkSoft)
+            Text(if (onDeviceVoice) Phrasebook.HEAR_HINT else Phrasebook.HEAR_ALPHONSO_HINT, style = FootnoteType, color = ds.inkSoft)
             snapshot.entries.forEach { phrase ->
                 val label = Phrasebook.hearLabel(phrase.text)
                 Row(

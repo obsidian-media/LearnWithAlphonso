@@ -35,20 +35,22 @@ object Phrasebook {
     fun isOpen(state: RehearsalState): Boolean = state.active?.brief?.keyPhrases?.any { it.isNotBlank() } == true && state.isDone(Stage.WARMUP)
 
     /**
-     * The brief's phrases, blanks dropped, each with the meaning at the SAME index of the brief's meanings. A brief without
-     * meanings (a generated one) gives none; a shorter meanings list leaves the rest without; a blank meaning is none.
-     * Alignment is by the position in the brief, so dropping a blank phrase never shifts a later meaning onto a wrong one.
+     * The brief's phrases, blanks dropped. Meanings are shown only when EVERY phrase has one at the SAME index of the brief's
+     * meanings; a brief without meanings (a generated one), a shorter list, or any blank meaning gives none at all, so a
+     * meaning never sits under the wrong phrase. Alignment is by position in the brief, so dropping a blank phrase never
+     * shifts a later meaning onto a wrong one.
      */
     fun entries(brief: RehearsalBrief?): List<PhraseEntry> {
         if (brief == null) return emptyList()
-        return brief.keyPhrases.mapIndexedNotNull { i, raw ->
-            val text = raw.trim()
-            if (text.isEmpty()) null else PhraseEntry(text, brief.keyPhraseMeanings?.getOrNull(i)?.trim()?.takeIf { it.isNotEmpty() })
-        }
+        val kept = brief.keyPhrases.mapIndexedNotNull { i, raw -> raw.trim().takeIf { it.isNotEmpty() }?.let { i to it } }
+        val meanings = brief.keyPhraseMeanings
+        val aligned = meanings != null && meanings.size >= brief.keyPhrases.size && kept.all { (i, _) -> meanings[i].isNotBlank() }
+        return kept.map { (i, text) -> PhraseEntry(text, if (aligned) meanings!![i].trim() else null) }
     }
 
-    /** The snapshot to keep for a loaded state, or null when there is no active rehearsal or it has no phrases. */
+    /** The snapshot to keep for a loaded state, or null when there is no active rehearsal, the warm-up is not done, or it has no phrases. */
     fun snapshot(state: RehearsalState): PhrasebookSnapshot? {
+        if (!isOpen(state)) return null
         val r = state.active ?: return null
         val list = entries(r.brief)
         return if (list.isEmpty()) null else PhrasebookSnapshot(r.id, r.eventKind, list)
@@ -73,6 +75,7 @@ object Phrasebook {
     fun title(kind: EventKind): String = "Your phrases for this ${kind.short}"
     fun count(n: Int): String = "$n ${if (n == 1) "phrase" else "phrases"} for the day"
     const val HEAR_HINT = "Tap play to hear it."
+    const val HEAR_ALPHONSO_HINT = "Tap play to hear Alphonso say it."
 
     /** The plan's row card subtitle: "8 phrases · tap to hear" (nothing about saying them until the spot-checks exist). */
     fun linkSubtitle(n: Int): String = "$n ${if (n == 1) "phrase" else "phrases"} · tap to hear"

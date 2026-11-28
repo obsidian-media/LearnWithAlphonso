@@ -37,13 +37,16 @@ class PhrasebookTest {
         assertEquals(listOf(PhraseEntry("A", "a"), PhraseEntry("C", "c")), e)
     }
 
-    @Test fun `a generated brief has no meanings and a short or blank list leaves the rest without`() {
+    @Test fun `meanings show only when every phrase has one`() {
         assertEquals(listOf(PhraseEntry("A"), PhraseEntry("B")), Phrasebook.entries(RehearsalBrief(keyPhrases = listOf("A", "B"))))
-        assertEquals(
-            listOf(PhraseEntry("A", "a"), PhraseEntry("B", null), PhraseEntry("C", null)),
-            Phrasebook.entries(RehearsalBrief(keyPhrases = listOf("A", "B", "C"), keyPhraseMeanings = listOf("a", " "))),
-        )
+        // Short list, or a blank meaning: none at all, never a partial set.
+        assertEquals(listOf(PhraseEntry("A"), PhraseEntry("B"), PhraseEntry("C")), Phrasebook.entries(RehearsalBrief(keyPhrases = listOf("A", "B", "C"), keyPhraseMeanings = listOf("a", "b"))))
+        assertEquals(listOf(PhraseEntry("A"), PhraseEntry("B")), Phrasebook.entries(RehearsalBrief(keyPhrases = listOf("A", "B"), keyPhraseMeanings = listOf("a", " "))))
         assertEquals(emptyList<PhraseEntry>(), Phrasebook.entries(null))
+    }
+
+    @Test fun `no snapshot is kept before the warm-up is done`() {
+        assertNull(Phrasebook.snapshot(state(RehearsalBrief(keyPhrases = listOf("A")), warmup = "todo")))
     }
 
     @Test fun `the brief decodes with and without meanings and ignores unknown fields`() {
@@ -56,7 +59,7 @@ class PhrasebookTest {
     }
 
     @Test fun `the snapshot round trips and a damaged one is nothing`() {
-        val snap = Phrasebook.snapshot(state(RehearsalBrief(keyPhrases = listOf("A", "B"), keyPhraseMeanings = listOf("a"))))!!
+        val snap = Phrasebook.snapshot(state(RehearsalBrief(keyPhrases = listOf("A", "B"), keyPhraseMeanings = listOf("a", "b"))))!!
         assertEquals(snap, PhrasebookSnapshot.decode(snap.encode()))
         assertEquals(EventKind.APPOINTMENT, snap.kind)
         assertNull(PhrasebookSnapshot.decode("not json"))
