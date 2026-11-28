@@ -122,6 +122,20 @@ class AiConversationClientTest {
     }
 
     @Test
+    fun `transcribe decodes the per-word confidences and skips malformed entries`() = runTest {
+        val json = """{"text":"nice to meet","confidence":0.9,"words":[{"word":"nice","confidence":0.95},{"word":"to","confidence":"high"},{"confidence":0.5},{"word":"meet","confidence":0.4}]}"""
+        val c = AiConversationClient(http(ArrayList()) { json.toByteArray() to HttpStatusCode.OK })
+        val result = c.transcribe(ByteArray(10), "audio/m4a", course = "en")
+        assertEquals(listOf(SttWord("nice", 0.95), SttWord("meet", 0.4)), result.words)
+    }
+
+    @Test
+    fun `transcribe has no words when the response carries none`() = runTest {
+        val c = AiConversationClient(http(ArrayList()) { """{"text":"hi","confidence":0.9}""".toByteArray() to HttpStatusCode.OK })
+        assertEquals(emptyList<SttWord>(), c.transcribe(ByteArray(10)).words)
+    }
+
+    @Test
     fun `transcribe uploads multipart with the file field, course and timing`() = runTest {
         val seen = ArrayList<Seen>()
         val c = AiConversationClient(http(seen) { """{"text":"she is a doctor","confidence":0.91}""".toByteArray() to HttpStatusCode.OK })

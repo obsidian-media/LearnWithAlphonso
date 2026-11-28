@@ -18,6 +18,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readRawBytes
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.booleanOrNull
@@ -33,7 +34,11 @@ import java.util.Base64
 
 data class ChatMessage(val role: String, val content: String)
 
-data class SttResult(val text: String, val confidence: Double?)
+/** One word of the transcript with the recogniser's own confidence for it (0-1), as /api/stt forwards it. */
+data class SttWord(val word: String, val confidence: Double)
+
+/** [words] is empty when the vendor gave none (the field is absent from the response then). */
+data class SttResult(val text: String, val confidence: Double?, val words: List<SttWord> = emptyList())
 
 data class GeneratedPracticeQuestion(val prompt: String, val choices: List<String>, val answerIndex: Int, val explanation: String)
 
@@ -114,7 +119,13 @@ class AiConversationClient(private val http: ApiHttp) {
             if (debugTiming != null) add(MultipartPart.Field("debugTiming", debugTiming))
         }
         val obj = objectOf(http.postMultipart("api/stt", parts))
-        return SttResult(obj.str("text") ?: throw AiConversationError.InvalidPayload(), obj["confidence"]?.jsonPrimitive?.doubleOrNull)
+        val words = (obj["words"] as? JsonArray)?.mapNotNull { entry ->
+            val o = entry as? JsonObject ?: return@mapNotNull null
+            val word = o.str("word") ?: return@mapNotNull null
+            val confidence = runCatching { o["confidence"]?.jsonPrimitive?.doubleOrNull }.getOrNull() ?: return@mapNotNull null
+            SttWord(word, confidence)
+        }.orEmpty()
+        return SttResult(obj.str("text") ?: throw AiConversationError.InvalidPayload(), obj["confidence"]?.jsonPrimitive?.doubleOrNull, words)
     }
 
     suspend fun analyzeWeaknesses(transcript: List<ChatMessage>, course: String? = null): Int {
