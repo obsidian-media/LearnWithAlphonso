@@ -94,7 +94,10 @@ final class RehearsalSpeakingTests: XCTestCase {
     }
 
     func testEnglishFallbackSentences() {
-        XCTAssertEqual(note(.englishFallback, 0, 9, 3).sentence(language: "French"), "You stayed in French the whole time.")
+        // The zero case carries the comparison too, exactly like the web card.
+        XCTAssertEqual(note(.englishFallback, 0, 9, 3).sentence(language: "French"), "You stayed in French the whole time, down from 3 last time.")
+        XCTAssertEqual(note(.englishFallback, 0, 9, 0).sentence(language: "French"), "You stayed in French the whole time, the same as last time.")
+        XCTAssertEqual(note(.englishFallback, 0, 9, 2).sentence(language: "Spanish"), "You stayed in Spanish the whole time, down from 2 last time.")
         XCTAssertEqual(note(.englishFallback, 0, 9, nil).sentence(language: "Spanish"), "You stayed in Spanish the whole time.")
         XCTAssertEqual(note(.englishFallback, 1, 9, nil).sentence(language: "French"), "You switched to English once.")
         XCTAssertEqual(note(.englishFallback, 2, 9, nil).sentence(language: "French"), "You switched to English twice.")
@@ -106,6 +109,69 @@ final class RehearsalSpeakingTests: XCTestCase {
         XCTAssertEqual(note(.keyPhrases, 3, 8, nil).sentence(language: "French"), "You used 3 of your 8 key phrases.")
         XCTAssertEqual(note(.keyPhrases, 3, 8, 4).sentence(language: "French"), "You used 3 of your 8 key phrases, down from 4 last time.")
         XCTAssertEqual(note(.keyPhrases, 3, 8, 3).sentence(language: "French"), "You used 3 of your 8 key phrases, the same as last time.")
+        // One key phrase in the brief reads in the singular, like the web card.
+        XCTAssertEqual(note(.keyPhrases, 1, 1, nil).sentence(language: "French"), "You used 1 of your 1 key phrase.")
+        XCTAssertEqual(note(.keyPhrases, 0, 1, 2).sentence(language: "French"), "You used 0 of your 1 key phrase, down from 2 last time.")
+    }
+
+    func testEverySentenceIsTheWebsWordForWordAndEndsWithAFullStop() {
+        // The same cases as the web card's tests (src/lib/rehearsal-speaking.test.ts).
+        XCTAssertEqual(note(.fullReplies, 7, 9, 4).sentence(language: "French"), "You answered in full sentences 7 of 9 times, up from 4 last time.")
+        XCTAssertEqual(note(.englishFallback, 3, 9, nil).sentence(language: "French"), "You switched to English 3 times.")
+        XCTAssertEqual(note(.englishFallback, 5, 9, nil).sentence(language: "French"), "You switched to English 5 times.")
+        XCTAssertEqual(note(.keyPhrases, 4, 8, 4).sentence(language: "French"), "You used 4 of your 8 key phrases, the same as last time.")
+        let every: [RehearsalSpeaking.Note.Kind] = [.fullReplies, .englishFallback, .keyPhrases, .pauses]
+        for kind in every {
+            for (count, previous) in [(0, nil), (0, 2), (1, 1), (4, 2), (2, 4)] as [(Int, Int?)] {
+                for course in ["en", "fr", "es"] {
+                    let s = note(kind, count, 7, previous).sentence(language: RehearsalSpeaking.languageName(courseCode: course), courseCode: course)
+                    XCTAssertTrue(s.hasSuffix("."), s)
+                }
+            }
+        }
+    }
+
+    // MARK: - The pause note (slice B2)
+
+    private func pausesCase() throws -> Data {
+        // An inline copy of the server's B2 fixture case ("speaking.pauses" in rehearsal-api.json on the pause-note
+        // server branch); the shared fixture itself arrives with that server change.
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "rehearsal-pauses-case", withExtension: "json", subdirectory: "Fixtures"))
+        return try Data(contentsOf: url)
+    }
+
+    func testThePausesCaseDecodesAndThePauseNoteIsNotTheLead() throws {
+        let s = try XCTUnwrap(RehearsalSpeaking.parse(try pausesCase()))
+        XCTAssertEqual(s.notes, [note(.fullReplies, 7, 9, 4), note(.pauses, 4, 7, nil)])
+        XCTAssertEqual(s.notes.last?.kind, .pauses)
+    }
+
+    func testThePauseSentenceNamesTheCountAndTheCoursesOwnFiller() {
+        let n = note(.pauses, 4, 7, nil)
+        XCTAssertEqual(n.sentence(language: "English", courseCode: "en"),
+                       "You took a moment before 4 of 7 answers. That's fine; next time try starting with \u{201C}Let me think\u{2026}\u{201D}.")
+        XCTAssertEqual(n.sentence(language: "French", courseCode: "fr"),
+                       "You took a moment before 4 of 7 answers. That's fine; next time try starting with \u{201C}Laissez-moi r\u{00E9}fl\u{00E9}chir\u{2026}\u{201D}.")
+        XCTAssertEqual(n.sentence(language: "Spanish", courseCode: "es"),
+                       "You took a moment before 4 of 7 answers. That's fine; next time try starting with \u{201C}D\u{00E9}jeme pensar\u{2026}\u{201D}.")
+        XCTAssertEqual(n.sentence(language: "German", courseCode: "de"), n.sentence(language: "English", courseCode: "en"),
+                       "an unknown course gets the English filler")
+    }
+
+    func testAPauseNeverGetsAnArrowEvenWithAnEarlierCount() {
+        let withPrevious = note(.pauses, 5, 7, 2)
+        XCTAssertEqual(withPrevious.trend, .none)
+        XCTAssertNil(withPrevious.arrowSymbol)
+        XCTAssertFalse(withPrevious.sentence(language: "English").contains("last time"))
+        XCTAssertEqual(note(.pauses, 1, 7, 6).trend, .none)
+    }
+
+    func testAnUnknownKindBesideAPausesNoteIsStillDropped() throws {
+        let s = try XCTUnwrap(RehearsalSpeaking.parse(try body([
+            ["kind": "pace", "count": 1, "total": 2, "previous": NSNull()],
+            ["kind": "pauses", "count": 3, "total": 5, "previous": NSNull()],
+        ])))
+        XCTAssertEqual(s.notes, [note(.pauses, 3, 5, nil)])
     }
 
     func testNoSentenceCarriesAScoreOrPercentage() {
