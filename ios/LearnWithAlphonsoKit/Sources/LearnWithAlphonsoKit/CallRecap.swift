@@ -40,13 +40,17 @@ public struct CallRecap: Equatable, Sendable {
     /// True when this recap was kept in What Alphonso remembers (every learner; false only if the save failed).
     public let saved: Bool
     public let reviewCount: Int
+    /// "How you spoke" for a rehearsal call; nil for every other call.
+    public let speaking: RehearsalSpeaking?
 
-    public init(corrections: [Correction], phrase: Phrase?, reviewToken: String?, saved: Bool, reviewCount: Int) {
+    public init(corrections: [Correction], phrase: Phrase?, reviewToken: String?, saved: Bool, reviewCount: Int,
+                speaking: RehearsalSpeaking? = nil) {
         self.corrections = corrections
         self.phrase = phrase
         self.reviewToken = reviewToken
         self.saved = saved
         self.reviewCount = reviewCount
+        self.speaking = speaking
     }
 
     /// Calls shorter than this get no recap, and nothing is sent.
@@ -85,7 +89,8 @@ public struct CallRecap: Equatable, Sendable {
             phrase: phrase,
             reviewToken: (token?.isEmpty ?? true) ? nil : token,
             saved: (recap["saved"] as? Bool) ?? false,
-            reviewCount: (recap["reviewCount"] as? Int) ?? (corrections.count + (phrase == nil ? 0 : 1))
+            reviewCount: (recap["reviewCount"] as? Int) ?? (corrections.count + (phrase == nil ? 0 : 1)),
+            speaking: RehearsalSpeaking.parse(root: root)
         )
     }
 }
@@ -93,6 +98,8 @@ public struct CallRecap: Equatable, Sendable {
 /// One recap attempt's outcome: a recap, nothing to show, or a failure a second try may fix (the screen offers "Try again").
 public enum CallRecapAttempt: Equatable, Sendable {
     case got(CallRecap)
+    /// No recap, but a rehearsal call's "How you spoke" counts (the server sends them next to a null recap).
+    case speakingOnly(RehearsalSpeaking)
     case empty
     case retry
 }
