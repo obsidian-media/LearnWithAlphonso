@@ -93,8 +93,7 @@ class RehearsalsTest {
             val o = e.jsonObject
             val status = o.getValue("status").jsonPrimitive.content.toInt()
             val code = o.getValue("body").jsonObject["error"]?.jsonPrimitive?.content
-            // Android tells a past day apart from "invalid" (its own line); the fixture keeps the web's coarser meaning.
-            val means = if (code == "invalid_event_date") "INVALID_EVENT_DATE" else o.getValue("means").jsonPrimitive.content.uppercase()
+            val means = o.getValue("means").jsonPrimitive.content.uppercase()
             assertEquals(RehearsalError.valueOf(means), RehearsalError.of(status, code), "$status $code")
         }
     }
@@ -330,11 +329,6 @@ class RehearsalsTest {
         assertEquals(RehearsalResult.Failed(RehearsalError.NOT_ENABLED), client(ArrayList(), HttpStatusCode.NotFound, """{"error":"not_enabled"}""").presets("en"))
         assertEquals(RehearsalResult.Failed(RehearsalError.FAILED), client(ArrayList(), HttpStatusCode.OK, "{}").presets("en"))
         assertTrue(RehearsalCopy.errorText(RehearsalError.INVALID_PRESET).isNotBlank())
-    }
-
-    @Test fun `a past day is its own error with its own line, apart from invalid`() = runTest {
-        assertEquals(RehearsalResult.Failed(RehearsalError.INVALID_EVENT_DATE), client(ArrayList(), HttpStatusCode.BadRequest, """{"error":"invalid_event_date"}""").createFromPreset("en", "x", "2020-01-01"))
-        assertEquals("Pick today or a later day.", RehearsalCopy.errorText(RehearsalError.INVALID_EVENT_DATE))
     }
 
     @Test fun `the outcome body carries the choice, and the new date only with a value`() {

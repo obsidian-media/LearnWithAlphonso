@@ -195,7 +195,7 @@ object RehearsalDecoding {
 }
 
 /** What a refused request means to the learner; the screens turn each into words ([RehearsalCopy.errorText]). */
-enum class RehearsalError { PAYWALL, RETRY, BLOCKED_TEXT, ACTIVE_EXISTS, CLOSED, NOT_FOUND, NOT_ENABLED, INVALID, INVALID_PRESET, INVALID_EVENT_DATE, CONSENT, FAILED;
+enum class RehearsalError { PAYWALL, RETRY, BLOCKED_TEXT, ACTIVE_EXISTS, CLOSED, NOT_FOUND, NOT_ENABLED, INVALID, INVALID_PRESET, CONSENT, FAILED;
 
     companion object {
         /** The same table as the web's errorOf: the status says most of it, the code tells a few apart. */
@@ -205,7 +205,7 @@ enum class RehearsalError { PAYWALL, RETRY, BLOCKED_TEXT, ACTIVE_EXISTS, CLOSED,
             409 -> if (code == "closed") CLOSED else ACTIVE_EXISTS
             404 -> if (code == "not_enabled") NOT_ENABLED else NOT_FOUND
             403 -> CONSENT
-            400 -> when (code) { "blocked_text" -> BLOCKED_TEXT; "invalid_preset" -> INVALID_PRESET; "invalid_event_date" -> INVALID_EVENT_DATE; else -> INVALID }
+            400 -> when (code) { "blocked_text" -> BLOCKED_TEXT; "invalid_preset" -> INVALID_PRESET; else -> INVALID }
             else -> FAILED
         }
     }
@@ -384,7 +384,6 @@ object RehearsalCopy {
         RehearsalError.NOT_ENABLED -> "Rehearsals are not available yet."
         RehearsalError.INVALID -> "Please check your answers and try again."
         RehearsalError.INVALID_PRESET -> "That quick start is not available. Please pick another one."
-        RehearsalError.INVALID_EVENT_DATE -> "Pick today or a later day."
         RehearsalError.CONSENT -> "Turn on AI features to prepare a rehearsal."
         RehearsalError.FAILED -> "Something went wrong. Please try again."
     }

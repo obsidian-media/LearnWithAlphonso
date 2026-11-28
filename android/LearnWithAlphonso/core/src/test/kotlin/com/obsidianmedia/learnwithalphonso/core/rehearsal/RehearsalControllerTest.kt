@@ -161,11 +161,11 @@ class RehearsalControllerTest {
     }
 
     @Test fun `clearing the error forgets a refusal, so it cannot show under another preset`() = runTest {
-        val api = Fake(empty, RehearsalResult.Failed(RehearsalError.INVALID_EVENT_DATE))
+        val api = Fake(empty, RehearsalResult.Failed(RehearsalError.INVALID))
         val c = RehearsalController(api, "en")
         c.load()
         assertFalse(c.createFromPreset("job_interview", "2020-01-01"))
-        assertEquals(RehearsalError.INVALID_EVENT_DATE, c.ui.value.error)
+        assertEquals(RehearsalError.INVALID, c.ui.value.error)
         c.clearError()
         assertEquals(null, c.ui.value.error)
     }
