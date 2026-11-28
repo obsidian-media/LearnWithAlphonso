@@ -13,6 +13,8 @@ import {
 } from "./rehearsal-brief";
 import type { Rehearsal, RehearsalSummary } from "./rehearsal-api";
 import {
+  hardModeDone,
+  isPersona,
   nextStage,
   stageProgress,
   type EventKind,
@@ -148,13 +150,15 @@ type RunRow = {
   moments_shown: string[] | null;
   went_well: string[] | null;
   corrections: string[] | null;
+  persona?: string | null;
+  hard_mode?: boolean | null;
 };
 
 /** What the finished runs of a rehearsal taught the tutor (rehearsal_runs), oldest first. */
 export async function loadRuns(db: Db, userId: string, rehearsalId: string): Promise<RunMemory[]> {
   const { data, error } = await db
     .from("rehearsal_runs")
-    .select("stage,finished_at,moments_shown,went_well,corrections")
+    .select("stage,finished_at,moments_shown,went_well,corrections,persona,hard_mode")
     .eq("rehearsal_id", rehearsalId)
     .eq("user_id", userId)
     .order("finished_at", { ascending: true });
@@ -165,11 +169,13 @@ export async function loadRuns(db: Db, userId: string, rehearsalId: string): Pro
     momentsShown: x.moments_shown ?? [],
     wentWell: x.went_well ?? [],
     corrections: x.corrections ?? [],
+    persona: isPersona(x.persona) ? x.persona : "alphonso",
+    hardMode: x.hard_mode === true,
   }));
 }
 
 /** Run counts per rehearsal, for the history list (the paywall names what the learner already did). */
-async function loadSummaryStats(
+export async function loadSummaryStats(
   db: Db,
   userId: string,
   ids: string[],
@@ -178,7 +184,7 @@ async function loadSummaryStats(
   if (ids.length === 0) return out;
   const { data, error } = await db
     .from("rehearsal_runs")
-    .select("rehearsal_id,stage,corrections")
+    .select("rehearsal_id,stage,corrections,hard_mode")
     .eq("user_id", userId)
     .in("rehearsal_id", ids);
   if (error) throw new Error("rehearsal_runs read failed");
@@ -187,10 +193,12 @@ async function loadSummaryStats(
     rehearsal_id: string;
     stage: string;
     corrections: string[] | null;
+    hard_mode: boolean | null;
   }[]) {
     const cur = out.get(r.rehearsal_id) ?? { runs: 0, stagesDone: 0, corrections: 0 };
     const seen = stages.get(r.rehearsal_id) ?? new Set<string>();
-    seen.add(r.stage);
+    // A hard-mode run is its own thing: it is a run, but it never makes its stage "done".
+    if (r.hard_mode !== true) seen.add(r.stage);
     stages.set(r.rehearsal_id, seen);
     out.set(r.rehearsal_id, {
       runs: cur.runs + 1,
@@ -232,6 +240,8 @@ export async function loadRehearsalState(db: Db, userId: string, course: Course)
     nextStage: progress ? nextStage(progress, runs) : null,
     // Labels and corrected forms only (never the learner's words): the plan's debrief reads the latest run from here.
     runs,
+    // Hard mode done: the active rehearsal has a finished hard-mode run (it never replaces the stage's own run).
+    hardModeDone: hardModeDone(runs),
     history: closed.map((r) => toSummary(r, stats.get(r.id))),
     freeAvailable: !used,
   };
@@ -292,4 +302,34 @@ export async function generateBrief(
     }
   }
   return fallbackBrief(intake.eventKind, intake.course);
+}
+
+/**
+ * Can this learner start a Hector run? True when RevenueCat says Pro, false when it says not, null when it cannot be
+ * told (the start itself decides: the server checks Pro once there). One RevenueCat read per state load, never per turn.
+ */
+export const HECTOR_PRO_READ_MS = 1500;
+
+export async function hectorAvailableFor(
+  userId: string,
+  proState?: (userId: string) => Promise<"active" | "inactive" | "unavailable">,
+  timeoutMs: number = HECTOR_PRO_READ_MS,
+): Promise<boolean | null> {
+  // Capped: this runs inside the plan's state read, which must not wait on RevenueCat's own (longer) timeout. A slow
+  // answer is "unknown", and the run's own start decides.
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const read = (proState ?? (async (u) => (await import("./call-recap.server")).proStateFor(u)))(
+      userId,
+    );
+    const timeout = new Promise<"unavailable">((resolve) => {
+      timer = setTimeout(() => resolve("unavailable"), timeoutMs);
+    });
+    const state = await Promise.race([read, timeout]);
+    return state === "active" ? true : state === "inactive" ? false : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
