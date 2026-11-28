@@ -83,9 +83,9 @@ object SpeakingRules {
     fun sentence(note: SpeakingNote, language: String): String = when (note.kind) {
         SpeakingKind.FULL_REPLIES -> "You answered in full sentences ${note.count} of ${note.total} times${suffix(note.count, note.previous)}."
         SpeakingKind.ENGLISH_FALLBACK ->
-            if (note.count == 0) "You stayed in $language the whole time."
+            if (note.count == 0) "You stayed in $language the whole time${suffix(note.count, note.previous)}."
             else "You switched to English ${times(note.count)}${suffix(note.count, note.previous)}."
-        SpeakingKind.KEY_PHRASES -> "You used ${note.count} of your ${note.total} key phrases${suffix(note.count, note.previous)}."
+        SpeakingKind.KEY_PHRASES -> "You used ${note.count} of your ${note.total} key ${if (note.total == 1) "phrase" else "phrases"}${suffix(note.count, note.previous)}."
     }
 
     /** The small trend mark. Lower is better for switching to English; higher is better for the other two. */

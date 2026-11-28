@@ -32,8 +32,8 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 
 /**
  * "How you spoke" on the rehearsal debrief: up to three counts in the server's order, each with a small trend mark
- * against the last run. No score, percentage or grade, and a worse number is never red: it is drawn in the same quiet
- * neutral as "the same". TalkBack reads each sentence once; the marks are decorative. Nothing is drawn when the server
+ * against the last run. No score, percentage or grade, and a worse number is never red: every mark is the same quiet
+ * neutral. TalkBack reads each sentence once; the marks are decorative. Nothing is drawn when the server
  * sent no notes.
  */
 @Composable
@@ -65,9 +65,8 @@ private fun TrendMark(trend: SpeakingTrend) {
         Box(Modifier.size(26.dp).clearAndSetSemantics {})
         return
     }
-    val better = trend.improved
     Box(
-        Modifier.size(26.dp).clip(RoundedCornerShape(9.dp)).background(if (better) ds.rightTint else ds.sunk).clearAndSetSemantics {},
+        Modifier.size(26.dp).clip(RoundedCornerShape(9.dp)).background(ds.sunk).clearAndSetSemantics {},
         contentAlignment = Alignment.Center,
     ) {
         val icon = when (trend.direction) {
@@ -75,6 +74,6 @@ private fun TrendMark(trend: SpeakingTrend) {
             SpeakingTrend.Direction.DOWN -> Icons.Filled.ArrowDownward
             else -> Icons.Filled.Remove
         }
-        Icon(icon, contentDescription = null, tint = if (better) ds.rightInk else ds.inkSoft, modifier = Modifier.size(16.dp))
+        Icon(icon, contentDescription = null, tint = ds.inkSoft, modifier = Modifier.size(16.dp))
     }
 }

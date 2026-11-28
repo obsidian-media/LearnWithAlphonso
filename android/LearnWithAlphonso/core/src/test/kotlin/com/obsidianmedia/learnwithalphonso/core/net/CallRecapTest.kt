@@ -147,6 +147,11 @@ class CallRecapTest {
     }
 
     @Test
+    fun `a retry body with no recap is a Retry, not an empty answer`() = runTest {
+        assertEquals(AiConversationClient.RecapAttempt.Retry, client(ArrayList(), body = """{"recap":null,"retry":true}""").callRecapAttempt("c", call(3)))
+    }
+
+    @Test
     fun `the counts still arrive when the recap itself is null`() = runTest {
         val r = client(ArrayList(), body = """{"recap":null,$speakingJson}""").callRecapAttempt("c", call(3))
         assertEquals(3, (r as AiConversationClient.RecapAttempt.SpeakingOnly).rehearsalSpeaking.notes.single().count)

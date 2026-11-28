@@ -170,9 +170,9 @@ fun RehearsalDebrief(
             run != null -> {
                 Text(RehearsalCopy.debriefHeadline(kind, stage), style = TitleType, color = ds.ink, modifier = Modifier.semantics { heading() })
                 Text(RehearsalCopy.debriefStats(seconds, turns), style = FootnoteType, color = ds.inkSoft)
+                HowYouSpokeCard(rehearsalSpeaking, courseCode)
                 if (run.wentWell.isNotEmpty()) DebriefList("What went well", run.wentWell)
                 if (run.corrections.isNotEmpty()) DebriefList("Try again next time", run.corrections.take(2))
-                HowYouSpokeCard(rehearsalSpeaking, courseCode)
                 RehearsalCopy.fixLine(fixCount)?.let { DsCard(padding = AlphonsoTokens.Space.s3, fill = ds.heartTint) { Text(it, style = HeadlineType, color = ds.heartText) } }
             }
             pending -> Text("Alphonso is writing up this run…", style = BodyType, color = ds.inkSoft)

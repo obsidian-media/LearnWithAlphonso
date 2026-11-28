@@ -72,11 +72,15 @@ class RehearsalSpeakingTest {
 
     @Test fun `english fallback names the language when it never happened`() {
         val e = SpeakingKind.ENGLISH_FALLBACK
-        assertEquals("You stayed in Spanish the whole time.", SpeakingRules.sentence(note(e, 0, 9, 2), "Spanish"))
+        assertEquals("You stayed in Spanish the whole time, down from 2 last time.", SpeakingRules.sentence(note(e, 0, 9, 2), "Spanish"))
         assertEquals("You switched to English once.", SpeakingRules.sentence(note(e, 1, 9, null), "French"))
         assertEquals("You switched to English twice, down from 3 last time.", SpeakingRules.sentence(note(e, 2, 9, 3), "French"))
         assertEquals("You switched to English twice, the same as last time.", SpeakingRules.sentence(note(e, 2, 9, 2), "French"))
         assertEquals("You switched to English 3 times, up from 1 last time.", SpeakingRules.sentence(note(e, 3, 9, 1), "French"))
+    }
+
+    @Test fun `key phrase is singular when the total is one`() {
+        assertEquals("You used 1 of your 1 key phrase.", SpeakingRules.sentence(note(SpeakingKind.KEY_PHRASES, 1, 1, null), "Spanish"))
     }
 
     @Test fun `key phrases sentence`() {

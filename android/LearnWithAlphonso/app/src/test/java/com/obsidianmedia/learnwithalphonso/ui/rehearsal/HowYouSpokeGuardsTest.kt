@@ -19,7 +19,7 @@ class HowYouSpokeGuardsTest {
         if (!debrief.contains("HowYouSpokeCard(rehearsalSpeaking, courseCode)")) out += "the debrief does not draw the How you spoke card"
         if (!card.contains("SpeakingRules.sentence(")) out += "the card does not use the shared sentence"
         if (!card.contains("clearAndSetSemantics")) out += "the trend marks are not hidden from TalkBack"
-        if (Regex("wrong|heart|danger|Color\\.Red|%").containsMatchIn(card.lines().filterNot { it.trimStart().startsWith("*") || it.trimStart().startsWith("/*") || it.trimStart().startsWith("//") }.joinToString("\n"))) out += "the card draws a red or percentage"
+        if (Regex("wrong|heart|danger|right|Color\\.Red|%").containsMatchIn(card.lines().filterNot { it.trimStart().startsWith("*") || it.trimStart().startsWith("/*") || it.trimStart().startsWith("//") }.joinToString("\n"))) out += "the card draws a red, green or percentage"
         return out
     }
 
