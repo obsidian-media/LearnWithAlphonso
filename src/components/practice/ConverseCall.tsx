@@ -28,6 +28,7 @@ import { useAvatarPreference } from "@/lib/avatar/preference";
 import { useReducedMotion } from "framer-motion";
 import { fetchProgress } from "@/lib/sync.functions";
 import { voiceFor } from "@/lib/voice-prefs";
+import { HECTOR_KIT } from "@/lib/avatar/layers";
 import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 import { waitForCallCue } from "@/lib/sfx";
 import { voicePlayback } from "@/lib/voice-playback";
@@ -86,6 +87,8 @@ export function ConverseChatPage({
   rehearsalTitle?: string;
 }) {
   const isRehearsal = source.kind === "rehearsal";
+  // A Hector rehearsal (Pro): his voice, his art and his name; the partner is always labelled an AI on the call screen.
+  const isHector = source.kind === "rehearsal" && source.persona === "hector";
   const consent = useAiConsent();
   const navigate = useNavigate();
   // Practice stars: every reply of this call carries its id to /api/chat, which records the judged reply; hanging
@@ -160,12 +163,17 @@ export function ConverseChatPage({
       setVoice("loading");
       try {
         // Alphonso's voice for this course (Settings > Voices); the server re-checks it against the allow-list.
-        const voiceId = await voiceFor("alphonso", course);
+        const voiceId = await voiceFor(isHector ? "hector" : "alphonso", course);
         const fetchBlob = async () => {
           const resp = await fetch("/api/tts", {
             method: "POST",
             headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-            body: JSON.stringify({ text, course, voice: voiceId }),
+            body: JSON.stringify({
+              text,
+              course,
+              voice: voiceId,
+              ...(isHector ? { character: "hector" } : {}),
+            }),
           });
           return resp.ok ? await resp.blob() : null;
         };
@@ -187,7 +195,7 @@ export function ConverseChatPage({
         setVoice("idle");
       }
     },
-    [ttsOn, course, sayReply],
+    [ttsOn, course, sayReply, isHector],
   );
 
   // Auto-speak the opener once on mount
@@ -243,13 +251,15 @@ export function ConverseChatPage({
           throw new Error(
             resp.status === 429
               ? t || "Daily limit reached — try again tomorrow."
-              : resp.status === 402 && isRehearsal
-                ? "You have used all the runs of your free rehearsal. More rehearsals are part of Alphonso Pro."
-                : resp.status === 402
-                  ? "AI credits exhausted. Add credits to keep chatting."
-                  : resp.status === 502
-                    ? "Your partner didn't answer. Try saying it again."
-                    : t || "Something went wrong.",
+              : resp.status === 402 && isRehearsal && t === "pro_required"
+                ? "Hector rehearsals are part of Alphonso Pro. You can start this stage with Alphonso instead."
+                : resp.status === 402 && isRehearsal
+                  ? "You have used all the runs of your free rehearsal. More rehearsals are part of Alphonso Pro."
+                  : resp.status === 402
+                    ? "AI credits exhausted. Add credits to keep chatting."
+                    : resp.status === 502
+                      ? "Your partner didn't answer. Try saying it again."
+                      : t || "Something went wrong.",
           );
         }
         const data = (await resp.json()) as { content?: string; verdict?: unknown };
@@ -684,6 +694,7 @@ export function ConverseChatPage({
       <LessonFrame>
         <PracticeCall
           title={scenario.title}
+          kit={isHector ? HECTOR_KIT : undefined}
           rehearsal={
             source.kind === "rehearsal"
               ? { title: rehearsalTitle ?? scenario.title, stage: source.stage }

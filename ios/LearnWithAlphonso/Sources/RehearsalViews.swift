@@ -771,6 +771,7 @@ struct RehearsalRunView: View {
     @State private var openerCue = 0
     @State private var initialized = false
     @State private var recapModel = CallRecapModel()
+    @State private var rehearsalSpeaking: RehearsalSpeaking?
     /// The stage's latest finished run before this call, so a debrief is only built from a run this call made.
     @State private var previousFinishedAt: String?
     @Environment(\.scenePhase) private var scenePhase
@@ -791,6 +792,8 @@ struct RehearsalRunView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .debrief(let outcome): RehearsalDebriefView(outcome: outcome, stage: stage, persona: persona,
+                                                              speaking: rehearsalSpeaking,
+                                                              language: RehearsalSpeaking.languageName(courseCode: course.wireCode),
                                                               onRunStage: onRunStage, onPlan: onPlan)
             case .notSaved:
                 VStack(spacing: AlphonsoDS.Space.s3) {
@@ -973,6 +976,7 @@ struct RehearsalRunView: View {
         while recapModel.status == .pending { try? await Task.sleep(for: .milliseconds(300)) }
         await model.refresh()
         let added = (recapModel.status == .ready && recapModel.recap?.saved == true) ? (recapModel.recap?.reviewCount ?? 0) : 0
+        rehearsalSpeaking = recapModel.rehearsalSpeaking
         phase = .debrief(RehearsalDebrief.make(
             stage: stage, kind: rehearsal.kind, runs: model.state?.runs ?? [], previousFinishedAt: previousFinishedAt,
             seconds: elapsed, turns: conversation.turns.count - conversation.openerIndices.count, addedToFix: added,
@@ -986,6 +990,8 @@ struct RehearsalDebriefView: View {
     let outcome: RehearsalDebrief.Outcome
     let stage: RehearsalStage
     var persona: RehearsalPersona = .alphonso
+    var speaking: RehearsalSpeaking?
+    var language: String = "English"
     let onRunStage: (RehearsalStage) -> Void
     let onPlan: () -> Void
     @Environment(\.alphonsoDS) private var ds
@@ -1006,6 +1012,7 @@ struct RehearsalDebriefView: View {
                         Text(d.headline).dsText(.title).foregroundStyle(ds.ink).accessibilityAddTraits(.isHeader)
                         Text(d.stats).dsText(.footnote).foregroundStyle(ds.inkSoft)
                     }
+                    if let speaking, !speaking.notes.isEmpty { speakingCard(speaking) }
                     if !d.wentWell.isEmpty { listCard("What went well", d.wentWell, tint: ds.rightInk) }
                     if !d.tryAgain.isEmpty { listCard("Try again next time", d.tryAgain, tint: ds.heartText) }
                     if let fix = d.fixLine {
@@ -1027,6 +1034,27 @@ struct RehearsalDebriefView: View {
                 }
             }
             .padding(AlphonsoDS.Space.gutter)
+        }
+    }
+
+    /// "How you spoke": up to three plain sentences, each with a small decorative arrow against last time. Neutral ink
+    /// throughout, no score, no percentage, never red.
+    private func speakingCard(_ speaking: RehearsalSpeaking) -> some View {
+        RehearsalCard {
+            Text("How you spoke").dsText(.headline).foregroundStyle(ds.choice).accessibilityAddTraits(.isHeader)
+            ForEach(speaking.notes) { note in
+                HStack(alignment: .firstTextBaseline, spacing: AlphonsoDS.Space.s2) {
+                    Image(systemName: note.arrowSymbol ?? "circle.fill")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(ds.inkSoft)
+                        .opacity(note.arrowSymbol == nil ? 0.35 : 1)
+                        .frame(width: 18)
+                        .accessibilityHidden(true)
+                    Text(note.sentence(language: language)).dsText(.footnote).foregroundStyle(ds.ink)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(note.sentence(language: language))
+            }
         }
     }
 

@@ -615,6 +615,85 @@ describe("GET /api/rehearsal?course=", () => {
     expect(await res.json()).toMatchObject({ active: null, history: [], freeAvailable: true });
   });
 
+  describe("Hector and hard mode in the state", () => {
+    type St = {
+      hectorAvailable: boolean | null;
+      hardModeDone: boolean;
+      progress: Record<string, string> | null;
+      nextStage: string | null;
+      runs: { stage: string; persona: string; hardMode: boolean }[];
+    };
+    const run = (stage: string, at: string, extra: Record<string, unknown> = {}) => ({
+      stage,
+      finished_at: at,
+      moments_shown: [],
+      went_well: [],
+      corrections: [],
+      ...extra,
+    });
+
+    it("tells whether Hector is available: Pro true, not Pro false, unreadable null, once per load", async () => {
+      h.active = rowFor({ _free: true });
+      h.pro.mockResolvedValue("active");
+      h.pro.mockClear();
+      expect(((await (await get("?course=en")).json()) as St).hectorAvailable).toBe(true);
+      expect(h.pro).toHaveBeenCalledTimes(1);
+      h.pro.mockResolvedValue("inactive");
+      expect(((await (await get("?course=en")).json()) as St).hectorAvailable).toBe(false);
+      h.pro.mockResolvedValue("unavailable");
+      expect(((await (await get("?course=en")).json()) as St).hectorAvailable).toBeNull();
+    });
+
+    it("with no active rehearsal Pro is not even read", async () => {
+      h.pro.mockClear();
+      const body = (await (await get("?course=fr")).json()) as St;
+      expect(body.hectorAvailable).toBeNull();
+      expect(body.hardModeDone).toBe(false);
+      expect(h.pro).not.toHaveBeenCalled();
+    });
+
+    it("a hard-mode run is hard mode done, and leaves the stage not done", async () => {
+      h.active = rowFor({ _free: true });
+      h.runs = [
+        run("warmup", "2026-11-27T10:00:00Z"),
+        run("conversation", "2026-11-27T11:00:00Z"),
+        run("hard_moments", "2026-11-28T10:00:00Z", { persona: "hector", hard_mode: true }),
+      ];
+      const body = (await (await get("?course=en")).json()) as St;
+      expect(body.hardModeDone).toBe(true);
+      expect(body.progress).toEqual({ warmup: "done", conversation: "done", hard_moments: "todo" });
+      expect(body.nextStage).toBe("hard_moments");
+      expect(body.runs[2]).toMatchObject({ persona: "hector", hardMode: true });
+      expect(body.runs[0]).toMatchObject({ persona: "alphonso", hardMode: false });
+    });
+
+    it("stage 3 done by its own run stays done once; hard mode done is separate", async () => {
+      h.active = rowFor({ _free: true });
+      h.runs = [
+        run("warmup", "2026-11-27T10:00:00Z"),
+        run("conversation", "2026-11-27T11:00:00Z"),
+        run("hard_moments", "2026-11-28T10:00:00Z", { persona: "hector" }),
+      ];
+      const plain = (await (await get("?course=en")).json()) as St;
+      expect(plain.hardModeDone).toBe(false);
+      expect(plain.progress?.hard_moments).toBe("done");
+      h.runs = [
+        ...h.runs,
+        run("hard_moments", "2026-11-29T10:00:00Z", { persona: "hector", hard_mode: true }),
+      ];
+      const both = (await (await get("?course=en")).json()) as St;
+      expect(both.hardModeDone).toBe(true);
+      expect(both.progress?.hard_moments).toBe("done");
+    });
+
+    it("rehearsals off for the account: Hector is not offered a plan to start from", async () => {
+      h.off = true;
+      h.active = rowFor({ _free: true });
+      const body = (await (await get("?course=en")).json()) as St;
+      expect(body.hectorAvailable).toBeNull();
+    });
+  });
+
   const runRow = (stage: string, finished_at: string, corrections: string[] = []) => ({
     stage,
     finished_at,
@@ -665,6 +744,8 @@ describe("GET /api/rehearsal?course=", () => {
         momentsShown: ["The salary question"],
         wentWell: ["You asked a question back"],
         corrections: ["I am hoping for around 3000"],
+        persona: "alphonso",
+        hardMode: false,
       },
     ]);
   });
