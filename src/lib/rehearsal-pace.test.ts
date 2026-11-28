@@ -163,3 +163,64 @@ describe("the pace line", () => {
     expect(all.filter((l) => prompt.includes(l))).toHaveLength(1);
   });
 });
+
+describe("pace: comprehension phrases only count in a brief reply or a question", () => {
+  it.each<[Course, string]>([
+    ["es", "No entiendo por qué subió el precio de la cuenta"],
+    ["fr", "Je ne comprends pas pourquoi le prix a augmenté ce mois-ci"],
+    ["en", "I don't understand why the price went up this month"],
+  ])("%s: a long answer containing the phrase is not a request", (course, text) => {
+    expect(asksForRepetition(text, course)).toBe(false);
+    const full =
+      course === "fr" ? FULL_FR : course === "es" ? "Quiero reservar una mesa hoy" : FULL_EN;
+    expect(chooseRehearsalPace(talk(full, full, text), course)).toBe("faster");
+  });
+
+  it("a long reply that ends with a question mark still counts", () => {
+    expect(
+      asksForRepetition("No entiendo muy bien lo que quiere decir, puede explicarlo?", "es"),
+    ).toBe(true);
+  });
+
+  it("a brief reply counts without a question mark", () => {
+    expect(asksForRepetition("No entiendo", "es")).toBe(true);
+    expect(asksForRepetition("Je ne comprends pas", "fr")).toBe(true);
+    expect(asksForRepetition("I don't understand", "en")).toBe(true);
+  });
+});
+
+describe("pace: more common requests", () => {
+  it.each<[Course, string]>([
+    ["es", "No entendí"],
+    ["es", "Otra vez, por favor"],
+    ["es", "¿Puede repetirlo?"],
+    ["es", "Repetirlo, por favor"],
+    ["es", "Repítame eso"],
+    ["fr", "Tu peux répéter ?"],
+    ["fr", "Vous pouvez répéter"],
+    ["fr", "Peux-tu répéter"],
+    ["fr", "Répéter"],
+    ["fr", "Encore une fois"],
+    ["fr", "Pas compris"],
+    ["en", "I didn't catch that"],
+  ])("%s: %s", (course, text) => {
+    expect(asksForRepetition(text, course)).toBe(true);
+  });
+
+  it("a bare apology is not a request", () => {
+    expect(asksForRepetition("Désolé", "fr")).toBe(false);
+    expect(asksForRepetition("desole", "fr")).toBe(false);
+  });
+
+  it("a long answer that merely mentions repeating is not a request", () => {
+    expect(
+      asksForRepetition("Hier j'ai dû répéter la même phrase pour toute l'équipe au bureau", "fr"),
+    ).toBe(false);
+    expect(
+      asksForRepetition(
+        "Lo hice otra vez porque el cliente cambió de opinión sobre el pedido",
+        "es",
+      ),
+    ).toBe(false);
+  });
+});

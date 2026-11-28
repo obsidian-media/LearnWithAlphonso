@@ -27,7 +27,7 @@ const strip = (s: string): string =>
  * Phrases that ask for repetition or a slower pace, per course language. Stored already stripped (no accents, lower
  * case). `whole` entries only count when they are the entire reply ("sorry?"), because "sorry I am late" is not a request.
  */
-const ASKS: Record<Course, { anywhere: string[]; whole: string[] }> = {
+const ASKS: Record<Course, { anywhere: string[]; comprehension: string[]; whole: string[] }> = {
   en: {
     anywhere: [
       "can you repeat",
@@ -37,9 +37,13 @@ const ASKS: Record<Course, { anywhere: string[]; whole: string[] }> = {
       "more slowly",
       "slower please",
       "speak slowly",
+    ],
+    comprehension: [
       "i don't understand",
       "i do not understand",
       "i didn't understand",
+      "i didn't catch that",
+      "i didn't catch it",
     ],
     whole: ["sorry", "pardon", "what", "again"],
   },
@@ -47,23 +51,39 @@ const ASKS: Record<Course, { anywhere: string[]; whole: string[] }> = {
     anywhere: [
       "repetez",
       "pouvez vous repeter",
+      "tu peux repeter",
+      "vous pouvez repeter",
+      "peux tu repeter",
       "plus lentement",
       "plus doucement",
+    ],
+    comprehension: [
+      "repeter",
+      "encore une fois",
+      "pas compris",
       "je ne comprends pas",
       "je n'ai pas compris",
       "je comprends pas",
     ],
-    whole: ["pardon", "comment", "desole", "quoi"],
+    whole: ["pardon", "comment", "quoi"],
   },
   es: {
     anywhere: [
       "puede repetir",
       "puedes repetir",
+      "puede repetirlo",
+      "puedes repetirlo",
       "repita",
       "repite",
+      "repitame",
       "mas despacio",
       "mas lento",
+    ],
+    comprehension: [
+      "repetirlo",
+      "otra vez",
       "no entiendo",
+      "no entendi",
       "no he entendido",
       "no comprendo",
     ],
@@ -71,14 +91,23 @@ const ASKS: Record<Course, { anywhere: string[]; whole: string[] }> = {
   },
 };
 
+/** A comprehension phrase only counts in a brief reply or a question; inside a long answer it is just part of the answer. */
+const BRIEF_WORDS = 6;
+
 /** True when a learner reply asks the partner to repeat or slow down. Accent and case insensitive. */
 export function asksForRepetition(text: string, course: Course): boolean {
   const s = strip(text);
   if (!s) return false;
   const lists = ASKS[course];
   if (lists.whole.includes(s)) return true;
-  const padded = ` ${s.replace(/-/g, " ")} `;
-  return lists.anywhere.some((p) => padded.includes(` ${p} `));
+  const padded = ` ${s} `;
+  const has = (p: string) => padded.includes(` ${p} `);
+  if (lists.anywhere.some(has)) return true;
+  const brief =
+    measureReply(text, course).short ||
+    s.split(" ").length <= BRIEF_WORDS ||
+    text.trim().endsWith("?");
+  return brief && lists.comprehension.some(has);
 }
 
 /**
@@ -120,7 +149,7 @@ const LINES: Record<Course, Record<RehearsalPace, string>> = {
   },
   es: {
     simplify:
-      "Ritmo para tu próximo turno: usa frases más cortas con palabras comunes, haz una sola pregunta a la vez y, si algo hay que decirlo otra vez, dilo de otra manera en lugar de repetirlo palabra por palabra. No digas nunca que lo haces. Quédate dentro del bloque y de la etapa en curso, y mantén cada momento difícil tan exigente como está escrito.",
+      "Ritmo para tu próximo turno: usa frases más cortas con palabras comunes, haz una sola pregunta a la vez y, si hay que decir algo otra vez, dilo de otra manera en lugar de repetirlo palabra por palabra. No digas nunca que lo haces. Quédate dentro del bloque y de la etapa en curso, y mantén cada momento difícil tan exigente como está escrito.",
     normal:
       "Ritmo para tu próximo turno: habla al nivel del aprendiz, con frases naturales de longitud media. Quédate dentro del bloque y de la etapa en curso, y mantén cada momento difícil tan exigente como está escrito.",
     faster:

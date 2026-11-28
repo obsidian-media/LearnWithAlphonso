@@ -555,3 +555,30 @@ describe("adaptive pace is absent from an ordinary chat", () => {
         expect(system).not.toContain(paceLine(c, p));
   });
 });
+
+describe("adaptive pace: repetition request and placement", () => {
+  const user = (content: string) => ({ role: "user", content });
+  const asst = (content: string) => ({ role: "assistant", content });
+
+  it("a Spanish repetition request gets the simplify line", async () => {
+    h.rehearsal = row({ course: "es", brief: fallbackBrief("interview", "es") });
+    const full = "Buenos días, quiero reservar una mesa";
+    await send(
+      rehearsalBody({
+        messages: [user(full), asst("a"), user(full), asst("b"), user("¿Puede repetirlo?")],
+      }),
+    );
+    const system = modelMessages()[0]!.content;
+    expect(system).toContain(paceLine("es", "simplify"));
+    expect(system).not.toContain(paceLine("es", "faster"));
+  });
+
+  it("the pace line sits before the verdict instruction in the system message", async () => {
+    await send(rehearsalBody());
+    const system = modelMessages()[0]!.content;
+    const at = system.indexOf(paceLine("en", "normal"));
+    const verdictAt = system.indexOf("[[verdict:correct]]");
+    expect(at).toBeGreaterThan(-1);
+    expect(verdictAt).toBeGreaterThan(at);
+  });
+});
