@@ -200,7 +200,7 @@ struct RehearsalPhrasebookView: View {
         return Button { micTapped(index: index) } label: {
             Group {
                 if recordingHere {
-                    Image(systemName: "stop.fill").font(.system(size: 18, weight: .semibold))
+                    Image(systemName: "stop.fill").dsText(.headline)
                 } else {
                     DSIconView(icon: .mic, size: 20)
                 }
