@@ -146,7 +146,7 @@ export function ActiveRehearsal({
           <span className="min-w-0 flex-1">
             <span className="block ds-type-headline font-semibold text-ds-ink">Your phrases</span>
             <span className="block ds-type-caption text-ds-ink-soft">
-              {rehearsal.brief.keyPhrases.length} phrases · tap to hear
+              {rehearsal.brief.keyPhrases.length} phrases · tap to hear, say them
             </span>
           </span>
           <svg

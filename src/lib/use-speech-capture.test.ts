@@ -78,6 +78,47 @@ describe("useSpeechCapture", () => {
     expect(result.current.error).toBeNull();
   });
 
+  it("hands over the per-word confidences when the server sends them", async () => {
+    installMediaMocks();
+    const words = [{ word: "Hello", confidence: 0.8 }];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ text: "Hello", confidence: 0.8, words }),
+      })),
+    );
+    const onTranscript = vi.fn();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript }));
+    await act(async () => {
+      await result.current.start();
+    });
+    await act(async () => {
+      result.current.stop();
+    });
+    await waitFor(() => expect(onTranscript).toHaveBeenCalledWith("Hello", 0.8, words));
+  });
+
+  it("reports an empty transcript to onNoWords, outside hands-free, only when asked to", async () => {
+    installMediaMocks();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: true, json: async () => ({ text: "Um.", confidence: 0.5 }) })),
+    );
+    const onNoWords = vi.fn();
+    const { result } = renderHook(() =>
+      useSpeechCapture({ onTranscript: vi.fn(), onNoWords, reportNoWords: true }),
+    );
+    await act(async () => {
+      await result.current.start();
+    });
+    await act(async () => {
+      result.current.stop();
+    });
+    await waitFor(() => expect(onNoWords).toHaveBeenCalledTimes(1));
+    expect(result.current.error).toBeNull();
+  });
+
   it("surfaces a denied microphone as an error and never reports a transcript", async () => {
     // A refused or broken recording must not reach the caller at all. If it
     // did, a player would grade "nothing" as a wrong answer and take a heart
