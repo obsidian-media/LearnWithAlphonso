@@ -63,6 +63,8 @@ async function handlePost(
     action !== "outcome"
   )
     return bad("invalid_action");
+  // Everything but cancel and delete needs rehearsals on globally (before any auth or read).
+  if (action !== "cancel" && action !== "delete" && !rehearsalsEnabled()) return NOT_ENABLED();
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const admin = supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient;
@@ -123,7 +125,7 @@ async function handlePost(
     const { verifyAuth } = await import("@/lib/ai-quota.server");
     const auth = await timer.time("auth", () => verifyAuth(request));
     if (!auth.ok) return noStoreJson({ error: auth.message }, { status: auth.status });
-    if (!(await rehearsalsEnabledFor(admin, auth.userId))) return NOT_ENABLED();
+    // No switch check here: a learner can always cancel or delete their own rehearsal, whatever the switches say.
     if (!isRehearsalId(body.id)) return bad("invalid_id");
     if (action === "cancel") {
       const { data, error } = await admin.rpc("cancel_rehearsal", {
@@ -259,30 +261,29 @@ export const Route = createFileRoute("/api/rehearsal")({
     handlers: {
       GET: ({ request }) =>
         timedRoute("rehearsal-get", async (timer) => {
-          if (!rehearsalsEnabled()) return NOT_ENABLED();
           const course = new URL(request.url).searchParams.get("course");
           if (!course || !isCourse(course)) return bad("invalid_course");
           const { verifyAuth } = await import("@/lib/ai-quota.server");
           const auth = await timer.time("auth", () => verifyAuth(request));
           if (!auth.ok) return noStoreJson({ error: auth.message }, { status: auth.status });
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          if (!(await rehearsalsEnabledFor(supabaseAdmin, auth.userId))) return NOT_ENABLED();
+          // Reading is always allowed, so a learner can see (and then delete) what they have even when rehearsals are off
+          // for them or for everyone. When off, nothing new is offered: the free rehearsal is not available.
+          const on = await rehearsalsEnabledFor(supabaseAdmin, auth.userId);
           const { loadRehearsalState } = await import("@/lib/rehearsals.server");
           try {
-            return noStoreJson(
-              await loadRehearsalState(
-                supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient,
-                auth.userId,
-                course as Course,
-              ),
+            const state = await loadRehearsalState(
+              supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient,
+              auth.userId,
+              course as Course,
             );
+            return noStoreJson(on ? state : { ...state, freeAvailable: false });
           } catch {
             return noStoreJson({ error: "failed" }, { status: 500 });
           }
         }),
       POST: ({ request }) =>
         timedRoute("rehearsal", async (timer) => {
-          if (!rehearsalsEnabled()) return NOT_ENABLED();
           return handlePost(request, timer);
         }),
     },

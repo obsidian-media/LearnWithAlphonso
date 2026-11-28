@@ -448,19 +448,31 @@ describe("adjust, cancel and delete", () => {
 });
 
 describe("the REHEARSALS_ENABLED flag", () => {
-  it("is off by default: every verb is 404 and nothing is read or written", async () => {
+  it("is off by default: create, adjust and outcome are 404 and nothing is read or written", async () => {
     delete process.env.REHEARSALS_ENABLED;
     expect((await create()).status).toBe(404);
-    expect((await get("?course=en")).status).toBe(404);
-    expect((await post({ action: "delete", id: ID })).status).toBe(404);
+    expect((await post({ action: "adjust", id: ID })).status).toBe(404);
+    expect((await post({ action: "outcome", id: ID, choice: "well" })).status).toBe(404);
     expect(h.authorize).not.toHaveBeenCalled();
     expect(h.verify).not.toHaveBeenCalled();
     expect(h.rpcs).toEqual([]);
   });
 
+  it("with it off, a learner can still read what they have and delete or cancel it (never create)", async () => {
+    delete process.env.REHEARSALS_ENABLED;
+    h.active = rowFor({});
+    const res = await get("?course=en");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ active: { id: ID }, freeAvailable: false });
+    expect((await post({ action: "delete", id: ID })).status).toBe(200);
+    expect((await post({ action: "cancel", id: ID })).status).toBe(200);
+    expect(h.deletedTables).toContain("rehearsals");
+    expect(h.rpcs.map((r) => r.fn)).toEqual(["cancel_rehearsal"]);
+  });
+
   it("is on only when exactly 'true'", async () => {
     process.env.REHEARSALS_ENABLED = "1";
-    expect((await get("?course=en")).status).toBe(404);
+    expect((await create()).status).toBe(404);
   });
 });
 
@@ -699,7 +711,7 @@ describe("the per-account switch", () => {
       ["GET", () => get("?course=en")],
     ] as const;
 
-  it.each(["create", "adjust", "cancel", "delete", "outcome", "GET"] as const)(
+  it.each(["create", "adjust", "outcome"] as const)(
     "%s is 404 not_enabled for an account switched off, and spends and writes nothing",
     async (verb) => {
       h.off = true;
@@ -723,16 +735,36 @@ describe("the per-account switch", () => {
     expect((await create()).status).toBe(200);
   });
 
-  it("a failed read of the switch fails closed: the account is treated as off", async () => {
-    h.offReadError = true;
-    expect((await get("?course=en")).status).toBe(404);
-    expect((await create()).status).toBe(404);
+  it("an account switched off can still read its rehearsals and history, and delete or cancel them", async () => {
+    h.off = true;
+    h.active = rowFor({});
+    h.history = [
+      { ...rowFor({}), id: OTHER_ID, status: "done", closed_at: "2026-11-01T00:00:00Z" },
+    ];
+    const res = await get("?course=en");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      active: { id: string };
+      history: unknown[];
+      freeAvailable: boolean;
+    };
+    expect(body.active.id).toBe(ID);
+    expect(body.history).toHaveLength(1);
+    expect(body.freeAvailable).toBe(false);
+    expect((await post({ action: "delete", id: ID })).status).toBe(200);
+    expect(h.deletedTables).toContain("rehearsals");
+    expect((await post({ action: "cancel", id: ID })).status).toBe(200);
+    expect(h.rpcs.map((r) => r.fn)).toEqual(["cancel_rehearsal"]);
     expect(h.charge).not.toHaveBeenCalled();
+    expect(h.llm).not.toHaveBeenCalled();
   });
 
-  it("the global flag off still wins for an account that was never switched off", async () => {
-    delete process.env.REHEARSALS_ENABLED;
-    expect((await get("?course=en")).status).toBe(404);
+  it("a failed read of the switch fails closed for create, but never blocks reading or deleting", async () => {
+    h.offReadError = true;
+    expect((await create()).status).toBe(404);
+    expect((await get("?course=en")).status).toBe(200);
+    expect((await post({ action: "delete", id: ID })).status).toBe(200);
+    expect(h.charge).not.toHaveBeenCalled();
   });
 });
 
