@@ -6,6 +6,7 @@ import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalApi
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalDecoding
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalError
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalIntake
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalPreset
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalResult
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalState
 import io.ktor.client.statement.HttpResponse
@@ -28,6 +29,15 @@ class RehearsalClient(private val http: ApiHttp) : RehearsalApi {
 
     override suspend fun create(intake: RehearsalIntake): RehearsalResult<Rehearsal> =
         post(intakeBody("create", null, intake)) { RehearsalDecoding.rehearsal(it) }
+
+    override suspend fun presets(course: String): RehearsalResult<List<RehearsalPreset>> =
+        send({ http.get(PRESETS_PATH, mapOf("course" to course)) }) { RehearsalDecoding.presets(it) }
+
+    override suspend fun createFromPreset(course: String, presetId: String, eventDate: String?): RehearsalResult<Rehearsal> =
+        post(presetBody(course, presetId, eventDate)) { RehearsalDecoding.rehearsal(it) }
+
+    override suspend fun setDate(id: String, eventDate: String?): RehearsalResult<Rehearsal> =
+        post(dateBody(id, eventDate)) { RehearsalDecoding.rehearsal(it) }
 
     override suspend fun adjust(id: String, intake: RehearsalIntake): RehearsalResult<Rehearsal> =
         post(intakeBody("adjust", id, intake)) { RehearsalDecoding.rehearsal(it) }
@@ -64,6 +74,22 @@ class RehearsalClient(private val http: ApiHttp) : RehearsalApi {
 
     companion object {
         const val PATH = "api/rehearsal"
+        const val PRESETS_PATH = "api/rehearsal-presets"
+
+        /** The quick-start create body: the course and the preset id, and the date only with a value. */
+        fun presetBody(course: String, presetId: String, eventDate: String?): JsonObject = buildJsonObject {
+            put("action", "create")
+            put("course", course)
+            put("preset", presetId)
+            put("eventDate", eventDate)
+        }
+
+        /** "Add a date" after creation: an adjust that carries only the id and the day (null clears it). */
+        fun dateBody(id: String, eventDate: String?): JsonObject = buildJsonObject {
+            put("action", "adjust")
+            put("id", id)
+            put("eventDate", eventDate)
+        }
 
         /** The create or adjust POST body: the action (and the id for adjust) plus the four intake answers. */
         fun intakeBody(action: String, id: String?, intake: RehearsalIntake): JsonObject = buildJsonObject {
