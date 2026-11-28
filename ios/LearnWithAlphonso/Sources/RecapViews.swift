@@ -16,6 +16,8 @@ final class CallRecapModel {
 
     private(set) var status: Status = .off
     private(set) var recap: CallRecap?
+    /// A rehearsal call's "How you spoke" counts; they can arrive with no recap at all.
+    private(set) var rehearsalSpeaking: RehearsalSpeaking?
     private(set) var review: Review = .idle
     private(set) var speaking: String?
     private var started = false
@@ -45,9 +47,10 @@ final class CallRecapModel {
             let client = practiceClient(session)
             let result = await client.callRecapAttempt(callId: args.callId, transcript: args.transcript, cefrLevel: args.cefrLevel, scene: args.scene)
             switch result {
-            case .got(let r): recap = r; status = .ready
-            case .retry: recap = nil; status = .failed
-            case .empty: recap = nil; status = .off
+            case .got(let r): recap = r; rehearsalSpeaking = r.speaking; status = .ready
+            case .speakingOnly(let s): recap = nil; rehearsalSpeaking = s; status = .off
+            case .retry: recap = nil; rehearsalSpeaking = nil; status = .failed
+            case .empty: recap = nil; rehearsalSpeaking = nil; status = .off
             }
         }
     }

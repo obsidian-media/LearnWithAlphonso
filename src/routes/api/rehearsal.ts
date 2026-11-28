@@ -20,7 +20,7 @@ import { timedRoute } from "@/lib/stage-timer.server";
 /**
  * Rehearsals (the learner prepares one real upcoming conversation). Off unless REHEARSALS_ENABLED is set.
  *
- * GET  /api/rehearsal?course=en  -> { active, progress, nextStage, history, freeAvailable }
+ * GET  /api/rehearsal?course=en  -> { active, progress, nextStage, runs, hardModeDone, hectorAvailable, history, freeAvailable }
  * POST /api/rehearsal { action: "create" | "adjust" | "cancel" | "delete" | "outcome", ... } -> { rehearsal } (create,
  *   adjust, cancel, outcome) or { ok: true } (delete). Errors: 400 invalid_* / blocked_text, 402 paywall, 404
  *   not_found, 409 active_exists (or closed, for an outcome on a closed rehearsal), 503 retry.
@@ -342,14 +342,23 @@ export const Route = createFileRoute("/api/rehearsal")({
           // Reading is always allowed, so a learner can see (and then delete) what they have even when rehearsals are off
           // for them or for everyone. When off, nothing new is offered: the free rehearsal is not available.
           const on = await rehearsalsEnabledFor(supabaseAdmin, auth.userId);
-          const { loadRehearsalState } = await import("@/lib/rehearsals.server");
+          const { loadRehearsalState, hectorAvailableFor } =
+            await import("@/lib/rehearsals.server");
           try {
             const state = await loadRehearsalState(
               supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient,
               auth.userId,
               course as Course,
             );
-            return noStoreJson(on ? state : { ...state, freeAvailable: false });
+            // Hector is offered only with an active rehearsal and rehearsals on. One RevenueCat read per state load; the
+            // run's own start (POST /api/chat) is what decides, once.
+            const hectorAvailable =
+              on && state.active ? await hectorAvailableFor(auth.userId) : null;
+            return noStoreJson(
+              on
+                ? { ...state, hectorAvailable }
+                : { ...state, freeAvailable: false, hectorAvailable },
+            );
           } catch {
             return noStoreJson({ error: "failed" }, { status: 500 });
           }

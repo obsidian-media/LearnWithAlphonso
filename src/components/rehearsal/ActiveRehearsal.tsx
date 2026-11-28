@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
+import { StagePartnerSheet } from "./StagePartnerSheet";
 import { deleteRehearsal, type Rehearsal } from "@/lib/rehearsal-api";
 import { daysToGoText, localToday, shortDay } from "@/lib/rehearsal-dates";
 import {
@@ -22,6 +22,8 @@ export function ActiveRehearsal({
   rehearsal,
   progress,
   nextStage,
+  hectorAvailable = null,
+  hardModeDone = false,
   onDeleted,
   onAdjust,
   onOpenPhrases,
@@ -35,6 +37,10 @@ export function ActiveRehearsal({
   rehearsal: Rehearsal;
   progress: StageProgress | null;
   nextStage: Stage | null;
+  /** Hector (Pro) for this learner: true Pro, false not Pro, null could not tell. */
+  hectorAvailable?: boolean | null;
+  /** The rehearsal has a finished hard-mode run. */
+  hardModeDone?: boolean;
   onDeleted: () => void;
   onAdjust: () => void;
   today?: string;
@@ -42,6 +48,8 @@ export function ActiveRehearsal({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  // The stage whose partner is being chosen: every start asks "Alphonso or Hector?" first (Alphonso is the main button).
+  const [choosing, setChoosing] = useState<Stage | null>(null);
   const next = nextStage ?? "warmup";
   const phrasesRow = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -102,20 +110,23 @@ export function ActiveRehearsal({
                     ? "Done · you can repeat it"
                     : `${STAGE_BLURBS[stage]} · about ${STAGE_MINUTES[stage]} min`}
                 </p>
+                {stage === "hard_moments" && hardModeDone && (
+                  <p className="ds-type-caption font-semibold text-ds-right-ink">Hard mode done</p>
+                )}
               </div>
               {isNext && !done && (
                 <span className="rounded-full bg-ds-choice-tint px-2 py-0.5 ds-type-caption font-semibold text-ds-brand">
                   Next
                 </span>
               )}
-              <Link
-                to="/rehearse/$id/$stage"
-                params={{ id: rehearsal.id, stage }}
+              <button
+                type="button"
+                onClick={() => setChoosing(stage)}
                 aria-label={`${done ? "Repeat" : "Start"} ${STAGE_LABELS[stage]}`}
                 className="rounded-full border border-ds-line px-3 py-1.5 ds-type-footnote font-semibold text-ds-ink"
               >
                 {done ? "Repeat" : "Start"}
-              </Link>
+              </button>
             </li>
           );
         })}
@@ -146,7 +157,7 @@ export function ActiveRehearsal({
           <span className="min-w-0 flex-1">
             <span className="block ds-type-headline font-semibold text-ds-ink">Your phrases</span>
             <span className="block ds-type-caption text-ds-ink-soft">
-              {rehearsal.brief.keyPhrases.length} phrases · tap to hear
+              {rehearsal.brief.keyPhrases.length} phrases · tap to hear, say them
             </span>
           </span>
           <svg
@@ -166,13 +177,21 @@ export function ActiveRehearsal({
         </button>
       )}
 
-      <Link
-        to="/rehearse/$id/$stage"
-        params={{ id: rehearsal.id, stage: next }}
+      <button
+        type="button"
+        onClick={() => setChoosing(next)}
         className="rounded-full bg-ds-brand px-5 py-3 text-center font-semibold text-ds-card"
       >
         Next: {STAGE_LABELS[next]}
-      </Link>
+      </button>
+      {choosing && (
+        <StagePartnerSheet
+          rehearsalId={rehearsal.id}
+          stage={choosing}
+          hectorAvailable={hectorAvailable}
+          onClose={() => setChoosing(null)}
+        />
+      )}
 
       <p className="flex items-start gap-2 ds-type-caption text-ds-ink-soft">
         <AiLabel className="mt-0.5" />

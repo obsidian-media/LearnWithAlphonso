@@ -9,11 +9,13 @@ import { buildRehearsalPrompt } from "./rehearsal-prompt";
 import {
   FREE_REHEARSAL_MAX_RUNS,
   decideRunStart,
+  isPersona,
   isRehearsalId,
   isStage,
   rehearsalTimedOut,
+  runModeAllowed,
   runNeedsPro,
-  type RunKind,
+  type Persona,
   type RunMemory,
   type Stage,
 } from "./rehearsal-rules";
@@ -35,6 +37,13 @@ export type RehearsalChat =
       course: Course;
       rehearsalId: string;
       stage: Stage;
+      /** Who plays the partner and whether it is hard mode: the call's stored mode, or the request on a run's first turn. */
+      run: { persona: Persona; hard: boolean };
+      /**
+       * True on the first turn of a Pro-only run (its call does not exist yet). The first recorded reply creates the call
+       * WITH its mode, in one statement; the caller gives no reply if that did not happen.
+       */
+      firstTurn: boolean;
     }
   | { ok: false; response: Response };
 
@@ -70,17 +79,30 @@ export async function resolveRehearsalChat(
     userId: string;
     rehearsal: unknown;
     callId: unknown;
-    /** What this run is (persona, hard mode). Only a Pro-only run reads the Pro state, once, as it starts. */
-    run?: RunKind;
     /** The Pro state, read at most once per run start. The default asks RevenueCat; tests pass their own. */
     proState?: (userId: string) => Promise<ProState>;
     /** The clock, for tests. */
     now?: () => number;
   },
 ): Promise<RehearsalChat> {
-  const r = args.rehearsal as { id?: unknown; stage?: unknown } | null;
+  const r = args.rehearsal as {
+    id?: unknown;
+    stage?: unknown;
+    persona?: unknown;
+    hardMode?: unknown;
+  } | null;
   if (!r || typeof r !== "object" || !isRehearsalId(r.id) || !isStage(r.stage))
     return refuse(400, "invalid_rehearsal");
+  // Who plays the partner, and hard mode. Both are optional (an older app sends neither: Alphonso, normal level).
+  if (r.persona !== undefined && !isPersona(r.persona)) return refuse(400, "invalid_rehearsal");
+  if (r.hardMode !== undefined && typeof r.hardMode !== "boolean")
+    return refuse(400, "invalid_rehearsal");
+  const requested: { persona: Persona; hard: boolean } = {
+    persona: r.persona ?? "alphonso",
+    hard: r.hardMode === true,
+  };
+  // Hard mode is Hector on the last stage only, however the request is worded.
+  if (!runModeAllowed(requested, r.stage)) return refuse(400, "invalid_mode");
   if (!isCallId(args.callId)) return refuse(400, "invalid_call");
   const { id, stage } = { id: r.id, stage: r.stage };
 
@@ -133,17 +155,28 @@ export async function resolveRehearsalChat(
     }
   }
 
-  // A Pro-only run is checked ONCE, when it starts (no call row for it yet), never per turn. None exist yet, so this
-  // reads nothing today.
-  if (runNeedsPro(args.run ?? {})) {
+  // The run's mode belongs to its CALL. A plain Alphonso request reads nothing here (the common case costs no extra
+  // read). A Hector or hard-mode request looks the call up: once it exists (the first recorded reply creates it) its
+  // stored mode is the mode, whatever this request says, so a free call cannot be turned into a Hector call halfway
+  // and a Hector call is never checked for Pro again. Only the first turn of a Pro-only run reads the Pro state, once.
+  let run = requested;
+  let firstTurn = false;
+  if (runNeedsPro(requested)) {
     const started = await db
       .from("practice_calls")
-      .select("id")
+      .select("id,persona,hard_mode")
       .eq("id", args.callId)
       .eq("user_id", args.userId)
       .maybeSingle();
     if (started.error) return refuse(500, "rehearsal_unavailable");
-    if (!started.data) {
+    const call = started.data as { persona?: string | null; hard_mode?: boolean | null } | null;
+    if (call) {
+      run = {
+        persona: isPersona(call.persona) ? call.persona : "alphonso",
+        hard: call.hard_mode === true,
+      };
+    } else {
+      firstTurn = true;
       let pro: "pro" | "free" | "unavailable" = "unavailable";
       try {
         const state = await (args.proState ?? defaultProState)(args.userId);
@@ -176,9 +209,13 @@ export async function resolveRehearsalChat(
       brief: row.brief,
       runs,
       eventKind: row.event_kind,
+      persona: run.persona,
+      hard: run.hard,
     }),
     course: row.course,
     rehearsalId: id,
     stage,
+    run,
+    firstTurn,
   };
 }

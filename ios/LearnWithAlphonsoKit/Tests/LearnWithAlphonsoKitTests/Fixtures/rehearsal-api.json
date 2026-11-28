@@ -69,9 +69,13 @@
         "finishedAt": "2026-11-27T10:00:00Z",
         "momentsShown": [],
         "wentWell": ["You used the key phrases"],
-        "corrections": ["I am hoping for around 3000"]
+        "corrections": ["I am hoping for around 3000"],
+        "persona": "alphonso",
+        "hardMode": false
       }
     ],
+    "hardModeDone": false,
+    "hectorAvailable": true,
     "history": [
       {
         "id": "22222222-2222-4222-8222-222222222222",
@@ -97,6 +101,8 @@
     "progress": null,
     "nextStage": null,
     "runs": [],
+    "hardModeDone": false,
+    "hectorAvailable": null,
     "history": [],
     "freeAvailable": true
   },
@@ -178,6 +184,51 @@
       "stage": "conversation"
     }
   },
+  "chatBodyHector": {
+    "rehearsal": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "stage": "conversation",
+      "persona": "hector"
+    }
+  },
+  "chatBodyHard": {
+    "rehearsal": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "stage": "hard_moments",
+      "persona": "hector",
+      "hardMode": true
+    }
+  },
+  "chatErrors": [
+    {
+      "status": 402,
+      "body": {
+        "error": "pro_required"
+      },
+      "means": "paywall"
+    },
+    {
+      "status": 402,
+      "body": {
+        "error": "free_runs_used"
+      },
+      "means": "free_runs_used"
+    },
+    {
+      "status": 400,
+      "body": {
+        "error": "invalid_mode"
+      },
+      "means": "invalid"
+    },
+    {
+      "status": 503,
+      "body": {
+        "error": "retry"
+      },
+      "means": "retry"
+    }
+  ],
   "presets": {
     "course": "en",
     "response": {

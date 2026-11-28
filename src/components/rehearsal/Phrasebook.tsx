@@ -7,6 +7,13 @@ import { EVENT_KIND_LABELS } from "@/lib/rehearsal-rules";
 import { canSpeak, speak } from "@/lib/speech";
 import { fetchModelSpeech } from "@/lib/use-model-speech";
 import { voicePlayback } from "@/lib/voice-playback";
+import {
+  SAY_IT_CHECKING,
+  SAY_IT_LISTENING,
+  SAY_IT_FRAMING,
+  sayItResultText,
+} from "@/lib/say-it-copy";
+import { useSayIt } from "./use-say-it";
 
 /**
  * "Your phrases for this {event}": the key phrases of the warm-up, to hear again on the day. Tapping one speaks it with
@@ -18,6 +25,10 @@ export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack
   // Opening the screen moves focus to its heading, so a keyboard or screen-reader user lands on the new content.
   useEffect(() => heading.current?.focus(), []);
   const rows = phraseRows(rehearsal.brief);
+  const say = useSayIt(
+    rehearsal.course,
+    rows.map((r) => r.phrase),
+  );
   const event = EVENT_KIND_LABELS[rehearsal.eventKind].toLowerCase();
   return (
     <section className="flex flex-col gap-4 px-5 py-6" aria-label="Your phrases">
@@ -46,6 +57,9 @@ export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack
             </>
           )}
         </p>
+        {say.canRecord && (
+          <p className="mt-1 ds-type-footnote text-ds-ink-soft">{SAY_IT_FRAMING}</p>
+        )}
       </div>
       <ul className="flex flex-col gap-3">
         {rows.map((row, i) => (
@@ -57,7 +71,8 @@ export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack
               type="button"
               aria-label={`Hear: ${row.phrase}`}
               onClick={() => void play(row.phrase)}
-              className="grid size-11 shrink-0 place-items-center rounded-full bg-ds-brand text-ds-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              disabled={say.busyRow !== null}
+              className="disabled:opacity-50 grid size-11 shrink-0 place-items-center rounded-full bg-ds-brand text-ds-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <svg
                 width="18"
@@ -72,7 +87,54 @@ export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack
             <div className="min-w-0 flex-1">
               <p className="ds-type-headline font-semibold text-ds-ink">{row.phrase}</p>
               {row.meaning && <p className="ds-type-caption text-ds-ink-soft">{row.meaning}</p>}
+              {say.canRecord && (
+                <>
+                  <p
+                    role="status"
+                    aria-live="polite"
+                    className="ds-type-caption font-semibold text-ds-ink-soft empty:hidden"
+                  >
+                    {say.busyRow === i && say.state === "recording"
+                      ? SAY_IT_LISTENING
+                      : say.busyRow === i && say.state === "transcribing"
+                        ? SAY_IT_CHECKING
+                        : say.results[i]
+                          ? sayItResultText(say.results[i])
+                          : ""}
+                  </p>
+                  {say.error && say.errorRow === i && (
+                    <p role="alert" className="ds-type-caption text-ds-ink-soft">
+                      {say.error}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
+            {say.canRecord && (
+              <button
+                type="button"
+                aria-label={`Say: ${row.phrase}`}
+                aria-pressed={say.busyRow === i && say.state === "recording"}
+                disabled={say.busyRow !== null && say.busyRow !== i}
+                onClick={() => say.toggle(i)}
+                className="grid size-11 shrink-0 place-items-center rounded-full border border-ds-line bg-ds-sunk text-ds-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 aria-pressed:bg-ds-brand aria-pressed:text-ds-card"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="9" y="3" width="6" height="11" rx="3" />
+                  <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+                </svg>
+              </button>
+            )}
           </li>
         ))}
       </ul>
