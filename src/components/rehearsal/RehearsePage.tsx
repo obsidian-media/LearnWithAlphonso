@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import type { Course } from "@/data/course-meta";
 import {
+  fetchPresets,
   fetchRehearsals,
   type RehearsalError,
   type RehearsalState,
@@ -9,16 +10,20 @@ import {
 } from "@/lib/rehearsal-api";
 import { REHEARSAL_ERROR_TEXT } from "@/lib/rehearsal-copy";
 import { localToday, shortDay } from "@/lib/rehearsal-dates";
+import type { PresetSummary } from "@/lib/rehearsal-presets";
 import { EVENT_KIND_LABELS } from "@/lib/rehearsal-rules";
 import { useProStatus } from "@/lib/use-pro-status";
 import { ActiveRehearsal } from "./ActiveRehearsal";
 import { HowDidItGo } from "./HowDidItGo";
 import { RehearsalIntakeForm } from "./RehearsalIntakeForm";
 import { RehearsalPaywallSheet } from "./RehearsalPaywallSheet";
+import { PresetPreview } from "./PresetPreview";
+import { QuickStartPicker } from "./QuickStartPicker";
 
 /**
  * Rehearsals, in the order the learner meets them: "How did it go?" once the event day has passed; otherwise the plan
- * of the active rehearsal (Adjust re-opens the four questions); with none, the intake, or, for a learner who is not Pro
+ * of the active rehearsal (Adjust re-opens the four questions); with none, the quick-start picker (eight ready-made
+ * situations; "Something else" leads to the intake, and with no presets offered the intake comes first), or, for a learner who is not Pro
  * and has used the free rehearsal, their finished rehearsals (still readable) and the Pro sheet. The page is behind
  * the server flag REHEARSALS_ENABLED: while it is off, the API answers "not_enabled" and the learner sees a plain
  * "not available" instead of a form that could never be submitted.
@@ -28,12 +33,20 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
   const [error, setError] = useState<RehearsalError | null>(null);
   const [adjusting, setAdjusting] = useState(false);
   const [sheet, setSheet] = useState(true);
+  // The quick-starts (empty when the server has none, which shows the four questions straight away), the one being
+  // previewed, and whether the learner chose "Something else".
+  const [presets, setPresets] = useState<PresetSummary[]>([]);
+  const [picked, setPicked] = useState<PresetSummary | null>(null);
+  const [elseChosen, setElseChosen] = useState(false);
   const pro = useProStatus();
 
   const load = useCallback(async () => {
     setError(null);
     setAdjusting(false);
-    const result = await fetchRehearsals(course);
+    const [result, quick] = await Promise.all([fetchRehearsals(course), fetchPresets(course)]);
+    setPresets(quick.ok ? quick.value : []);
+    setPicked(null);
+    setElseChosen(false);
     if (result.ok) setState(result.value);
     else setError(result.error);
   }, [course]);
@@ -82,6 +95,7 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
           existing={active}
           today={today}
           onCreated={() => void load()}
+          onCancel={() => setAdjusting(false)}
         />
       );
     if (active.eventDate && today > active.eventDate)
@@ -107,8 +121,32 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
 
   // No rehearsal. The free one is still there, or the learner is Pro: the intake.
   const needsPro = !state.freeAvailable;
-  if (!needsPro || pro.state === "pro")
-    return <RehearsalIntakeForm course={course} today={today} onCreated={() => void load()} />;
+  if (!needsPro || pro.state === "pro") {
+    if (presets.length === 0 || elseChosen)
+      return <RehearsalIntakeForm course={course} today={today} onCreated={() => void load()} />;
+    if (picked)
+      return (
+        <PresetPreview
+          course={course}
+          preset={picked}
+          today={today}
+          onBack={() => setPicked(null)}
+          onCreated={async (_created, personalise) => {
+            await load();
+            // Personalise is the same four questions as Adjust, opened on the rehearsal just made.
+            if (personalise) setAdjusting(true);
+          }}
+        />
+      );
+    return (
+      <QuickStartPicker
+        presets={presets}
+        freeAvailable={state.freeAvailable}
+        onPick={setPicked}
+        onSomethingElse={() => setElseChosen(true)}
+      />
+    );
+  }
   if (pro.state === "loading")
     return (
       <p role="status" className="px-5 py-8 ds-type-footnote text-ds-ink-soft">

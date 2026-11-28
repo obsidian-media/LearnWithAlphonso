@@ -1,6 +1,7 @@
 import type { Course } from "@/data/course-meta";
 import { authHeaders } from "./auth-headers";
 import type { RehearsalBrief } from "./rehearsal-brief";
+import type { PresetId, PresetSummary } from "./rehearsal-presets";
 import type { EventKind, OutcomeChoice, RunMemory, Stage, StageProgress } from "./rehearsal-rules";
 
 /**
@@ -118,7 +119,10 @@ export function parseRehearsalState(v: unknown): RehearsalState | null {
   const o = v as Record<string, unknown>;
   if (!("active" in o) || !Array.isArray(o.history) || typeof o.freeAvailable !== "boolean")
     return null;
-  return { ...o, runs: Array.isArray(o.runs) ? o.runs : [] } as RehearsalState;
+  return {
+    ...o,
+    runs: Array.isArray(o.runs) ? o.runs : [],
+  } as RehearsalState;
 }
 
 export async function fetchRehearsals(course: Course): Promise<Result<RehearsalState>> {
@@ -132,6 +136,28 @@ export async function fetchRehearsals(course: Course): Promise<Result<RehearsalS
 
 export const createRehearsal = (intake: RehearsalIntake) =>
   post<{ rehearsal: Rehearsal }>({ action: "create", ...intake });
+
+/** A quick-start: one of the ready-made presets, no intake text. `eventDate` is YYYY-MM-DD or null ("Add a date" later). */
+export const createRehearsalFromPreset = (
+  course: Course,
+  preset: PresetId,
+  eventDate: string | null,
+) => post<{ rehearsal: Rehearsal }>({ action: "create", course, preset, eventDate });
+
+/** "Add a date" after creation: moves the date (YYYY-MM-DD, or null to clear it); no model call, the brief stays. */
+export const setRehearsalDate = (id: string, eventDate: string | null) =>
+  post<{ rehearsal: Rehearsal }>({ action: "adjust", id, eventDate });
+
+/** The quick-starts the picker offers for a course (GET /api/rehearsal-presets). Not enabled for the account is an error. */
+export async function fetchPresets(course: Course): Promise<Result<PresetSummary[]>> {
+  const r = await call<{ presets?: unknown }>(async () =>
+    fetch(`/api/rehearsal-presets?course=${course}`, { headers: await authHeaders() }),
+  );
+  if (!r.ok) return r;
+  return Array.isArray(r.value.presets)
+    ? { ok: true, value: r.value.presets as PresetSummary[] }
+    : { ok: false, error: "failed" };
+}
 
 export const adjustRehearsal = (id: string, intake: RehearsalIntake) =>
   post<{ rehearsal: Rehearsal }>({ action: "adjust", id, ...intake });
