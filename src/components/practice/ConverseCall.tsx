@@ -36,6 +36,7 @@ import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/
 import { PracticeResult } from "@/components/practice/PracticeResult";
 import { RehearsalDebrief } from "@/components/rehearsal/RehearsalDebrief";
 import { useCallRecap } from "@/lib/use-call-recap";
+import { createReplyLatencyTracker } from "@/lib/reply-latency";
 import { PracticeUnscored } from "@/components/practice/PracticeUnscored";
 import { roomUrl } from "@/lib/practice-catalog";
 import { firstSlip, type PracticeModeSearch } from "@/lib/practice-session";
@@ -339,6 +340,22 @@ export function ConverseChatPage({
     };
   }, [skipReply]);
 
+  // Rehearsal pause note: how long each reply took to start, from the end of the partner's audio to the recorder
+  // starting (hands-free: the first voice activity). Numbers only, sent with the recap (reply-latency.ts).
+  const latencyRef = useRef(createReplyLatencyTracker());
+  const wasPlaying = useRef(false);
+  useEffect(() => {
+    if (voice === "playing") {
+      wasPlaying.current = true;
+      latencyRef.current.partnerAudioStarted();
+    } else if (wasPlaying.current && voice === "idle") {
+      wasPlaying.current = false;
+      latencyRef.current.partnerAudioEnded();
+    }
+  }, [voice]);
+  useEffect(() => {
+    if (recording) latencyRef.current.learnerStarted();
+  }, [recording]);
   const learnerReplies = messages.filter((m) => m.role === "user").length;
   // The recap starts when the result appears; it never holds the result screen up (use-call-recap.ts).
   const recap = useCallRecap({
@@ -347,6 +364,7 @@ export function ConverseChatPage({
     course,
     cefrLevel: cefrLevel ?? undefined,
     scene: isRehearsal ? undefined : scenario.id,
+    replyLatencies: isRehearsal ? () => latencyRef.current.latencies() : undefined,
   });
   /** Hang up or finish: with no reply there is nothing to score, so straight back to Practice. */
   const endCall = useCallback(async () => {

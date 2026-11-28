@@ -146,3 +146,26 @@ describe("How you spoke rides along with the recap answer", () => {
     expect((await attempt({ recap: null, rehearsalSpeaking: { notes: "x" } })).speaking).toBeNull();
   });
 });
+
+describe("reply timings ride along with the recap request", () => {
+  const sent = async (replyLatenciesMs?: number[] | null) => {
+    let body: Record<string, unknown> = {};
+    await fetchCallRecapAttempt({
+      callId: CALL,
+      messages: call(3),
+      replyLatenciesMs,
+      fetchImpl: (async (_u: string, init: RequestInit) => {
+        body = JSON.parse(init.body as string);
+        return Response.json({ recap: null });
+      }) as never,
+    });
+    return body;
+  };
+  it("sends them when they are valid", async () => {
+    expect((await sent([5000, 800])).replyLatenciesMs).toEqual([5000, 800]);
+  });
+  it("omits them when absent or not acceptable, so an old server and a bad list are unaffected", async () => {
+    for (const v of [undefined, null, [], [-1], [60001], Array.from({ length: 61 }, () => 1)])
+      expect(await sent(v as never)).not.toHaveProperty("replyLatenciesMs");
+  });
+});

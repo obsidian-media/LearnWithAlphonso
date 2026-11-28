@@ -13,11 +13,17 @@ import {
 import { REHEARSAL_FINISH_MIN_REPLIES, isCallId } from "@/lib/practice-calls.server";
 import { isRehearsalId, isStage, type Stage } from "@/lib/rehearsal-rules";
 import { buildRunMemory, hasNumber } from "@/lib/rehearsal-run-memory";
-import { buildSpeaking, countKeyPhrases, type RehearsalSpeaking } from "@/lib/rehearsal-speaking";
+import {
+  buildSpeaking,
+  countKeyPhrases,
+  countSlowReplies,
+  parseReplyLatencies,
+  type RehearsalSpeaking,
+} from "@/lib/rehearsal-speaking";
 import { timedRoute } from "@/lib/stage-timer.server";
 
 /**
- * POST /api/call-recap { callId, messages, cefrLevel?, scene? }: the after-call recap (free). Up to three corrections
+ * POST /api/call-recap { callId, messages, cefrLevel?, scene?, replyLatenciesMs? }: the after-call recap (free). Up to three corrections
  * and one new phrase, written once per finished call by one short AI call. Every refusal is a plain 200 with
  * `recap: null`: the result screen never waits for this and never shows an error for it (a short call, a call that is
  * not this learner's or not finished, a recap already written, a model reply that did not check out). Only the gates
@@ -27,6 +33,11 @@ import { timedRoute } from "@/lib/stage-timer.server";
  * A failed attempt never consumes the call: the claim is an expiring lease (practice_calls.recap_claimed_at, 2 minutes),
  * the completed marker (recap_at) is set only by finish_call_recap together with the memory write, and a model or write
  * failure releases the claim and answers `{ recap: null, retry: true }` so the client can offer "Try again".
+ *
+ * replyLatenciesMs (a rehearsal run only, optional): one integer per learner reply, 0..60000 ms, at most 60 and never
+ * more than the call's own reply count, from the end of the partner's voice to the learner starting to speak. Only two
+ * counts are kept (how many were timed, how many took 4 s or more); the timings themselves are never stored. A wrong
+ * shape is ignored as if it were not sent, and never fails the recap.
  *
  * The call's course and ownership come from the server's own practice_calls row, never from the request. The recap is
  * saved to the learner's memory (tutor_memory) for every learner (free for everyone, owner decision 2026-11-26),
@@ -58,12 +69,13 @@ async function speakingFor(
   run: { rehearsalId: string; stage: Stage },
   row: { replies?: number; short_replies?: number; english_replies?: number },
   key: { used: number; total: number },
+  pauses: { slow: number; measured: number } | null,
 ): Promise<RehearsalSpeaking | undefined> {
   let prev: Parameters<typeof buildSpeaking>[1] = null;
   try {
     const { data } = await admin
       .from("rehearsal_runs")
-      .select("practice_call_id,speaking_full,speaking_english,key_phrases_used")
+      .select("practice_call_id,speaking_full,speaking_english,key_phrases_used,reply_latency_slow")
       .eq("user_id", userId)
       .eq("rehearsal_id", run.rehearsalId)
       .eq("stage", run.stage)
@@ -74,6 +86,7 @@ async function speakingFor(
       speaking_full: number | null;
       speaking_english: number | null;
       key_phrases_used: number | null;
+      reply_latency_slow: number | null;
     }[];
     // No row for THIS call means no run was written (the learner deleted the rehearsal mid-call): no card.
     if (!rows.some((r) => r.practice_call_id === callId)) return undefined;
@@ -83,6 +96,7 @@ async function speakingFor(
         full_replies: earlier.speaking_full,
         english_fallback: earlier.speaking_english,
         key_phrases: earlier.key_phrases_used,
+        pauses: earlier.reply_latency_slow,
       };
   } catch {
     // The run cannot be confirmed, so nothing is shown.
@@ -96,6 +110,7 @@ async function speakingFor(
       english: row.english_replies ?? 0,
       keyUsed: key.used,
       keyTotal: key.total,
+      ...(pauses ? pauses : {}),
     },
     prev,
   );
@@ -108,7 +123,13 @@ export const Route = createFileRoute("/api/call-recap")({
         timedRoute("call-recap", async (timer) => {
           const key = resolveLlmApiKey();
           if (!key) return NONE();
-          let body: { callId?: unknown; messages?: unknown; cefrLevel?: unknown; scene?: unknown };
+          let body: {
+            callId?: unknown;
+            messages?: unknown;
+            cefrLevel?: unknown;
+            scene?: unknown;
+            replyLatenciesMs?: unknown;
+          };
           try {
             body = await request.json();
           } catch {
@@ -275,6 +296,12 @@ export const Route = createFileRoute("/api/call-recap")({
                   turns.filter((t) => t.role === "user").map((t) => t.content),
                 )
               : { used: 0, total: 0 };
+            // Reply timings (a rehearsal run only): a wrong shape, or more timings than the call had replies, is no signal.
+            const latencies = runOf ? parseReplyLatencies(body.replyLatenciesMs) : null;
+            const pauses =
+              latencies && latencies.length <= (row.replies ?? 0)
+                ? { slow: countSlowReplies(latencies), measured: latencies.length }
+                : null;
             const memo = await timer.time("memory", async () =>
               run
                 ? admin.rpc("finish_rehearsal_recap", {
@@ -287,6 +314,10 @@ export const Route = createFileRoute("/api/call-recap")({
                     // Counts only: how many of the brief's key phrases the learner said, never the phrases.
                     ...(keyCount.total > 0
                       ? { _key_phrases_used: keyCount.used, _key_phrases_total: keyCount.total }
+                      : {}),
+                    // Counts only: how many replies were timed and how many were slow, never a timing.
+                    ...(pauses
+                      ? { _latency_total: pauses.measured, _latency_slow: pauses.slow }
                       : {}),
                   })
                 : admin.rpc("finish_call_recap", finishArgs),
@@ -309,7 +340,7 @@ export const Route = createFileRoute("/api/call-recap")({
             // "How you spoke": only for a run that was written. Absent for every other call.
             const speaking: RehearsalSpeaking | undefined =
               run && runOf && typeof memo.data === "number" && memo.data >= 0
-                ? await speakingFor(admin, userId, callId, runOf, row, keyCount)
+                ? await speakingFor(admin, userId, callId, runOf, row, keyCount, pauses)
                 : undefined;
             const speakingField = speaking ? { rehearsalSpeaking: speaking } : {};
             // Everything it had to say was filtered out: the call is completed with nothing written, and nothing shows.
