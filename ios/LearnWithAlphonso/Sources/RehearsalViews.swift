@@ -726,7 +726,7 @@ struct RehearsalRunView: View {
     @State private var openerCue = 0
     @State private var initialized = false
     @State private var recapModel = CallRecapModel()
-    @State private var speaking: RehearsalSpeaking?
+    @State private var rehearsalSpeaking: RehearsalSpeaking?
     /// The stage's latest finished run before this call, so a debrief is only built from a run this call made.
     @State private var previousFinishedAt: String?
     @Environment(\.scenePhase) private var scenePhase
@@ -744,7 +744,7 @@ struct RehearsalRunView: View {
                     Text("Alphonso (AI) is going over the conversation.").dsText(.footnote).foregroundStyle(ds.inkSoft)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .debrief(let outcome): RehearsalDebriefView(outcome: outcome, stage: stage, speaking: speaking,
+            case .debrief(let outcome): RehearsalDebriefView(outcome: outcome, stage: stage, speaking: rehearsalSpeaking,
                                                               language: RehearsalSpeaking.languageName(courseCode: course.wireCode),
                                                               onRunStage: onRunStage, onPlan: onPlan)
             case .notSaved:
@@ -917,7 +917,7 @@ struct RehearsalRunView: View {
         while recapModel.status == .pending { try? await Task.sleep(for: .milliseconds(300)) }
         await model.refresh()
         let added = (recapModel.status == .ready && recapModel.recap?.saved == true) ? (recapModel.recap?.reviewCount ?? 0) : 0
-        speaking = recapModel.speaking
+        rehearsalSpeaking = recapModel.rehearsalSpeaking
         phase = .debrief(RehearsalDebrief.make(
             stage: stage, kind: rehearsal.kind, runs: model.state?.runs ?? [], previousFinishedAt: previousFinishedAt,
             seconds: elapsed, turns: conversation.turns.count - conversation.openerIndices.count, addedToFix: added))

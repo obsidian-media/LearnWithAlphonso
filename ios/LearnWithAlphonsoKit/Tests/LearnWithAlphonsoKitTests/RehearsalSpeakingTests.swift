@@ -77,7 +77,7 @@ final class RehearsalSpeakingTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(CallRecap.parse(data)).speaking?.notes, [note(.keyPhrases, 3, 8, nil)])
     }
 
-    func testSpeakingReadsIndependentlyOfANullRecap() throws {
+    func testSpeakingReadsWithoutARecap() throws {
         let data = try speakingCase("full")
         // The recap itself is null, so CallRecap.parse says nothing while the speaking block still reads.
         XCTAssertNil(CallRecap.parse(data))
@@ -87,25 +87,25 @@ final class RehearsalSpeakingTests: XCTestCase {
     // MARK: - Sentences
 
     func testFullRepliesSentences() {
-        XCTAssertEqual(note(.fullReplies, 7, 9, nil).sentence(language: "French"), "You answered in full sentences 7 of 9 times")
-        XCTAssertEqual(note(.fullReplies, 7, 9, 4).sentence(language: "French"), "You answered in full sentences 7 of 9 times, up from 4 last time")
-        XCTAssertEqual(note(.fullReplies, 3, 9, 4).sentence(language: "French"), "You answered in full sentences 3 of 9 times, down from 4 last time")
-        XCTAssertEqual(note(.fullReplies, 4, 9, 4).sentence(language: "French"), "You answered in full sentences 4 of 9 times, the same as last time")
+        XCTAssertEqual(note(.fullReplies, 7, 9, nil).sentence(language: "French"), "You answered in full sentences 7 of 9 times.")
+        XCTAssertEqual(note(.fullReplies, 7, 9, 4).sentence(language: "French"), "You answered in full sentences 7 of 9 times, up from 4 last time.")
+        XCTAssertEqual(note(.fullReplies, 3, 9, 4).sentence(language: "French"), "You answered in full sentences 3 of 9 times, down from 4 last time.")
+        XCTAssertEqual(note(.fullReplies, 4, 9, 4).sentence(language: "French"), "You answered in full sentences 4 of 9 times, the same as last time.")
     }
 
     func testEnglishFallbackSentences() {
         XCTAssertEqual(note(.englishFallback, 0, 9, 3).sentence(language: "French"), "You stayed in French the whole time.")
         XCTAssertEqual(note(.englishFallback, 0, 9, nil).sentence(language: "Spanish"), "You stayed in Spanish the whole time.")
-        XCTAssertEqual(note(.englishFallback, 1, 9, nil).sentence(language: "French"), "You switched to English 1 time")
-        XCTAssertEqual(note(.englishFallback, 2, 9, nil).sentence(language: "French"), "You switched to English 2 times")
-        XCTAssertEqual(note(.englishFallback, 2, 9, 5).sentence(language: "French"), "You switched to English 2 times, down from 5 last time")
-        XCTAssertEqual(note(.englishFallback, 5, 9, 2).sentence(language: "French"), "You switched to English 5 times, up from 2 last time")
+        XCTAssertEqual(note(.englishFallback, 1, 9, nil).sentence(language: "French"), "You switched to English once.")
+        XCTAssertEqual(note(.englishFallback, 2, 9, nil).sentence(language: "French"), "You switched to English twice.")
+        XCTAssertEqual(note(.englishFallback, 2, 9, 5).sentence(language: "French"), "You switched to English twice, down from 5 last time.")
+        XCTAssertEqual(note(.englishFallback, 5, 9, 2).sentence(language: "French"), "You switched to English 5 times, up from 2 last time.")
     }
 
     func testKeyPhrasesSentences() {
-        XCTAssertEqual(note(.keyPhrases, 3, 8, nil).sentence(language: "French"), "You used 3 of your 8 key phrases")
-        XCTAssertEqual(note(.keyPhrases, 3, 8, 4).sentence(language: "French"), "You used 3 of your 8 key phrases, down from 4 last time")
-        XCTAssertEqual(note(.keyPhrases, 3, 8, 3).sentence(language: "French"), "You used 3 of your 8 key phrases, the same as last time")
+        XCTAssertEqual(note(.keyPhrases, 3, 8, nil).sentence(language: "French"), "You used 3 of your 8 key phrases.")
+        XCTAssertEqual(note(.keyPhrases, 3, 8, 4).sentence(language: "French"), "You used 3 of your 8 key phrases, down from 4 last time.")
+        XCTAssertEqual(note(.keyPhrases, 3, 8, 3).sentence(language: "French"), "You used 3 of your 8 key phrases, the same as last time.")
     }
 
     func testNoSentenceCarriesAScoreOrPercentage() {

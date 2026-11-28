@@ -41,12 +41,13 @@ public struct RehearsalSpeaking: Equatable, Sendable {
         public func sentence(language: String) -> String {
             switch kind {
             case .fullReplies:
-                return "You answered in full sentences \(count) of \(total) times" + previousSuffix
+                return "You answered in full sentences \(count) of \(total) times" + previousSuffix + "."
             case .englishFallback:
                 if count == 0 { return "You stayed in \(language) the whole time." }
-                return "You switched to English \(count) \(count == 1 ? "time" : "times")" + previousSuffix
+                let times = count == 1 ? "once" : count == 2 ? "twice" : "\(count) times"
+                return "You switched to English \(times)" + previousSuffix + "."
             case .keyPhrases:
-                return "You used \(count) of your \(total) key phrases" + previousSuffix
+                return "You used \(count) of your \(total) key phrases" + previousSuffix + "."
             }
         }
 
