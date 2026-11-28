@@ -11,6 +11,7 @@ import { llmChatCompletion } from "@/lib/llm-chat.server";
 import { boundTranscript } from "@/lib/chat-transcript-limits";
 import { splitReplyVerdict, withVerdictInstruction } from "@/lib/chat-verdict";
 import { recordPracticeReply, recordRehearsalReply } from "@/lib/practice-calls.server";
+import { withRehearsalPace } from "@/lib/rehearsal-pace";
 import { rehearsalsEnabled, rehearsalsEnabledFor } from "@/lib/rehearsals-flag";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
@@ -129,8 +130,10 @@ async function handleRehearsalChat(
   const refused = await access.chargeQuota?.();
   if (refused) return refused;
 
+  // Adaptive difficulty: ONE fixed pace line, chosen from the learner turns of this request's transcript.
+  const { prompt: pacedPrompt } = withRehearsalPace(resolved.prompt, messages, resolved.course);
   const finalMessages: ChatMessage[] = [
-    { role: "system", content: withVerdictInstruction(resolved.prompt) },
+    { role: "system", content: withVerdictInstruction(pacedPrompt) },
     ...messages,
   ];
   const model = resolveLlmChatModel();

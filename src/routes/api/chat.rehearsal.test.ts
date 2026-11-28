@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { scenarioPrompt } from "@/data/scenarios";
 import { REHEARSAL_TEMPLATES } from "@/data/rehearsal-templates";
 import { fallbackBrief } from "@/lib/rehearsal-brief";
+import { paceLine } from "@/lib/rehearsal-pace";
 
 const REHEARSAL = "00000000-0000-4000-8000-0000000000d1";
 const CALL = "00000000-0000-4000-8000-0000000000c1";
@@ -470,5 +471,114 @@ describe("the partner's level is the learner's own, read on the server", () => {
     h.level = "C2";
     await send(rehearsalBody());
     expect(modelMessages()[0]!.content).toContain(REHEARSAL_TEMPLATES.en.level("C1"));
+  });
+});
+
+describe("adaptive pace: one fixed line, from the transcript the request carries", () => {
+  const user = (content: string) => ({ role: "user", content });
+  const asst = (content: string) => ({ role: "assistant", content });
+  const lines = (course: "en" | "fr" | "es") =>
+    (["simplify", "normal", "faster"] as const).map((p) => paceLine(course, p));
+  const present = (system: string, course: "en" | "fr" | "es") =>
+    lines(course).filter((l) => system.includes(l));
+
+  it("a first turn gets exactly the normal line", async () => {
+    await send(rehearsalBody());
+    expect(present(modelMessages()[0]!.content, "en")).toEqual([paceLine("en", "normal")]);
+  });
+
+  it("two short replies of three get exactly the simplify line", async () => {
+    await send(
+      rehearsalBody({
+        messages: [
+          user("I would like to book a table"),
+          asst("Of course."),
+          user("Yes"),
+          asst("For how many?"),
+          user("Two"),
+        ],
+      }),
+    );
+    expect(present(modelMessages()[0]!.content, "en")).toEqual([paceLine("en", "simplify")]);
+  });
+
+  it("three full replies get exactly the faster line", async () => {
+    const full = "I would like to book a table";
+    await send(
+      rehearsalBody({
+        messages: [user(full), asst("a"), user(full), asst("b"), user(full)],
+      }),
+    );
+    expect(present(modelMessages()[0]!.content, "en")).toEqual([paceLine("en", "faster")]);
+  });
+
+  it("the line sits in the system message, in the course's language", async () => {
+    h.rehearsal = row({ course: "fr", brief: fallbackBrief("interview", "fr") });
+    await send(
+      rehearsalBody({
+        messages: [user("Bonjour"), asst("a"), user("Oui"), asst("b"), user("Non")],
+      }),
+    );
+    const msgs = modelMessages();
+    expect(msgs[0]!.role).toBe("system");
+    expect(present(msgs[0]!.content, "fr")).toEqual([paceLine("fr", "simplify")]);
+    expect(present(msgs[0]!.content, "en")).toEqual([]);
+  });
+
+  it("a rehearsal request never puts the learner's words in the prompt", async () => {
+    const w = "zzqx-learner-words";
+    await send(
+      rehearsalBody({
+        messages: [user(w), asst("a"), user(w), asst("b"), user(w)],
+      }),
+    );
+    expect(modelMessages()[0]!.content).not.toContain(w);
+  });
+});
+
+describe("adaptive pace is absent from an ordinary chat", () => {
+  it("a non-rehearsal request carries none of the pace lines", async () => {
+    await send({
+      systemPrompt: scenarioPrompt("coffee", "en"),
+      messages: [
+        { role: "user", content: "Yes" },
+        { role: "assistant", content: "a" },
+        { role: "user", content: "No" },
+        { role: "assistant", content: "b" },
+        { role: "user", content: "Ok" },
+      ],
+    });
+    expect(fetchMock).toHaveBeenCalled();
+    const system = modelMessages()[0]!.content;
+    for (const c of ["en", "fr", "es"] as const)
+      for (const p of ["simplify", "normal", "faster"] as const)
+        expect(system).not.toContain(paceLine(c, p));
+  });
+});
+
+describe("adaptive pace: repetition request and placement", () => {
+  const user = (content: string) => ({ role: "user", content });
+  const asst = (content: string) => ({ role: "assistant", content });
+
+  it("a Spanish repetition request gets the simplify line", async () => {
+    h.rehearsal = row({ course: "es", brief: fallbackBrief("interview", "es") });
+    const full = "Buenos días, quiero reservar una mesa";
+    await send(
+      rehearsalBody({
+        messages: [user(full), asst("a"), user(full), asst("b"), user("¿Puede repetirlo?")],
+      }),
+    );
+    const system = modelMessages()[0]!.content;
+    expect(system).toContain(paceLine("es", "simplify"));
+    expect(system).not.toContain(paceLine("es", "faster"));
+  });
+
+  it("the pace line sits before the verdict instruction in the system message", async () => {
+    await send(rehearsalBody());
+    const system = modelMessages()[0]!.content;
+    const at = system.indexOf(paceLine("en", "normal"));
+    const verdictAt = system.indexOf("[[verdict:correct]]");
+    expect(at).toBeGreaterThan(-1);
+    expect(verdictAt).toBeGreaterThan(at);
   });
 });
