@@ -174,8 +174,13 @@ describe("what counts as positive", () => {
 });
 
 describe("the sentences and the trend", () => {
-  const s = (kind: SpeakingNote["kind"], count: number, total: number, previous: number | null) =>
-    speakingSentence({ kind, count, total, previous });
+  const s = (
+    kind: SpeakingNote["kind"],
+    count: number,
+    total: number,
+    previous: number | null,
+    course: "en" | "fr" | "es" = "fr",
+  ) => speakingSentence({ kind, count, total, previous }, course);
   it("reads as the design says", () => {
     expect(s("full_replies", 7, 9, 4)).toBe(
       "You answered in full sentences 7 of 9 times, up from 4 last time.",
@@ -191,9 +196,17 @@ describe("the sentences and the trend", () => {
       "You used 4 of your 8 key phrases, the same as last time.",
     );
     expect(s("english_fallback", 0, 9, 2)).toBe(
-      "You did not switch to English, down from 2 last time.",
+      "You stayed in French the whole time, down from 2 last time.",
+    );
+    expect(s("english_fallback", 0, 9, null, "es")).toBe("You stayed in Spanish the whole time.");
+    expect(s("english_fallback", 0, 9, 2, "es")).toBe(
+      "You stayed in Spanish the whole time, down from 2 last time.",
+    );
+    expect(s("english_fallback", 0, 9, 0, "fr")).toBe(
+      "You stayed in French the whole time, the same as last time.",
     );
     expect(s("english_fallback", 1, 9, null)).toBe("You switched to English once.");
+    expect(s("english_fallback", 3, 9, null)).toBe("You switched to English 3 times.");
     expect(s("english_fallback", 5, 9, null)).toBe("You switched to English 5 times.");
   });
   it("never carries a percentage or a grade", () => {

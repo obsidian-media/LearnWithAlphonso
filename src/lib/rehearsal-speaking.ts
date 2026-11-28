@@ -6,6 +6,8 @@
  * short), how many fell back to English, and how many of the brief's key phrases the learner used. The note for a run
  * compares each count with the same count from the learner's previous finished run of the same stage.
  */
+import { COURSES, type Course } from "../data/course-meta";
+
 export type SpeakingKind = "full_replies" | "english_fallback" | "key_phrases";
 /** The fixed order of kinds inside a group of notes. */
 export const SPEAKING_KINDS: readonly SpeakingKind[] = [
@@ -150,13 +152,13 @@ const since = (n: SpeakingNote) => {
 };
 
 /** The plain sentence for a note. Neutral wording for a lower number: no blame. */
-export function speakingSentence(n: SpeakingNote): string {
+export function speakingSentence(n: SpeakingNote, course: Course = "en"): string {
   switch (n.kind) {
     case "full_replies":
       return `You answered in full sentences ${n.count} of ${n.total} times${since(n)}.`;
     case "english_fallback":
       return n.count === 0
-        ? `You did not switch to English${since(n)}.`
+        ? `You stayed in ${COURSES.find((c) => c.id === course)?.targetLanguage ?? "English"} the whole time${since(n)}.`
         : `You switched to English ${times(n.count)}${since(n)}.`;
     case "key_phrases":
       return `You used ${n.count} of your ${n.total} key ${n.total === 1 ? "phrase" : "phrases"}${since(n)}.`;

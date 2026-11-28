@@ -1,3 +1,4 @@
+import type { Course } from "@/data/course-meta";
 import {
   SPEAKING_TITLES,
   speakingSentence,
@@ -18,7 +19,13 @@ const ARROW: Record<NonNullable<Trend> | "first", string> = {
  * only (a lower number is never red, and there is no score, percentage or grade). The arrow is decoration: the sentence
  * beside it says the same thing in words ("up from 4 last time"), so it is hidden from assistive technology.
  */
-export function HowYouSpoke({ speaking }: { speaking: RehearsalSpeaking | null | undefined }) {
+export function HowYouSpoke({
+  speaking,
+  course = "en",
+}: {
+  speaking: RehearsalSpeaking | null | undefined;
+  course?: Course;
+}) {
   if (!speaking || speaking.notes.length === 0) return null;
   return (
     <section
@@ -56,7 +63,7 @@ export function HowYouSpoke({ speaking }: { speaking: RehearsalSpeaking | null |
               <p className="ds-type-footnote font-semibold text-ds-ink">
                 {SPEAKING_TITLES[n.kind]}
               </p>
-              <p className="ds-type-caption text-ds-ink-soft">{speakingSentence(n)}</p>
+              <p className="ds-type-caption text-ds-ink-soft">{speakingSentence(n, course)}</p>
             </div>
           </li>
         ))}

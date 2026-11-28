@@ -95,7 +95,7 @@ export function RehearsalDebrief({
 
       {run ? (
         <>
-          <HowYouSpoke speaking={speaking} />
+          <HowYouSpoke speaking={speaking} course={course} />
           {run.wentWell.length > 0 && (
             <List title="What went well" items={run.wentWell} tone="good" />
           )}
