@@ -11,7 +11,7 @@ import {
   topicLabel,
 } from "@/lib/call-recap";
 import { REHEARSAL_FINISH_MIN_REPLIES, isCallId } from "@/lib/practice-calls.server";
-import { isRehearsalId, isStage } from "@/lib/rehearsal-rules";
+import { isRehearsalId, isStage, type Stage } from "@/lib/rehearsal-rules";
 import { buildRunMemory, hasNumber } from "@/lib/rehearsal-run-memory";
 import { timedRoute } from "@/lib/stage-timer.server";
 
@@ -85,7 +85,7 @@ export const Route = createFileRoute("/api/call-recap")({
 
           // A rehearsal call is a run only with the rehearsal finish rule's replies: fewer is no run (no AI call, no
           // memory, no stage done). A run also names its rehearsal, so the recap can say which hard moments came up.
-          let runOf: { rehearsalId: string; labels: string[] } | null = null;
+          let runOf: { rehearsalId: string; stage: Stage; labels: string[] } | null = null;
           if (row.kind === "rehearsal") {
             if ((row.replies ?? 0) < REHEARSAL_FINISH_MIN_REPLIES) return NONE();
             const [rehearsalId, stage] = (row.item_key ?? "").split(":");
@@ -103,6 +103,7 @@ export const Route = createFileRoute("/api/call-recap")({
               if (found)
                 runOf = {
                   rehearsalId,
+                  stage,
                   labels: (moments ?? []).flatMap((m) =>
                     typeof m.label === "string" ? [m.label] : [],
                   ),
@@ -196,6 +197,8 @@ export const Route = createFileRoute("/api/call-recap")({
                     _moments: run.momentsShown,
                     _went_well: run.wentWell,
                     _corrections: run.corrections,
+                    // The floor is passed, not repeated in SQL: the same number the check above used.
+                    _min_replies: REHEARSAL_FINISH_MIN_REPLIES,
                   })
                 : admin.rpc("finish_call_recap", finishArgs),
             );
@@ -208,6 +211,11 @@ export const Route = createFileRoute("/api/call-recap")({
             if (run && memo.data === -2) {
               await release();
               return NONE();
+            }
+            // A run was written (a negative answer is "nothing to complete"): one count, the stage and nothing else.
+            if (run && runOf && typeof memo.data === "number" && memo.data >= 0) {
+              const { recordRehearsalUsage } = await import("@/lib/rehearsal-usage.server");
+              await recordRehearsalUsage("rehearsal_stage_finished", { stage: runOf.stage });
             }
             // Everything it had to say was filtered out: the call is completed with nothing written, and nothing shows.
             if (nothingToShow) return NONE();

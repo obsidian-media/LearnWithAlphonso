@@ -11,7 +11,7 @@ import { llmChatCompletion } from "@/lib/llm-chat.server";
 import { boundTranscript } from "@/lib/chat-transcript-limits";
 import { splitReplyVerdict, withVerdictInstruction } from "@/lib/chat-verdict";
 import { recordPracticeReply, recordRehearsalReply } from "@/lib/practice-calls.server";
-import { rehearsalsEnabled } from "@/lib/rehearsals-flag";
+import { rehearsalsEnabled, rehearsalsEnabledFor } from "@/lib/rehearsals-flag";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -111,13 +111,16 @@ async function handleRehearsalChat(
 ): Promise<Response> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const admin = supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient;
+  // Off for this account (the per-account switch) is 404 exactly like off for everyone, before any quota or model call.
+  if (!(await rehearsalsEnabledFor(admin, access.userId)))
+    return noStoreJson({ error: "not_enabled" }, { status: 404 });
   const { resolveRehearsalChat } = await import("@/lib/rehearsal-chat.server");
+  // The partner's level is read from the learner's own progress on the server; the request's cefrLevel is not used.
   const resolved = await timer.time("rehearsal", () =>
     resolveRehearsalChat(admin, {
       userId: access.userId,
       rehearsal: body.rehearsal,
       callId: body.callId,
-      cefrLevel: body.cefrLevel,
     }),
   );
   if (!resolved.ok) return resolved.response;

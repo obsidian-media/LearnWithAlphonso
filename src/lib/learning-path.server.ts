@@ -14,7 +14,7 @@ import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile"
 import { isPathCallKind, type PathData } from "@/lib/learning-path-data";
 import type { RehearsalPathInput } from "@/lib/path-plan";
 import { rehearsalPathInput } from "@/lib/rehearsal-path";
-import { rehearsalsEnabled } from "@/lib/rehearsals-flag";
+import { rehearsalsEnabledFor } from "@/lib/rehearsals-flag";
 
 type Admin = typeof supabaseAdmin;
 type VideoPathRow = {
@@ -41,9 +41,13 @@ async function loadRehearsalForPath(
   course: Course,
   timeZone: string | null,
 ): Promise<RehearsalPathInput | undefined> {
-  if (!rehearsalsEnabled()) return undefined;
+  // Off for everyone, or off for this account, leaves it out.
+  if (!(await rehearsalsEnabledFor(db, userId))) return undefined;
   try {
-    const { loadActiveRehearsal, loadRuns } = await import("@/lib/rehearsals.server");
+    const { closeStaleRehearsals, loadActiveRehearsal, loadRuns } =
+      await import("@/lib/rehearsals.server");
+    // One that ran out of time ends first, so the path never pins a rehearsal that is over.
+    await closeStaleRehearsals(db, userId, timeZone);
     const row = await loadActiveRehearsal(db, userId, course);
     if (!row) return undefined;
     return rehearsalPathInput(row, await loadRuns(db, userId, row.id), timeZone);

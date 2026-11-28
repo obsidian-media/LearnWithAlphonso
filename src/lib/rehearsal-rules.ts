@@ -160,6 +160,53 @@ export function canCreateRehearsal(
   return freeUsed ? "paywall" : "ok_free";
 }
 
+/**
+ * Does THIS run need Pro? Today no run does (the free rehearsal and every Pro rehearsal run with Alphonso at the normal
+ * level). Hector rehearsals and hard mode are Pro-only when they ship, and they ask here. It is checked ONCE, when a
+ * run starts (the first turn of its call), never on every turn: an in-progress call always finishes, and a lapse
+ * costs nothing per turn.
+ */
+export type RunKind = { persona?: "alphonso" | "hector"; hard?: boolean };
+export const runNeedsPro = (run: RunKind): boolean => run.persona === "hector" || run.hard === true;
+
+export type RunStart = "ok" | "paywall" | "retry";
+
+/**
+ * May this run start? A run that needs no Pro always may (and the Pro state is never read). A Pro run needs Pro; when
+ * the Pro state cannot be read the answer is "retry", never "ok": an outage must not hand out a Pro-only run.
+ */
+export function decideRunStart(needsPro: boolean, pro: "pro" | "free" | "unavailable"): RunStart {
+  if (!needsPro) return "ok";
+  if (pro === "unavailable") return "retry";
+  return pro === "pro" ? "ok" : "paywall";
+}
+
+/** A dated rehearsal ends this many days after its event date; an undated one this many days after its last activity. */
+export const REHEARSAL_DATED_CLOSE_DAYS = 7;
+export const REHEARSAL_UNDATED_CLOSE_DAYS = 30;
+
+const addDays = (day: string, days: number): string => {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(Date.UTC(y!, m! - 1, d! + days)).toISOString().slice(0, 10);
+};
+
+/**
+ * Has an ACTIVE rehearsal run out of time? The TypeScript twin of close_stale_rehearsals (20261130100000), which does
+ * the closing: dated, 7 days after the event date by the learner's own calendar day (`today`, YYYY-MM-DD); undated, 30
+ * days after the later of its creation and its newest finished run. The chat uses it to refuse a stage of a rehearsal
+ * that has timed out before the database has closed it.
+ */
+export function rehearsalTimedOut(
+  r: { eventDate: string | null; createdAt: string },
+  lastRunAt: string | null,
+  nowMs: number,
+  today: string,
+): boolean {
+  if (r.eventDate) return addDays(r.eventDate, REHEARSAL_DATED_CLOSE_DAYS) <= today;
+  const last = Math.max(Date.parse(r.createdAt), lastRunAt ? Date.parse(lastRunAt) : 0);
+  return last <= nowMs - REHEARSAL_UNDATED_CLOSE_DAYS * 86_400_000;
+}
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** A rehearsal id is a uuid; anything else is refused before it reaches a query. */
 export const isRehearsalId = (v: unknown): v is string => typeof v === "string" && UUID.test(v);

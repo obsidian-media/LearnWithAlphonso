@@ -106,6 +106,8 @@ export const SERVICE_SCOPED_EXPORT_TABLES = [
   // The learner's own restrictions and gifted Pro periods (20261113100000). Never staff_notes or the action record.
   { table: "user_restrictions", column: "user_id" },
   { table: "pro_grants", column: "user_id" },
+  // Whether rehearsals were switched off for this account, and why (20261130100000). No client read.
+  { table: "rehearsals_off", column: "user_id" },
   // What each AI call cost (20261118200000): the learner's own usage by kind, vendor, model and day. No content.
   { table: "ai_cost_log", column: "user_id" },
   { table: "ai_cost_daily", column: "user_id" },
