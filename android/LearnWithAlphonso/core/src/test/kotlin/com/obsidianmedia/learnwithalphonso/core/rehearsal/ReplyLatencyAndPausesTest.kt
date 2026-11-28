@@ -21,47 +21,88 @@ import org.junit.jupiter.api.Test
 class ReplyLatencyAndPausesTest {
     // ---- the measurement ----
 
+    private var now = 0L
+    private fun tracker() = ReplyLatencyTracker { now }
+    private fun at(ms: Long) { now = ms }
+
+    /** One spoken reply: the partner finishes, the learner starts, and the transcript is sent. */
+    private fun ReplyLatencyTracker.reply(partnerDone: Long, start: Long) {
+        at(partnerDone); partnerFinished(); at(start); learnerStarted(); replySent()
+    }
+
     @Test fun `each learner reply records the gap since the partner finished, in order`() {
-        val t = ReplyLatencyTracker()
-        t.partnerFinished(1_000); t.learnerStarted(1_800)
-        t.partnerFinished(10_000); t.learnerStarted(15_500)
-        t.partnerFinished(20_000); t.learnerStarted(20_000)
+        val t = tracker()
+        t.reply(1_000, 1_800); t.reply(10_000, 15_500); t.reply(20_000, 20_000)
         assertEquals(listOf(800, 5_500, 0), t.values())
     }
 
+    @Test fun `a start only counts once the reply is sent`() {
+        val t = tracker()
+        at(0); t.partnerFinished(); at(500); t.learnerStarted()
+        assertTrue(t.values().isEmpty())
+        t.replySent()
+        assertEquals(listOf(500), t.values())
+    }
+
+    @Test fun `a failed attempt does not use the clock up, and the retry keeps the first start`() {
+        val t = tracker()
+        at(0); t.partnerFinished()
+        at(3_000); t.learnerStarted()   // the attempt that came back empty: no replySent
+        at(9_000); t.learnerStarted()   // the retry press
+        t.replySent()
+        assertEquals(listOf(3_000), t.values())
+    }
+
     @Test fun `a second start with no new partner turn is not counted twice`() {
-        val t = ReplyLatencyTracker()
-        t.partnerFinished(0); t.learnerStarted(500); t.learnerStarted(9_000)
+        val t = tracker()
+        t.reply(0, 500)
+        at(9_000); t.learnerStarted(); t.replySent()
         assertEquals(listOf(500), t.values())
     }
 
     @Test fun `a start with no partner voice before it records nothing`() {
-        val t = ReplyLatencyTracker()
-        t.learnerStarted(500)
+        val t = tracker()
+        at(500); t.learnerStarted(); t.replySent()
         assertTrue(t.values().isEmpty())
         assertFalse(t.hasValues)
     }
 
+    @Test fun `a typed reply clears the clock, so a later voice press cannot record a long pause`() {
+        val t = tracker()
+        at(0); t.partnerFinished()
+        t.discardPending()               // the learner typed instead
+        at(60_000); t.learnerStarted(); t.replySent()
+        assertTrue(t.values().isEmpty())
+    }
+
+    @Test fun `talking over the partner records a zero for that reply`() {
+        val t = tracker()
+        at(100); t.learnerStarted(partnerStillSpeaking = true)
+        at(4_000); t.replySent()
+        assertEquals(listOf(0), t.values())
+    }
+
     @Test fun `values are clamped to 0 to 60000`() {
-        val t = ReplyLatencyTracker()
-        t.partnerFinished(10_000); t.learnerStarted(5_000)       // a clock that went backwards
-        t.partnerFinished(0); t.learnerStarted(95_000)            // a very long wait
+        val t = tracker()
+        t.reply(10_000, 5_000)           // a clock that went backwards
+        t.reply(0, 95_000)               // a very long wait
         assertEquals(listOf(0, 60_000), t.values())
     }
 
     @Test fun `at most 60 entries are kept, the first ones`() {
-        val t = ReplyLatencyTracker()
-        for (i in 0 until 75) { t.partnerFinished(0); t.learnerStarted(i.toLong()) }
+        val t = tracker()
+        for (i in 0 until 75) t.reply(0, i.toLong())
         val v = t.values()
         assertEquals(60, v.size)
         assertEquals((0 until 60).toList(), v)
     }
 
     @Test fun `reset forgets everything`() {
-        val t = ReplyLatencyTracker()
-        t.partnerFinished(0); t.learnerStarted(100); t.partnerFinished(0)
+        val t = tracker()
+        t.reply(0, 100)
+        at(0); t.partnerFinished()
         t.reset()
-        t.learnerStarted(900)
+        at(900); t.learnerStarted(); t.replySent()
         assertTrue(t.values().isEmpty())
     }
 

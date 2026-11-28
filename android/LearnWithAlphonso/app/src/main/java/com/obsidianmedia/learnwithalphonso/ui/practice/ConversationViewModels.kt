@@ -88,7 +88,7 @@ abstract class BaseConversationViewModel(
     /** The stored hands-free choice starts a call only after the opener has finished (never under it). */
     private val storedStart = HandsFreeBinding.StoredStart(handsFree) { isCallOver }
     /** Gaps between the partner finishing and the learner starting, sent with a rehearsal call's recap (never for other calls). */
-    private val replyLatency = ReplyLatencyTracker()
+    private val replyLatency = ReplyLatencyTracker { android.os.SystemClock.elapsedRealtime() }
     override fun armAutoStartHandsFree(check: () -> Boolean) = storedStart.arm(check)
 
     // The opener being fetched or spoken; a press cancels it, which stops its playback.
@@ -98,7 +98,7 @@ abstract class BaseConversationViewModel(
             player, openerCache, course.code,
             onFinished = {
                 // Only the first opener starts a clock: a re-run of speakOpener() mid-call must not restart it.
-                if (_state.value.turns.none { it.role == "user" }) replyLatency.partnerFinished(System.currentTimeMillis())
+                if (_state.value.turns.none { it.role == "user" }) replyLatency.partnerFinished()
                 storedStart.openerFinished()
             },
         ) { text, voice -> ai.synthesizeSpeech(text, voice = voice, course = course.code) }
@@ -123,6 +123,7 @@ abstract class BaseConversationViewModel(
     var chatMode = false
     fun sendText(text: String) {
         if (text.isBlank() || sending || finishing) return
+        replyLatency.discardPending() // typed: no voice gap for this reply, and an old clock must not leak into the next voice one
         stopOpener()
         viewModelScope.launch { sendTurn(text.trim(), null) }
     }
@@ -173,7 +174,7 @@ abstract class BaseConversationViewModel(
                 // Hands-free hears the failure or the empty transcript first, before the phase returns to idle.
                 HandsFreeBinding.onTurnEvent(handsFree, event)
                 when (event) {
-                    is TurnEvent.Transcribed -> sendTurn(event.text, event.confidence)
+                    is TurnEvent.Transcribed -> sendTurn(event.text, event.confidence, spoken = true)
                     TurnEvent.Empty, TurnEvent.TooShort -> _state.update { it.copy(error = HandsFreeBinding.errorFor(handsFree.isOn, event, "Didn't catch that. Try again."), phase = ConversationPhase.IDLE) }
                     TurnEvent.MicDenied -> _state.update { it.copy(error = "Couldn't access the microphone. Check Settings > Apps > Learn with Alphonso > Permissions.", phase = ConversationPhase.IDLE) }
                     is TurnEvent.Failed -> _state.update { it.copy(error = "Something went wrong. Try again.", phase = ConversationPhase.IDLE) }
@@ -186,7 +187,7 @@ abstract class BaseConversationViewModel(
 
     /** Hands-free: the learner starts speaking at the first voice activity of a turn (status Hearing), not when listening opens. */
     init {
-        viewModelScope.launch { handsFree.status.collect { if (it == HandsFreeLoop.Status.Hearing) replyLatency.learnerStarted(System.currentTimeMillis()) } }
+        viewModelScope.launch { handsFree.status.collect { if (it == HandsFreeLoop.Status.Hearing) replyLatency.learnerStarted(partnerStillSpeaking = _state.value.phase == ConversationPhase.SPEAKING) } }
     }
 
     /** The microphone level while recording (the call's "You" tile), null otherwise. */
@@ -196,7 +197,7 @@ abstract class BaseConversationViewModel(
         if (finishing) return
         // Push to talk: the press starts the recorder, which is when the learner starts. Hands-free presses for them the moment
         // listening opens, so there the first voice activity (below) is the start instead.
-        if (!handsFree.isOn) replyLatency.learnerStarted(System.currentTimeMillis())
+        if (!handsFree.isOn) replyLatency.learnerStarted(partnerStillSpeaking = _state.value.phase == ConversationPhase.SPEAKING)
         stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan()
     }
     override fun pressEnded() {
@@ -234,8 +235,9 @@ abstract class BaseConversationViewModel(
     /** The learner talked over the opener, or left: cancel it, which stops its playback. */
     private fun stopOpener() = opener.stop()
 
-    private suspend fun sendTurn(text: String, confidence: Double?) {
+    private suspend fun sendTurn(text: String, confidence: Double?, spoken: Boolean = false) {
         if (sending || finishing) return
+        if (spoken) replyLatency.replySent() // a real transcribed reply: commit its gap (failed, empty or too-short attempts never get here)
         sending = true
         judging = true
         val attemptId = callId
@@ -254,18 +256,19 @@ abstract class BaseConversationViewModel(
                 it.copy(turns = it.turns + ChatMessage("assistant", reply), phase = ConversationPhase.SPEAKING, verdictSerial = it.verdictSerial + 1, verdict = chatReply.verdict)
             }
             onReply(reply)
-            if (chatMode || finishing) { _state.update { it.copy(phase = ConversationPhase.IDLE) }; return }
+            if (chatMode || finishing) { replyLatency.discardPending(); _state.update { it.copy(phase = ConversationPhase.IDLE) }; return }
             val audioJob = viewModelScope.async {
                 val audio = ai.synthesizeSpeech(reply, voice = alphonsoVoice(course.code), course = course.code)
                 if (!finishing && callId == attemptId && !player.play(audio)) _state.update { it.copy(error = "Got a reply, but couldn't play it back.") }
             }
             replyAudioJob = audioJob
             audioJob.await()
-            if (!finishing && callId == attemptId) replyLatency.partnerFinished(System.currentTimeMillis())
+            if (!finishing && callId == attemptId) replyLatency.partnerFinished()
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
             if (callId == attemptId) {
                 // A failed reply pauses hands-free instead of listening again; one tap resumes.
+                replyLatency.discardPending()
                 if (!finishing) handsFree.failed()
                 _state.update { it.copy(error = if (finishing) null else AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
             }
