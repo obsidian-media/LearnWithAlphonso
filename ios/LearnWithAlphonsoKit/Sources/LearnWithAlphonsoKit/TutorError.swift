@@ -17,6 +17,9 @@ import FoundationNetworking
 public enum TutorError: Error, Equatable, Sendable {
     case signedOut
     case notEntitled
+    /// A rehearsal run with Hector (or hard mode) from a learner who is not Pro: a 402 `pro_required` on the FIRST turn
+    /// of the call. Distinct from `free_runs_used` (the free rehearsal's runs are spent, `.notEntitled`). Opens the paywall.
+    case proRequired
     case entitlementUnavailable
     case aiConsentRequired
     case quotaExceeded(resetsAt: Date?)
@@ -41,6 +44,8 @@ public enum TutorError: Error, Equatable, Sendable {
         case "not-entitled": return .notEntitled
         // A free rehearsal's runs are used up (a 402 on /api/chat in rehearsal mode): the Pro door, like not-entitled.
         case "free_runs_used": return .notEntitled
+        // Hector or hard mode without Pro (a 402 on the first turn of a rehearsal call): the Pro door with its own words.
+        case "pro_required": return .proRequired
         case "entitlement-unavailable": return .entitlementUnavailable
         case "ai-consent-required": return .aiConsentRequired
         case "quota-exceeded": return .quotaExceeded(resetsAt: parseDate(object?["resetsAt"] as? String))
@@ -65,6 +70,8 @@ public enum TutorError: Error, Equatable, Sendable {
             return "You've been signed out. Please sign in again."
         case .notEntitled:
             return "Hector is part of Alphonso Pro."
+        case .proRequired:
+            return "Hector rehearsals are part of Alphonso Pro. You can start this stage with Alphonso instead."
         case .entitlementUnavailable:
             return "We can't check your Pro access right now. Please try again shortly."
         case .aiConsentRequired:

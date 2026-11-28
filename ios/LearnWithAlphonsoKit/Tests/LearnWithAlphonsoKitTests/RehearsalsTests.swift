@@ -624,4 +624,182 @@ final class RehearsalsTests: XCTestCase {
         let adjust = RehearsalRequests.addDate(id: id, eventDate: "2026-12-04")
         XCTAssertEqual(NSDictionary(dictionary: adjust), NSDictionary(dictionary: add))
     }
+
+    // MARK: - Hector and hard mode
+
+    private func chatBody(_ source: CallSource) -> [String: Any] {
+        source.chatBody(systemPrompt: nil, cefrLevel: nil, course: nil, callId: "c", messages: [])
+    }
+
+    private func rehearsalPart(_ source: CallSource) throws -> NSDictionary {
+        NSDictionary(dictionary: try XCTUnwrap(chatBody(source)["rehearsal"] as? [String: Any]))
+    }
+
+    func testAHectorBodyMatchesTheSharedFixtureOnEveryTurn() throws {
+        let f = try fixture()
+        let hector = try XCTUnwrap(f["chatBodyHector"] as? [String: Any])["rehearsal"] as! [String: Any]
+        let hard = try XCTUnwrap(f["chatBodyHard"] as? [String: Any])["rehearsal"] as! [String: Any]
+        let one = CallSource.rehearsal(id: rid, stage: .conversation, persona: .hector)
+        let two = CallSource.rehearsal(id: rid, stage: .hardMoments, persona: .hector, hardMode: true)
+        // The same source builds the same fields on turn 1 and turn 5: nothing about the call changes between turns.
+        for _ in 0..<5 {
+            XCTAssertEqual(try rehearsalPart(one), NSDictionary(dictionary: hector))
+            XCTAssertEqual(try rehearsalPart(two), NSDictionary(dictionary: hard))
+        }
+    }
+
+    func testAnAlphonsoBodyIsExactlyTheOldOne() throws {
+        let f = try fixture()
+        let expected = try XCTUnwrap(f["chatBody"] as? [String: Any])["rehearsal"] as! [String: Any]
+        XCTAssertEqual(try rehearsalPart(.rehearsal(id: rid, stage: .conversation)), NSDictionary(dictionary: expected))
+        // Even a stray hard-mode flag never travels for Alphonso.
+        let stray = try rehearsalPart(.rehearsal(id: rid, stage: .hardMoments, persona: .alphonso, hardMode: true))
+        XCTAssertNil(stray["persona"])
+        XCTAssertNil(stray["hardMode"])
+    }
+
+    func testHardModeIsNeverSentOutsideTheLastStage() throws {
+        let part = try rehearsalPart(.rehearsal(id: rid, stage: .warmup, persona: .hector, hardMode: true))
+        XCTAssertEqual(part["persona"] as? String, "hector")
+        XCTAssertNil(part["hardMode"], "the server answers 400 invalid_mode; the app does not ask for it")
+    }
+
+    func testTheChatErrorsMapToTheirOwnPaywallsAndMessages() throws {
+        let errors = try XCTUnwrap(try fixture()["chatErrors"] as? [[String: Any]])
+        XCTAssertEqual(errors.count, 4)
+        for entry in errors {
+            let status = try XCTUnwrap(entry["status"] as? Int)
+            let body = try JSONSerialization.data(withJSONObject: try XCTUnwrap(entry["body"]))
+            let error = TutorError.from(status: status, body: body)
+            switch entry["means"] as? String {
+            case "paywall": XCTAssertEqual(error, .proRequired)
+            case "free_runs_used": XCTAssertEqual(error, .notEntitled)
+            case "invalid": XCTAssertEqual(error, .server(message: nil), "the generic message")
+            case "retry": XCTAssertEqual(error, .server(message: nil), "the existing retry: the turn is spoken again")
+            default: XCTFail("a chat error the app does not know: \(entry)")
+            }
+        }
+        XCTAssertNotEqual(TutorError.proRequired.userMessage(), TutorError.notEntitled.userMessage())
+        XCTAssertTrue(TutorError.proRequired.userMessage().contains("Hector"))
+    }
+
+    func testTheStateReadsHectorAvailableAsTrueFalseAndNull() throws {
+        XCTAssertEqual(try state().hectorAvailable, true)
+        let empty = try XCTUnwrap(RehearsalDecoding.state(from: try data("stateEmpty")))
+        XCTAssertNil(empty.hectorAvailable, "null: let them try")
+        var json = try XCTUnwrap(try fixture()["state"] as? [String: Any])
+        json["hectorAvailable"] = false
+        let notPro = try XCTUnwrap(RehearsalDecoding.state(from: try JSONSerialization.data(withJSONObject: json)))
+        XCTAssertEqual(notPro.hectorAvailable, false)
+        json["hectorAvailable"] = "yes"
+        let odd = try XCTUnwrap(RehearsalDecoding.state(from: try JSONSerialization.data(withJSONObject: json)))
+        XCTAssertNil(odd.hectorAvailable, "a wrong type is unknown, never Pro")
+        json.removeValue(forKey: "hectorAvailable")
+        json.removeValue(forKey: "hardModeDone")
+        let older = try XCTUnwrap(RehearsalDecoding.state(from: try JSONSerialization.data(withJSONObject: json)))
+        XCTAssertNil(older.hectorAvailable)
+        XCTAssertFalse(older.hardModeDone)
+    }
+
+    func testRunsReadWhoPlayedThemAndWhetherItWasHard() throws {
+        let run = try XCTUnwrap(try state().runs.first)
+        XCTAssertEqual(run.rehearsalPersona, .alphonso)
+        XCTAssertFalse(run.isHardMode)
+        var json = try XCTUnwrap(try fixture()["state"] as? [String: Any])
+        var runs = try XCTUnwrap(json["runs"] as? [[String: Any]])
+        runs[0]["persona"] = "hector"
+        runs[0]["hardMode"] = true
+        json["runs"] = runs
+        json["hardModeDone"] = true
+        let s = try XCTUnwrap(RehearsalDecoding.state(from: try JSONSerialization.data(withJSONObject: json)))
+        XCTAssertEqual(s.runs.first?.rehearsalPersona, .hector)
+        XCTAssertEqual(s.runs.first?.isHardMode, true)
+        XCTAssertTrue(s.hardModeDone)
+        XCTAssertTrue(RehearsalPlan.showsHardModeDone(stage: .hardMoments, state: s))
+        XCTAssertFalse(RehearsalPlan.showsHardModeDone(stage: .warmup, state: s), "only under the last stage")
+        XCTAssertFalse(RehearsalPlan.showsHardModeDone(stage: .hardMoments, state: try state()))
+    }
+
+    private func run(_ stage: String, at: String, corrections: [String] = [], hard: Bool = false) throws -> RehearsalRun {
+        let json: [String: Any] = [
+            "stage": stage, "finishedAt": at, "momentsShown": [], "wentWell": [], "corrections": corrections,
+            "persona": hard ? "hector" : "alphonso", "hardMode": hard,
+        ]
+        return try JSONDecoder().decode(RehearsalRun.self, from: JSONSerialization.data(withJSONObject: json))
+    }
+
+    func testAHardModeRunNeverMarksAStageDoneOrReplacesItsRun() throws {
+        let runs = [
+            try run("warmup", at: "2026-11-27T10:00:00Z"),
+            try run("conversation", at: "2026-11-27T11:00:00Z"),
+            try run("hard_moments", at: "2026-11-27T12:00:00Z", corrections: ["a", "b", "c"], hard: true),
+        ]
+        XCTAssertEqual(RehearsalPlan.nextStage(runs: runs), .hardMoments, "the hard-mode run did not finish the stage")
+        XCTAssertNil(RehearsalPlan.latestRun(runs, stage: .hardMoments))
+        XCTAssertEqual(RehearsalPlan.latestRun(runs, stage: .hardMoments, hardMode: true)?.corrections.count, 3)
+        let normal = try run("hard_moments", at: "2026-11-27T09:00:00Z", corrections: ["x"])
+        XCTAssertEqual(RehearsalPlan.latestRun(runs + [normal], stage: .hardMoments)?.corrections, ["x"])
+    }
+
+    func testTheDebriefOfAHardModeCallReadsTheHardRun() throws {
+        let runs = [
+            try run("hard_moments", at: "2026-11-27T09:00:00Z", corrections: ["old"]),
+            try run("hard_moments", at: "2026-11-27T12:00:00Z", corrections: ["new"], hard: true),
+        ]
+        let hard = RehearsalDebrief.make(
+            stage: .hardMoments, kind: .interview, runs: runs, previousFinishedAt: nil, seconds: 300, turns: 6,
+            addedToFix: 0, hardMode: true)
+        guard case .debrief(let d) = hard else { return XCTFail("\(hard)") }
+        XCTAssertEqual(d.tryAgain, ["new"])
+        // A call that made no hard-mode run is not given an older normal run's debrief.
+        let none = RehearsalDebrief.make(
+            stage: .hardMoments, kind: .interview, runs: [runs[0]], previousFinishedAt: nil, seconds: 60, turns: 2,
+            addedToFix: 0, hardMode: true)
+        XCTAssertEqual(none, .noRun)
+    }
+
+    func testThePartnerSheetsRulesFollowHectorAvailable() {
+        // true: Pro. No badge, Hector starts, hard mode on the last stage.
+        XCTAssertFalse(RehearsalPartner.showsProBadge(hectorAvailable: true))
+        XCTAssertEqual(RehearsalPartner.hectorDoor(hectorAvailable: true), .start)
+        XCTAssertTrue(RehearsalPartner.offersHardMode(stage: .hardMoments, hectorAvailable: true))
+        // false: not Pro. Badge, the paywall, no hard mode.
+        XCTAssertTrue(RehearsalPartner.showsProBadge(hectorAvailable: false))
+        XCTAssertEqual(RehearsalPartner.hectorDoor(hectorAvailable: false), .paywall)
+        XCTAssertFalse(RehearsalPartner.offersHardMode(stage: .hardMoments, hectorAvailable: false))
+        // null: let them try; the server decides.
+        XCTAssertFalse(RehearsalPartner.showsProBadge(hectorAvailable: nil))
+        XCTAssertEqual(RehearsalPartner.hectorDoor(hectorAvailable: nil), .start)
+        XCTAssertTrue(RehearsalPartner.offersHardMode(stage: .hardMoments, hectorAvailable: nil))
+        // Hard mode is the last stage only.
+        XCTAssertFalse(RehearsalPartner.offersHardMode(stage: .warmup, hectorAvailable: true))
+        XCTAssertFalse(RehearsalPartner.offersHardMode(stage: .conversation, hectorAvailable: true))
+    }
+
+    func testTheChosenSourceDropsHardModeWhereItIsNotOffered() throws {
+        let a = RehearsalPartner.source(rehearsalId: rid, stage: .hardMoments, persona: .alphonso, hardMode: true)
+        XCTAssertEqual(a, .rehearsal(id: rid, stage: .hardMoments, persona: .alphonso, hardMode: false))
+        let w = RehearsalPartner.source(rehearsalId: rid, stage: .warmup, persona: .hector, hardMode: true)
+        XCTAssertEqual(w, .rehearsal(id: rid, stage: .warmup, persona: .hector, hardMode: false))
+        let h = RehearsalPartner.source(rehearsalId: rid, stage: .hardMoments, persona: .hector, hardMode: true)
+        XCTAssertEqual(h, .rehearsal(id: rid, stage: .hardMoments, persona: .hector, hardMode: true))
+    }
+
+    func testThePartnerSheetsWordsAndVoiceOverLabels() {
+        XCTAssertEqual(RehearsalPartner.hectorButton(hectorAvailable: false, hardMode: true), "Start with Hector (Pro)")
+        XCTAssertEqual(RehearsalPartner.hectorButton(hectorAvailable: true, hardMode: true), "Start hard mode with Hector")
+        XCTAssertEqual(RehearsalPartner.hectorButton(hectorAvailable: nil, hardMode: false), "Start with Hector")
+        XCTAssertTrue(RehearsalPartner.hectorAccessibilityLabel(hectorAvailable: false, hardMode: false).contains("Needs Alphonso Pro"))
+        XCTAssertFalse(RehearsalPartner.hectorAccessibilityLabel(hectorAvailable: true, hardMode: false).contains("Pro"))
+        XCTAssertTrue(RehearsalPartner.hectorAccessibilityLabel(hectorAvailable: true, hardMode: false).contains("AI"))
+    }
+
+    func testAHectorCallSpeaksWithHisVoiceAndSaysWhoIsOnTheLine() {
+        XCTAssertEqual(RehearsalPersona.hector.voiceCharacter, .hector)
+        XCTAssertEqual(RehearsalPersona.alphonso.voiceCharacter, .alphonso)
+        XCTAssertEqual(RehearsalCallHeader.subline(stage: .conversation), "Alphonso \u{00B7} Stage 2 of 3: The real conversation")
+        XCTAssertEqual(
+            RehearsalCallHeader.subline(stage: .hardMoments, persona: .hector, hardMode: true),
+            "Hector \u{00B7} Stage 3 of 3: The hard moments \u{00B7} Hard mode")
+    }
 }
