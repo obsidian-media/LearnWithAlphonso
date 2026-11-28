@@ -71,7 +71,7 @@ final class RehearsalModel {
         guard let client = await client() else { presetsError = .failed; return }
         switch await client.presets(course: courseCode) {
         case .success(let list): presets = list; presetsError = nil
-        case .failure(let e): presets = []; presetsError = e
+        case .failure(let e): presetsError = e  // keep the last good list, if any
         }
     }
 
@@ -299,7 +299,10 @@ struct RehearsalPresetPickerView: View {
                     .accessibilityElement(children: .combine)
                     .accessibilityHint("Opens a preview")
                 }
-                if !model.presetsLoading, model.presets.isEmpty, model.presetsError != nil {
+                if !model.presetsLoading, model.presets.isEmpty, model.presetsError == .notEnabled {
+                    Text(RehearsalError.notEnabled.userMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
+                        .accessibilityAddTraits(.updatesFrequently)
+                } else if !model.presetsLoading, model.presets.isEmpty, model.presetsError != nil {
                     VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                         Text(RehearsalPresetCopy.loadFailed).dsText(.footnote).foregroundStyle(ds.wrongInk)
                             .accessibilityAddTraits(.updatesFrequently)
@@ -308,19 +311,24 @@ struct RehearsalPresetPickerView: View {
                             .buttonStyle(.alphonsoSecondary)
                     }
                 }
-                Button { onSomethingElse() } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(RehearsalPresetCopy.somethingElse).dsText(.headline).foregroundStyle(ds.actionText)
-                        Text(RehearsalPresetCopy.somethingElseHint).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                if model.presetsError != .notEnabled {
+                    Button { onSomethingElse() } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(RehearsalPresetCopy.somethingElse).dsText(.headline).foregroundStyle(ds.actionText)
+                            Text(RehearsalPresetCopy.somethingElseHint).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                        }
+                        .cardRow(ds)
                     }
-                    .cardRow(ds)
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityHint("Opens four short questions about your own conversation")
+                }
+                Button { onCancel() } label: {
+                    Text("Not now").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityElement(children: .combine)
-                .accessibilityHint("Opens four short questions about your own conversation")
-                Button("Not now") { onCancel() }
-                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
-                    .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
             }
             .padding(AlphonsoDS.Space.gutter)
         }
@@ -390,9 +398,12 @@ struct RehearsalPresetPreviewView: View {
                     .buttonStyle(.alphonsoSecondary(fullWidth: true))
                     .disabled(model.busy)
                     .accessibilityHint(RehearsalPresetCopy.personaliseHint)
-                Button("Back") { onBack() }
-                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
-                    .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
+                Button { onBack() } label: {
+                    Text("Back").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .padding(AlphonsoDS.Space.gutter)
         }
@@ -405,14 +416,20 @@ struct RehearsalPresetPreviewView: View {
                 DatePicker("Date", selection: $pickedDate, in: Date()..., displayedComponents: .date)
                     .datePickerStyle(.compact)
                     .tint(ds.action)
-                Button(RehearsalPresetCopy.removeDate) { withDate = false }
-                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
-                    .frame(minHeight: AlphonsoDS.Space.minTouch)
+                Button { withDate = false } label: {
+                    Text(RehearsalPresetCopy.removeDate).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                        .frame(minHeight: AlphonsoDS.Space.minTouch)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         } else {
-            Button(RehearsalPresetCopy.addDate) { withDate = true }
-                .dsText(.headline).foregroundStyle(ds.actionText)
-                .frame(minHeight: AlphonsoDS.Space.minTouch)
+            Button { withDate = true } label: {
+                Text(RehearsalPresetCopy.addDate).dsText(.headline).foregroundStyle(ds.actionText)
+                    .frame(minHeight: AlphonsoDS.Space.minTouch)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -423,7 +440,10 @@ struct RehearsalPresetPreviewView: View {
             if failure == .paywall { onPaywall() }
             error = failure
         } else if personalise {
-            onPersonalise()
+            // The create worked but reading the state back may not have: try once more before opening the adjust flow.
+            if model.state?.active == nil { await model.refresh() }
+            // Still nothing: the plan screen reads the state itself and shows its error line with Try again, never a blank intake.
+            if model.state?.active == nil { onStarted() } else { onPersonalise() }
         } else {
             onStarted()
         }
