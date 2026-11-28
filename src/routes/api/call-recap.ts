@@ -13,6 +13,7 @@ import {
 import { REHEARSAL_FINISH_MIN_REPLIES, isCallId } from "@/lib/practice-calls.server";
 import { isRehearsalId, isStage, type Stage } from "@/lib/rehearsal-rules";
 import { buildRunMemory, hasNumber } from "@/lib/rehearsal-run-memory";
+import { buildSpeaking, countKeyPhrases, type RehearsalSpeaking } from "@/lib/rehearsal-speaking";
 import { timedRoute } from "@/lib/stage-timer.server";
 
 /**
@@ -35,6 +36,70 @@ import { timedRoute } from "@/lib/stage-timer.server";
 const NONE = () => noStoreJson({ recap: null });
 /** The attempt failed in a way a second try may fix (model, memory write, a database hiccup): the client offers "Try again". */
 const RETRY = () => noStoreJson({ recap: null, retry: true });
+
+/** A brief's key phrases as text: a plain string, or an object with a `text`. Anything else is skipped. */
+function keyPhraseTexts(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.flatMap((p) => {
+    if (typeof p === "string") return [p];
+    const t = (p as { text?: unknown } | null)?.text;
+    return typeof t === "string" ? [t] : [];
+  });
+}
+
+/**
+ * The notes of "How you spoke" for the run just written: this run's counts against the learner's PREVIOUS finished run
+ * of the SAME stage of the SAME rehearsal. A failed read of the previous run means no comparison, never no notes.
+ */
+async function speakingFor(
+  admin: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+  callId: string,
+  run: { rehearsalId: string; stage: Stage },
+  row: { replies?: number; short_replies?: number; english_replies?: number },
+  key: { used: number; total: number },
+): Promise<RehearsalSpeaking | undefined> {
+  let prev: Parameters<typeof buildSpeaking>[1] = null;
+  try {
+    const { data } = await admin
+      .from("rehearsal_runs")
+      .select("practice_call_id,speaking_full,speaking_english,key_phrases_used")
+      .eq("user_id", userId)
+      .eq("rehearsal_id", run.rehearsalId)
+      .eq("stage", run.stage)
+      .order("finished_at", { ascending: false })
+      .limit(3);
+    const rows = (data ?? []) as {
+      practice_call_id: string | null;
+      speaking_full: number | null;
+      speaking_english: number | null;
+      key_phrases_used: number | null;
+    }[];
+    // No row for THIS call means no run was written (the learner deleted the rehearsal mid-call): no card.
+    if (!rows.some((r) => r.practice_call_id === callId)) return undefined;
+    const earlier = rows.find((r) => r.practice_call_id !== callId);
+    if (earlier)
+      prev = {
+        full_replies: earlier.speaking_full,
+        english_fallback: earlier.speaking_english,
+        key_phrases: earlier.key_phrases_used,
+      };
+  } catch {
+    // The run cannot be confirmed, so nothing is shown.
+    return undefined;
+  }
+  const replies = row.replies ?? 0;
+  return buildSpeaking(
+    {
+      replies,
+      full: Math.max(0, replies - (row.short_replies ?? 0)),
+      english: row.english_replies ?? 0,
+      keyUsed: key.used,
+      keyTotal: key.total,
+    },
+    prev,
+  );
+}
 
 export const Route = createFileRoute("/api/call-recap")({
   server: {
@@ -67,7 +132,9 @@ export const Route = createFileRoute("/api/call-recap")({
           const { data: call } = await timer.time("call", async () =>
             admin
               .from("practice_calls")
-              .select("course,finished_at,recap_at,kind,item_key,replies")
+              .select(
+                "course,finished_at,recap_at,kind,item_key,replies,short_replies,english_replies",
+              )
               .eq("id", callId)
               .eq("user_id", userId)
               .maybeSingle(),
@@ -79,13 +146,20 @@ export const Route = createFileRoute("/api/call-recap")({
             kind?: string;
             item_key?: string;
             replies?: number;
+            short_replies?: number;
+            english_replies?: number;
           } | null;
           if (!row || !row.finished_at || row.recap_at || !isCourse(row.course)) return NONE();
           const course: Course = row.course;
 
           // A rehearsal call is a run only with the rehearsal finish rule's replies: fewer is no run (no AI call, no
           // memory, no stage done). A run also names its rehearsal, so the recap can say which hard moments came up.
-          let runOf: { rehearsalId: string; stage: Stage; labels: string[] } | null = null;
+          let runOf: {
+            rehearsalId: string;
+            stage: Stage;
+            labels: string[];
+            keyPhrases: string[];
+          } | null = null;
           if (row.kind === "rehearsal") {
             if ((row.replies ?? 0) < REHEARSAL_FINISH_MIN_REPLIES) return NONE();
             const [rehearsalId, stage] = (row.item_key ?? "").split(":");
@@ -98,8 +172,12 @@ export const Route = createFileRoute("/api/call-recap")({
                   .eq("user_id", userId)
                   .maybeSingle(),
               );
-              const moments = (found as { brief?: { hardMoments?: { label?: unknown }[] } } | null)
-                ?.brief?.hardMoments;
+              const briefOf = (
+                found as {
+                  brief?: { hardMoments?: { label?: unknown }[]; keyPhrases?: unknown };
+                } | null
+              )?.brief;
+              const moments = briefOf?.hardMoments;
               if (found)
                 runOf = {
                   rehearsalId,
@@ -107,6 +185,7 @@ export const Route = createFileRoute("/api/call-recap")({
                   labels: (moments ?? []).flatMap((m) =>
                     typeof m.label === "string" ? [m.label] : [],
                   ),
+                  keyPhrases: keyPhraseTexts(briefOf?.keyPhrases),
                 };
             }
           }
@@ -190,6 +269,12 @@ export const Route = createFileRoute("/api/call-recap")({
                   labels: runOf.labels,
                 })
               : null;
+            const keyCount = runOf
+              ? countKeyPhrases(
+                  runOf.keyPhrases,
+                  turns.filter((t) => t.role === "user").map((t) => t.content),
+                )
+              : { used: 0, total: 0 };
             const memo = await timer.time("memory", async () =>
               run
                 ? admin.rpc("finish_rehearsal_recap", {
@@ -199,6 +284,10 @@ export const Route = createFileRoute("/api/call-recap")({
                     _corrections: run.corrections,
                     // The floor is passed, not repeated in SQL: the same number the check above used.
                     _min_replies: REHEARSAL_FINISH_MIN_REPLIES,
+                    // Counts only: how many of the brief's key phrases the learner said, never the phrases.
+                    ...(keyCount.total > 0
+                      ? { _key_phrases_used: keyCount.used, _key_phrases_total: keyCount.total }
+                      : {}),
                   })
                 : admin.rpc("finish_call_recap", finishArgs),
             );
@@ -217,8 +306,14 @@ export const Route = createFileRoute("/api/call-recap")({
               const { recordRehearsalUsage } = await import("@/lib/rehearsal-usage.server");
               await recordRehearsalUsage("rehearsal_stage_finished", { stage: runOf.stage });
             }
+            // "How you spoke": only for a run that was written. Absent for every other call.
+            const speaking: RehearsalSpeaking | undefined =
+              run && runOf && typeof memo.data === "number" && memo.data >= 0
+                ? await speakingFor(admin, userId, callId, runOf, row, keyCount)
+                : undefined;
+            const speakingField = speaking ? { rehearsalSpeaking: speaking } : {};
             // Everything it had to say was filtered out: the call is completed with nothing written, and nothing shows.
-            if (nothingToShow) return NONE();
+            if (nothingToShow) return noStoreJson({ recap: null, ...speakingField });
 
             let token: string | null = null;
             try {
@@ -242,6 +337,7 @@ export const Route = createFileRoute("/api/call-recap")({
                 saved: !memo.error,
                 reviewCount: kept.corrections.length + (kept.phrase ? 1 : 0),
               },
+              ...speakingField,
             });
           };
           try {

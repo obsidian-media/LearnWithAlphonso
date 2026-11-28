@@ -644,6 +644,7 @@ export function ConverseChatPage({
           turns={Math.max(0, messages.length - 1)}
           recapStatus={recap.status}
           fixCount={recap.recap?.reviewCount ?? 0}
+          speaking={recap.howYouSpoke}
           onRunAgain={onRetry}
           onDone={() => void navigate({ to: backTo })}
         />
