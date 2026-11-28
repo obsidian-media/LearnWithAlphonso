@@ -18,7 +18,8 @@ import kotlinx.serialization.json.jsonPrimitive
 enum class SpeakingKind(val wire: String) {
     FULL_REPLIES("full_replies"),
     ENGLISH_FALLBACK("english_fallback"),
-    KEY_PHRASES("key_phrases");
+    KEY_PHRASES("key_phrases"),
+    PAUSES("pauses");
 
     companion object {
         fun fromWire(raw: String?): SpeakingKind? = entries.firstOrNull { it.wire == raw }
@@ -79,8 +80,16 @@ object SpeakingRules {
         else -> ", the same as last time"
     }
 
-    /** The full sentence TalkBack reads (and the card shows), ending in a full stop. */
-    fun sentence(note: SpeakingNote, language: String): String = when (note.kind) {
+    /** A short thing to say while thinking, from the course. An unknown course gets the English one. */
+    fun filler(courseCode: String): String = when (courseCode) {
+        "fr" -> "Laissez-moi réfléchir…"
+        "es" -> "Déjeme pensar…"
+        else -> "Let me think…"
+    }
+
+    /** The full sentence TalkBack reads (and the card shows), ending in a full stop. [courseCode] picks the pause note's filler. */
+    fun sentence(note: SpeakingNote, language: String, courseCode: String = "en"): String = when (note.kind) {
+        SpeakingKind.PAUSES -> "You took a moment before ${note.count} of ${note.total} answers. That's fine; next time try starting with “${filler(courseCode)}”."
         SpeakingKind.FULL_REPLIES -> "You answered in full sentences ${note.count} of ${note.total} times${suffix(note.count, note.previous)}."
         SpeakingKind.ENGLISH_FALLBACK ->
             if (note.count == 0) "You stayed in $language the whole time${suffix(note.count, note.previous)}."
@@ -90,6 +99,7 @@ object SpeakingRules {
 
     /** The small trend mark. Lower is better for switching to English; higher is better for the other two. */
     fun trend(note: SpeakingNote): SpeakingTrend {
+        if (note.kind == SpeakingKind.PAUSES) return SpeakingTrend(SpeakingTrend.Direction.NONE, false) // no arrow for a pause
         val prev = note.previous ?: return SpeakingTrend(SpeakingTrend.Direction.NONE, false)
         val lowerIsBetter = note.kind == SpeakingKind.ENGLISH_FALLBACK
         return when {

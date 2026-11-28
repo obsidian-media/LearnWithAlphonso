@@ -44,7 +44,7 @@ fun HowYouSpokeCard(speaking: RehearsalSpeaking?, courseCode: String) {
     DsCard(padding = AlphonsoTokens.Space.s3) {
         Text(RehearsalSpeaking.TITLE, style = HeadlineType, color = ds.ink, modifier = Modifier.semantics { heading() })
         speaking.notes.forEach { note ->
-            val sentence = SpeakingRules.sentence(note, language)
+            val sentence = SpeakingRules.sentence(note, language, courseCode)
             val trend = SpeakingRules.trend(note)
             Row(
                 Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
