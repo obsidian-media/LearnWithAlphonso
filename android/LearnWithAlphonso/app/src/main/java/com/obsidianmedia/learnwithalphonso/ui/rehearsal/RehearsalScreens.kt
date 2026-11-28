@@ -136,7 +136,7 @@ fun RehearsalScreen(
                 }
                 state.active != null && screen == "outcome" -> HowDidItGo(state.active!!, ui.busy, ui.error, c, onBack = { screen = "" }, onDone = onBack, onMoved = { screen = "" })
                 state.active != null && screen == "adjust" -> RehearsalIntakeScreen(course.code, state.active, ui.busy, ui.error, c, onBack = { screen = "" }, onSaved = { screen = "" })
-                state.active != null -> RehearsalPlan(state, c, onBack = onBack, onOpenStage = onOpenStage, onAdjust = { screen = "adjust" }, onOpenPartnerStage = onOpenPartnerStage, onOpenPaywall = onOpenPaywall)
+                state.active != null -> RehearsalPlan(state, c, onBack = onBack, onOpenStage = onOpenStage, onAdjust = { screen = "adjust" }, onOpenPartnerStage = onOpenPartnerStage, onOpenPaywall = onOpenPaywall, isPro = container.entitlements.isPro)
                 // The free rehearsal is used and the learner is not Pro: the Pro sheet is the screen, the picker stays hidden.
                 entryOpensPaywall(state, container.entitlements.isPro) -> DsBackBar("Learn", onBack)
                 screen == "intake" -> RehearsalIntakeScreen(course.code, null, ui.busy, ui.error, c, onBack = { c.clearError(); screen = "" }, onSaved = { screen = "" })
@@ -245,7 +245,7 @@ fun RehearsalIntakeScreen(
 @Composable
 fun RehearsalPlan(
     state: RehearsalState, controller: RehearsalController, onBack: () -> Unit, onOpenStage: (String, Stage) -> Unit, onAdjust: () -> Unit,
-    onOpenPartnerStage: (String, Stage, RehearsalPartner, Boolean) -> Unit = { _, _, _, _ -> }, onOpenPaywall: () -> Unit = {},
+    onOpenPartnerStage: (String, Stage, RehearsalPartner, Boolean) -> Unit = { _, _, _, _ -> }, onOpenPaywall: () -> Unit = {}, isPro: Boolean = false,
 ) {
     val r = state.active ?: return
     val ds = LocalAlphonsoTokens.current
@@ -295,7 +295,7 @@ fun RehearsalPlan(
     }
     choosing?.let { stage ->
         StagePartnerSheet(
-            stage, state.hectorAvailable, onDismiss = { choosing = null },
+            stage, state.hectorAvailable, isPro, onDismiss = { choosing = null },
             onChoose = { choice ->
                 choosing = null
                 when (choice) {

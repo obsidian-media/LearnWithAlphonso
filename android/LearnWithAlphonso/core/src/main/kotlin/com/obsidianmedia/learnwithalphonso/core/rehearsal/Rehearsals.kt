@@ -374,11 +374,14 @@ enum class RehearsalPartner(val wire: String, val displayName: String) {
  * tell", which lets the learner try (the run's start checks Pro once and a refusal there explains itself).
  */
 object StagePartnerRules {
-    /** A Pro badge on Hector, and the paywall behind him. Only a definite false: unknown lets the learner try. */
-    fun hectorLocked(hectorAvailable: Boolean?): Boolean = hectorAvailable == false
+    /**
+     * A Pro badge on Hector, and the paywall behind him. Only a definite false from the server, and only while the app does not
+     * know the learner is Pro: the state can be older than a purchase just made, and unknown lets the learner try.
+     */
+    fun hectorLocked(hectorAvailable: Boolean?, isPro: Boolean): Boolean = hectorAvailable == false && !isPro
 
     /** The Hard mode toggle: the last stage, and only where Hector is not locked. */
-    fun hardModeOffered(stage: Stage, hectorAvailable: Boolean?): Boolean = stage == Stage.HARD_MOMENTS && !hectorLocked(hectorAvailable)
+    fun hardModeOffered(stage: Stage, hectorAvailable: Boolean?, isPro: Boolean): Boolean = stage == Stage.HARD_MOMENTS && !hectorLocked(hectorAvailable, isPro)
 
     sealed interface Choice {
         /** Start the call with this partner; [hardMode] is only ever true for Hector on the last stage. */
@@ -390,12 +393,12 @@ object StagePartnerRules {
     fun alphonso(): Choice = Choice.Start(RehearsalPartner.ALPHONSO, false)
 
     /** The Hector button. [hardRequested] is the toggle; it counts only where it is offered. */
-    fun hector(stage: Stage, hectorAvailable: Boolean?, hardRequested: Boolean): Choice =
-        if (hectorLocked(hectorAvailable)) Choice.Paywall
-        else Choice.Start(RehearsalPartner.HECTOR, hardRequested && hardModeOffered(stage, hectorAvailable))
+    fun hector(stage: Stage, hectorAvailable: Boolean?, isPro: Boolean, hardRequested: Boolean): Choice =
+        if (hectorLocked(hectorAvailable, isPro)) Choice.Paywall
+        else Choice.Start(RehearsalPartner.HECTOR, hardRequested && hardModeOffered(stage, hectorAvailable, isPro))
 
-    fun hectorButton(stage: Stage, hectorAvailable: Boolean?, hardMode: Boolean): String = when {
-        hectorLocked(hectorAvailable) -> "Start with Hector (Pro)"
+    fun hectorButton(stage: Stage, hectorAvailable: Boolean?, isPro: Boolean, hardMode: Boolean): String = when {
+        hectorLocked(hectorAvailable, isPro) -> "Start with Hector (Pro)"
         hardMode && stage == Stage.HARD_MOMENTS -> "Start hard mode with Hector"
         else -> "Start with Hector"
     }

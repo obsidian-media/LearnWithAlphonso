@@ -225,6 +225,8 @@ abstract class BaseConversationViewModel(
         sending = true
         judging = true
         val attemptId = callId
+        val userIndex = _state.value.turns.size
+        var replied = false
         _state.update { s ->
             s.copy(
                 turns = s.turns + ChatMessage("user", text),
@@ -235,6 +237,7 @@ abstract class BaseConversationViewModel(
         try {
             val chatReply = try { ai.chatReply(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code, attemptId, callSource) } finally { judging = false }
             val reply = chatReply.content
+            replied = true
             if (slip == null && chatReply.verdict == ReplyVerdict.CORRECTED) slip = text to reply
             _state.update {
                 it.copy(turns = it.turns + ChatMessage("assistant", reply), phase = ConversationPhase.SPEAKING, verdictSerial = it.verdictSerial + 1, verdict = chatReply.verdict)
@@ -252,7 +255,16 @@ abstract class BaseConversationViewModel(
             if (callId == attemptId) {
                 // A failed reply pauses hands-free instead of listening again; one tap resumes.
                 if (!finishing) handsFree.failed()
-                _state.update { it.copy(error = if (finishing) null else chatErrorMessage(e), phase = ConversationPhase.IDLE) }
+                _state.update { s ->
+                    // A turn the server never answered is not part of the conversation: keeping it would make the next try send two
+                    // learner messages in a row (after a 503 retry, or after coming back from the Pro screen).
+                    val dropped = !replied && s.turns.lastIndex == userIndex && s.turns[userIndex].role == "user"
+                    s.copy(
+                        turns = if (dropped) s.turns.take(userIndex) else s.turns,
+                        confidenceByTurn = if (dropped) s.confidenceByTurn - userIndex else s.confidenceByTurn,
+                        error = if (finishing) null else chatErrorMessage(e), phase = ConversationPhase.IDLE,
+                    )
+                }
             }
         } finally { sending = false; judging = false }
     }

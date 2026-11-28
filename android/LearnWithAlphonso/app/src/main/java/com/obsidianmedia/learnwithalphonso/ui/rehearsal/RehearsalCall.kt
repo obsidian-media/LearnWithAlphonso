@@ -39,6 +39,7 @@ import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalPartner
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalOpeners
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalSpeaking
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.Stage
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.StagePartnerRules
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
@@ -152,15 +153,28 @@ fun RehearsalCallScreen(
     BackHandler(enabled = result == null, onBack = endCall)
     if (result != null) {
         val recapUi by vm.recap.ui.collectAsState()
+        var choosing by remember { mutableStateOf<Stage?>(null) }
         // The run is written when the recap lands; read the state again once it is over (done, empty or failed).
         LaunchedEffect(recapUi.status) { if (recapUi.status != CallRecapController.Status.PENDING) c.load() }
         RehearsalDebrief(
             rehearsal.kind, stage, state, runsBefore, vm.elapsedSeconds, callState.turns.count { it.role == "user" },
             pending = recapUi.status == CallRecapController.Status.PENDING, fixCount = recapUi.recap?.reviewCount ?: 0,
             rehearsalSpeaking = recapUi.rehearsalSpeaking, courseCode = course.code,
-            // The next stage keeps the partner (hard mode is the last stage's own choice); a repeat is the same run again.
-            onNext = { s -> onOpenStage(id, s, partner, false) }, onAgain = { onOpenStage(id, stage, partner, hardMode) }, onDone = onBack,
+            // Each stage start asks who to practise with (pick 5B), the next stage and a repeat included: nothing is carried over.
+            onNext = { s -> choosing = s }, onAgain = { choosing = stage }, onDone = onBack,
         )
+        choosing?.let { next ->
+            StagePartnerSheet(
+                next, state?.hectorAvailable, container.entitlements.isPro, onDismiss = { choosing = null },
+                onChoose = { choice ->
+                    choosing = null
+                    when (choice) {
+                        is StagePartnerRules.Choice.Start -> onOpenStage(id, next, choice.partner, choice.hardMode)
+                        StagePartnerRules.Choice.Paywall -> onOpenPaywall()
+                    }
+                },
+            )
+        }
         return
     }
     val context = LocalContext.current

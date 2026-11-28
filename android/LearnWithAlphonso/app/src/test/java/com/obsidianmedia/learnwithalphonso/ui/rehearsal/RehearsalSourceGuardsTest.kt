@@ -103,6 +103,12 @@ class RehearsalSourceGuardsTest {
         if (!plan.contains("StagePartnerRules.Choice.Paywall -> onOpenPaywall()")) out += "Hector without Pro does not open the Pro screen"
         if (!plan.contains("StagePartnerRules.HARD_MODE_DONE")) out += "the plan does not say Hard mode done"
         if (!rootScreen.contains("Routes.rehearsalCall(id, stage.wire, partner.wire, hard)")) out += "the call route does not carry the partner and hard mode"
+        // The debrief's next stage and repeat ask for the partner again (pick 5B); nothing is carried over silently.
+        if (!call.contains("onNext = { s -> choosing = s }") || !call.contains("onAgain = { choosing = stage }") || call.contains("onOpenStage(id, s, partner")) out += "the debrief starts a stage without the partner sheet"
+        // The Pro badge reads the app's own Pro state too, so a purchase just made is never shown a stale lock.
+        if (!plan.contains("isPro = container.entitlements.isPro") || !call.contains("container.entitlements.isPro")) out += "the partner sheet does not read the app's Pro state"
+        // Hector's opener is not Alphonso's audio: the cache key carries the character.
+        if (!conversation.contains("course.code + (speechCharacter?.let { \":\${it.wire}\" } ?: \"\")")) out += "the opener cache key does not include the character"
         return out
     }
 
@@ -127,5 +133,8 @@ class RehearsalSourceGuardsTest {
         assertEquals(1, hectorProblems(conv, call, plan.replace("StagePartnerRules.Choice.Paywall -> onOpenPaywall()", "StagePartnerRules.Choice.Paywall -> Unit"), rootScreen).size)
         assertEquals(1, hectorProblems(conv, call, plan.replace("StagePartnerRules.HARD_MODE_DONE", "\"\""), rootScreen).size)
         assertEquals(1, hectorProblems(conv, call, plan, rootScreen.replace("partner.wire, hard)", "\"alphonso\", false)")).size)
+        assertEquals(1, hectorProblems(conv, call.replace("onNext = { s -> choosing = s }", "onNext = { s -> onOpenStage(id, s, partner, false) }"), plan, rootScreen).size)
+        assertEquals(1, hectorProblems(conv, call, plan.replace("isPro = container.entitlements.isPro", "isPro = false"), rootScreen).size)
+        assertEquals(1, hectorProblems(conv.replace("course.code + (speechCharacter?.let { \":\${it.wire}\" } ?: \"\")", "course.code"), call, plan, rootScreen).size)
     }
 }

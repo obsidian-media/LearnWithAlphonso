@@ -54,13 +54,15 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 fun StagePartnerSheet(
     stage: Stage,
     hectorAvailable: Boolean?,
+    /** The app's own Pro state: the server's answer can be older than a purchase just made, so a Pro learner is never locked out. */
+    isPro: Boolean,
     onChoose: (StagePartnerRules.Choice) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val ds = LocalAlphonsoTokens.current
     var hard by rememberSaveable { mutableStateOf(false) }
-    val locked = StagePartnerRules.hectorLocked(hectorAvailable)
-    val hardOffered = StagePartnerRules.hardModeOffered(stage, hectorAvailable)
+    val locked = StagePartnerRules.hectorLocked(hectorAvailable, isPro)
+    val hardOffered = StagePartnerRules.hardModeOffered(stage, hectorAvailable, isPro)
     // What the button will do reads from the rules, so a stale toggle never shows on a stage that has no hard mode.
     val hardOn = hard && hardOffered
     ModalBottomSheet(
@@ -104,8 +106,8 @@ fun StagePartnerSheet(
                     }
                 }
                 AlphonsoSecondaryButton(
-                    StagePartnerRules.hectorButton(stage, hectorAvailable, hardOn),
-                    { onChoose(StagePartnerRules.hector(stage, hectorAvailable, hardOn)) },
+                    StagePartnerRules.hectorButton(stage, hectorAvailable, isPro, hardOn),
+                    { onChoose(StagePartnerRules.hector(stage, hectorAvailable, isPro, hardOn)) },
                 )
             }
             TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch)) {

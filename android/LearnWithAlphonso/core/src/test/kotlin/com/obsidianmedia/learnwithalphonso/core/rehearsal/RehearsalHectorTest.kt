@@ -138,28 +138,38 @@ class RehearsalHectorTest {
     // ---------------------------------------------------------------- the partner sheet
 
     @Test fun `the Pro badge and the paywall appear only for a definite no`() {
-        assertTrue(StagePartnerRules.hectorLocked(false))
-        assertFalse(StagePartnerRules.hectorLocked(true))
-        assertFalse(StagePartnerRules.hectorLocked(null))
-        assertEquals(StagePartnerRules.Choice.Paywall, StagePartnerRules.hector(Stage.CONVERSATION, false, hardRequested = false))
+        assertTrue(StagePartnerRules.hectorLocked(false, false))
+        assertFalse(StagePartnerRules.hectorLocked(true, false))
+        assertFalse(StagePartnerRules.hectorLocked(null, false))
+        assertEquals(StagePartnerRules.Choice.Paywall, StagePartnerRules.hector(Stage.CONVERSATION, false, false, hardRequested = false))
         // null lets the learner try: the server decides at the run's start.
-        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, false), StagePartnerRules.hector(Stage.CONVERSATION, null, hardRequested = false))
-        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, false), StagePartnerRules.hector(Stage.CONVERSATION, true, hardRequested = false))
+        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, false), StagePartnerRules.hector(Stage.CONVERSATION, null, false, hardRequested = false))
+        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, false), StagePartnerRules.hector(Stage.CONVERSATION, true, false, hardRequested = false))
     }
 
     @Test fun `hard mode is offered on the last stage only, and never to a learner who is locked out`() {
-        assertTrue(StagePartnerRules.hardModeOffered(Stage.HARD_MOMENTS, true))
-        assertTrue(StagePartnerRules.hardModeOffered(Stage.HARD_MOMENTS, null))
-        assertFalse(StagePartnerRules.hardModeOffered(Stage.HARD_MOMENTS, false))
-        assertFalse(StagePartnerRules.hardModeOffered(Stage.WARMUP, true))
-        assertFalse(StagePartnerRules.hardModeOffered(Stage.CONVERSATION, true))
+        assertTrue(StagePartnerRules.hardModeOffered(Stage.HARD_MOMENTS, true, false))
+        assertTrue(StagePartnerRules.hardModeOffered(Stage.HARD_MOMENTS, null, false))
+        assertFalse(StagePartnerRules.hardModeOffered(Stage.HARD_MOMENTS, false, false))
+        assertFalse(StagePartnerRules.hardModeOffered(Stage.WARMUP, true, false))
+        assertFalse(StagePartnerRules.hardModeOffered(Stage.CONVERSATION, true, false))
     }
 
     @Test fun `a hard mode request counts only where hard mode is offered`() {
-        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, true), StagePartnerRules.hector(Stage.HARD_MOMENTS, true, hardRequested = true))
+        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, true), StagePartnerRules.hector(Stage.HARD_MOMENTS, true, false, hardRequested = true))
         // A stale toggle from the last stage never leaks into another one.
-        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, false), StagePartnerRules.hector(Stage.CONVERSATION, true, hardRequested = true))
-        assertEquals(StagePartnerRules.Choice.Paywall, StagePartnerRules.hector(Stage.HARD_MOMENTS, false, hardRequested = true))
+        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, false), StagePartnerRules.hector(Stage.CONVERSATION, true, false, hardRequested = true))
+        assertEquals(StagePartnerRules.Choice.Paywall, StagePartnerRules.hector(Stage.HARD_MOMENTS, false, false, hardRequested = true))
+    }
+
+    @Test fun `a learner the app knows is Pro is never locked out by an older state`() {
+        // The state says no Pro, but the app has just seen the purchase: no badge, no paywall, and hard mode is offered.
+        assertFalse(StagePartnerRules.hectorLocked(false, true))
+        assertTrue(StagePartnerRules.hardModeOffered(Stage.HARD_MOMENTS, false, true))
+        assertEquals(StagePartnerRules.Choice.Start(RehearsalPartner.HECTOR, true), StagePartnerRules.hector(Stage.HARD_MOMENTS, false, true, hardRequested = true))
+        assertEquals("Start hard mode with Hector", StagePartnerRules.hectorButton(Stage.HARD_MOMENTS, false, true, true))
+        // And without Pro in the app the definite no still locks.
+        assertTrue(StagePartnerRules.hectorLocked(false, false))
     }
 
     @Test fun `Alphonso is always the plain choice`() {
@@ -167,10 +177,10 @@ class RehearsalHectorTest {
     }
 
     @Test fun `the Hector button says what it will do`() {
-        assertEquals("Start with Hector (Pro)", StagePartnerRules.hectorButton(Stage.HARD_MOMENTS, false, true))
-        assertEquals("Start hard mode with Hector", StagePartnerRules.hectorButton(Stage.HARD_MOMENTS, true, true))
-        assertEquals("Start with Hector", StagePartnerRules.hectorButton(Stage.HARD_MOMENTS, true, false))
-        assertEquals("Start with Hector", StagePartnerRules.hectorButton(Stage.CONVERSATION, true, true))
+        assertEquals("Start with Hector (Pro)", StagePartnerRules.hectorButton(Stage.HARD_MOMENTS, false, false, true))
+        assertEquals("Start hard mode with Hector", StagePartnerRules.hectorButton(Stage.HARD_MOMENTS, true, false, true))
+        assertEquals("Start with Hector", StagePartnerRules.hectorButton(Stage.HARD_MOMENTS, true, false, false))
+        assertEquals("Start with Hector", StagePartnerRules.hectorButton(Stage.CONVERSATION, true, false, true))
     }
 
     @Test fun `the call header names the partner and hard mode, and Alphonso's header is unchanged`() {
