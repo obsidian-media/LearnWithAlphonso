@@ -67,6 +67,8 @@ data class RehearsalBrief(
     val setting: String = "",
     val persona: RehearsalPersona? = null,
     val keyPhrases: List<String> = emptyList(),
+    /** Index-aligned with [keyPhrases]; only a quick-start preset brief has them. Absent, null or short is fine. */
+    val keyPhraseMeanings: List<String>? = null,
     val coreExchanges: List<String> = emptyList(),
     val hardMoments: List<RehearsalHardMoment> = emptyList(),
 )
