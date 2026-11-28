@@ -122,7 +122,7 @@ final class RehearsalPhrasebookTests: XCTestCase {
     func testThePhrasesAreKeptForTheOfflinePhrasebook() throws {
         let store = RehearsalPhraseStore(defaults: defaults())
         let r = try rehearsal(brief: #"{"keyPhrases":["Hello","Thanks"],"keyPhraseMeanings":["Greeting","Gratitude"]}"#)
-        store.save(active: r)
+        store.save(active: r, progress: try progress(warmup: "done"))
         let snapshot = try XCTUnwrap(store.load(course: "en"))
         XCTAssertEqual(snapshot.rehearsalId, "r1")
         XCTAssertEqual(snapshot.kind, .interview)
@@ -133,14 +133,33 @@ final class RehearsalPhrasebookTests: XCTestCase {
 
     func testANewRehearsalOrNoRehearsalReplacesTheKeptPhrases() throws {
         let store = RehearsalPhraseStore(defaults: defaults())
-        store.save(active: try rehearsal(brief: #"{"keyPhrases":["Hello"]}"#, id: "a"))
-        store.save(active: try rehearsal(brief: #"{"keyPhrases":["Bye"]}"#, id: "b"))
+        store.save(active: try rehearsal(brief: #"{"keyPhrases":["Hello"]}"#, id: "a"), progress: try progress(warmup: "done"))
+        store.save(active: try rehearsal(brief: #"{"keyPhrases":["Bye"]}"#, id: "b"), progress: try progress(warmup: "done"))
         XCTAssertEqual(store.load(course: "en")?.rehearsalId, "b")
-        store.save(active: nil)
+        store.save(active: nil, progress: nil)
         XCTAssertNil(store.load(course: "en"))
-        store.save(active: try rehearsal(brief: #"{"keyPhrases":["Hello"]}"#))
-        store.save(active: try rehearsal(brief: #"{"setting":"no phrases"}"#))
+        store.save(active: try rehearsal(brief: #"{"keyPhrases":["Hello"]}"#), progress: try progress(warmup: "done"))
+        store.save(active: try rehearsal(brief: #"{"setting":"no phrases"}"#), progress: try progress(warmup: "done"))
         XCTAssertNil(store.load(course: "en"))
+    }
+
+    func testTheOfflineEntryKeepsTheWarmupGate() throws {
+        let store = RehearsalPhraseStore(defaults: defaults())
+        let r = try rehearsal(brief: #"{"keyPhrases":["Hello"]}"#)
+        store.save(active: r, progress: try progress(warmup: "todo"))
+        XCTAssertEqual(store.load(course: "en")?.warmupDone, false)
+        XCTAssertEqual(store.load(course: "en")?.isOffered, false)
+        store.save(active: r, progress: nil)
+        XCTAssertEqual(store.load(course: "en")?.isOffered, false)
+        store.save(active: r, progress: try progress(warmup: "done"))
+        XCTAssertEqual(store.load(course: "en")?.isOffered, true)
+    }
+
+    func testACancelledTapIsNeverAFallbackToTheDeviceVoice() {
+        XCTAssertEqual(RehearsalPhrasebook.afterModel(played: false, cancelled: true), .stop)
+        XCTAssertEqual(RehearsalPhrasebook.afterModel(played: true, cancelled: true), .stop)
+        XCTAssertEqual(RehearsalPhrasebook.afterModel(played: true, cancelled: false), .stop)
+        XCTAssertEqual(RehearsalPhrasebook.afterModel(played: false, cancelled: false), .deviceVoice)
     }
 
     func testSignOutClearsTheKeptPhrases() throws {

@@ -63,6 +63,17 @@ public enum RehearsalPhrasebook {
 
     public enum Voice: Equatable, Sendable { case model, device }
 
+    public enum HearStep: Equatable, Sendable { case stop, deviceVoice }
+
+    /// What to do after the model voice was tried. A cancelled tap (a newer tap or leaving the screen) never falls back to
+    /// the device voice, and a clip that played needs nothing more; only a real failure does.
+    public static func afterModel(played: Bool, cancelled: Bool) -> HearStep {
+        (cancelled || played) ? .stop : .deviceVoice
+    }
+
+    /// Shown when the device has no voice for the course language and the model voice is not available.
+    public static let noDeviceVoiceNote = "This device has no voice for this language, so the phrase cannot be played."
+
     /// Which voice says a phrase: Alphonso's (/api/tts) when the account allows AI speech, the device is online and the
     /// request has not just failed; otherwise the device's own voice in the course language.
     public static func voice(hasAIConsent: Bool, isOnline: Bool, modelFailed: Bool) -> Voice {
@@ -90,19 +101,26 @@ public struct RehearsalPhraseSnapshot: Codable, Equatable, Sendable {
     public let course: String
     public let eventKind: String
     public let rows: [RehearsalPhraseRow]
+    /// Whether the warm-up (stage 1) was done when this was saved: the offline entry keeps the plan's gate.
+    public let warmupDone: Bool
 
-    public init(rehearsalId: String, course: String, eventKind: String, rows: [RehearsalPhraseRow]) {
+    public init(rehearsalId: String, course: String, eventKind: String, rows: [RehearsalPhraseRow], warmupDone: Bool) {
         self.rehearsalId = rehearsalId
         self.course = course
         self.eventKind = eventKind
         self.rows = rows
+        self.warmupDone = warmupDone
     }
 
-    public init?(rehearsal: Rehearsal) {
+    public init?(rehearsal: Rehearsal, progress: RehearsalProgress?) {
         let rows = RehearsalPhrasebook.rows(brief: rehearsal.brief)
         guard !rows.isEmpty else { return nil }
-        self.init(rehearsalId: rehearsal.id, course: rehearsal.course, eventKind: rehearsal.eventKind, rows: rows)
+        self.init(rehearsalId: rehearsal.id, course: rehearsal.course, eventKind: rehearsal.eventKind, rows: rows,
+                  warmupDone: progress?.isDone(.warmup) == true)
     }
+
+    /// The same gate as the plan's entry.
+    public var isOffered: Bool { warmupDone && !rows.isEmpty }
 
     public var kind: RehearsalEventKind? { RehearsalEventKind(wire: eventKind) }
 }
@@ -114,8 +132,8 @@ public struct RehearsalPhraseStore {
     public init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     /// Keeps the active rehearsal's phrases; with none (no active rehearsal, or a brief with no phrases) the old copy is dropped.
-    public func save(active: Rehearsal?) {
-        guard let active, let snapshot = RehearsalPhraseSnapshot(rehearsal: active),
+    public func save(active: Rehearsal?, progress: RehearsalProgress?) {
+        guard let active, let snapshot = RehearsalPhraseSnapshot(rehearsal: active, progress: progress),
               let data = try? JSONEncoder().encode(snapshot) else {
             defaults.removeObject(forKey: Self.key)
             return

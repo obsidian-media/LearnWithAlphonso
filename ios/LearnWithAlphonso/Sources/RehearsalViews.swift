@@ -38,7 +38,7 @@ final class RehearsalModel {
         case .success(let value):
             state = value; error = nil
             // Kept so the phrasebook still opens with no connection.
-            RehearsalPhraseStore().save(active: value.active)
+            RehearsalPhraseStore().save(active: value.active, progress: value.progress)
         case .failure(let e): error = e
         }
     }
@@ -199,7 +199,7 @@ struct RehearsalFlowView: View {
                             Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
                                 .multilineTextAlignment(.center)
                             Button("Try again") { Task { await open() } }.buttonStyle(.alphonsoSecondary)
-                            if RehearsalPhraseStore().load(course: course.wireCode) != nil {
+                            if RehearsalPhraseStore().load(course: course.wireCode)?.isOffered == true {
                                 Button(RehearsalPhrasebook.entryTitle) { screen = .phrases }.buttonStyle(.alphonsoSecondary)
                             }
                         } else {
@@ -226,12 +226,12 @@ struct RehearsalFlowView: View {
                     if let active = model.state?.active {
                         RehearsalPlanView(model: model, rehearsal: active,
                                           onStart: { runToken = UUID(); screen = .run($0) }, onAdjust: { screen = .intake(adjusting: true) },
-                                          onOpenPhrases: { screen = .phrases }, focusPhrases: returnedFromPhrases,
+                                          onOpenPhrases: { screen = .phrases }, focusPhrases: returnedFromPhrases, onFocusedPhrases: { returnedFromPhrases = false },
                                           onDeleted: { Task { await open() } })
                     } else { Color.clear.task { await open() } }
                 case .phrases:
                     // Live phrases when the state is loaded, else the copy kept on the device (offline).
-                    if let snapshot = model.state?.active.flatMap(RehearsalPhraseSnapshot.init(rehearsal:))
+                    if let snapshot = model.state?.active.flatMap { RehearsalPhraseSnapshot(rehearsal: $0, progress: model.state?.progress) }
                         ?? RehearsalPhraseStore().load(course: course.wireCode) {
                         RehearsalPhrasebookView(snapshot: snapshot, course: course, session: session,
                                                 onBack: { returnedFromPhrases = true; screen = model.state?.active != nil ? .plan : .loading })
@@ -634,6 +634,8 @@ struct RehearsalPlanView: View {
     var onOpenPhrases: () -> Void = {}
     /// Back from the phrasebook: VoiceOver focus goes to the entry row.
     var focusPhrases = false
+    /// Called once the focus was moved, so a later return to the plan does not steal it again.
+    var onFocusedPhrases: () -> Void = {}
 
     @AccessibilityFocusState private var phrasesFocused: Bool
     @State private var confirmingDelete = false
@@ -686,7 +688,13 @@ struct RehearsalPlanView: View {
             }
             .padding(AlphonsoDS.Space.gutter)
         }
-        .onAppear { if focusPhrases { phrasesFocused = true } }
+        .task {
+            guard focusPhrases else { return }
+            // The entry row is not in the accessibility tree on the first frame, so focus it after a short hop.
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            phrasesFocused = true
+            onFocusedPhrases()
+        }
         .alphonsoChoiceDialog("Delete this rehearsal?", isPresented: $confirmingDelete) {
             Button("Yes, delete it", role: .destructive) {
                 Task {
