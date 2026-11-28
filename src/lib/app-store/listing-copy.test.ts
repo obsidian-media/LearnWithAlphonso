@@ -32,9 +32,9 @@ describe("LISTING", () => {
     // Live App Store Connect has the short Subscription paragraph (2929 characters); the owner chose the fuller one
     // ("Fuller for the App Store Subscription paragraph"), so this file is ahead of live there and live is updated from it.
     expect(LISTING.description.length).toBeLessThanOrEqual(4000);
-    expect(LISTING.promotionalText.length).toBe(157);
+    // Owner-approved rehearsals promo (2026-11-27), saved once rehearsals were on for everyone.
     expect(LISTING.promotionalText).toBe(
-      "Short lessons, speaking practice, podcasts and choose-your-path stories in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
+      "Rehearse a real conversation, like a job interview or a landlord meeting, with Alphonso, an AI that remembers each run. Your first rehearsal is free.",
     );
     expect(LISTING.supportUrl).toBe("https://learnwithalphonso.com/support");
     expect(LISTING.marketingUrl).toBe("https://discover.alphonsoecosystem.app");
