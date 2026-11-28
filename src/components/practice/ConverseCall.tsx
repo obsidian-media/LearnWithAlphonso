@@ -130,7 +130,17 @@ export function ConverseChatPage({
   // The reply voice: one persistent audio element (unlocked by the learner's first tap), the device voice and a "Tap to
   // hear" button when the browser refuses to play a reply by itself, and no hands-free turn over an unheard reply.
   const replyVoice = useReplyVoice("practice", course);
-  const { skip: skipReply, say: sayReply } = replyVoice;
+  const { skip: rawSkipReply, say: sayReply } = replyVoice;
+  // Rehearsal pause note (reply-latency.ts): the clock from the end of the partner's audio to the recorder starting.
+  const latencyRef = useRef(createReplyLatencyTracker());
+  const wasPlaying = useRef(false);
+  /** Set when the learner cut the partner off: the audio "ending" that follows is not a gap to time. */
+  const bargedRef = useRef(false);
+  const skipReply = useCallback(() => {
+    latencyRef.current.clear();
+    if (wasPlaying.current) bargedRef.current = true;
+    rawSkipReply();
+  }, [rawSkipReply]);
   /** Set once the screen is gone, so a reply voice that finishes loading afterwards is never played. */
   const leftRef = useRef(false);
   // The talking Alphonso: what is being spoken, whether its audio is loading or playing, and what the latest reply
@@ -159,7 +169,10 @@ export function ConverseChatPage({
 
   const speak = useCallback(
     async (text: string, opts?: { opener?: boolean }) => {
-      if (!ttsOn) return;
+      if (!ttsOn) {
+        latencyRef.current.clear();
+        return;
+      }
       setSpoken(text);
       setVoice("loading");
       try {
@@ -183,6 +196,7 @@ export function ConverseChatPage({
           ? await cachedOpenerSpeech(openerSpeechKey(text, voiceId, course), fetchBlob)
           : await fetchBlob();
         if (!blob) {
+          latencyRef.current.clear();
           setVoice("idle");
           return;
         }
@@ -193,6 +207,7 @@ export function ConverseChatPage({
         setVoice("idle");
         await sayReply(text, blob);
       } catch {
+        latencyRef.current.clear();
         setVoice("idle");
       }
     },
@@ -216,9 +231,11 @@ export function ConverseChatPage({
   }, [scenario.opener, speak]);
 
   const send = useCallback(
-    async (text: string, confidence?: number | null) => {
+    async (text: string, confidence?: number | null, byVoice = false) => {
       const trimmed = text.trim();
       if (!trimmed || sending) return;
+      // A typed reply has no gap to time (and must not inherit one from an earlier failed voice attempt).
+      if (!byVoice) latencyRef.current.clear();
       setError(null);
       const next: Msg[] = [...messages, { role: "user", content: trimmed, confidence }];
       setMessages(next);
@@ -266,6 +283,8 @@ export function ConverseChatPage({
         const data = (await resp.json()) as { content?: string; verdict?: unknown };
         const reply = (data.content ?? "").trim() || "…";
         const verdict = parseVerdict(data.verdict);
+        // The send succeeded: only now does the learner's gap count.
+        if (byVoice) latencyRef.current.commit();
         setMessages((m) => [...m, { role: "assistant", content: reply, verdict }]);
         // An older server sends no verdict, which reads as "none".
         setReplyVerdict((v) => ({ serial: v.serial + 1, verdict }));
@@ -307,7 +326,7 @@ export function ConverseChatPage({
     handsFreeCall,
   } = useHandsFreeCapture({
     course,
-    onTranscript: (text, confidence) => send(text, confidence ?? undefined),
+    onTranscript: (text, confidence) => send(text, confidence ?? undefined, true),
     wanted: handsFreeWanted,
     live: callView && !ending && !result,
     tuning: PRACTICE_TUNING,
@@ -352,15 +371,15 @@ export function ConverseChatPage({
 
   // Rehearsal pause note: how long each reply took to start, from the end of the partner's audio to the recorder
   // starting (hands-free: the first voice activity). Numbers only, sent with the recap (reply-latency.ts).
-  const latencyRef = useRef(createReplyLatencyTracker());
-  const wasPlaying = useRef(false);
   useEffect(() => {
     if (voice === "playing") {
       wasPlaying.current = true;
+      bargedRef.current = false;
       latencyRef.current.partnerAudioStarted();
     } else if (wasPlaying.current && voice === "idle") {
       wasPlaying.current = false;
-      latencyRef.current.partnerAudioEnded();
+      if (bargedRef.current) bargedRef.current = false;
+      else latencyRef.current.partnerAudioEnded();
     }
   }, [voice]);
   useEffect(() => {
