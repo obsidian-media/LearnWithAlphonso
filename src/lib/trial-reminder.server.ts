@@ -20,10 +20,13 @@ import {
  * reads RevenueCat for the recently active learners who have not been checked in the last 20 hours (least recently
  * checked first, never-checked first of all), and emails the ones whose trial ends within 3 days.
  *
- * Bounded: a sweep stops reading after SWEEP_BUDGET_MS (the pg_net call to the route times out at 30 s), pauses between
- * reads, and stops at once on a 429 or after 3 server errors in a row. Each learner read is recorded
- * (trial_reminder_checked) right away, so a cut-off sweep is simply continued by the next one and nobody is starved:
- * every active learner is read about once every 20 hours, however many there are.
+ * Bounded: a sweep stops reading after SWEEP_BUDGET_MS (the pg_net call to the route times out at 30 s) and never
+ * starts a send past it, pauses between reads, and stops at once on a 429, after 3 server errors in a row, or on a 401
+ * or 403 (a revoked or wrong key: status "auth-failed", one count-only ops event, nobody marked). Each learner read is
+ * recorded (trial_reminder_checked) right away, so a cut-off sweep is simply continued by the next one. A read that
+ * fails for any other reason (a 404 or 422, a network error, a malformed body) is that learner's own: they are marked
+ * checked too and retried at the normal 20-hour cadence, so the same failing learners are never re-read first on every
+ * sweep. Only a server-error outage leaves learners unchecked (retried first next time); the 3-in-a-row stop bounds it.
  *
  * ONE email per learner, ever (one free trial per person): the trial_reminders row is the dedupe, claimed BEFORE the
  * send and released again if the send fails, so the next sweep retries while the trial is still inside the window. A
@@ -63,6 +66,11 @@ export type TrialReminderDeps = {
   /** The account's address, or null. */
   emailOf: (userId: string) => Promise<string | null>;
   sendEmail: (msg: EmailMessage) => Promise<void>;
+  /** Records an operational event: counts and codes only, never personal data. Optional; must not throw. */
+  recordEvent?: (
+    event: string,
+    detail: Record<string, string | number | boolean | null>,
+  ) => Promise<void>;
   /** The sender; empty means no sender is configured and nothing is sent. */
   from: string;
 };
@@ -70,9 +78,10 @@ export type TrialReminderDeps = {
 export type TrialReminderResult = {
   /**
    * "off", "no-sender", "done" (every due learner was read), "budget" (time ran out; the next sweep continues) or
-   * "rate-limited" (RevenueCat said 429 or kept failing; the next sweep tries again).
+   * "rate-limited" (RevenueCat said 429 or kept failing; the next sweep tries again) or "auth-failed" (RevenueCat said
+   * 401 or 403, so its key needs attention: nobody was marked and one count-only ops event was recorded).
    */
-  status: "off" | "no-sender" | "done" | "budget" | "rate-limited";
+  status: "off" | "no-sender" | "done" | "budget" | "rate-limited" | "auth-failed";
   checked: number;
   sent: number;
   failed: number;
@@ -111,9 +120,16 @@ export async function sweepTrialReminders(deps: TrialReminderDeps): Promise<Tria
     }
     if (result.checked > 0) await deps.sleep(GAP_BETWEEN_READS_MS);
     result.checked += 1;
+    let readDone = false;
     try {
       const trial = await deps.readTrial(userId);
+      readDone = true;
       serverErrorsInARow = 0;
+      // Never start a send past the budget. Not marked, so this learner is first in line for the next sweep.
+      if (trial && needsReminder(trial, deps.now()) && deps.now().getTime() >= deadline) {
+        result.status = "budget";
+        break;
+      }
       // Read: remember it now, so a cut-off sweep carries on from here and this learner waits their 20 hours.
       await deps.store.markChecked(userId, deps.now());
       if (!trial || !needsReminder(trial, deps.now())) continue;
@@ -145,10 +161,26 @@ export async function sweepTrialReminders(deps: TrialReminderDeps): Promise<Tria
         result.status = "rate-limited";
         break;
       }
+      if (!readDone && (status === 401 || status === 403)) {
+        // A revoked or wrong key: every learner would fail the same way. Stop, and mark nobody.
+        result.status = "auth-failed";
+        await deps.recordEvent?.("trial_reminder_auth_failed", { status, read: result.checked });
+        break;
+      }
       serverErrorsInARow = status !== null && status >= 500 ? serverErrorsInARow + 1 : 0;
       if (serverErrorsInARow >= MAX_CONSECUTIVE_5XX) {
         result.status = "rate-limited";
         break;
+      }
+      if (!readDone && !(status !== null && status >= 500)) {
+        // This learner's own failure (a 404 or 422, a network error, a malformed body): record that they were tried, so
+        // the same failures are not re-read first on every sweep while everyone after them waits. A server error is
+        // left unchecked: it is an outage, bounded by the 3-in-a-row stop above.
+        try {
+          await deps.store.markChecked(userId, deps.now());
+        } catch {
+          console.error("[trial-reminder] could not record a failed read");
+        }
       }
     }
   }
@@ -237,6 +269,10 @@ export async function defaultTrialReminderDeps(): Promise<TrialReminderDeps> {
       return data.user?.email ?? null;
     },
     sendEmail: (m) => sendEmailViaResend(m),
+    async recordEvent(event, detail) {
+      const { recordOpsEvent } = await import("./ops-events.server");
+      await recordOpsEvent(event, detail);
+    },
     from:
       process.env.TRIAL_REMINDER_FROM || process.env.SUPPORT_NOTIFY_FROM || DEFAULT_SUPPORT_FROM,
   };
