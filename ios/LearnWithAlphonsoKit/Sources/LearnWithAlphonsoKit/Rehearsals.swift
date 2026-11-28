@@ -136,6 +136,25 @@ public let rehearsalIntakeTextMax = 200
 
 public struct RehearsalBrief: Decodable, Equatable, Sendable {
     public let setting: String?
+    /// The brief's key phrases (6-10 from the server). Missing or malformed is an empty list, never an error.
+    public let keyPhrases: [String]
+    /// One meaning line per key phrase, index-aligned; only quick-start briefs have them.
+    public let keyPhraseMeanings: [String]?
+
+    public init(setting: String? = nil, keyPhrases: [String] = [], keyPhraseMeanings: [String]? = nil) {
+        self.setting = setting
+        self.keyPhrases = keyPhrases
+        self.keyPhraseMeanings = keyPhraseMeanings
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: Keys.self)
+        setting = try? c.decodeIfPresent(String.self, forKey: .setting)
+        keyPhrases = (try? c.decode([String].self, forKey: .keyPhrases)) ?? []
+        keyPhraseMeanings = try? c.decode([String].self, forKey: .keyPhraseMeanings)
+    }
+
+    private enum Keys: String, CodingKey { case setting, keyPhrases, keyPhraseMeanings }
 }
 
 public struct Rehearsal: Decodable, Equatable, Sendable {
