@@ -202,8 +202,14 @@ public struct RehearsalRun: Decodable, Equatable, Sendable {
     public let momentsShown: [String]
     public let wentWell: [String]
     public let corrections: [String]
+    /// Who played the partner and whether it was hard mode. A run from before Hector rehearsals has neither: Alphonso,
+    /// not hard.
+    public let persona: String?
+    public let hardMode: Bool?
 
     public var rehearsalStage: RehearsalStage? { RehearsalStage(rawValue: stage) }
+    public var isHardMode: Bool { hardMode == true }
+    public var rehearsalPersona: RehearsalPersona { persona.flatMap(RehearsalPersona.init(rawValue:)) ?? .alphonso }
 }
 
 public struct RehearsalProgress: Decodable, Equatable, Sendable {
@@ -236,6 +242,11 @@ public struct RehearsalState: Decodable, Equatable, Sendable {
     public let history: [RehearsalSummary]
     /// True while the account's one free rehearsal has not been used.
     public let freeAvailable: Bool
+    /// Hector (Pro): true is Pro, false is not Pro, nil is "could not tell" (the run's own start decides). An older
+    /// server omits it: nil.
+    public let hectorAvailable: Bool?
+    /// The active rehearsal has a finished hard-mode run ("Hard mode done"). An older server omits it: false.
+    public let hardModeDone: Bool
 
     public var nextStage: RehearsalStage? { nextStageWire.flatMap { RehearsalStage(rawValue: $0) } }
 
@@ -248,10 +259,13 @@ public struct RehearsalState: Decodable, Equatable, Sendable {
         runs = try c.decodeIfPresent([RehearsalRun].self, forKey: .runs) ?? []
         history = try c.decode([RehearsalSummary].self, forKey: .history)
         freeAvailable = try c.decode(Bool.self, forKey: .freeAvailable)
+        // `try?` on purpose: a wrong type is "unknown" / false, never a state the screens cannot read.
+        hectorAvailable = (try? c.decodeIfPresent(Bool.self, forKey: .hectorAvailable)) ?? nil
+        hardModeDone = ((try? c.decodeIfPresent(Bool.self, forKey: .hardModeDone)) ?? nil) ?? false
     }
 
     private enum Keys: String, CodingKey {
-        case active, progress, nextStage, runs, history, freeAvailable
+        case active, progress, nextStage, runs, history, freeAvailable, hectorAvailable, hardModeDone
     }
 }
 
@@ -599,7 +613,8 @@ public enum RehearsalPlan {
     /// The stage after a run: the first one with no finished run, else the weakest (the most corrections in its latest
     /// run, a tie going to the earlier stage). Independent of the order `runs` is given in.
     public static func nextStage(runs: [RehearsalRun]) -> RehearsalStage {
-        let done = Set(runs.compactMap(\.rehearsalStage))
+        // A hard-mode run is its own thing: it never marks a stage done and never counts as its stage's latest run.
+        let done = Set(runs.filter { !$0.isHardMode }.compactMap(\.rehearsalStage))
         if let open = RehearsalStage.allCases.first(where: { !done.contains($0) }) { return open }
         var weakest = RehearsalStage.allCases[0]
         var most = -1
@@ -610,9 +625,16 @@ public enum RehearsalPlan {
         return weakest
     }
 
-    /// The run with the latest `finishedAt` for a stage (ISO timestamps order as text).
-    public static func latestRun(_ runs: [RehearsalRun], stage: RehearsalStage) -> RehearsalRun? {
-        runs.filter { $0.rehearsalStage == stage }.max { $0.finishedAt < $1.finishedAt }
+    /// The run with the latest `finishedAt` for a stage (ISO timestamps order as text). Normal runs only unless
+    /// `hardMode` is true, which looks at hard-mode runs only (the debrief of a hard-mode call reads those).
+    public static func latestRun(_ runs: [RehearsalRun], stage: RehearsalStage, hardMode: Bool = false) -> RehearsalRun? {
+        runs.filter { $0.rehearsalStage == stage && $0.isHardMode == hardMode }.max { $0.finishedAt < $1.finishedAt }
+    }
+
+    /// "Hard mode done" under the last stage's row, from the server's `hardModeDone`.
+    public static let hardModeDoneLabel = "Hard mode done"
+    public static func showsHardModeDone(stage: RehearsalStage, state: RehearsalState?) -> Bool {
+        stage == .hardMoments && state?.hardModeDone == true
     }
 
     public static let footer = "Alphonso is an AI. He remembers what happened on each run and opens the next one with it. There is no readiness score."
@@ -622,6 +644,69 @@ public enum RehearsalPlan {
     public static let adjustLabel = "Adjust"
 }
 
+// MARK: - The partner
+
+/// Who plays the other side of a rehearsal call. Alphonso is the default and is free; Hector is Pro.
+public enum RehearsalPersona: String, CaseIterable, Sendable, Equatable {
+    case alphonso, hector
+
+    public var displayName: String { self == .hector ? "Hector" : "Alphonso" }
+
+    /// The voice the call speaks with: `/api/tts` gets `character: "hector"` for him (the app's own voice selection).
+    public var voiceCharacter: VoiceCharacter { self == .hector ? .hector : .alphonso }
+}
+
+/// The sheet at the start of each stage (the owner's pick 5B): "Start with Alphonso" is the main button; Hector is the
+/// second choice, with a Pro badge for a learner who is not Pro; on the last stage a Hector run can be hard mode.
+/// Mirrors the web's StagePartnerSheet.
+public enum RehearsalPartner {
+    /// What a tap on Hector does, from `hectorAvailable` (true Pro, false not Pro, nil could not tell).
+    public enum HectorDoor: Equatable, Sendable {
+        /// Start the call with him.
+        case start
+        /// Open the existing paywall; no call starts.
+        case paywall
+    }
+
+    public static func hectorDoor(hectorAvailable: Bool?) -> HectorDoor { hectorAvailable == false ? .paywall : .start }
+
+    /// The Pro badge shows only when the server said the learner is not Pro. `nil` lets them try; the server decides.
+    public static func showsProBadge(hectorAvailable: Bool?) -> Bool { hectorAvailable == false }
+
+    /// The "Hard mode" switch exists only for Hector, on the last stage, and not for a learner who is known not to be Pro.
+    public static func offersHardMode(stage: RehearsalStage, hectorAvailable: Bool?) -> Bool {
+        stage == .hardMoments && hectorAvailable != false
+    }
+
+    /// The call source for a choice. Hard mode survives only where it is offered; Alphonso never carries it.
+    public static func source(
+        rehearsalId: String, stage: RehearsalStage, persona: RehearsalPersona, hardMode: Bool
+    ) -> CallSource {
+        let hard = persona == .hector && stage == .hardMoments && hardMode
+        return .rehearsal(id: rehearsalId, stage: stage, persona: persona, hardMode: hard)
+    }
+
+    public static let title = "Who do you want to practise with?"
+    public static let alphonsoButton = "Start with Alphonso"
+    public static let hectorBlurb = "A tougher, more realistic partner, and a longer debrief at the end."
+    public static let hardModeTitle = "Hard mode"
+    public static let hardModeBody = "Faster, with interruptions and surprise questions. Still inside your plan, and still kind."
+    public static let notNow = "Not now"
+    public static let proBadge = "Pro"
+
+    public static func hectorButton(hectorAvailable: Bool?, hardMode: Bool) -> String {
+        if hectorDoor(hectorAvailable: hectorAvailable) == .paywall { return "Start with Hector (Pro)" }
+        return hardMode ? "Start hard mode with Hector" : "Start with Hector"
+    }
+
+    /// What VoiceOver says for the Hector option.
+    public static func hectorAccessibilityLabel(hectorAvailable: Bool?, hardMode: Bool) -> String {
+        let name = hectorButton(hectorAvailable: hectorAvailable, hardMode: hardMode)
+        return showsProBadge(hectorAvailable: hectorAvailable)
+            ? "\(name). Hector is an AI. Needs Alphonso Pro." : "\(name). Hector is an AI."
+    }
+}
+
 // MARK: - The call
 
 /// Where a call's conversation partner comes from. A scenario sends its own system prompt. A rehearsal sends only its id
@@ -629,7 +714,9 @@ public enum RehearsalPlan {
 /// never holds or sends prompt text for it. Mirrors src/lib/call-source.ts.
 public enum CallSource: Equatable, Sendable {
     case scenario
-    case rehearsal(id: String, stage: RehearsalStage)
+    /// `persona` and `hardMode` are the learner's choice at the start of the stage. They are fixed for the whole call: the
+    /// server binds them to the call on its first turn, so every turn must send the same values.
+    case rehearsal(id: String, stage: RehearsalStage, persona: RehearsalPersona = .alphonso, hardMode: Bool = false)
 
     /// The `/api/chat` body for one reply of a call.
     public func chatBody(
@@ -640,9 +727,16 @@ public enum CallSource: Equatable, Sendable {
         case .scenario:
             if let systemPrompt { payload["systemPrompt"] = systemPrompt }
             if let course { payload["course"] = course }
-        case let .rehearsal(id, stage):
+        case let .rehearsal(id, stage, persona, hardMode):
             // No systemPrompt and no course: the stored rehearsal says both.
-            payload["rehearsal"] = ["id": id, "stage": stage.rawValue]
+            var rehearsal: [String: Any] = ["id": id, "stage": stage.rawValue]
+            // Alphonso's body is exactly what it was before Hector rehearsals. For Hector the persona is sent on every
+            // turn, and `hardMode: true` with it (Hector on the last stage only; anything else is not sent).
+            if persona == .hector {
+                rehearsal["persona"] = persona.rawValue
+                if hardMode && stage == .hardMoments { rehearsal["hardMode"] = true }
+            }
+            payload["rehearsal"] = rehearsal
         }
         if let cefrLevel { payload["cefrLevel"] = cefrLevel }
         if let callId { payload["callId"] = callId }
@@ -663,8 +757,9 @@ public enum CallSource: Equatable, Sendable {
 
 public enum RehearsalCallHeader {
     /// "Alphonso · Stage 2 of 3: The real conversation".
-    public static func subline(stage: RehearsalStage) -> String {
-        "Alphonso \u{00B7} Stage \(stage.number) of \(RehearsalStage.allCases.count): \(stage.label)"
+    public static func subline(stage: RehearsalStage, persona: RehearsalPersona = .alphonso, hardMode: Bool = false) -> String {
+        let base = "\(persona.displayName) \u{00B7} Stage \(stage.number) of \(RehearsalStage.allCases.count): \(stage.label)"
+        return hardMode ? base + " \u{00B7} Hard mode" : base
     }
 
     /// The three-segment bar: how many segments are filled (the stage the learner is on, and those before it).
@@ -683,6 +778,10 @@ public struct RehearsalDebrief: Equatable, Sendable {
     public let fixLine: String?
     public let nextStage: RehearsalStage
     public static let footer = "Written by Alphonso, an AI, from this conversation. It can be wrong. Nothing here is a score."
+    /// The same line for Hector's runs, naming who wrote it.
+    public static func footer(persona: RehearsalPersona) -> String {
+        persona == .alphonso ? footer : footer.replacingOccurrences(of: "Alphonso", with: persona.displayName)
+    }
     public static let fixTitle = "Added to Fix before it sticks"
     public static let againLabel = "Run this stage again"
 
@@ -708,9 +807,9 @@ public struct RehearsalDebrief: Equatable, Sendable {
     /// (the latest one before this call). No newer run means the server did not count it.
     public static func make(
         stage: RehearsalStage, kind: RehearsalEventKind?, runs: [RehearsalRun], previousFinishedAt: String?,
-        seconds: Int, turns: Int, addedToFix: Int
+        seconds: Int, turns: Int, addedToFix: Int, hardMode: Bool = false
     ) -> Outcome {
-        guard let run = RehearsalPlan.latestRun(runs, stage: stage),
+        guard let run = RehearsalPlan.latestRun(runs, stage: stage, hardMode: hardMode),
               previousFinishedAt == nil || run.finishedAt > previousFinishedAt! else { return .noRun }
         let minutes = max(1, Int((Double(seconds) / 60).rounded()))
         let items = addedToFix == 1 ? "1 item" : "\(addedToFix) items"

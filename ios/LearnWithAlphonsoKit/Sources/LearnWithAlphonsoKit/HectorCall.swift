@@ -35,7 +35,7 @@ public enum HectorCall {
         switch TutorError.from(error) {
         case .aiConsentRequired: return "consent"
         case .quotaExceeded: return "quota"
-        case .signedOut, .notEntitled, .entitlementUnavailable: return "auth"
+        case .signedOut, .notEntitled, .proRequired, .entitlementUnavailable: return "auth"
         case .network: return "network"
         case .server: return "server"
         }

@@ -148,7 +148,7 @@ final class TutorErrorTests: XCTestCase {
     /// Never a raw code, never a literal "--", never empty.
     func testEveryCaseHasLearnerCopy() {
         let all: [TutorError] = [
-            .signedOut, .notEntitled, .entitlementUnavailable, .aiConsentRequired, .quotaExceeded(resetsAt: nil),
+            .signedOut, .notEntitled, .proRequired, .entitlementUnavailable, .aiConsentRequired, .quotaExceeded(resetsAt: nil),
             .quotaExceeded(resetsAt: midnight), .network, .server(message: "quota-exceeded"), .server(message: nil),
         ]
         for error in all {
