@@ -81,7 +81,7 @@ final class RehearsalPhrasebookTests: XCTestCase {
 
     func testWords() {
         XCTAssertEqual(RehearsalPhrasebook.entryTitle, "Your phrases")
-        XCTAssertEqual(RehearsalPhrasebook.entrySubtitle(count: 6), "6 phrases \u{00B7} tap to hear")
+        XCTAssertEqual(RehearsalPhrasebook.entrySubtitle(count: 6), "6 phrases \u{00B7} tap to hear, say them")
         XCTAssertEqual(RehearsalPhrasebook.title(kind: .interview), "Your phrases for this job interview")
         XCTAssertEqual(RehearsalPhrasebook.title(kind: nil), "Your phrases for this something else")
         XCTAssertEqual(RehearsalPhrasebook.hearLabel("Hello"), "Hear Hello")

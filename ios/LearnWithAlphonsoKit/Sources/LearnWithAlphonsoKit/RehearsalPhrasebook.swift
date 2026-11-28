@@ -45,7 +45,7 @@ public enum RehearsalPhrasebook {
 
     public static let entryTitle = "Your phrases"
 
-    public static func entrySubtitle(count: Int) -> String { "\(count) phrases \u{00B7} tap to hear" }
+    public static func entrySubtitle(count: Int) -> String { "\(count) phrases \u{00B7} tap to hear, say them" }
 
     /// "Your phrases for this job interview".
     public static func title(kind: RehearsalEventKind?) -> String {

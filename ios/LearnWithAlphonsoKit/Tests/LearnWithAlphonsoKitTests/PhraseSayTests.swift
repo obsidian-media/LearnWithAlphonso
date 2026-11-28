@@ -22,8 +22,7 @@ final class PhraseSayTests: XCTestCase {
 
     func testLabelsAndSubtitle() {
         XCTAssertEqual(PhraseSayCopy.micLabel(phrase: "Good morning"), "Say: Good morning")
-        XCTAssertEqual(PhraseSayCopy.planSubtitle(count: 6), "6 phrases \u{00B7} tap to hear, say them")
-        XCTAssertEqual(PhraseSayCopy.planSubtitle(count: 1), "1 phrase \u{00B7} tap to hear, say them")
+        XCTAssertEqual(RehearsalPhrasebook.entrySubtitle(count: 6), "6 phrases \u{00B7} tap to hear, say them")
     }
 
     func testIdleEverythingEnabled() {

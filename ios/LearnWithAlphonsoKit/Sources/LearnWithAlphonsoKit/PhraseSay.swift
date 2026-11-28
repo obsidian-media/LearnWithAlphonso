@@ -25,10 +25,6 @@ public enum PhraseSayCopy {
     /// VoiceOver name of a row's microphone.
     public static func micLabel(phrase: String) -> String { "Say: \(phrase)" }
 
-    /// The plan row's subtitle for the phrasebook.
-    public static func planSubtitle(count: Int) -> String {
-        "\(count) \(count == 1 ? "phrase" : "phrases") \u{00B7} tap to hear, say them"
-    }
 }
 
 /// What the screen should do after a tap on a row's microphone.
