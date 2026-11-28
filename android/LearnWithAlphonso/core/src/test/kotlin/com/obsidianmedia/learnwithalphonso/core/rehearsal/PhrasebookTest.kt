@@ -111,9 +111,9 @@ class PhrasebookTest {
         assertEquals(0, device)
     }
 
-    @Test fun `the plan row card says how many phrases and nothing about saying them`() {
-        assertEquals("8 phrases · tap to hear", Phrasebook.linkSubtitle(8))
-        assertEquals("1 phrase · tap to hear", Phrasebook.linkSubtitle(1))
+    @Test fun `the plan row card says how many phrases and that they can be heard and said`() {
+        assertEquals("8 phrases · tap to hear, say them", Phrasebook.linkSubtitle(8))
+        assertEquals("1 phrase · tap to hear, say them", Phrasebook.linkSubtitle(1))
         assertEquals("Tap play to hear it.", Phrasebook.HEAR_HINT)
     }
 

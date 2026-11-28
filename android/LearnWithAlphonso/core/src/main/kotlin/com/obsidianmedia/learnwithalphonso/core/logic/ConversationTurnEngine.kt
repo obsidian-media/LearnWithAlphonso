@@ -26,7 +26,7 @@ interface RecorderPort {
 enum class TurnPhase { IDLE, REQUESTING_MIC, RECORDING, TRANSCRIBING }
 
 sealed interface TurnEvent {
-    data class Transcribed(val text: String, val confidence: Double?, val debugTiming: String) : TurnEvent
+    data class Transcribed(val text: String, val confidence: Double?, val debugTiming: String, val words: List<com.obsidianmedia.learnwithalphonso.core.net.SttWord> = emptyList()) : TurnEvent
     /** The transcript came back blank: noise, not speech. */
     data object Empty : TurnEvent
 
@@ -146,7 +146,7 @@ class ConversationTurnEngine(
             if (tornDown || myGeneration != generation) return@launch
             _phase.value = TurnPhase.IDLE
             result.fold(
-                onSuccess = { r -> if (r.text.isBlank()) _events.tryEmit(TurnEvent.Empty) else _events.tryEmit(TurnEvent.Transcribed(r.text.trim(), r.confidence, timing)) },
+                onSuccess = { r -> if (r.text.isBlank()) _events.tryEmit(TurnEvent.Empty) else _events.tryEmit(TurnEvent.Transcribed(r.text.trim(), r.confidence, timing, r.words)) },
                 onFailure = { e ->
                     val consentRefused = (e as? com.obsidianmedia.learnwithalphonso.core.net.AiConversationError.Server)?.code == "ai-consent-required"
                     _events.tryEmit(TurnEvent.Failed(e.message ?: "Couldn't check that just now. Try again.", consentRequired = consentRefused))

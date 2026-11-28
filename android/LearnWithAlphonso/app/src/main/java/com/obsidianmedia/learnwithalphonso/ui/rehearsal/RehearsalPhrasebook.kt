@@ -54,6 +54,20 @@ import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import com.obsidianmedia.learnwithalphonso.ui.lesson.Speech
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
+import com.obsidianmedia.learnwithalphonso.core.logic.PhraseCheck
+import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
+import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.PhraseSayIt
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -104,6 +118,10 @@ internal object PhraseAudioCache {
 /**
  * "Your phrases for this event": the brief's key phrases, each with its meaning line when it has one. Tap a row to hear it
  * through the app's voice (/api/tts); with no connection, or when that fails, the phone's own voice in the course language.
+ *
+ * "Say it" (every row's mic): tap to record, tap again to send. The clip goes to the existing /api/stt with the course (so
+ * it counts against the same speaking quota and shows the same messages) and [PhraseCheck] says how clearly it came across,
+ * inline under the row. Neutral wording, no score, no replay. Nothing is stored: the results live only while this page is open.
  */
 @Composable
 fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnapshot, onBack: () -> Unit) {
@@ -119,9 +137,46 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
     // Start the phone's voice now, so it is ready if the app's voice fails on a first tap.
     LaunchedEffect(Unit) { Speech.get(context) }
     var hearing by remember { mutableStateOf<Job?>(null) }
-    DisposableEffect(Unit) { onDispose { hearing?.cancel(); playback.stop(); Speech.stopIfStarted() } }
+
+    // Say it: one recording at a time. busyRow is the row recording or being checked; the others wait.
+    var busyRow by remember { mutableStateOf<Int?>(null) }
+    val results = remember { mutableStateMapOf<Int, PhraseCheck.Outcome>() }
+    var errorRow by remember { mutableStateOf<Int?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var showConsent by remember { mutableStateOf(false) }
+    val engine = remember {
+        ConversationTurnEngine(
+            container.newRecorder(), { container.micPermission.request() },
+            { audio, timing -> container.aiClient.transcribe(audio, "audio/m4a", course.code, timing) },
+            scope,
+        )
+    }
+    val phase by engine.phase.collectAsState()
+    DisposableEffect(Unit) { onDispose { hearing?.cancel(); playback.stop(); Speech.stopIfStarted(); engine.tearDown() } }
+    LaunchedEffect(engine) {
+        engine.events.collect { event ->
+            val row = busyRow ?: return@collect
+            busyRow = null
+            when (event) {
+                is TurnEvent.Transcribed -> results[row] = PhraseCheck.check(snapshot.entries[row].text, event.text, event.words)
+                // Silence is a result, not an error.
+                TurnEvent.Empty, TurnEvent.TooShort -> results[row] = PhraseCheck.Outcome(PhraseCheck.Result.NOT_YET, emptyList())
+                TurnEvent.MicDenied -> { errorRow = row; error = PhraseSayIt.MIC_OFF }
+                is TurnEvent.Failed -> if (event.consentRequired) showConsent = true else { errorRow = row; error = event.message.ifBlank { PhraseSayIt.CHECK_FAILED } }
+            }
+        }
+    }
+
+    fun stopHearing() {
+        hearing?.cancel()
+        hearing = null
+        playback.stop()
+        Speech.stopIfStarted()
+        playing = null
+    }
 
     fun hear(text: String) {
+        if (busyRow != null) return
         // A new tap replaces the one before it.
         hearing?.cancel()
         hearing = scope.launch {
@@ -142,6 +197,21 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
         }
     }
 
+    fun toggleSay(i: Int) {
+        when {
+            busyRow == null && phase == TurnPhase.IDLE -> {
+                // Never record the phrase being played: any Hear audio stops first.
+                stopHearing()
+                results.remove(i)
+                error = null
+                errorRow = null
+                busyRow = i
+                engine.pressBegan()
+            }
+            busyRow == i && phase == TurnPhase.RECORDING -> engine.pressEnded()
+        }
+    }
+
     Column(Modifier.fillMaxSize().background(ds.surface).verticalScroll(rememberScrollState())) {
         DsBackBar("Plan", onBack)
         Column(Modifier.padding(horizontal = AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
@@ -152,27 +222,59 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
                 DsPill(RehearsalCopy.AI_LABEL, DsPillTone.INFO)
             }
             Text(if (onDeviceVoice) Phrasebook.HEAR_HINT else Phrasebook.HEAR_ALPHONSO_HINT, style = FootnoteType, color = ds.inkSoft)
-            snapshot.entries.forEach { phrase ->
+            Text(PhraseSayIt.FRAMING, style = FootnoteType, color = ds.inkSoft)
+            snapshot.entries.forEachIndexed { i, phrase ->
                 val label = Phrasebook.hearLabel(phrase.text)
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card)
-                        .border(2.dp, if (playing == phrase.text) ds.choice else ds.line, RoundedCornerShape(AlphonsoTokens.Radius.control))
-                        .clickable(role = Role.Button, onClickLabel = label) { hear(phrase.text) }
-                        // Read as the phrase and its meaning; the click label says what a tap does.
-                        .semantics(mergeDescendants = true) {}
+                val busy = busyRow != null
+                val recording = busyRow == i && phase == TurnPhase.RECORDING
+                val status = when {
+                    busyRow == i && phase == TurnPhase.RECORDING -> PhraseSayIt.LISTENING
+                    busyRow == i -> PhraseSayIt.CHECKING
+                    else -> results[i]?.let { PhraseSayIt.resultText(it) } ?: ""
+                }
+                Column(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card)
+                        .border(2.dp, if (playing == phrase.text || busyRow == i) ds.choice else ds.line, RoundedCornerShape(AlphonsoTokens.Radius.control))
                         .padding(AlphonsoTokens.Space.s3),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
                 ) {
-                    Box(Modifier.sizeIn(minWidth = AlphonsoTokens.Space.minTouch, minHeight = AlphonsoTokens.Space.minTouch), contentAlignment = Alignment.Center) {
-                        Text(if (playing == phrase.text) "…" else "▶", style = TitleType, color = ds.actionText, modifier = Modifier.clearAndSetSemantics {})
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                        Row(
+                            Modifier.weight(1f).heightIn(min = AlphonsoTokens.Space.minTouch).alpha(if (busy) 0.5f else 1f)
+                                // The Hear buttons are off while a row records or is checked: a phrase is never played into the mic.
+                                .clickable(enabled = !busy, role = Role.Button, onClickLabel = label) { hear(phrase.text) }
+                                // Read as the phrase and its meaning; the click label says what a tap does.
+                                .semantics(mergeDescendants = true) {},
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                        ) {
+                            Box(Modifier.sizeIn(minWidth = AlphonsoTokens.Space.minTouch, minHeight = AlphonsoTokens.Space.minTouch), contentAlignment = Alignment.Center) {
+                                Text(if (playing == phrase.text) "…" else "▶", style = TitleType, color = ds.actionText, modifier = Modifier.clearAndSetSemantics {})
+                            }
+                            Column(Modifier.weight(1f)) {
+                                Text(phrase.text, style = HeadlineType, color = ds.ink)
+                                phrase.meaning?.let { Text(it, style = CaptionType, color = ds.inkSoft) }
+                            }
+                        }
+                        val micEnabled = busyRow == null || busyRow == i
+                        Box(
+                            Modifier.size(AlphonsoTokens.Space.minTouch).alpha(if (micEnabled) 1f else 0.5f).clip(CircleShape)
+                                .background(if (recording) ds.brand else ds.sunk)
+                                .border(1.dp, ds.line, CircleShape)
+                                .semantics { contentDescription = PhraseSayIt.micLabel(phrase.text) }
+                                .toggleable(value = recording, enabled = micEnabled, role = Role.Button) { toggleSay(i) },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(if (recording) "■" else "🎙", style = TitleType, color = if (recording) ds.card else ds.ink, modifier = Modifier.clearAndSetSemantics {})
+                        }
                     }
-                    Column(Modifier.weight(1f)) {
-                        Text(phrase.text, style = HeadlineType, color = ds.ink)
-                        phrase.meaning?.let { Text(it, style = CaptionType, color = ds.inkSoft) }
+                    // A polite live region: "Listening…", "Checking…" and the result are announced as they change.
+                    Text(status, style = CaptionType, color = ds.inkSoft, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                    if (error != null && errorRow == i) {
+                        Text(error!!, style = CaptionType, color = ds.inkSoft, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
                     }
                 }
             }
             Text(Phrasebook.SAVED_NOTE, style = CaptionType, color = ds.inkSoft, modifier = Modifier.padding(bottom = AlphonsoTokens.Space.s6))
         }
     }
+    if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
 }

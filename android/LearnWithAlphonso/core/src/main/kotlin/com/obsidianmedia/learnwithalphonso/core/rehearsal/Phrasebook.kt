@@ -80,8 +80,8 @@ object Phrasebook {
     const val HEAR_HINT = "Tap play to hear it."
     const val HEAR_ALPHONSO_HINT = "Tap play to hear Alphonso say it."
 
-    /** The plan's row card subtitle: "8 phrases · tap to hear" (nothing about saying them until the spot-checks exist). */
-    fun linkSubtitle(n: Int): String = "$n ${if (n == 1) "phrase" else "phrases"} · tap to hear"
+    /** The plan's row card subtitle: "8 phrases · tap to hear, say them". */
+    fun linkSubtitle(n: Int): String = "$n ${if (n == 1) "phrase" else "phrases"} · tap to hear, say them"
     const val SAVED_NOTE = "Saved on this phone. With no connection, your phone’s own voice reads them."
     const val LINK_TITLE = "Your phrases"
     fun hearLabel(phrase: String): String = "Hear $phrase"
