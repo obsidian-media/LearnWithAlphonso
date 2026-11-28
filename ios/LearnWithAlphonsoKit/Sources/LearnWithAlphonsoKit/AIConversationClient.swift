@@ -366,7 +366,9 @@ public final class AIConversationClient: Sendable {
         guard let (data, response) = outcome, let http = response as? HTTPURLResponse else { return .retry }
         guard (200...299).contains(http.statusCode) else { return http.statusCode >= 500 && http.statusCode != 503 ? .retry : .empty }
         if let recap = CallRecap.parse(data) { return .got(recap) }
-        return CallRecap.retryRequested(data) ? .retry : .empty
+        if CallRecap.retryRequested(data) { return .retry }
+        if let speaking = RehearsalSpeaking.parse(data) { return .speakingOnly(speaking) }
+        return .empty
     }
 
     /// POST /api/call-recap-review -- "Review these": the server adds the recap's items to the review queue from the
