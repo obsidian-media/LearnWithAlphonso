@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
 import { STAGE_LABELS, type Stage } from "@/lib/rehearsal-rules";
+import { useProStatus } from "@/lib/use-pro-status";
 import { Modal } from "../Modal";
 import { WebPaywallSheet } from "../WebPaywall";
 
@@ -20,15 +21,26 @@ export function StagePartnerSheet({
   stage,
   hectorAvailable,
   onClose,
+  onChosen,
 }: {
   rehearsalId: string;
   stage: Stage;
   hectorAvailable: boolean | null;
   onClose: () => void;
+  /** Runs when a partner is picked: for "Run this stage again", whose link may land on the URL it is already on. */
+  onChosen?: () => void;
 }) {
   const [paywall, setPaywall] = useState(false);
   const [hard, setHard] = useState(false);
-  const isPro = hectorAvailable !== false;
+  // A stale server answer never locks a learner out: this device's own entitlement saying Pro wins over `false`. With
+  // no server answer, a device that knows the learner is free shows the Pro badge.
+  const clientState = useProStatus().state;
+  const isPro =
+    clientState === "pro" || (hectorAvailable === null ? clientState !== "free" : hectorAvailable);
+  const chosen = () => {
+    onClose();
+    onChosen?.();
+  };
   const hardAvailable = stage === "hard_moments";
 
   if (paywall) return <WebPaywallSheet source="rehearsal_entry" onClose={onClose} />;
@@ -55,7 +67,7 @@ export function StagePartnerSheet({
         <Link
           to="/rehearse/$id/$stage"
           params={{ id: rehearsalId, stage }}
-          onClick={onClose}
+          onClick={chosen}
           className="rounded-full bg-ds-brand px-5 py-3 text-center font-semibold text-ds-card"
         >
           Start with Alphonso
@@ -96,7 +108,7 @@ export function StagePartnerSheet({
                 persona: "hector",
                 ...(hardAvailable && hard ? { hard: true as const } : {}),
               }}
-              onClick={onClose}
+              onClick={chosen}
               className="rounded-full border border-ds-line px-5 py-3 text-center font-semibold text-ds-ink"
             >
               {hardAvailable && hard ? "Start hard mode with Hector" : "Start with Hector"}

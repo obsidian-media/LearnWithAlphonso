@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
+import { StagePartnerSheet } from "@/components/rehearsal/StagePartnerSheet";
 import type { Course } from "@/data/course-meta";
 import { fetchRehearsals, type RehearsalState } from "@/lib/rehearsal-api";
 import { HowYouSpoke } from "@/components/rehearsal/HowYouSpoke";
@@ -47,6 +47,7 @@ export function RehearsalDebrief({
   onDone: () => void;
 }) {
   const [load, setLoad] = useState<Load>({ kind: "loading" });
+  const [choosing, setChoosing] = useState<{ stage: Stage; again: boolean } | null>(null);
   const waiting = recapStatus === "pending";
 
   useEffect(() => {
@@ -123,17 +124,17 @@ export function RehearsalDebrief({
 
       <div className="flex flex-col gap-3">
         {run && state?.active && (
-          <Link
-            to="/rehearse/$id/$stage"
-            params={{ id: rehearsalId, stage: next }}
+          <button
+            type="button"
+            onClick={() => setChoosing({ stage: next, again: false })}
             className="rounded-full bg-ds-brand px-5 py-3 text-center font-semibold text-ds-card"
           >
             Next: {STAGE_LABELS[next]}
-          </Link>
+          </button>
         )}
         <button
           type="button"
-          onClick={onRunAgain}
+          onClick={() => setChoosing({ stage, again: true })}
           className="rounded-full border border-ds-line px-5 py-3 font-semibold text-ds-ink"
         >
           Run this stage again
@@ -146,6 +147,16 @@ export function RehearsalDebrief({
           Done
         </button>
       </div>
+
+      {choosing && (
+        <StagePartnerSheet
+          rehearsalId={rehearsalId}
+          stage={choosing.stage}
+          hectorAvailable={state?.hectorAvailable ?? null}
+          onClose={() => setChoosing(null)}
+          onChosen={choosing.again ? onRunAgain : undefined}
+        />
+      )}
 
       <p className="flex items-start gap-2 ds-type-caption text-ds-ink-soft">
         <AiLabel className="mt-0.5" />
