@@ -29,6 +29,22 @@ export function isAcceptedAudioType(type: string): boolean {
   return t.startsWith("audio/") || t === "video/webm" || t === "video/mp4";
 }
 
+/**
+ * The provider's per-word list as `[{ word, confidence }]` (confidence 0-1), or undefined when it gave none. Entries
+ * without a text word or a finite confidence are skipped; the list is capped so a long recording cannot bloat the answer.
+ */
+export function heardWords(raw: unknown): { word: string; confidence: number }[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const out: { word: string; confidence: number }[] = [];
+  for (const w of raw.slice(0, 200)) {
+    const text = typeof w?.punctuated_word === "string" ? w.punctuated_word : w?.word;
+    if (typeof text !== "string" || !text.trim()) continue;
+    if (typeof w?.confidence !== "number" || !Number.isFinite(w.confidence)) continue;
+    out.push({ word: text, confidence: w.confidence });
+  }
+  return out.length > 0 ? out : undefined;
+}
+
 export const Route = createFileRoute("/api/stt")({
   server: {
     handlers: {
@@ -130,7 +146,13 @@ export const Route = createFileRoute("/api/stt")({
           }
           type DeepgramReply = {
             results?: {
-              channels?: { alternatives?: { transcript?: string; confidence?: number }[] }[];
+              channels?: {
+                alternatives?: {
+                  transcript?: string;
+                  confidence?: number;
+                  words?: { word?: unknown; punctuated_word?: unknown; confidence?: unknown }[];
+                }[];
+              }[];
             };
             metadata?: Record<string, unknown>;
           };
@@ -177,7 +199,10 @@ export const Route = createFileRoute("/api/stt")({
           // decision in CHANGELOG.md's V3 entry for why: no new vendor, no
           // new cost, ships with data already in this response).
           const confidence = typeof alt?.confidence === "number" ? alt.confidence : null;
-          return noStoreJson({ text, confidence });
+          // Additive: the per-word confidences the phrase check ("Say it" in the phrasebook) uses. Absent, never an
+          // empty list, when the vendor gave none; `text` and `confidence` are unchanged for every existing caller.
+          const words = heardWords(alt?.words);
+          return noStoreJson(words ? { text, confidence, words } : { text, confidence });
         }),
     },
   },

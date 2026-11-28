@@ -328,6 +328,60 @@ describe("POST /api/stt", () => {
     expect(await res.json()).toEqual({ text: "good morning", confidence: 0.93 });
   });
 
+  it("additionally forwards Deepgram's per-word confidence, leaving text and confidence as they were", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          results: {
+            channels: [
+              {
+                alternatives: [
+                  {
+                    transcript: "good morning",
+                    confidence: 0.93,
+                    words: [
+                      { word: "good", punctuated_word: "Good", confidence: 0.99, start: 0, end: 1 },
+                      { word: "morning", confidence: 0.41 },
+                      { word: "", confidence: 0.9 },
+                      { word: "noconf" },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+    const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
+    expect(await res.json()).toEqual({
+      text: "good morning",
+      confidence: 0.93,
+      words: [
+        { word: "Good", confidence: 0.99 },
+        { word: "morning", confidence: 0.41 },
+      ],
+    });
+  });
+
+  it("leaves `words` out when the vendor gave no usable per-word list", async () => {
+    for (const words of [undefined, [], [{ word: "x" }], "nope"]) {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            results: {
+              channels: [{ alternatives: [{ transcript: "hi", confidence: 0.9, words }] }],
+            },
+          }),
+          { status: 200 },
+        ),
+      );
+      const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
+      expect(await res.json()).toEqual({ text: "hi", confidence: 0.9 });
+    }
+  });
+
   it("falls back to audio/webm when the blob's type is falsy", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response(JSON.stringify({ results: { channels: [] } }), { status: 200 }),
