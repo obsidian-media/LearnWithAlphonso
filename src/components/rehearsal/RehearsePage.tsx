@@ -35,6 +35,7 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
   const [adjusting, setAdjusting] = useState(false);
   const [sheet, setSheet] = useState(true);
   const [phrases, setPhrases] = useState(false);
+  const [cameBack, setCameBack] = useState(false);
   // The quick-starts (empty when the server has none, which shows the four questions straight away), the one being
   // previewed, and whether the learner chose "Something else".
   const [presets, setPresets] = useState<PresetSummary[]>([]);
@@ -111,7 +112,15 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
         />
       );
     if (phrases && state.progress?.warmup === "done")
-      return <Phrasebook rehearsal={active} onBack={() => setPhrases(false)} />;
+      return (
+        <Phrasebook
+          rehearsal={active}
+          onBack={() => {
+            setPhrases(false);
+            setCameBack(true);
+          }}
+        />
+      );
     return (
       <ActiveRehearsal
         rehearsal={active}
@@ -119,7 +128,11 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
         nextStage={state.nextStage}
         today={today}
         onAdjust={() => setAdjusting(true)}
-        onOpenPhrases={() => setPhrases(true)}
+        onOpenPhrases={() => {
+          setCameBack(false);
+          setPhrases(true);
+        }}
+        restoreFocus={cameBack}
         onDeleted={() => void load()}
       />
     );

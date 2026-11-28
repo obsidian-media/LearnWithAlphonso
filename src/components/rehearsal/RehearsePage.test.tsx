@@ -295,19 +295,42 @@ describe("RehearsePage phrasebook", () => {
     });
     render(<RehearsePage course="en" today="2026-11-26" />);
     await screen.findByRole("heading", { name: "Job interview" });
-    expect(screen.queryByRole("button", { name: "Your phrases for the day" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Your phrases/ })).toBeNull();
   });
 
   it("opens the phrasebook from the plan once the warm-up is done, and goes back", async () => {
     api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
     const user = userEvent.setup();
     render(<RehearsePage course="en" today="2026-11-26" />);
-    await user.click(await screen.findByRole("button", { name: "Your phrases for the day" }));
+    await user.click(await screen.findByRole("button", { name: /^Your phrases/ }));
     expect(
       screen.getByRole("heading", { name: /Your phrases for this job interview/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Hear: I have experience in" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveFocus();
     await user.click(screen.getByRole("button", { name: "Back to the plan" }));
     expect(screen.getByRole("heading", { name: "Job interview" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Your phrases/ })).toHaveFocus();
+  });
+
+  it("the entry row counts the phrases and does not promise saying them yet", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    const row = await screen.findByRole("button", { name: /^Your phrases/ });
+    expect(row).toHaveTextContent("6 phrases · tap to hear");
+    expect(row.textContent).not.toMatch(/say/i);
+    const next = screen.getByRole("link", { name: "Next: The real conversation" });
+    expect(row.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("hides the entry when the brief has no key phrases", async () => {
+    const active = state.active as unknown as { brief: object };
+    api.fetchRehearsals.mockResolvedValue({
+      ok: true,
+      value: { ...state, active: { ...active, brief: { ...active.brief, keyPhrases: [] } } },
+    });
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    await screen.findByRole("heading", { name: "Job interview" });
+    expect(screen.queryByRole("button", { name: /^Your phrases/ })).toBeNull();
   });
 });

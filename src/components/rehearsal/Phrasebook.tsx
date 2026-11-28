@@ -1,34 +1,22 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
+import { localeForCourse } from "@/data/course-meta";
 import { type Rehearsal } from "@/lib/rehearsal-api";
-import type { RehearsalBrief } from "@/lib/rehearsal-brief";
+import { phraseRows } from "@/lib/rehearsal-phrases";
 import { EVENT_KIND_LABELS } from "@/lib/rehearsal-rules";
-import { useModelSpeech } from "@/lib/use-model-speech";
-
-export type PhraseRow = { phrase: string; meaning: string | null };
-
-/**
- * The brief's key phrases, each with its meaning line when there is one. Meanings exist only on a hand-written
- * quick-start brief and are index-aligned with the phrases; a list that does not line up is ignored whole, so a
- * phrase is never shown beside another phrase's meaning.
- */
-export function phraseRows(brief: RehearsalBrief): PhraseRow[] {
-  const meanings = brief.keyPhraseMeanings;
-  const aligned =
-    Array.isArray(meanings) &&
-    meanings.length === brief.keyPhrases.length &&
-    meanings.every((m) => typeof m === "string" && m.trim() !== "");
-  return brief.keyPhrases.map((phrase, i) => ({
-    phrase,
-    meaning: aligned ? meanings![i]! : null,
-  }));
-}
+import { canSpeak, speak } from "@/lib/speech";
+import { fetchModelSpeech } from "@/lib/use-model-speech";
+import { voicePlayback } from "@/lib/voice-playback";
 
 /**
  * "Your phrases for this {event}": the key phrases of the warm-up, to hear again on the day. Tapping one speaks it with
  * /api/tts (kept for quick-start phrases) and falls back to the device voice. Alphonso is labelled an AI.
  */
 export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack: () => void }) {
-  const speak = useModelSpeech(rehearsal.course);
+  const { play, deviceVoice } = usePhraseAudio(rehearsal.course);
+  const heading = useRef<HTMLHeadingElement>(null);
+  // Opening the screen moves focus to its heading, so a keyboard or screen-reader user lands on the new content.
+  useEffect(() => heading.current?.focus(), []);
   const rows = phraseRows(rehearsal.brief);
   const event = EVENT_KIND_LABELS[rehearsal.eventKind].toLowerCase();
   return (
@@ -41,24 +29,34 @@ export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack
         Back to the plan
       </button>
       <div>
-        <h1 className="font-display ds-type-title font-semibold text-ds-ink">
+        <h1
+          ref={heading}
+          tabIndex={-1}
+          className="font-display ds-type-title font-semibold text-ds-ink outline-none"
+        >
           Your phrases for this {event}
         </h1>
         <p className="mt-1 flex flex-wrap items-center gap-2 ds-type-footnote text-ds-ink-soft">
-          <span>Tap play to hear Alphonso say it.</span>
-          <AiLabel />
+          {deviceVoice ? (
+            <span>Tap play to hear it.</span>
+          ) : (
+            <>
+              <span>Tap play to hear Alphonso say it.</span>
+              <AiLabel />
+            </>
+          )}
         </p>
       </div>
       <ul className="flex flex-col gap-3">
-        {rows.map((row) => (
+        {rows.map((row, i) => (
           <li
-            key={row.phrase}
+            key={i}
             className="flex items-center gap-3 rounded-2xl border border-ds-line bg-ds-card p-3"
           >
             <button
               type="button"
               aria-label={`Hear: ${row.phrase}`}
-              onClick={() => void speak(row.phrase)}
+              onClick={() => void play(row.phrase)}
               className="grid size-11 shrink-0 place-items-center rounded-full bg-ds-brand text-ds-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <svg
@@ -80,4 +78,52 @@ export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack
       </ul>
     </section>
   );
+}
+
+/**
+ * Plays a phrase: the /api/tts voice, kept in memory per phrase so a replay makes no second request (every /api/tts
+ * request, cached on the server or not, spends a unit of the learner's daily tts allowance), and the device voice in
+ * the course language when that fails. The cache holds blobs, which the playback element reads directly (so there is no
+ * object URL to revoke); it is dropped when the screen closes.
+ */
+function usePhraseAudio(course: Rehearsal["course"]) {
+  const cache = useRef(new Map<string, Blob>());
+  const run = useRef(0);
+  const [deviceVoice, setDeviceVoice] = useState(false);
+  useEffect(() => {
+    const clips = cache.current;
+    return () => {
+      run.current += 1;
+      voicePlayback().stop();
+      clips.clear();
+    };
+  }, []);
+  const play = useCallback(
+    async (phrase: string) => {
+      const playback = voicePlayback();
+      const mine = ++run.current;
+      playback.stop();
+      // Inside the tap, so the shared element may play after the fetch below.
+      playback.unlock();
+      const device = () => {
+        if (mine !== run.current || !canSpeak()) return;
+        setDeviceVoice(true);
+        speak(phrase, localeForCourse(course));
+      };
+      try {
+        let blob = cache.current.get(phrase);
+        if (!blob) {
+          blob = await fetchModelSpeech(phrase, course);
+          cache.current.set(phrase, blob);
+        }
+        if (mine !== run.current) return;
+        const outcome = await playback.play(blob);
+        if (outcome.result === "blocked" || outcome.result === "error") device();
+      } catch {
+        device();
+      }
+    },
+    [course],
+  );
+  return { play, deviceVoice };
 }

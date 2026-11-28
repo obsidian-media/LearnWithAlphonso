@@ -16,7 +16,9 @@ vi.mock("@/lib/voice-playback", () => ({
   }),
 }));
 
-const { Phrasebook, phraseRows } = await import("./Phrasebook");
+import { phraseRows } from "@/lib/rehearsal-phrases";
+
+const { Phrasebook } = await import("./Phrasebook");
 
 const rehearsal = fixture.state.active as unknown as Rehearsal;
 const withMeanings = (meanings: string[] | undefined) =>
@@ -92,5 +94,45 @@ describe("Phrasebook", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     expect(fetchMock.mock.calls[0]![0]).toBe("/api/tts");
     expect(synth.speak).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["fr", /^fr/],
+    ["es", /^es/],
+  ] as const)("the device-voice fallback uses the %s course language", async (course, tag) => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+    render(
+      <Phrasebook
+        rehearsal={{ ...withMeanings(undefined), course } as Rehearsal}
+        onBack={vi.fn()}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Hear: I have experience in" }));
+    await waitFor(() => expect(synth.speak).toHaveBeenCalledTimes(1));
+    expect((synth.speak.mock.calls[0]![0] as { lang: string }).lang).toMatch(tag);
+  });
+
+  it("replaying a phrase uses the in-memory clip, not a second /api/tts request", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, blob: async () => new Blob(["x"]) });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<Phrasebook rehearsal={withMeanings(undefined)} onBack={vi.fn()} />);
+    const btn = screen.getByRole("button", { name: "Hear: I have experience in" });
+    await userEvent.click(btn);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await userEvent.click(btn);
+    await userEvent.click(btn);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("moves focus to the one h1 on open, and says 'hear it' (not Alphonso) once the device voice is used", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+    render(<Phrasebook rehearsal={withMeanings(undefined)} onBack={vi.fn()} />);
+    const h1 = screen.getByRole("heading", { level: 1 });
+    expect(document.activeElement).toBe(h1);
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByText(/hear Alphonso say it/)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Hear: I have experience in" }));
+    expect(await screen.findByText("Tap play to hear it.")).toBeTruthy();
+    expect(screen.queryByText(/hear Alphonso say it/)).toBeNull();
   });
 });
