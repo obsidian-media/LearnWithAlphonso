@@ -36,6 +36,43 @@ class RehearsalSourceGuardsTest {
         assertEquals(emptyList<String>(), current())
     }
 
+    // ---- the quick-start picker: the server owns every preset word; "Something else" is the existing intake; Personalise is create then adjust
+
+    private val coreFile = File("../core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/rehearsal/Rehearsals.kt")
+    private val presetIds = listOf("job_interview", "talk_to_manager", "doctor_appointment", "apartment_landlord", "bank_account", "parent_teacher", "first_day", "customer_service_call")
+
+    private fun presetProblems(presetScreens: String, screens: String, core: String): List<String> {
+        val out = mutableListOf<String>()
+        // first_day is also an event kind of the intake, so the core file is checked without it.
+        val hardcoded = presetIds.filter { presetScreens.contains("\"$it\"") || (it != "first_day" && core.contains("\"$it\"")) }
+        if (hardcoded.isNotEmpty()) out += "the app hardcodes preset ids $hardcoded (the server owns the presets)"
+        if (!presetScreens.contains("PresetCopy.SOMETHING_ELSE") || !presetScreens.contains("onClick = onSomethingElse")) out += "the picker has no Something else card"
+        if (!screens.contains("onSomethingElse = { screen = \"intake\" }")) out += "Something else does not open the existing intake"
+        if (!screens.contains("onPersonalise = { screen = \"adjust\" }")) out += "Personalise does not open the existing adjust flow"
+        if (!presetScreens.contains("controller.createFromPreset(preset.id, date)")) out += "the preview does not create from the preset id and the optional date"
+        if (!presetScreens.contains("PresetCopy.RETRY")) out += "a failed preset list has no retry"
+        return out
+    }
+
+    private fun presetCurrent() = presetProblems(read("rehearsal/RehearsalPresetScreens.kt"), read("rehearsal/RehearsalScreens.kt"), coreFile.readText().replace("\r\n", "\n"))
+
+    @Test fun `the quick-start picker keeps its properties`() {
+        assertEquals(emptyList<String>(), presetCurrent())
+    }
+
+    @Test fun `the quick-start guard goes red when each property is removed`() {
+        val p = read("rehearsal/RehearsalPresetScreens.kt")
+        val s = read("rehearsal/RehearsalScreens.kt")
+        val core = coreFile.readText().replace("\r\n", "\n")
+        assertEquals(1, presetProblems(p + "\nval x = \"bank_account\"", s, core).size)
+        assertEquals(1, presetProblems(p, s, core + "\nval y = \"job_interview\"").size)
+        assertEquals(1, presetProblems(p.replace("onClick = onSomethingElse", "onClick = {}"), s, core).size)
+        assertEquals(1, presetProblems(p, s.replace("onSomethingElse = { screen = \"intake\" }", "onSomethingElse = {}"), core).size)
+        assertEquals(1, presetProblems(p, s.replace("onPersonalise = { screen = \"adjust\" }", "onPersonalise = {}"), core).size)
+        assertEquals(1, presetProblems(p.replace("controller.createFromPreset(preset.id, date)", "false"), s, core).size)
+        assertEquals(1, presetProblems(p.replace("PresetCopy.RETRY", "\"\""), s, core).size)
+    }
+
     @Test fun `the guard goes red when each property is removed`() {
         val conv = read("practice/ConversationViewModels.kt")
         val call = read("rehearsal/RehearsalCall.kt")

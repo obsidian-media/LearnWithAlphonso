@@ -18,6 +18,11 @@ class RehearsalControllerTest {
         val calls = ArrayList<String>()
         override suspend fun state(course: String) = RehearsalResult.Ok(state)
         override suspend fun create(intake: RehearsalIntake): RehearsalResult<Rehearsal> { calls += "create"; return createResult }
+        var presetList: RehearsalResult<List<RehearsalPreset>> = RehearsalResult.Ok(emptyList())
+        override suspend fun presets(course: String): RehearsalResult<List<RehearsalPreset>> { calls += "presets:$course"; return presetList }
+        override suspend fun createFromPreset(course: String, presetId: String, eventDate: String?): RehearsalResult<Rehearsal> {
+            calls += "preset:$course:$presetId:$eventDate"; return createResult
+        }
         override suspend fun adjust(id: String, intake: RehearsalIntake): RehearsalResult<Rehearsal> { calls += "adjust"; return createResult }
         override suspend fun cancel(id: String): RehearsalResult<Rehearsal> { calls += "cancel:$id"; return createResult }
         override suspend fun outcome(id: String, choice: OutcomeChoice, newDate: String?): RehearsalResult<Rehearsal> {
@@ -81,6 +86,66 @@ class RehearsalControllerTest {
         api.state = active
         assertTrue(c.create(intake))
         assertEquals(rehearsal.id, c.ui.value.state!!.active!!.id)
+    }
+
+    private val preset = RehearsalPreset("job_interview", "interview", "Job interview", "A hiring manager asks about you.", "a hiring manager", listOf(PresetStage("warmup", "Say hello")))
+
+    @Test fun `loading the quick-starts keeps the server's order and clears the failed flag`() = runTest {
+        val api = Fake(empty, RehearsalResult.Ok(rehearsal))
+        api.presetList = RehearsalResult.Ok(listOf(preset, preset.copy(id = "first_day"), preset.copy(id = "bank_account")))
+        val c = RehearsalController(api, "fr")
+        c.loadPresets()
+        assertEquals(listOf("job_interview", "first_day", "bank_account"), c.ui.value.presets!!.map { it.id })
+        assertFalse(c.ui.value.presetsFailed)
+        assertFalse(c.ui.value.presetsLoading)
+        assertEquals(listOf("presets:fr"), api.calls)
+    }
+
+    @Test fun `a failed quick-start list is a failed flag with no list, a retry can recover, and a loaded list survives a later failure`() = runTest {
+        val api = Fake(empty, RehearsalResult.Ok(rehearsal))
+        api.presetList = RehearsalResult.Failed(RehearsalError.FAILED)
+        val c = RehearsalController(api, "en")
+        c.loadPresets()
+        assertTrue(c.ui.value.presetsFailed)
+        assertEquals(null, c.ui.value.presets)
+        api.presetList = RehearsalResult.Ok(listOf(preset))
+        c.loadPresets()
+        assertFalse(c.ui.value.presetsFailed)
+        assertEquals(1, c.ui.value.presets!!.size)
+        api.presetList = RehearsalResult.Failed(RehearsalError.FAILED)
+        c.loadPresets()
+        assertFalse(c.ui.value.presetsFailed)
+        assertEquals(1, c.ui.value.presets!!.size)
+    }
+
+    @Test fun `starting from a quick-start sends the course, the preset and the date, and reloads the state`() = runTest {
+        val api = Fake(empty, RehearsalResult.Ok(rehearsal))
+        val c = RehearsalController(api, "es")
+        c.load()
+        api.state = active
+        assertTrue(c.createFromPreset("doctor_appointment", "2026-12-04"))
+        assertEquals("preset:es:doctor_appointment:2026-12-04", api.calls.first { it.startsWith("preset:") })
+        assertEquals(rehearsal.id, c.ui.value.state!!.active!!.id)
+    }
+
+    @Test fun `a quick-start that meets the paywall opens the Pro sheet, and one that is not enabled or invalid shows its error`() = runTest {
+        val api = Fake(empty, RehearsalResult.Failed(RehearsalError.PAYWALL))
+        val c = RehearsalController(api, "en")
+        c.load()
+        assertFalse(c.createFromPreset("job_interview", null))
+        assertTrue(c.ui.value.paywall)
+        assertEquals(RehearsalError.PAYWALL, c.ui.value.error)
+        c.dismissPaywall()
+        api.createResult = RehearsalResult.Failed(RehearsalError.ACTIVE_EXISTS)
+        assertFalse(c.createFromPreset("job_interview", null))
+        assertFalse(c.ui.value.paywall)
+        assertEquals(RehearsalError.ACTIVE_EXISTS, c.ui.value.error)
+        api.createResult = RehearsalResult.Failed(RehearsalError.INVALID_PRESET)
+        assertFalse(c.createFromPreset("nope", null))
+        assertEquals(RehearsalError.INVALID_PRESET, c.ui.value.error)
+        api.createResult = RehearsalResult.Failed(RehearsalError.NOT_ENABLED)
+        assertFalse(c.createFromPreset("job_interview", null))
+        assertEquals(RehearsalError.NOT_ENABLED, c.ui.value.error)
     }
 
     @Test fun `each course has its own stage openers`() {

@@ -89,11 +89,11 @@ class RehearsalViewModel(api: RehearsalApi, course: String) : ViewModel() {
 
 /** "Tue 1 Dec 2026" -> the UTC millis a Material date picker works in, and back. */
 private fun LocalDate.toPickerMillis(): Long = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-private fun DatePickerState.selectedDay(): String? = selectedDateMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString() }
+internal fun DatePickerState.selectedDay(): String? = selectedDateMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString() }
 
 /** Days the picker offers: from [first] on (the event is in the future, or today). */
 @OptIn(ExperimentalMaterial3Api::class)
-private fun fromDay(first: LocalDate) = object : SelectableDates {
+internal fun fromDay(first: LocalDate) = object : SelectableDates {
     override fun isSelectableDate(utcTimeMillis: Long): Boolean =
         !Instant.ofEpochMilli(utcTimeMillis).atZone(ZoneOffset.UTC).toLocalDate().isBefore(first)
 }
@@ -130,12 +130,21 @@ fun RehearsalScreen(
                 state.active != null && screen == "outcome" -> HowDidItGo(state.active!!, ui.busy, ui.error, c, onBack = { screen = "" }, onDone = onBack, onMoved = { screen = "" })
                 state.active != null && screen == "adjust" -> RehearsalIntakeScreen(course.code, state.active, ui.busy, ui.error, c, onBack = { screen = "" }, onSaved = { screen = "" })
                 state.active != null -> RehearsalPlan(state, c, onBack = onBack, onOpenStage = onOpenStage, onAdjust = { screen = "adjust" })
-                else -> RehearsalIntakeScreen(course.code, null, ui.busy, ui.error, c, onBack = onBack, onSaved = {})
+                screen == "intake" -> RehearsalIntakeScreen(course.code, null, ui.busy, ui.error, c, onBack = { screen = "" }, onSaved = { screen = "" })
+                screen.startsWith(PRESET_PREFIX) && ui.presets?.any { it.id == screen.removePrefix(PRESET_PREFIX) } == true -> {
+                    val preset = ui.presets!!.first { it.id == screen.removePrefix(PRESET_PREFIX) }
+                    // Start now: the plan shows once the state has an active rehearsal. Personalise: the same, with Adjust on top.
+                    RehearsalPresetPreview(preset, ui.busy, ui.error, c, onBack = { screen = "" }, onStarted = { screen = "" }, onPersonalise = { screen = "adjust" })
+                }
+                else -> RehearsalPresetPicker(ui, c, onBack = onBack, onPick = { screen = PRESET_PREFIX + it }, onSomethingElse = { screen = "intake" })
             }
         }
         if (ui.paywall) RehearsalPaywallSheet(ui.state?.history?.firstOrNull(), onSeePro = { c.dismissPaywall(); onOpenPaywall() }, onNotNow = { c.dismissPaywall(); if (ui.state?.active == null) onBack() })
     }
 }
+
+/** The screen key of one quick-start's preview ("preset:" plus the server's preset id). */
+private const val PRESET_PREFIX = "preset:"
 
 // ---------------------------------------------------------------- the stepped intake
 

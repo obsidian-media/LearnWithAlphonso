@@ -143,7 +143,36 @@ data class RehearsalState(
     fun latestRun(stage: Stage): RunMemory? = runs.filter { it.stage == stage.wire }.maxByOrNull { it.finishedAt }
 }
 
+/** One stage of a quick-start as the server describes it: the wire key and what the stage is for. */
+@Serializable data class PresetStage(val key: String = "", val goal: String = "")
+
+/** A key phrase of a quick-start with what it means (shown for ready-made rehearsals only). */
+@Serializable data class PresetPhrase(val text: String = "", val meaning: String = "")
+
+/**
+ * A ready-made rehearsal from GET /api/rehearsal-presets. Every word is the server's: the app holds no preset content, only
+ * the shape. Unknown keys are ignored, and a stage key a newer server adds is kept as a plain string.
+ */
+@Serializable
+data class RehearsalPreset(
+    val id: String = "",
+    val eventKind: String = "",
+    val title: String = "",
+    val blurb: String = "",
+    val counterpart: String = "",
+    val stages: List<PresetStage> = emptyList(),
+    val keyPhrases: List<PresetPhrase> = emptyList(),
+)
+
 object RehearsalDecoding {
+    /** `{ presets: [...] }`, in the server's order. A preset without an id or a title is dropped; no list at all is null. */
+    fun presets(text: String): List<RehearsalPreset>? = runCatching {
+        val root = ContentJson.json.parseToJsonElement(text).jsonObject
+        root.getValue("presets").jsonArray.mapNotNull {
+            runCatching { ContentJson.json.decodeFromJsonElement(RehearsalPreset.serializer(), it) }.getOrNull()
+        }.filter { it.id.isNotBlank() && it.title.isNotBlank() }
+    }.getOrNull()
+
     /** Checks the shape the screens read, like the web's parseRehearsalState. Anything that is not a state is null. */
     fun state(text: String): RehearsalState? {
         val root = runCatching { ContentJson.json.parseToJsonElement(text) as? JsonObject }.getOrNull() ?: return null
@@ -166,7 +195,7 @@ object RehearsalDecoding {
 }
 
 /** What a refused request means to the learner; the screens turn each into words ([RehearsalCopy.errorText]). */
-enum class RehearsalError { PAYWALL, RETRY, BLOCKED_TEXT, ACTIVE_EXISTS, CLOSED, NOT_FOUND, NOT_ENABLED, INVALID, CONSENT, FAILED;
+enum class RehearsalError { PAYWALL, RETRY, BLOCKED_TEXT, ACTIVE_EXISTS, CLOSED, NOT_FOUND, NOT_ENABLED, INVALID, INVALID_PRESET, CONSENT, FAILED;
 
     companion object {
         /** The same table as the web's errorOf: the status says most of it, the code tells a few apart. */
@@ -176,7 +205,7 @@ enum class RehearsalError { PAYWALL, RETRY, BLOCKED_TEXT, ACTIVE_EXISTS, CLOSED,
             409 -> if (code == "closed") CLOSED else ACTIVE_EXISTS
             404 -> if (code == "not_enabled") NOT_ENABLED else NOT_FOUND
             403 -> CONSENT
-            400 -> if (code == "blocked_text") BLOCKED_TEXT else INVALID
+            400 -> when (code) { "blocked_text" -> BLOCKED_TEXT; "invalid_preset" -> INVALID_PRESET; else -> INVALID }
             else -> FAILED
         }
     }
@@ -301,6 +330,29 @@ object ChatRequestBody {
     }
 }
 
+/** The quick-start picker's fixed words; the preset cards' own words come from the server. */
+object PresetCopy {
+    const val PICKER_TITLE = "Rehearse a real conversation"
+    const val PICKER_LINE = "Pick what is coming up. Alphonso plays the other person."
+    const val SOMETHING_ELSE = "Something else"
+    const val SOMETHING_ELSE_BLURB = "Answer four short questions and get a plan made for you."
+    const val LIST_FAILED = "We could not load the ready-made rehearsals. You can still make your own, or try again."
+    const val RETRY = "Try again"
+    const val LOADING = "Loading…"
+    const val ADD_DATE = "Add a date"
+    const val NO_DATE = "No date"
+    const val START_NOW = "Start now"
+    const val PERSONALISE = "Personalise"
+    const val STAGES_TITLE = "Three stages"
+    const val PREVIEW_NOTE = "Ready to go: no questions to answer. You can add a date or change the plan later."
+
+    /** "With a hiring manager". */
+    fun withLine(counterpart: String): String = "With $counterpart"
+
+    /** The label of a stage key; a key a newer server adds is shown as the server wrote it. */
+    fun stageLabel(key: String): String = Stage.fromWire(key)?.label ?: key
+}
+
 /** What the Learn entry does for this learner . */
 enum class RehearsalEntry {
     /** An active rehearsal: open its plan. */
@@ -330,6 +382,7 @@ object RehearsalCopy {
         RehearsalError.NOT_FOUND -> "We could not find that rehearsal."
         RehearsalError.NOT_ENABLED -> "Rehearsals are not available yet."
         RehearsalError.INVALID -> "Please check your answers and try again."
+        RehearsalError.INVALID_PRESET -> "That quick start is not available. Please pick another one."
         RehearsalError.CONSENT -> "Turn on AI features to prepare a rehearsal."
         RehearsalError.FAILED -> "Something went wrong. Please try again."
     }
