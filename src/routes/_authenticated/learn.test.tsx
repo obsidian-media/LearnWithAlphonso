@@ -146,10 +146,7 @@ describe("Learn page: the event-day hero (real components)", () => {
   it("on the event day the warm-up REPLACES the lesson map", async () => {
     pathState.current = { kind: "ready", path: { pinned: [warm] } };
     renderPage();
-    expect(await screen.findByRole("link", { name: "Start 2 minutes" })).toHaveAttribute(
-      "href",
-      expect.stringContaining("/rehearse/11111111-1111-4111-8111-111111111111/"),
-    );
+    expect(await screen.findByRole("button", { name: "Start 2 minutes" })).toBeInTheDocument();
     expect(screen.getByText("Interview today")).toBeInTheDocument();
     expect(screen.queryByText("Ready for today's lesson?")).toBeNull();
   });
