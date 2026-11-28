@@ -4355,8 +4355,10 @@ export type Database = {
           _call_id: string;
           _course: string;
           _english: boolean;
+          _hard_mode?: boolean;
           _item_key: string;
           _kind: string;
+          _persona?: string;
           _right: boolean;
           _short: boolean;
           _user_id: string;
