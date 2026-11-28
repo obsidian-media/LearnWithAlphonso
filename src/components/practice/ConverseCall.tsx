@@ -656,6 +656,10 @@ export function ConverseChatPage({
           fixCount={recap.recap?.reviewCount ?? 0}
           speaking={recap.howYouSpoke}
           onRunAgain={onRetry}
+          currentPartner={{
+            ...(source.persona === "hector" ? { persona: "hector" as const } : {}),
+            hard: source.persona === "hector" && source.hardMode === true,
+          }}
           onDone={() => void navigate({ to: backTo })}
         />
       </LessonFrame>

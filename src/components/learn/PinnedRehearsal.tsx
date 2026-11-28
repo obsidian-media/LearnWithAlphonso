@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import type { Course } from "@/data/course-meta";
 import { usePath } from "@/lib/learning-path-client";
 import type { PinnedItem } from "@/lib/path-plan";
-import { EVENT_SHORT } from "@/lib/rehearsal-rules";
+import { StagePartnerSheet } from "@/components/rehearsal/StagePartnerSheet";
+import { EVENT_SHORT, type Stage } from "@/lib/rehearsal-rules";
 
 /** Where a pinned item opens: a stage (or the event-day warm-up) is that stage's call; "How did it go?" is the page. */
 function Target({
@@ -21,13 +23,43 @@ function Target({
       </Link>
     );
   return (
-    <Link
-      to="/rehearse/$id/$stage"
-      params={{ id: item.rehearsalId, stage: item.stage }}
-      className={className}
+    <StageOpener
+      rehearsalId={item.rehearsalId}
+      stage={item.stage}
+      className={`${className} w-full text-left`}
     >
       {children}
-    </Link>
+    </StageOpener>
+  );
+}
+
+/** A stage shortcut: opens the partner sheet (Alphonso or Hector) instead of starting a call. */
+function StageOpener({
+  rehearsalId,
+  stage,
+  className,
+  children,
+}: {
+  rehearsalId: string;
+  stage: Stage;
+  className: string;
+  children: React.ReactNode;
+}) {
+  const [choosing, setChoosing] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setChoosing(true)} className={className}>
+        {children}
+      </button>
+      {choosing && (
+        <StagePartnerSheet
+          rehearsalId={rehearsalId}
+          stage={stage}
+          hectorAvailable={null}
+          onClose={() => setChoosing(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -85,13 +117,13 @@ export function RehearsalHero({ item }: { item: PinnedItem }) {
       <p className="mt-1 ds-type-footnote text-ds-on-hero-soft">
         Say the key phrases once more before you go
       </p>
-      <Link
-        to="/rehearse/$id/$stage"
-        params={{ id: item.rehearsalId, stage: item.stage }}
+      <StageOpener
+        rehearsalId={item.rehearsalId}
+        stage={item.stage}
         className="mt-4 inline-flex min-h-11 items-center rounded-full bg-ds-card px-5 font-semibold text-ds-ink"
       >
         Start 2 minutes
-      </Link>
+      </StageOpener>
     </section>
   );
 }
