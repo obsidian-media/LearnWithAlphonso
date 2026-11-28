@@ -30,7 +30,12 @@ describe("static-file security headers", () => {
 
   it("vercel.json does not take over build or framework detection", () => {
     const keys = Object.keys(vercelJson).filter((k) => k !== "$schema");
-    expect(keys).toEqual(["headers"]);
+    // Only headers and the ignored build step (scripts/vercel-ignore-build.sh); never buildCommand, framework,
+    // outputDirectory, installCommand and the like.
+    expect([...keys].sort()).toEqual(["headers", "ignoreCommand"]);
+    expect((vercelJson as { ignoreCommand?: string }).ignoreCommand).toBe(
+      "sh scripts/vercel-ignore-build.sh",
+    );
   });
 
   it("covers every top-level folder and root file in public/", () => {
