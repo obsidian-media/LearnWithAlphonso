@@ -243,6 +243,14 @@ export class RevenueCatHttpError extends Error {
   }
 }
 
+/** RevenueCat answered, but not with readable JSON: the learner's own failure, not an outage (`malformed`, no status). */
+export class RevenueCatBodyError extends Error {
+  readonly malformed = true;
+  constructor() {
+    super("RevenueCat subscriber body was not readable");
+  }
+}
+
 /** One learner's running Pro trial, read from RevenueCat's v1 subscriber (the trial reminder). */
 export type TrialRead = {
   productId: string;
@@ -273,7 +281,11 @@ export async function getTrialSubscription(
   );
   if (res.status === 404) return null;
   if (!res.ok) throw new RevenueCatHttpError(res.status);
-  const body = (await res.json()) as {
+  const raw: unknown = await res.json().catch((e: unknown) => {
+    // A body that is not JSON is this learner's own failure; a connection that drops mid-body is an outage.
+    throw e instanceof SyntaxError ? new RevenueCatBodyError() : e;
+  });
+  const body = raw as {
     subscriber?: {
       subscriptions?: Record<
         string,

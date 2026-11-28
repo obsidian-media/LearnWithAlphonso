@@ -91,9 +91,16 @@ abstract class BaseConversationViewModel(
     private val opener by lazy {
         OpenerSpeaker(
             viewModelScope, _state, { engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE },
-            player, openerCache, course.code, onFinished = { storedStart.openerFinished() },
-        ) { text, voice -> ai.synthesizeSpeech(text, voice = voice, course = course.code) }
+            // The cache key carries the character: the same words in Hector's voice are not Alphonso's audio.
+            player, openerCache, course.code + (speechCharacter?.let { ":${it.wire}" } ?: ""), onFinished = { storedStart.openerFinished() },
+        ) { text, voice -> ai.synthesizeSpeech(text, voice = voice, course = course.code, character = speechCharacter) }
     }
+
+    /** Whose voice speaks the replies: null is Alphonso (the server's default); a Hector rehearsal says Hector. */
+    protected open val speechCharacter: com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter? get() = null
+
+    /** The words under the call for a refused reply; a rehearsal adds its own (and may open the Pro screen). */
+    protected open fun chatErrorMessage(e: Throwable): String = AiErrorCopy.userMessage(e)
 
     var callId: String = UUID.randomUUID().toString()
         private set
@@ -218,6 +225,8 @@ abstract class BaseConversationViewModel(
         sending = true
         judging = true
         val attemptId = callId
+        val userIndex = _state.value.turns.size
+        var replied = false
         _state.update { s ->
             s.copy(
                 turns = s.turns + ChatMessage("user", text),
@@ -228,6 +237,7 @@ abstract class BaseConversationViewModel(
         try {
             val chatReply = try { ai.chatReply(_state.value.turns, systemPrompt(), _state.value.cefrLevel, course.code, attemptId, callSource) } finally { judging = false }
             val reply = chatReply.content
+            replied = true
             if (slip == null && chatReply.verdict == ReplyVerdict.CORRECTED) slip = text to reply
             _state.update {
                 it.copy(turns = it.turns + ChatMessage("assistant", reply), phase = ConversationPhase.SPEAKING, verdictSerial = it.verdictSerial + 1, verdict = chatReply.verdict)
@@ -235,7 +245,7 @@ abstract class BaseConversationViewModel(
             onReply(reply)
             if (chatMode || finishing) { _state.update { it.copy(phase = ConversationPhase.IDLE) }; return }
             val audioJob = viewModelScope.async {
-                val audio = ai.synthesizeSpeech(reply, voice = alphonsoVoice(course.code), course = course.code)
+                val audio = ai.synthesizeSpeech(reply, voice = alphonsoVoice(course.code), course = course.code, character = speechCharacter)
                 if (!finishing && callId == attemptId && !player.play(audio)) _state.update { it.copy(error = "Got a reply, but couldn't play it back.") }
             }
             replyAudioJob = audioJob
@@ -245,7 +255,16 @@ abstract class BaseConversationViewModel(
             if (callId == attemptId) {
                 // A failed reply pauses hands-free instead of listening again; one tap resumes.
                 if (!finishing) handsFree.failed()
-                _state.update { it.copy(error = if (finishing) null else AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
+                _state.update { s ->
+                    // A turn the server never answered is not part of the conversation: keeping it would make the next try send two
+                    // learner messages in a row (after a 503 retry, or after coming back from the Pro screen).
+                    val dropped = !replied && s.turns.lastIndex == userIndex && s.turns[userIndex].role == "user"
+                    s.copy(
+                        turns = if (dropped) s.turns.take(userIndex) else s.turns,
+                        confidenceByTurn = if (dropped) s.confidenceByTurn - userIndex else s.confidenceByTurn,
+                        error = if (finishing) null else chatErrorMessage(e), phase = ConversationPhase.IDLE,
+                    )
+                }
             }
         } finally { sending = false; judging = false }
     }
@@ -259,7 +278,7 @@ abstract class BaseConversationViewModel(
     fun speakPhrase(text: String) {
         viewModelScope.launch {
             recap.speaking(text)
-            runCatching { player.play(ai.synthesizeSpeech(text, voice = alphonsoVoice(course.code), course = course.code)) }
+            runCatching { player.play(ai.synthesizeSpeech(text, voice = alphonsoVoice(course.code), course = course.code, character = speechCharacter)) }
             recap.speaking(null)
         }
     }
