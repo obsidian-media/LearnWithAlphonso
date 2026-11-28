@@ -677,6 +677,24 @@
           }
         ]
       }
+    },
+    "pauses": {
+      "rehearsalSpeaking": {
+        "notes": [
+          {
+            "kind": "full_replies",
+            "count": 7,
+            "total": 9,
+            "previous": 4
+          },
+          {
+            "kind": "pauses",
+            "count": 4,
+            "total": 7,
+            "previous": null
+          }
+        ]
+      }
     }
   }
 }
