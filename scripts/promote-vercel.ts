@@ -12,7 +12,8 @@
  * - VERCEL_TOKEN unset: warns and exits 0 (the job can merge before the secret exists).
  * - Auto-assign still on: Vercel has already pointed the domain at this build, so the script sees that and does
  *   nothing (no promote request is sent).
- * - No Vercel build for this commit (Vercel skipped it): warns and skips that project.
+ * - No Vercel build for this commit, or one that Vercel canceled/skipped (vercel.json ignoreCommand skips native- and
+ *   docs-only main commits): warns and skips that project, and the job stays green.
  * - A newer main commit is already live: skips, so an older build never replaces a newer one.
  *
  * Usage (CI): VERCEL_TOKEN=... GITHUB_SHA=... bun scripts/promote-vercel.ts
@@ -26,6 +27,7 @@
  * - POST /v10/projects/{projectId}/promote/{deploymentId}?teamId   point production domains at a deployment (201/202)
  */
 import { execFileSync } from "node:child_process";
+import { shouldBuild } from "../src/lib/vercel-ignore-build";
 
 export const VERCEL_API = "https://api.vercel.com";
 export const TEAM_ID = "team_b3dGeEKw3qj1ijfdY9N2KGe2";
@@ -82,12 +84,15 @@ export function selectDeployment(
   return best;
 }
 
-export type BuildStatus = "ready" | "failed" | "pending";
+export type BuildStatus = "ready" | "failed" | "pending" | "canceled";
 
 export function buildStatus(d: Deployment): BuildStatus {
   const s = d.readyState ?? d.state;
   if (s === "READY") return "ready";
-  if (s === "ERROR" || s === "CANCELED" || s === "DELETED") return "failed";
+  // CANCELED is how Vercel records a build its Ignored Build Step skipped (scripts/vercel-ignore-build.sh): nothing
+  // was built, so there is nothing to promote and production keeps serving the last built commit.
+  if (s === "CANCELED") return "canceled";
+  if (s === "ERROR" || s === "DELETED") return "failed";
   return "pending";
 }
 
@@ -132,6 +137,8 @@ export type Deps = {
   env: Record<string, string | undefined>;
   fetch: typeof fetch;
   isAncestor: (ancestor: string, descendant: string) => boolean;
+  /** Files changed between two commits, or null when git cannot tell. */
+  changedFiles: (from: string, to: string) => string[] | null;
   sleep: (ms: number) => Promise<void>;
   now: () => number;
   log: (line: string) => void;
@@ -219,6 +226,47 @@ async function currentProduction(deps: Deps, token: string, p: VercelProject) {
   return { id, sha: commitShaOf(dep) };
 }
 
+/**
+ * A CANCELED build is only fine when the ignored build step skipped it on purpose. A superseded or manually canceled
+ * build of a real code change must not go green, so the files between the live commit and this one are judged with the
+ * same rule the ignore script uses. Anything unverifiable fails.
+ */
+async function verifyCanceled(
+  deps: Deps,
+  token: string,
+  p: VercelProject,
+  sha: string,
+  buildId: string,
+): Promise<ProjectResult> {
+  const label = `${p.name} (${p.domain})`;
+  const short = sha.slice(0, 12);
+  const current = await currentProduction(deps, token, p);
+  if (current.sha === null) {
+    deps.log(
+      `::error::${label}: the Vercel build ${buildId} for ${short} was canceled and the live commit is unknown, so the skip cannot be verified.`,
+    );
+    return "failed";
+  }
+  if (current.sha !== sha && deps.isAncestor(sha, current.sha)) {
+    deps.log(
+      `${label}: the canceled build ${buildId} is older than the live commit; nothing to promote.`,
+    );
+    return "skipped";
+  }
+  const files = deps.changedFiles(current.sha, sha);
+  const decision = shouldBuild({ env: "production", changedFiles: files });
+  if (decision.build) {
+    deps.log(
+      `::error::${label}: the Vercel build ${buildId} for ${short} was canceled but it needed a build (${decision.reason}).`,
+    );
+    return "failed";
+  }
+  deps.log(
+    `::warning::${label}: the Vercel build ${buildId} for ${short} was skipped by the Ignored Build Step (${decision.reason}); production keeps its current build.`,
+  );
+  return "skipped";
+}
+
 export type ProjectResult = "promoted" | "noop" | "skipped" | "failed";
 
 export async function promoteProject(
@@ -247,6 +295,7 @@ export async function promoteProject(
         target = found;
         break;
       }
+      if (status === "canceled") return verifyCanceled(deps, token, p, sha, deploymentId(found));
       if (status === "failed") {
         deps.log(
           `::error::${label}: the Vercel build ${deploymentId(found)} ended as ${found.readyState ?? found.state}.`,
@@ -365,11 +414,27 @@ export function gitIsAncestor(ancestor: string, descendant: string): boolean {
   );
 }
 
+/** `git diff --name-only from to`, fetching either commit first if this checkout lacks it. null when git cannot tell. */
+export function gitChangedFiles(from: string, to: string): string[] | null {
+  for (const c of [from, to]) {
+    if (gitOk(["cat-file", "-e", `${c}^{commit}`]) !== 0) {
+      if (gitOk(["fetch", "--no-tags", "--quiet", "origin", c]) !== 0) return null;
+    }
+  }
+  try {
+    const out = execFileSync("git", ["diff", "--name-only", from, to], { encoding: "utf8" });
+    return out.split("\n").filter((l) => l.length > 0);
+  } catch {
+    return null;
+  }
+}
+
 if (import.meta.main) {
   const code = await run({
     env: process.env,
     fetch: globalThis.fetch,
     isAncestor: gitIsAncestor,
+    changedFiles: gitChangedFiles,
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
     now: () => Date.now(),
     log: (line) => console.log(line),
