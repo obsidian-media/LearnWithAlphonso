@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { LearningPath, PinnedItem } from "@/lib/path-plan";
 
 vi.mock("@tanstack/react-router", () => ({
@@ -22,6 +23,8 @@ vi.mock("@tanstack/react-router", () => ({
     </a>
   ),
 }));
+vi.mock("@/lib/use-pro-status", () => ({ useProStatus: () => ({ state: "free" }) }));
+vi.mock("@/components/WebPaywall", () => ({ WebPaywallSheet: () => <p>paywall</p> }));
 const usePathMock = vi.fn();
 vi.mock("@/lib/learning-path-client", () => ({ usePath: usePathMock }));
 
@@ -65,19 +68,27 @@ describe("PinnedRows (Today)", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("a stage item opens that stage's call", () => {
+  it("a stage item opens the partner sheet for that stage, not a call", async () => {
+    const user = userEvent.setup();
     render(<PinnedRows pinned={[stage]} />);
-    expect(screen.getByRole("link", { name: /The real conversation/ })).toHaveAttribute(
+    expect(screen.queryByRole("link", { name: /Start with/ })).toBeNull();
+    await user.click(screen.getByRole("button", { name: /The real conversation/ }));
+    expect(screen.getByRole("link", { name: "Start with Alphonso" })).toHaveAttribute(
       "href",
       `/rehearse/${ID}/conversation`,
     );
   });
 
-  it("the event-day warm-up opens stage 1", () => {
+  it("the event-day warm-up opens the sheet for stage 1", async () => {
+    const user = userEvent.setup();
     render(<PinnedRows pinned={[warm]} />);
-    expect(
-      screen.getByRole("link", { name: /2-minute warm-up before your interview/ }),
-    ).toHaveAttribute("href", `/rehearse/${ID}/warmup`);
+    await user.click(
+      screen.getByRole("button", { name: /2-minute warm-up before your interview/ }),
+    );
+    expect(screen.getByRole("link", { name: "Start with Alphonso" })).toHaveAttribute(
+      "href",
+      `/rehearse/${ID}/warmup`,
+    );
   });
 
   it("'How did it go?' opens the rehearsal page, which asks the four taps", () => {
@@ -104,12 +115,14 @@ describe("the event-day hero", () => {
     return out;
   };
 
-  it("RehearsalHero shows: interview today, the 2-minute warm-up, Start 2 minutes", () => {
+  it("RehearsalHero shows: interview today, the 2-minute warm-up, Start 2 minutes", async () => {
+    const user = userEvent.setup();
     render(<RehearsalHero item={warm} />);
     expect(screen.getByText("Interview today")).toBeInTheDocument();
     expect(screen.getByText("2-minute warm-up")).toBeInTheDocument();
     expect(screen.getByText("Say the key phrases once more before you go")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Start 2 minutes" })).toHaveAttribute(
+    await user.click(screen.getByRole("button", { name: "Start 2 minutes" }));
+    expect(screen.getByRole("link", { name: "Start with Alphonso" })).toHaveAttribute(
       "href",
       `/rehearse/${ID}/warmup`,
     );

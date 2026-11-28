@@ -233,7 +233,7 @@ describe("a rehearsal stage as a call", () => {
     expect(await screen.findByText("You greeted them well")).toBeInTheDocument();
     expect(screen.getByText(/Nothing here is a score/)).toBeInTheDocument();
     expect(document.querySelector("[data-practice-result]")).toBeNull();
-    expect(screen.getByRole("link", { name: "Next: The hard moments" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Next: The hard moments" })).toBeInTheDocument();
   });
 
   it("sends no Practice telemetry for a rehearsal call", async () => {
