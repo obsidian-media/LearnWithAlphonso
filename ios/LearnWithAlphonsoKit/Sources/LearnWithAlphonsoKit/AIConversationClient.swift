@@ -570,6 +570,19 @@ public final class AIConversationClient: Sendable {
         // is confirmed.
         debugTiming: String? = nil
     ) async throws -> (text: String, confidence: Double?) {
+        let result = try await transcribeWithWords(
+            audio: audio, mimeType: mimeType, course: course, debugTiming: debugTiming)
+        return (result.text, result.confidence)
+    }
+
+    /// `transcribe` plus the route's optional per-word list (`words: [{word, confidence}]`), which phrase mode reads.
+    /// `words` is nil when the route sent none; malformed entries are skipped (see `PhraseChecker.heardWords`).
+    public func transcribeWithWords(
+        audio: Data,
+        mimeType: String,
+        course: String? = nil,
+        debugTiming: String? = nil
+    ) async throws -> (text: String, confidence: Double?, words: [HeardWord]?) {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/stt"))
         request.httpMethod = "POST"
         let boundary = "LWA-\(UUID().uuidString)"
@@ -603,7 +616,7 @@ public final class AIConversationClient: Sendable {
               let text = object["text"] as? String else {
             throw TutorError.server(message: nil)
         }
-        return (text, object["confidence"] as? Double)
+        return (text, object["confidence"] as? Double, PhraseChecker.heardWords(from: object["words"]))
     }
 
     /// Every current caller passes "audio/m4a" -- this covers the couple
