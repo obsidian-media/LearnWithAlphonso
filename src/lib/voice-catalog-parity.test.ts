@@ -108,8 +108,20 @@ describe("native clients send each character's own voice", () => {
     );
     expect(hector).not.toContain("VoiceCharacter.Alphonso");
     const vms = read(`${app}/ui/practice/ConversationViewModels.kt`);
+    // Every spoken reply uses the injected voice; the character is only the optional
+    // rehearsal-partner override, which is null (Alphonso) for every other call path.
     expect(vms).toContain(
-      "ai.synthesizeSpeech(reply, voice = alphonsoVoice(course.code), course = course.code)",
+      "ai.synthesizeSpeech(reply, voice = alphonsoVoice(course.code), course = course.code, character = speechCharacter)",
+    );
+    expect(vms).toContain(
+      "protected open val speechCharacter: com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter? get() = null",
+    );
+    const rehearsal = read(`${app}/ui/rehearsal/RehearsalCall.kt`);
+    expect(rehearsal).toContain(
+      "override val speechCharacter: VoiceCharacter? get() = if (partner == RehearsalPartner.HECTOR) VoiceCharacter.Hector else null",
+    );
+    expect(rehearsal).toContain(
+      "alphonsoVoice = { cc -> container.voicePrefs.voice(if (partner == RehearsalPartner.HECTOR) VoiceCharacter.Hector else VoiceCharacter.Alphonso, cc) }",
     );
     const screens = read(`${app}/ui/practice/PracticeScreens.kt`);
     expect(
