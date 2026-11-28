@@ -24,13 +24,15 @@ final class CallRecapModel {
     /// True once a recap was asked for (even if it failed): the separate weakness analysis then stays quiet.
     var attempted: Bool { started }
     private var player: AVAudioPlayer?
-    private var lastArgs: (callId: String, transcript: [ChatMessage], cefrLevel: String?, scene: String?)?
+    private var lastArgs: (callId: String, transcript: [ChatMessage], cefrLevel: String?, scene: String?, replyLatenciesMs: [Int])?
 
     /// One attempt per call; calling again for the same model does nothing (a failed one is retried with `retry`).
-    func start(session: Session, callId: String, transcript: [ChatMessage], cefrLevel: String?, scene: String?) {
+    /// `replyLatenciesMs` is a rehearsal call's reply gaps (empty for every other call); "Try again" sends the same ones.
+    func start(session: Session, callId: String, transcript: [ChatMessage], cefrLevel: String?, scene: String?,
+               replyLatenciesMs: [Int] = []) {
         guard !started, CallRecap.qualifies(transcript) else { return }
         started = true
-        lastArgs = (callId, transcript, cefrLevel, scene)
+        lastArgs = (callId, transcript, cefrLevel, scene, replyLatenciesMs)
         attempt(session: session)
     }
 
@@ -45,7 +47,7 @@ final class CallRecapModel {
         status = .pending
         Task {
             let client = practiceClient(session)
-            let result = await client.callRecapAttempt(callId: args.callId, transcript: args.transcript, cefrLevel: args.cefrLevel, scene: args.scene)
+            let result = await client.callRecapAttempt(callId: args.callId, transcript: args.transcript, cefrLevel: args.cefrLevel, scene: args.scene, replyLatenciesMs: args.replyLatenciesMs)
             switch result {
             case .got(let r): recap = r; rehearsalSpeaking = r.speaking; status = .ready
             case .speakingOnly(let s): recap = nil; rehearsalSpeaking = s; status = .off
