@@ -268,6 +268,29 @@ final class AIConversationClientTests: XCTestCase {
     /// ever caught the client and server disagreeing about wire format.
     /// Rewritten to assert the multipart body actually matches what the
     /// web client (`use-speech-capture.ts`) sends and `api/stt.ts` parses.
+    func testTranscribeWithWordsDecodesTheOptionalWordList() async throws {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: [
+                "text": "good morning", "confidence": 0.9,
+                "words": [["word": "good", "confidence": 0.95], ["word": "morning", "confidence": 0.5]],
+            ])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+        let result = try await client.transcribeWithWords(audio: Data([1]), mimeType: "audio/m4a", course: "en")
+        XCTAssertEqual(result.text, "good morning")
+        XCTAssertEqual(result.words?.count, 2)
+        XCTAssertEqual(result.words?.last, HeardWord(word: "morning", confidence: 0.5))
+    }
+
+    func testTranscribeWithWordsGivesNilWordsWhenTheRouteSendsNone() async throws {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["text": "hello"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+        let result = try await client.transcribeWithWords(audio: Data([1]), mimeType: "audio/m4a")
+        XCTAssertNil(result.words)
+    }
+
     func testTranscribeSendsMultipartFormDataWithAFileFieldAndReturnsTheText() async throws {
         let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
