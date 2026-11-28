@@ -132,7 +132,7 @@ fun RehearsalPresetPreview(
                 Text(PresetCopy.STAGES_TITLE, style = TitleType, color = ds.ink, modifier = Modifier.semantics { heading() })
                 DsCard {
                     preset.stages.forEachIndexed { i, s ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                        Row(Modifier.semantics(mergeDescendants = true) {}, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
                             Text("${i + 1}", style = HeadlineType, color = ds.ink)
                             Column(Modifier.weight(1f)) {
                                 Text(PresetCopy.stageLabel(s.key), style = HeadlineType, color = ds.ink)
@@ -142,7 +142,8 @@ fun RehearsalPresetPreview(
                     }
                 }
             }
-            DsChip(if (addingDate) PresetCopy.NO_DATE else PresetCopy.ADD_DATE, selected = addingDate, onClick = { addingDate = !addingDate })
+            DsChip(if (!addingDate) PresetCopy.ADD_DATE else date?.toString() ?: PresetCopy.NO_DATE, selected = addingDate, onClick = { addingDate = !addingDate })
+            if (addingDate && date == null) Text(PresetCopy.NO_DATE_HINT, style = FootnoteType, color = ds.inkSoft)
             if (addingDate) DatePicker(picker, showModeToggle = false, title = null, headline = null)
             Text(PresetCopy.PREVIEW_NOTE, style = FootnoteType, color = ds.inkSoft)
             error?.let { Text(RehearsalCopy.errorText(it), style = FootnoteType, color = ds.wrongInk) }

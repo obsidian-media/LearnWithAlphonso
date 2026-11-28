@@ -160,6 +160,16 @@ class RehearsalControllerTest {
         assertEquals(RehearsalError.NOT_ENABLED, c.ui.value.error)
     }
 
+    @Test fun `clearing the error forgets a refusal, so it cannot show under another preset`() = runTest {
+        val api = Fake(empty, RehearsalResult.Failed(RehearsalError.INVALID_EVENT_DATE))
+        val c = RehearsalController(api, "en")
+        c.load()
+        assertFalse(c.createFromPreset("job_interview", "2020-01-01"))
+        assertEquals(RehearsalError.INVALID_EVENT_DATE, c.ui.value.error)
+        c.clearError()
+        assertEquals(null, c.ui.value.error)
+    }
+
     @Test fun `each course has its own stage openers`() {
         assertEquals("Let's warm up. Say hello and tell me what you are getting ready for.", RehearsalOpeners.opener("en", Stage.WARMUP))
         assertTrue(RehearsalOpeners.opener("fr", Stage.CONVERSATION).startsWith("Commencez"))

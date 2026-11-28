@@ -115,6 +115,8 @@ fun RehearsalScreen(
     var screen by rememberSaveable { mutableStateOf(mode) }
     val hostScope = rememberCoroutineScope()
     LaunchedEffect(Unit) { c.load() }
+    // System Back from a preview or the intake returns to the picker.
+    BackHandler(enabled = ui.state?.active == null && (screen == "intake" || screen.startsWith(PRESET_PREFIX))) { c.clearError(); screen = "" }
     // A learner who may not rehearse (free one used, not Pro) with nothing active meets the Pro sheet at once.
     LaunchedEffect(ui.state) { ui.state?.let { if (it.active == null) c.entryTapped(container.entitlements.isPro) } }
     val ds = LocalAlphonsoTokens.current
@@ -131,13 +133,15 @@ fun RehearsalScreen(
                 state.active != null && screen == "outcome" -> HowDidItGo(state.active!!, ui.busy, ui.error, c, onBack = { screen = "" }, onDone = onBack, onMoved = { screen = "" })
                 state.active != null && screen == "adjust" -> RehearsalIntakeScreen(course.code, state.active, ui.busy, ui.error, c, onBack = { screen = "" }, onSaved = { screen = "" })
                 state.active != null -> RehearsalPlan(state, c, onBack = onBack, onOpenStage = onOpenStage, onAdjust = { screen = "adjust" })
-                screen == "intake" -> RehearsalIntakeScreen(course.code, null, ui.busy, ui.error, c, onBack = { screen = "" }, onSaved = { screen = "" })
+                // The free rehearsal is used and the learner is not Pro: the Pro sheet is the screen, the picker stays hidden.
+                entryOpensPaywall(state, container.entitlements.isPro) -> DsBackBar("Learn", onBack)
+                screen == "intake" -> RehearsalIntakeScreen(course.code, null, ui.busy, ui.error, c, onBack = { c.clearError(); screen = "" }, onSaved = { screen = "" })
                 screen.startsWith(PRESET_PREFIX) && ui.presets?.any { it.id == screen.removePrefix(PRESET_PREFIX) } == true -> {
                     val preset = ui.presets!!.first { it.id == screen.removePrefix(PRESET_PREFIX) }
                     // Start now: the plan shows once the state has an active rehearsal. Personalise: the same, with Adjust on top.
-                    RehearsalPresetPreview(preset, ui.busy, ui.error, c, onBack = { screen = "" }, onStarted = { screen = "" }, onPersonalise = { screen = "adjust" })
+                    RehearsalPresetPreview(preset, ui.busy, ui.error, c, onBack = { c.clearError(); screen = "" }, onStarted = { screen = "" }, onPersonalise = { screen = "adjust" })
                 }
-                else -> RehearsalPresetPicker(ui, c, onBack = onBack, onPick = { screen = PRESET_PREFIX + it }, onSomethingElse = { screen = "intake" })
+                else -> RehearsalPresetPicker(ui, c, onBack = onBack, onPick = { c.clearError(); screen = PRESET_PREFIX + it }, onSomethingElse = { c.clearError(); screen = "intake" })
             }
         }
         if (ui.paywall) RehearsalPaywallSheet(ui.state?.history?.firstOrNull(), onSeePro = { c.dismissPaywall(); onOpenPaywall() }, onNotNow = { c.dismissPaywall(); if (ui.state?.active == null) onBack() })
@@ -249,17 +253,6 @@ fun RehearsalPlan(state: RehearsalState, controller: RehearsalController, onBack
                 Text(r.kind.label, style = TitleType, color = ds.onHero, modifier = Modifier.semantics { heading() })
                 Text(RehearsalCopy.whenLine(r.eventDate, LocalDate.now()), style = FootnoteType, color = ds.onHeroSoft)
                 Text(RehearsalCopy.withLine(r), style = FootnoteType, color = ds.onHeroSoft)
-            }
-            if (r.eventDate == null) {
-                var pickingDate by remember { mutableStateOf(false) }
-                val datePicker = rememberDatePickerState(selectableDates = fromDay(LocalDate.now()))
-                if (!pickingDate) {
-                    AlphonsoSecondaryButton(PresetCopy.ADD_DATE, { pickingDate = true })
-                } else {
-                    DatePicker(datePicker, showModeToggle = false, title = null, headline = null)
-                    val day = datePicker.selectedDay()
-                    AlphonsoPrimaryButton("Save the date", { day?.let { d -> scope.launch { if (controller.setDate(r.id, d)) pickingDate = false } } }, enabled = day != null)
-                }
             }
             Stage.entries.forEach { stage ->
                 val done = state.isDone(stage)

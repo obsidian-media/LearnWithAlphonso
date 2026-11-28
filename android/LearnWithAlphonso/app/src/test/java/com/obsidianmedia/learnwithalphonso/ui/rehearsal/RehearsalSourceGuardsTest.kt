@@ -47,7 +47,7 @@ class RehearsalSourceGuardsTest {
         val hardcoded = presetIds.filter { presetScreens.contains("\"$it\"") || (it != "first_day" && core.contains("\"$it\"")) }
         if (hardcoded.isNotEmpty()) out += "the app hardcodes preset ids $hardcoded (the server owns the presets)"
         if (!presetScreens.contains("PresetCopy.SOMETHING_ELSE") || !presetScreens.contains("onClick = onSomethingElse")) out += "the picker has no Something else card"
-        if (!screens.contains("onSomethingElse = { screen = \"intake\" }")) out += "Something else does not open the existing intake"
+        if (!screens.contains("onSomethingElse = { c.clearError(); screen = \"intake\" }")) out += "Something else does not open the existing intake"
         if (!screens.contains("onPersonalise = { screen = \"adjust\" }")) out += "Personalise does not open the existing adjust flow"
         if (!presetScreens.contains("controller.createFromPreset(preset.id, date)")) out += "the preview does not create from the preset id and the optional date"
         if (!presetScreens.contains("PresetCopy.RETRY")) out += "a failed preset list has no retry"
@@ -67,7 +67,7 @@ class RehearsalSourceGuardsTest {
         assertEquals(1, presetProblems(p + "\nval x = \"bank_account\"", s, core).size)
         assertEquals(1, presetProblems(p, s, core + "\nval y = \"job_interview\"").size)
         assertEquals(1, presetProblems(p.replace("onClick = onSomethingElse", "onClick = {}"), s, core).size)
-        assertEquals(1, presetProblems(p, s.replace("onSomethingElse = { screen = \"intake\" }", "onSomethingElse = {}"), core).size)
+        assertEquals(1, presetProblems(p, s.replace("onSomethingElse = { c.clearError(); screen = \"intake\" }", "onSomethingElse = {}"), core).size)
         assertEquals(1, presetProblems(p, s.replace("onPersonalise = { screen = \"adjust\" }", "onPersonalise = {}"), core).size)
         assertEquals(1, presetProblems(p.replace("controller.createFromPreset(preset.id, date)", "false"), s, core).size)
         assertEquals(1, presetProblems(p.replace("PresetCopy.RETRY", "\"\""), s, core).size)

@@ -89,6 +89,9 @@ class RehearsalController(private val api: RehearsalApi, private val course: Str
     fun runsBefore(callId: String, stage: Stage): Int =
         baselines.getOrPut(callId) { _ui.value.state?.runs?.count { it.stage == stage.wire } ?: 0 }
 
+    /** Forgets the last refusal, so a stale one never shows under another preset or after going back. */
+    fun clearError() = _ui.update { it.copy(error = null) }
+
     fun dismissPaywall() = _ui.update { it.copy(paywall = false) }
 
     /** Creates the rehearsal; true when it exists now. A 402 opens the Pro sheet. */
@@ -106,7 +109,7 @@ class RehearsalController(private val api: RehearsalApi, private val course: Str
     /** Creates the rehearsal from a quick-start, with no intake; the refusals (a 402 opens the Pro sheet) are [create]'s. */
     suspend fun createFromPreset(presetId: String, eventDate: String?): Boolean = mutate { api.createFromPreset(course, presetId, eventDate) }
 
-    /** "Add a date" on the plan; an invalid day is the server's `invalid_event_date`, shown as the usual check-your-answers line. */
+    /** Groundwork, no screen yet: adds (or clears) the day of an existing rehearsal. */
     suspend fun setDate(id: String, eventDate: String?): Boolean = mutate { api.setDate(id, eventDate) }
 
     suspend fun adjust(id: String, intake: RehearsalIntake): Boolean = mutate { api.adjust(id, intake) }
