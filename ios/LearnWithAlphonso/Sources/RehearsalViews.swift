@@ -148,6 +148,12 @@ struct RehearsalCallHeaderView: View {
     }
 }
 
+/// The stage whose partner sheet is open (`.sheet(item:)` needs an identifier).
+struct RehearsalStageChoice: Identifiable, Equatable {
+    let stage: RehearsalStage
+    var id: String { stage.rawValue }
+}
+
 // MARK: - The flow
 
 /// What opens the flow: the plan or the intake (decided from the state), a stage straight away (a pinned item), or
@@ -179,6 +185,13 @@ struct RehearsalFlowView: View {
 
     @State private var screen: Screen = .loading
     @State private var showPaywall = false
+    /// Hector or hard mode was refused on the first turn of a call (402 pro_required): the plain Pro paywall.
+    @State private var showHectorPaywall = false
+    /// The stage whose partner is being chosen: every start asks "Alphonso or Hector?" first.
+    @State private var choosing: RehearsalStageChoice?
+    /// The partner chosen for the run on screen, fixed for the whole call.
+    @State private var runPersona: RehearsalPersona = .alphonso
+    @State private var runHardMode = false
     /// A new value for every run, so "Run this stage again" starts a fresh call instead of reusing the finished one.
     @State private var runToken = UUID()
     @Environment(\.alphonsoDS) private var ds
@@ -216,14 +229,15 @@ struct RehearsalFlowView: View {
                 case .plan:
                     if let active = model.state?.active {
                         RehearsalPlanView(model: model, rehearsal: active,
-                                          onStart: { runToken = UUID(); screen = .run($0) }, onAdjust: { screen = .intake(adjusting: true) },
+                                          onStart: { choosing = RehearsalStageChoice(stage: $0) }, onAdjust: { screen = .intake(adjusting: true) },
                                           onDeleted: { Task { await open() } })
                     } else { Color.clear.task { await open() } }
                 case .run(let stage):
                     if let active = model.state?.active {
                         RehearsalRunView(model: model, rehearsal: active, stage: stage, course: course, session: session,
-                                         onPaywall: { showPaywall = true },
-                                         onRunStage: { runToken = UUID(); screen = .run($0) }, onPlan: { screen = .plan })
+                                         persona: runPersona, hardMode: runHardMode,
+                                         onPaywall: { showPaywall = true }, onProRequired: { showHectorPaywall = true },
+                                         onRunStage: { choosing = RehearsalStageChoice(stage: $0) }, onPlan: { screen = .plan })
                             .id(runToken)
                     } else { Color.clear.task { await open() } }
                 case .outcome:
@@ -233,6 +247,19 @@ struct RehearsalFlowView: View {
                 }
             }
             .background(ds.surface)
+            .sheet(item: $choosing) { pick in
+                RehearsalPartnerSheet(
+                    stage: pick.stage, stateHectorAvailable: model.state?.hectorAvailable, entitlementStore: entitlementStore,
+                    onChoose: { persona, hard in
+                        runPersona = persona
+                        runHardMode = hard
+                        runToken = UUID()
+                        choosing = nil
+                        screen = .run(pick.stage)
+                    },
+                    onClose: { choosing = nil },
+                    onPaywallClosed: { Task { await model.refresh() } })
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") { onClose() }.tint(ds.choice)
@@ -246,6 +273,14 @@ struct RehearsalFlowView: View {
                 copy: RehearsalPaywallCopy.make(history: model.state?.history ?? []),
                 entitlementStore: entitlementStore, onClose: { showPaywall = false })
         }
+        .sheet(isPresented: $showHectorPaywall) {
+            if let entitlementStore {
+                PaywallView(entitlementStore: entitlementStore, source: .rehearsalEntry, onClose: {
+                    showHectorPaywall = false
+                    Task { await model.refresh() }
+                })
+            }
+        }
     }
 
     /// Reads the state and picks the screen: what the launcher asked for when it can be done, else the plan, else the intake.
@@ -254,7 +289,9 @@ struct RehearsalFlowView: View {
         guard let state = model.state else { screen = .loading; return }
         guard state.active != nil else { screen = .picker; return }
         switch (screen == .loading ? start : .auto) {
-        case .run(let stage): screen = .run(stage)
+        case .run(let stage):
+            screen = .plan
+            choosing = RehearsalStageChoice(stage: stage)
         case .outcome: screen = .outcome
         case .auto: screen = .plan
         }
@@ -685,6 +722,9 @@ struct RehearsalPlanView: View {
                     Text(stage.label).dsText(.headline).foregroundStyle(ds.ink)
                     Text(row == .done ? "Done \u{00B7} you can repeat it" : "\(stage.blurb) \u{00B7} about \(stage.minutes) min")
                         .dsText(.caption).foregroundStyle(row == .done ? ds.rightInk : ds.inkSoft)
+                    if RehearsalPlan.showsHardModeDone(stage: stage, state: model.state) {
+                        Text(RehearsalPlan.hardModeDoneLabel).dsText(.caption).foregroundStyle(ds.rightInk)
+                    }
                 }
                 Spacer(minLength: AlphonsoDS.Space.s2)
                 if row == .next {
@@ -706,7 +746,12 @@ struct RehearsalRunView: View {
     let stage: RehearsalStage
     let course: Course
     let session: Session
+    /// Who plays the partner, and whether it is hard mode: chosen before the call, sent on every turn of it.
+    var persona: RehearsalPersona = .alphonso
+    var hardMode = false
     let onPaywall: () -> Void
+    /// 402 `pro_required` on the call's first turn: the learner is not Pro, so the plain Pro paywall opens.
+    var onProRequired: () -> Void = {}
     let onRunStage: (RehearsalStage) -> Void
     let onPlan: () -> Void
 
@@ -734,7 +779,9 @@ struct RehearsalRunView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.alphonsoDS) private var ds
 
-    private var source: CallSource { .rehearsal(id: rehearsal.id, stage: stage) }
+    private var source: CallSource {
+        RehearsalPartner.source(rehearsalId: rehearsal.id, stage: stage, persona: persona, hardMode: hardMode)
+    }
 
     var body: some View {
         Group {
@@ -743,10 +790,11 @@ struct RehearsalRunView: View {
             case .finishing:
                 VStack(spacing: AlphonsoDS.Space.s3) {
                     ProgressView("Writing your debrief\u{2026}").tint(ds.choice)
-                    Text("Alphonso (AI) is going over the conversation.").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    Text("\(persona.displayName) (AI) is going over the conversation.").dsText(.footnote).foregroundStyle(ds.inkSoft)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .debrief(let outcome): RehearsalDebriefView(outcome: outcome, stage: stage, speaking: rehearsalSpeaking,
+            case .debrief(let outcome): RehearsalDebriefView(outcome: outcome, stage: stage, persona: persona,
+                                                              speaking: rehearsalSpeaking,
                                                               language: RehearsalSpeaking.languageName(courseCode: course.wireCode),
                                                               courseCode: course.wireCode,
                                                               onRunStage: onRunStage, onPlan: onPlan)
@@ -765,13 +813,14 @@ struct RehearsalRunView: View {
         .aiDisclosureGate()
         .task(id: openerCue) {
             guard openerCue > 0, !ending else { return }
-            await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
+            await voice.speakOpener(
+                conversation.pendingOpener, session: session, course: course, speaker: persona.voiceCharacter)
             voice.applyStoredHandsFreePreference(sceneActive: scenePhase == .active)
         }
         .onAppear {
             guard !initialized else { return }
             initialized = true
-            previousFinishedAt = RehearsalPlan.latestRun(model.state?.runs ?? [], stage: stage)?.finishedAt
+            previousFinishedAt = RehearsalPlan.latestRun(model.state?.runs ?? [], stage: stage, hardMode: hardMode)?.finishedAt
             // The stage's fixed opening line, spoken by Alphonso; it is never sent to the server as his words.
             conversation.appendOpener(stage.opener(course: course.wireCode))
             voice.onCapture = { capture in await handle(capture) }
@@ -787,7 +836,9 @@ struct RehearsalRunView: View {
 
     private var callScreen: some View {
         PracticeCallView(
-            title: stage.label, scenarioID: "rehearsal", voice: voice, course: course,
+            title: stage.label, kit: persona == .hector ? .hector : .alphonso,
+            talkLabel: persona == .hector ? "Hold to talk to Hector" : "Hold to talk",
+            scenarioID: "rehearsal", voice: voice, course: course,
             turns: conversation.turns, replyVerdict: replyVerdict, notice: notice,
             onPress: {
                 if ending { return }
@@ -804,10 +855,10 @@ struct RehearsalRunView: View {
             onEnd: { Task { await finishCall() } },
             rehearsalHeader: RehearsalCallHeaderInfo(
                 title: rehearsal.kind?.callTitle ?? RehearsalEventKind.other.callTitle,
-                subline: RehearsalCallHeader.subline(stage: stage), filled: RehearsalCallHeader.filledSegments(stage: stage)),
+                subline: RehearsalCallHeader.subline(stage: stage, persona: persona, hardMode: hardMode), filled: RehearsalCallHeader.filledSegments(stage: stage)),
             sheet: {
                 VStack(spacing: CGFloat.zero) {
-                    HandsFreeSwitch(voice: voice, partner: "Alphonso")
+                    HandsFreeSwitch(voice: voice, partner: persona.displayName)
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                             ForEach(Array(conversation.turns.enumerated()), id: \.offset) { index, turn in
@@ -889,7 +940,8 @@ struct RehearsalRunView: View {
         do {
             conversation.turns.append(ChatMessage(role: "user", content: text))
             voice.transcribed(generation)
-            // The rehearsal's id and stage only: the server builds the prompt from the stored rehearsal.
+            // The rehearsal's id and stage, and the same partner and hard mode on every turn (the server binds them to the
+            // call on its first turn): the server builds the prompt from the stored rehearsal.
             let chat = try await client.chatReply(
                 source: source, messages: source.sendableTurns(conversation), systemPrompt: nil, cefrLevel: cefrLevel,
                 course: nil, callId: callId)
@@ -898,8 +950,10 @@ struct RehearsalRunView: View {
             conversation.turns.append(ChatMessage(role: "assistant", content: chat.content))
             replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chat.verdict)
             do {
+                // Hector speaks with his own voice (Settings > Voices) and `character: "hector"`; Alphonso is unchanged.
                 let speech = try await client.synthesizeSpeech(
-                    text: chat.content, voice: VoicePrefsCache().voice(.alphonso, course: course.wireCode), course: course.wireCode)
+                    text: chat.content, voice: VoicePrefsCache().voice(persona.voiceCharacter, course: course.wireCode),
+                    course: course.wireCode, character: persona.voiceCharacter)
                 if !voice.play(speech, generation: generation) {
                     replyLatency.clearPartnerClock()   // no partner voice to wait for
                     notice = "Got a reply, but couldn't play it back."
@@ -912,8 +966,13 @@ struct RehearsalRunView: View {
         } catch {
             replyLatency.clearPartnerClock()   // the chat failed: this reply's entry is dropped, and no partner voice follows
             let failure = TutorError.from(error)
-            // The free rehearsal's runs are used up: the Pro sheet, with the learner's turn left where it was.
+            // The turn did not reach the partner: take it out, so a retry (503 retry included) never sends two user
+            // messages in a row. The learner simply says it again.
+            if conversation.turns.last == ChatMessage(role: "user", content: text) { conversation.turns.removeLast() }
+            // The free rehearsal's runs are used up: the Pro sheet, with the learner's turn left where it was. Hector or hard
+            // mode without Pro (pro_required) is a different refusal: the plain Pro paywall, and its own words.
             if failure == .notEntitled { onPaywall() }
+            if failure == .proRequired { onProRequired() }
             voice.fail(generation, failure)
             notice = failure == .notEntitled ? RehearsalError.paywall.userMessage : failure.userMessage()
         }
@@ -955,7 +1014,8 @@ struct RehearsalRunView: View {
         rehearsalSpeaking = recapModel.rehearsalSpeaking
         phase = .debrief(RehearsalDebrief.make(
             stage: stage, kind: rehearsal.kind, runs: model.state?.runs ?? [], previousFinishedAt: previousFinishedAt,
-            seconds: elapsed, turns: conversation.turns.count - conversation.openerIndices.count, addedToFix: added))
+            seconds: elapsed, turns: conversation.turns.count - conversation.openerIndices.count, addedToFix: added,
+            hardMode: hardMode))
     }
 }
 
@@ -964,6 +1024,7 @@ struct RehearsalRunView: View {
 struct RehearsalDebriefView: View {
     let outcome: RehearsalDebrief.Outcome
     let stage: RehearsalStage
+    var persona: RehearsalPersona = .alphonso
     var speaking: RehearsalSpeaking?
     var language: String = "English"
     /// The course's wire code: the pause note's filler ("Let me think…") comes in the course's own language.
@@ -978,7 +1039,7 @@ struct RehearsalDebriefView: View {
                 switch outcome {
                 case .noRun:
                     Text("That one was too short to count").dsText(.title).foregroundStyle(ds.ink)
-                    Text("Say a few more things next time and Alphonso (AI) can write you a debrief. Nothing was lost.")
+                    Text("Say a few more things next time and \(persona.displayName) (AI) can write you a debrief. Nothing was lost.")
                         .dsText(.footnote).foregroundStyle(ds.inkSoft)
                     Button(RehearsalDebrief.againLabel) { onRunStage(stage) }.buttonStyle(.alphonsoPrimary(fullWidth: true))
                     Button("Back to the plan") { onPlan() }.buttonStyle(.alphonsoSecondary(fullWidth: true))
@@ -1005,7 +1066,7 @@ struct RehearsalDebriefView: View {
                         .dsText(.footnote).foregroundStyle(ds.inkSoft).frame(minHeight: AlphonsoDS.Space.minTouch)
                     HStack(alignment: .top, spacing: AlphonsoDS.Space.s2) {
                         AILabelView()
-                        Text(RehearsalDebrief.footer).dsText(.caption).foregroundStyle(ds.inkSoft)
+                        Text(RehearsalDebrief.footer(persona: persona)).dsText(.caption).foregroundStyle(ds.inkSoft)
                     }
                 }
             }
