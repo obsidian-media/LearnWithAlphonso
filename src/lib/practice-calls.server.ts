@@ -4,7 +4,7 @@ import type { ReplyVerdict } from "./chat-verdict";
 import { practiceItemForPrompt } from "./practice-catalog";
 import { recordSkillResults } from "./profile-data.server";
 import { STAR_RULE, measureReply, starsForCall } from "./practice-stars";
-import { STAGES, type Stage } from "./rehearsal-rules";
+import { STAGES, type Persona, type Stage } from "./rehearsal-rules";
 
 /**
  * The server half of Practice stars (migration 20261107032021_practice_stars.sql). Both writes run as the service
@@ -69,9 +69,14 @@ export async function recordRehearsalReply(
     course: Course;
     learnerText: string;
     verdict: ReplyVerdict;
+    /**
+     * Who played the partner, and hard mode, with `firstTurn` true on the call's first reply. The mode is stored on the
+     * call once, with that first reply, so every later turn (and the finished run) reads the same mode.
+     */
+    run?: { persona: Persona; hard: boolean; firstTurn: boolean };
   },
 ): Promise<boolean> {
-  return recordReply(client, {
+  const recorded = await recordReply(client, {
     userId: params.userId,
     callId: params.callId,
     course: params.course,
@@ -80,7 +85,32 @@ export async function recordRehearsalReply(
     learnerText: params.learnerText,
     verdict: params.verdict,
   });
+  const run = params.run;
+  if (recorded && run && run.firstTurn && (run.persona !== "alphonso" || run.hard)) {
+    try {
+      const { error } = await (client as Table)
+        .from("practice_calls")
+        .update({ persona: run.persona, hard_mode: run.hard })
+        .eq("id", params.callId as string)
+        .eq("user_id", params.userId);
+      if (error) console.warn(JSON.stringify({ event: "rehearsal_mode_not_stored" }));
+    } catch {
+      console.warn(JSON.stringify({ event: "rehearsal_mode_not_stored" }));
+    }
+  }
+  return recorded;
 }
+
+type Table = {
+  from: (t: string) => {
+    update: (v: Record<string, unknown>) => {
+      eq: (
+        k: string,
+        v: string,
+      ) => { eq: (k: string, v: string) => PromiseLike<{ error: unknown }> };
+    };
+  };
+};
 
 async function recordReply(
   client: object,

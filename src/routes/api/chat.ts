@@ -162,6 +162,7 @@ async function handleRehearsalChat(
       course: resolved.course,
       learnerText: last.content,
       verdict: replyVerdict,
+      run: { ...resolved.run, firstTurn: resolved.firstTurn },
     });
   }
   return noStoreJson({ content: safe.text, verdict: replyVerdict });

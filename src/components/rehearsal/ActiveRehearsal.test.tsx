@@ -48,17 +48,26 @@ describe("ActiveRehearsal (the plan screen)", () => {
     expect(screen.getByText(/about 8 min/)).toBeInTheDocument();
   });
 
-  it("has ONE primary button: Next, for the server's next stage", () => {
+  it("has ONE primary button: Next, for the server's next stage, and it asks who to practise with", async () => {
+    const user = userEvent.setup();
     render(<ActiveRehearsal {...props} />);
-    const primary = screen.getByRole("link", { name: "Next: The real conversation" });
-    expect(primary.getAttribute("href")).toContain("/rehearse/$id/$stage");
-    expect(primary.getAttribute("href")).toContain('"stage":"conversation"');
+    await user.click(screen.getByRole("button", { name: "Next: The real conversation" }));
+    const alphonso = screen.getByRole("link", { name: "Start with Alphonso" });
+    expect(alphonso.getAttribute("href")).toContain("/rehearse/$id/$stage");
+    expect(alphonso.getAttribute("href")).toContain('"stage":"conversation"');
   });
 
   it("every stage can still be started or repeated", () => {
     render(<ActiveRehearsal {...props} />);
-    expect(screen.getByRole("link", { name: "Repeat Warm-up" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Start The hard moments" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Repeat Warm-up" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start The hard moments" })).toBeInTheDocument();
+  });
+
+  it("shows Hard mode done on the last stage only when it is done", () => {
+    const { rerender } = render(<ActiveRehearsal {...props} />);
+    expect(screen.queryByText("Hard mode done")).not.toBeInTheDocument();
+    rerender(<ActiveRehearsal {...props} hardModeDone />);
+    expect(screen.getByText("Hard mode done")).toBeInTheDocument();
   });
 
   it("says the tutor is an AI and that there is no readiness score, and shows no score", () => {

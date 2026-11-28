@@ -24,6 +24,11 @@ const h = vi.hoisted(() => ({
   proState: "active" as "active" | "inactive" | "unavailable",
   rpcs: [] as { fn: string; args: Record<string, unknown> }[],
   reads: [] as { table: string; eqs: [string, unknown][] }[],
+  /** The values written to practice_calls (the run's mode, stored with the first reply). */
+  updates: [] as { table: string; values: Record<string, unknown>; eqs: [string, unknown][] }[],
+  /** The stored mode of an existing call. */
+  call: { persona: "alphonso", hard_mode: false },
+  proCalls: 0,
 }));
 
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest: h.authorize }));
@@ -50,7 +55,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
           return { data: ok ? h.runs : [], error: null };
         }
         if (table === "practice_calls")
-          return { data: h.callExists ? { id: CALL } : null, error: null };
+          return { data: h.callExists ? { id: CALL, ...h.call } : null, error: null };
         if (table === "rehearsals_off")
           return {
             data: h.off ? { user_id: "u1" } : null,
@@ -65,6 +70,10 @@ vi.mock("@/integrations/supabase/client.server", () => ({
         eqs.push([c, v]);
         return q;
       };
+      q.update = (values: Record<string, unknown>) => {
+        h.updates.push({ table, values, eqs });
+        return q;
+      };
       q.maybeSingle = async () => resolve();
       q.then = (ok: (v: unknown) => unknown, bad?: (e: unknown) => unknown) =>
         Promise.resolve(resolve()).then(ok, bad);
@@ -74,7 +83,10 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 }));
 vi.mock("@/lib/revenuecat-entitlement", () => ({
   revenueCatConfigFromEnv: () => ({ secretApiKey: "sk" }),
-  getProEntitlementStatus: async () => "active",
+  getProEntitlementStatus: async () => {
+    h.proCalls += 1;
+    return h.proState;
+  },
 }));
 vi.mock("@/lib/ops-events.server", () => ({
   OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS: 500,
@@ -137,6 +149,10 @@ beforeEach(() => {
   h.usage = [];
   h.rpcs = [];
   h.reads = [];
+  h.updates = [];
+  h.call = { persona: "alphonso", hard_mode: false };
+  h.proCalls = 0;
+  h.proState = "active";
   h.authorize.mockResolvedValue({ ok: true, userId: "u1", supabase: {}, chargeQuota: h.charge });
   h.charge.mockResolvedValue(null);
   fetchMock.mockImplementation(
@@ -580,5 +596,68 @@ describe("adaptive pace: repetition request and placement", () => {
     const verdictAt = system.indexOf("[[verdict:correct]]");
     expect(at).toBeGreaterThan(-1);
     expect(verdictAt).toBeGreaterThan(at);
+  });
+});
+
+describe("Hector and hard mode (Pro)", () => {
+  const hector = (stage = "conversation", extra: Record<string, unknown> = {}) =>
+    rehearsalBody({ rehearsal: { id: REHEARSAL, stage, persona: "hector", ...extra } });
+
+  it("a Pro learner's first Hector turn uses Hector's prompt, reads Pro once, and stores the mode on the call", async () => {
+    const res = await send(hector());
+    expect(res.status).toBe(200);
+    expect(modelMessages()[0]!.content).toContain("You are Hector, an AI tutor");
+    expect(h.proCalls).toBe(1);
+    expect(h.updates).toEqual([
+      {
+        table: "practice_calls",
+        values: { persona: "hector", hard_mode: false },
+        eqs: [
+          ["id", CALL],
+          ["user_id", "u1"],
+        ],
+      },
+    ]);
+  });
+
+  it("a non-Pro learner gets 402 pro_required before the quota or the model", async () => {
+    h.proState = "inactive";
+    const res = await send(hector());
+    expect(res.status).toBe(402);
+    expect(await res.json()).toEqual({ error: "pro_required" });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(h.charge).not.toHaveBeenCalled();
+    expect(h.updates).toHaveLength(0);
+  });
+
+  it("a call already running finishes after Pro lapses: no Pro read, the stored mode is used and nothing is rewritten", async () => {
+    h.proState = "inactive";
+    h.callExists = true;
+    h.call = { persona: "hector", hard_mode: false };
+    const res = await send(hector());
+    expect(res.status).toBe(200);
+    expect(h.proCalls).toBe(0);
+    expect(modelMessages()[0]!.content).toContain("You are Hector, an AI tutor");
+    expect(h.updates).toHaveLength(0);
+  });
+
+  it("hard mode on the last stage adds the hard-mode paragraph and is stored; it is refused anywhere else", async () => {
+    const ok = await send(hector("hard_moments", { hardMode: true }));
+    expect(ok.status).toBe(200);
+    expect(modelMessages()[0]!.content).toContain("Hard mode");
+    expect(h.updates[0]!.values).toEqual({ persona: "hector", hard_mode: true });
+    fetchMock.mockClear();
+    const bad = await send(hector("conversation", { hardMode: true }));
+    expect(bad.status).toBe(400);
+    expect(await bad.json()).toEqual({ error: "invalid_mode" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("an Alphonso run (no persona) is unchanged: no Pro read, nothing stored, Alphonso's prompt", async () => {
+    const res = await send(rehearsalBody());
+    expect(res.status).toBe(200);
+    expect(h.proCalls).toBe(0);
+    expect(h.updates).toHaveLength(0);
+    expect(modelMessages()[0]!.content).not.toContain("Hector");
   });
 });

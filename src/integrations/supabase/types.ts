@@ -1767,10 +1767,12 @@ export type Database = {
           course: string;
           english_replies: number;
           finished_at: string | null;
+          hard_mode: boolean;
           id: string;
           item_key: string;
           kind: string;
           last_reply_at: string;
+          persona: string;
           recap_at: string | null;
           recap_claimed_at: string | null;
           replies: number;
@@ -1784,10 +1786,12 @@ export type Database = {
           course: string;
           english_replies?: number;
           finished_at?: string | null;
+          hard_mode?: boolean;
           id: string;
           item_key: string;
           kind: string;
           last_reply_at?: string;
+          persona?: string;
           recap_at?: string | null;
           recap_claimed_at?: string | null;
           replies?: number;
@@ -1801,10 +1805,12 @@ export type Database = {
           course?: string;
           english_replies?: number;
           finished_at?: string | null;
+          hard_mode?: boolean;
           id?: string;
           item_key?: string;
           kind?: string;
           last_reply_at?: string;
+          persona?: string;
           recap_at?: string | null;
           recap_claimed_at?: string | null;
           replies?: number;
@@ -2026,10 +2032,12 @@ export type Database = {
         Row: {
           corrections: string[];
           finished_at: string;
+          hard_mode: boolean;
           id: string;
           key_phrases_total: number | null;
           key_phrases_used: number | null;
           moments_shown: string[];
+          persona: string;
           practice_call_id: string | null;
           rehearsal_id: string;
           speaking_english: number | null;
@@ -2042,10 +2050,12 @@ export type Database = {
         Insert: {
           corrections?: string[];
           finished_at?: string;
+          hard_mode?: boolean;
           id?: string;
           key_phrases_total?: number | null;
           key_phrases_used?: number | null;
           moments_shown?: string[];
+          persona?: string;
           practice_call_id?: string | null;
           rehearsal_id: string;
           speaking_english?: number | null;
@@ -2058,10 +2068,12 @@ export type Database = {
         Update: {
           corrections?: string[];
           finished_at?: string;
+          hard_mode?: boolean;
           id?: string;
           key_phrases_total?: number | null;
           key_phrases_used?: number | null;
           moments_shown?: string[];
+          persona?: string;
           practice_call_id?: string | null;
           rehearsal_id?: string;
           speaking_english?: number | null;
