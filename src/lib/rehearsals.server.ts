@@ -2,6 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Course } from "@/data/course-meta";
 import { filterModelOutputs, makeBlockedTermCheck } from "./ai-safety";
 import { llmChatCompletion } from "./llm-chat.server";
+import { readLearnerTimeZone } from "./learner-time-zone.server";
+import { localDay } from "./local-day";
 import {
   buildBriefPrompt,
   briefStrings,
@@ -83,6 +85,29 @@ export async function hasUsedFreeRehearsal(db: Db, userId: string): Promise<bool
   // A failed read is not "unused": it would hand out a second free rehearsal on an outage.
   if (error) throw new Error("rehearsal_free_used read failed");
   return data !== null;
+}
+
+/**
+ * Ends the learner's ACTIVE rehearsals that ran out of time (7 days after the event date by the learner's own calendar
+ * day, or 30 days after the last activity when undated), with outcome "none" and no memory line. It runs before the
+ * reads that decide what is active (the plan, creating one, the chat, the path), so a rehearsal that timed out
+ * neither shows nor blocks a new one. Ended history stays readable. Never throws: a failure leaves the rehearsal as it
+ * was, and the daily database job closes it later (close_stale_rehearsals, 20261130100000).
+ */
+export async function closeStaleRehearsals(
+  db: Db,
+  userId: string,
+  timeZone?: string | null,
+): Promise<void> {
+  try {
+    const zone = timeZone === undefined ? await readLearnerTimeZone(db, userId) : timeZone;
+    await db.rpc("close_stale_rehearsals", {
+      _user_id: userId,
+      _today: localDay(Date.now(), zone),
+    });
+  } catch {
+    // Left as it was.
+  }
 }
 
 export async function loadActiveRehearsal(
@@ -178,6 +203,7 @@ async function loadSummaryStats(
 
 /** The state the clients render: the active rehearsal, the closed ones, and whether the free one is still there. */
 export async function loadRehearsalState(db: Db, userId: string, course: Course) {
+  await closeStaleRehearsals(db, userId);
   const [active, history, used] = await Promise.all([
     loadActiveRehearsal(db, userId, course),
     db

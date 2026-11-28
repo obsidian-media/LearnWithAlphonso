@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { getCourse, type Course } from "@/data/courses";
 
-vi.mock("@/lib/rehearsals-flag", () => ({ rehearsalsEnabled: () => false }));
+vi.mock("@/lib/rehearsals-flag", () => ({
+  rehearsalsEnabled: () => false,
+  rehearsalsEnabledFor: async () => false,
+}));
 
 const { loadPathData } = await import("./learning-path.server");
 const { buildLearningPath } = await import("./learning-path-data");

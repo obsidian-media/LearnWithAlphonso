@@ -39,6 +39,19 @@ Turn it back on with `enabled = true`. The web server caches the switches for 30
 
 With `ai` off, a correct translation that is not in a question's curated answer list is marked wrong, because the AI grader that would have accepted it is not consulted. That is the cost of the switch; it is not a bug.
 
+### Rehearsals: the global switch and one account
+
+`REHEARSALS_ENABLED` (a Vercel environment variable, on only when it is exactly `true`) is the global kill switch. On top of it, one account can be switched off with `public.set_rehearsals_off` (migration `20261130100000`). The table behind it, `public.rehearsals_off`, is service role only, so a client can never turn itself back on. Off for the account wins over on for everyone: `/api/rehearsal` (every verb), the rehearsal mode of `/api/chat`, `features.rehearsals` in `/api/app-config` (for a caller that sends its token) and the path's pinned rehearsal all refuse for it.
+
+Turn one account off, or back on (SQL editor, or any service-role connection; the reason is required and goes into the action record):
+
+```sql
+SELECT public.set_rehearsals_off('<user uuid>', true,  'why', '<your staff user uuid, optional>');
+SELECT public.set_rehearsals_off('<user uuid>', false, 'why', '<your staff user uuid, optional>');
+```
+
+It returns `true` when something changed. Find the id with the console's learner search. A rehearsal ends by itself with outcome `none` 7 days after its event date, or 30 days after its last activity when it has no date: when the learner's rehearsals are read or created, and once a day for everyone (`rehearsals-close-stale`). The counts of rehearsals started, stages finished, outcomes tapped and paywalls shown are on the System health page (no account, no text).
+
 ## Scheduled maintenance
 
 `pg_cron` job `maintenance-sweep` (`*/15 * * * *`, active; 96 runs, all `succeeded`, in the 24 hours before 2026-11-22) runs `public.run_maintenance_sweep()` every 15 minutes. It is the only `pg_cron` job. It:

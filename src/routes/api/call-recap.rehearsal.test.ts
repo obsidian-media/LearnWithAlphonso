@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { REHEARSAL_FINISH_MIN_REPLIES } from "@/lib/practice-calls.server";
 
 /**
  * The recap of a REHEARSAL call also writes the run's memory (rehearsal_runs), in the same finish. The learner's own
@@ -14,6 +15,13 @@ const h = vi.hoisted(() => ({
   brief: null as unknown,
   claim: true,
   finishResult: 1,
+  usage: [] as { event: string; detail: unknown; userId: unknown }[],
+}));
+vi.mock("@/lib/ops-events.server", () => ({
+  OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS: 500,
+  recordOpsEvent: async (event: string, detail: unknown, userId: unknown) => {
+    h.usage.push({ event, detail, userId });
+  },
 }));
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest: h.authorize }));
 vi.mock("@/lib/llm-chat-model.server", () => ({
@@ -96,6 +104,7 @@ const finishRpc = () => h.rpcs.find((r) => r.fn === "finish_rehearsal_recap");
 beforeEach(() => {
   vi.clearAllMocks();
   h.rpcs = [];
+  h.usage = [];
   h.claim = true;
   h.finishResult = 1;
   h.callRow = {
@@ -240,5 +249,46 @@ describe("other calls are untouched", () => {
     await call();
     expect(h.rpcs.map((r) => r.fn)).toEqual(["claim_call_recap", "finish_call_recap"]);
     expect(h.generate.mock.calls[0]![0]).not.toHaveProperty("rehearsalLabels");
+  });
+});
+
+describe("the finish floor is one number", () => {
+  it("the database is told the floor the server checked with, never a second copy", async () => {
+    await call();
+    expect(finishRpc()!.args._min_replies).toBe(REHEARSAL_FINISH_MIN_REPLIES);
+  });
+
+  it("a call exactly at the floor is a run; one under it is not (both sides of the same number)", async () => {
+    h.callRow = { ...(h.callRow as object), replies: REHEARSAL_FINISH_MIN_REPLIES };
+    await call();
+    expect(finishRpc()).toBeDefined();
+    h.rpcs = [];
+    h.callRow = { ...(h.callRow as object), replies: REHEARSAL_FINISH_MIN_REPLIES - 1 };
+    await call();
+    expect(finishRpc()).toBeUndefined();
+  });
+});
+
+describe("usage: a finished stage counts once, with its stage and nothing else", () => {
+  it("counts the stage of a run that was written", async () => {
+    await call();
+    expect(h.usage).toEqual([
+      { event: "rehearsal_stage_finished", detail: { stage: "conversation" }, userId: null },
+    ]);
+    expect(JSON.stringify(h.usage)).not.toMatch(/salary|50k/);
+  });
+
+  it("counts nothing when the database refused the run, the claim was held, or the call is not a rehearsal's", async () => {
+    h.finishResult = -2;
+    await call();
+    h.finishResult = -1;
+    await call();
+    h.finishResult = 1;
+    h.claim = false;
+    await call();
+    h.claim = true;
+    h.callRow = { ...(h.callRow as object), kind: "scenario", item_key: "coffee" };
+    await call();
+    expect(h.usage).toEqual([]);
   });
 });

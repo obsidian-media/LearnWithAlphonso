@@ -7,7 +7,21 @@
  *
  * An event not listed here (a new emitter nobody configured yet) uses UNLISTED so it is still seen.
  */
+/** The usage counts of Rehearsals; the same names as REHEARSAL_USAGE_EVENTS (a test pins the two). */
+export const REHEARSAL_USAGE_EVENT_NAMES = [
+  "rehearsal_created",
+  "rehearsal_stage_finished",
+  "rehearsal_outcome",
+  "rehearsal_paywall",
+] as const;
+
 export type OpsThreshold = { amberAt: number; redAt: number; alertPerHour: number };
+
+const USAGE_ONLY: OpsThreshold = {
+  amberAt: Number.MAX_SAFE_INTEGER,
+  redAt: Number.MAX_SAFE_INTEGER,
+  alertPerHour: Number.MAX_SAFE_INTEGER,
+};
 
 export const OPS_EVENT_THRESHOLDS: Record<string, OpsThreshold> = {
   // A lesson saved but its hearts could not be settled: free misses and a 503 for the app. Never expected.
@@ -22,6 +36,9 @@ export const OPS_EVENT_THRESHOLDS: Record<string, OpsThreshold> = {
   hearts_settlement_shadow_stale_pro: { amberAt: 10, redAt: 100, alertPerHour: 50 },
   // A push that could not be delivered to a device (not a dead token): APNs or FCM refused or did not answer.
   push_send_failed: { amberAt: 5, redAt: 25, alertPerHour: 20 },
+  // Rehearsals usage counts (src/lib/rehearsal-usage.server.ts). These are COUNTS, not failures: the thresholds are out of
+  // reach on purpose, so they always read green and never email the owner, and the page shows how many happened.
+  ...Object.fromEntries(REHEARSAL_USAGE_EVENT_NAMES.map((e) => [e, USAGE_ONLY] as const)),
 };
 
 /**
@@ -35,6 +52,10 @@ export const OPS_EVENT_LABELS: Record<string, string> = {
   publish_cleanup_failed: "Draft left public after a failed publish",
   hearts_settlement_shadow_stale_pro: "Stale Pro answer at settlement",
   push_send_failed: "Push delivery",
+  rehearsal_created: "Rehearsals started (count)",
+  rehearsal_stage_finished: "Rehearsal stages finished (count)",
+  rehearsal_outcome: "Rehearsal outcomes tapped (count)",
+  rehearsal_paywall: "Rehearsal paywall shown (count)",
 };
 
 /** A readable label for an event: the table above, else the name with spaces ("some_new_event" to "Some new event"). */

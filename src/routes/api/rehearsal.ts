@@ -9,8 +9,9 @@ import {
   isRehearsalId,
   validateIntake,
   type Intake,
+  type OutcomeChoice,
 } from "@/lib/rehearsal-rules";
-import { rehearsalsEnabled } from "@/lib/rehearsals-flag";
+import { rehearsalsEnabled, rehearsalsEnabledFor } from "@/lib/rehearsals-flag";
 import { timedRoute } from "@/lib/stage-timer.server";
 
 /**
@@ -34,6 +35,10 @@ type RpcError = { message?: string; code?: string } | null;
 const isFreeUsed = (e: RpcError) =>
   e?.code === "P0001" && /rehearsal_free_used/.test(e.message ?? "");
 const isNotFound = (e: RpcError) => e?.code === "P0002";
+const recordPaywall = async (reason: "free_used") => {
+  const { recordRehearsalUsage } = await import("@/lib/rehearsal-usage.server");
+  await recordRehearsalUsage("rehearsal_paywall", { reason });
+};
 const isActiveExists = (e: RpcError) => e?.code === "23505";
 
 async function handlePost(
@@ -58,6 +63,8 @@ async function handlePost(
     action !== "outcome"
   )
     return bad("invalid_action");
+  // Everything but cancel and delete needs rehearsals on globally (before any auth or read).
+  if (action !== "cancel" && action !== "delete" && !rehearsalsEnabled()) return NOT_ENABLED();
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const admin = supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient;
@@ -67,6 +74,7 @@ async function handlePost(
     const { verifyAuth } = await import("@/lib/ai-quota.server");
     const auth = await timer.time("auth", () => verifyAuth(request));
     if (!auth.ok) return noStoreJson({ error: auth.message }, { status: auth.status });
+    if (!(await rehearsalsEnabledFor(admin, auth.userId))) return NOT_ENABLED();
     if (!isRehearsalId(body.id)) return bad("invalid_id");
     const server = await import("@/lib/rehearsals.server");
     let row: Awaited<ReturnType<typeof server.loadRehearsalById>>;
@@ -107,6 +115,8 @@ async function handlePost(
       return noStoreJson({ error: "closed" }, { status: 409 });
     if (isNotFound(error)) return noStoreJson({ error: "not_found" }, { status: 404 });
     if (error) return noStoreJson({ error: "failed" }, { status: 500 });
+    const { recordRehearsalUsage } = await import("@/lib/rehearsal-usage.server");
+    await recordRehearsalUsage("rehearsal_outcome", { choice: body.choice as OutcomeChoice });
     return noStoreJson({ rehearsal: server.toRehearsal(data as never) });
   }
 
@@ -115,6 +125,7 @@ async function handlePost(
     const { verifyAuth } = await import("@/lib/ai-quota.server");
     const auth = await timer.time("auth", () => verifyAuth(request));
     if (!auth.ok) return noStoreJson({ error: auth.message }, { status: auth.status });
+    // No switch check here: a learner can always cancel or delete their own rehearsal, whatever the switches say.
     if (!isRehearsalId(body.id)) return bad("invalid_id");
     if (action === "cancel") {
       const { data, error } = await admin.rpc("cancel_rehearsal", {
@@ -153,6 +164,7 @@ async function handlePost(
   );
   if (!access.ok) return access.response;
   const { userId } = access;
+  if (!(await rehearsalsEnabledFor(admin, userId))) return NOT_ENABLED();
 
   if (action === "adjust" && !isRehearsalId(body.id)) return bad("invalid_id");
   const checked = validateIntake(body);
@@ -182,9 +194,16 @@ async function handlePost(
       decision = "retry";
     }
     if (decision === "retry") return noStoreJson({ error: "retry" }, { status: 503 });
-    if (decision === "paywall") return noStoreJson({ error: "paywall" }, { status: 402 });
+    if (decision === "paywall") {
+      await recordPaywall("free_used");
+      return noStoreJson({ error: "paywall" }, { status: 402 });
+    }
+    // A rehearsal that ran out of time ends first, so it neither blocks this one nor counts as active.
+    await server.closeStaleRehearsals(admin, userId);
     if (await server.loadActiveRehearsal(admin, userId, intake.course))
       return noStoreJson({ error: "active_exists" }, { status: 409 });
+  } else {
+    await server.closeStaleRehearsals(admin, userId);
   }
 
   const refused = await access.chargeQuota?.();
@@ -220,12 +239,19 @@ async function handlePost(
           _worries: intake.worries,
           _brief: brief,
         });
-  if (isFreeUsed(error)) return noStoreJson({ error: "paywall" }, { status: 402 });
+  if (isFreeUsed(error)) {
+    await recordPaywall("free_used");
+    return noStoreJson({ error: "paywall" }, { status: 402 });
+  }
   if (isActiveExists(error)) return noStoreJson({ error: "active_exists" }, { status: 409 });
   if (isNotFound(error)) return noStoreJson({ error: "not_found" }, { status: 404 });
   if (error) {
     console.error(JSON.stringify({ event: "rehearsal_write_failed", action }));
     return noStoreJson({ error: "failed" }, { status: 500 });
+  }
+  if (action === "create") {
+    const { recordRehearsalUsage } = await import("@/lib/rehearsal-usage.server");
+    await recordRehearsalUsage("rehearsal_created", { source: "intake" });
   }
   return noStoreJson({ rehearsal: server.toRehearsal(data as never) });
 }
@@ -235,29 +261,29 @@ export const Route = createFileRoute("/api/rehearsal")({
     handlers: {
       GET: ({ request }) =>
         timedRoute("rehearsal-get", async (timer) => {
-          if (!rehearsalsEnabled()) return NOT_ENABLED();
           const course = new URL(request.url).searchParams.get("course");
           if (!course || !isCourse(course)) return bad("invalid_course");
           const { verifyAuth } = await import("@/lib/ai-quota.server");
           const auth = await timer.time("auth", () => verifyAuth(request));
           if (!auth.ok) return noStoreJson({ error: auth.message }, { status: auth.status });
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          // Reading is always allowed, so a learner can see (and then delete) what they have even when rehearsals are off
+          // for them or for everyone. When off, nothing new is offered: the free rehearsal is not available.
+          const on = await rehearsalsEnabledFor(supabaseAdmin, auth.userId);
           const { loadRehearsalState } = await import("@/lib/rehearsals.server");
           try {
-            return noStoreJson(
-              await loadRehearsalState(
-                supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient,
-                auth.userId,
-                course as Course,
-              ),
+            const state = await loadRehearsalState(
+              supabaseAdmin as unknown as import("@supabase/supabase-js").SupabaseClient,
+              auth.userId,
+              course as Course,
             );
+            return noStoreJson(on ? state : { ...state, freeAvailable: false });
           } catch {
             return noStoreJson({ error: "failed" }, { status: 500 });
           }
         }),
       POST: ({ request }) =>
         timedRoute("rehearsal", async (timer) => {
-          if (!rehearsalsEnabled()) return NOT_ENABLED();
           return handlePost(request, timer);
         }),
     },

@@ -12,8 +12,15 @@ const h = vi.hoisted(() => ({
   charge: vi.fn(),
   rehearsal: null as Row | null,
   runs: [] as Row[],
-  /** ids of the practice_calls rows this rehearsal already has */
-  calls: [] as { id: string }[],
+  /** The learner's level in language_progress, and a failed read of it. */
+  level: null as string | null,
+  /** Rehearsals switched OFF for this account. */
+  off: false,
+  offReadError: false,
+  /** The practice_calls rows asked about, and whether the one named already exists. */
+  callExists: false,
+  usage: [] as { event: string; detail: unknown; userId: unknown }[],
+  proState: "active" as "active" | "inactive" | "unavailable",
   rpcs: [] as { fn: string; args: Record<string, unknown> }[],
   reads: [] as { table: string; eqs: [string, unknown][] }[],
 }));
@@ -41,7 +48,15 @@ vi.mock("@/integrations/supabase/client.server", () => ({
           const ok = eqs.some(([c, v]) => c === "rehearsal_id" && v === REHEARSAL);
           return { data: ok ? h.runs : [], error: null };
         }
-        if (table === "practice_calls") return { data: h.calls, error: null };
+        if (table === "practice_calls")
+          return { data: h.callExists ? { id: CALL } : null, error: null };
+        if (table === "rehearsals_off")
+          return {
+            data: h.off ? { user_id: "u1" } : null,
+            error: h.offReadError ? { message: "down" } : null,
+          };
+        if (table === "language_progress")
+          return { data: h.level ? { cefr_level: h.level } : null, error: null };
         return { data: [], error: null }; // tutor_memory etc.
       };
       for (const m of ["select", "order", "limit", "like"]) q[m] = () => q;
@@ -59,6 +74,12 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 vi.mock("@/lib/revenuecat-entitlement", () => ({
   revenueCatConfigFromEnv: () => ({ secretApiKey: "sk" }),
   getProEntitlementStatus: async () => "active",
+}));
+vi.mock("@/lib/ops-events.server", () => ({
+  OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS: 500,
+  recordOpsEvent: async (event: string, detail: unknown, userId: unknown) => {
+    h.usage.push({ event, detail, userId });
+  },
 }));
 
 const { Route } = await import("./chat");
@@ -108,7 +129,11 @@ beforeEach(() => {
   process.env.REHEARSALS_ENABLED = "true";
   h.rehearsal = row();
   h.runs = [];
-  h.calls = [];
+  h.level = null;
+  h.off = false;
+  h.offReadError = false;
+  h.callExists = false;
+  h.usage = [];
   h.rpcs = [];
   h.reads = [];
   h.authorize.mockResolvedValue({ ok: true, userId: "u1", supabase: {}, chargeQuota: h.charge });
@@ -184,30 +209,49 @@ describe("a rehearsal's chat request is checked before anything is spent", () =>
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("the free rehearsal's 13th run is 402 free_runs_used, before the model or the quota", async () => {
+  const finishedRuns = (n: number, callIds: Record<number, string> = {}) =>
+    Array.from({ length: n }, (_, i) => ({
+      practice_call_id: callIds[i] ?? `other-${i}`,
+      stage: "warmup",
+      finished_at: `2026-11-26T10:${String(i).padStart(2, "0")}:00Z`,
+      moments_shown: [],
+      went_well: [],
+      corrections: [],
+    }));
+
+  it("the free rehearsal's 13th run is 402 free_runs_used, before the model or the quota, and counts as a paywall shown", async () => {
     h.rehearsal = row({ free: true });
-    h.calls = Array.from({ length: 12 }, (_, i) => ({ id: `other-${i}` }));
+    h.runs = finishedRuns(12);
     const res = await send(rehearsalBody());
     expect(res.status).toBe(402);
     expect(await res.json()).toMatchObject({ error: "free_runs_used" });
     expect(fetchMock).not.toHaveBeenCalled();
     expect(h.charge).not.toHaveBeenCalled();
+    expect(h.usage).toEqual([
+      { event: "rehearsal_paywall", detail: { reason: "free_runs" }, userId: null },
+    ]);
   });
 
-  it("the free rehearsal's 12th run, and a reply inside an existing run, are allowed", async () => {
+  it("the free rehearsal's 12th run is allowed (11 are finished), and so is a call that is one of the 12", async () => {
     h.rehearsal = row({ free: true });
-    h.calls = Array.from({ length: 11 }, (_, i) => ({ id: `other-${i}` }));
+    h.runs = finishedRuns(11);
     expect((await send(rehearsalBody())).status).toBe(200);
-    h.calls = [...Array.from({ length: 11 }, (_, i) => ({ id: `other-${i}` })), { id: CALL }];
+    h.runs = finishedRuns(12, { 0: CALL });
     expect((await send(rehearsalBody())).status).toBe(200);
-    h.calls = Array.from({ length: 12 }, (_, i) => ({ id: `other-${i}` }));
-    h.calls[0] = { id: CALL }; // this call is one of the 12: continuing it is not a 13th run
+  });
+
+  it("only FINISHED runs use one up: any number of calls abandoned under the finish rule leave the 12 intact", async () => {
+    h.rehearsal = row({ free: true });
+    // 11 finished runs; the practice_calls table may hold any number of other rows (abandoned calls), which are not read.
+    h.runs = finishedRuns(11);
+    h.callExists = true;
     expect((await send(rehearsalBody())).status).toBe(200);
+    expect(h.reads.some((r) => r.table === "practice_calls")).toBe(false);
   });
 
   it("a Pro rehearsal has no run cap of its own", async () => {
     h.rehearsal = row({ free: false });
-    h.calls = Array.from({ length: 40 }, (_, i) => ({ id: `other-${i}` }));
+    h.runs = finishedRuns(40);
     expect((await send(rehearsalBody())).status).toBe(200);
   });
 
@@ -327,5 +371,104 @@ describe("the other requests are unchanged", () => {
     expect(
       (await send({ rehearsal: "nope", messages: [{ role: "user", content: "x" }] })).status,
     ).toBe(400);
+  });
+});
+
+describe("the per-account switch", () => {
+  it("an account switched off is 404 not_enabled: no rehearsal read, no quota, no model", async () => {
+    h.off = true;
+    const res = await send(rehearsalBody());
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: "not_enabled" });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(h.charge).not.toHaveBeenCalled();
+    expect(h.reads.some((r) => r.table === "rehearsals")).toBe(false);
+  });
+
+  it("a failed read of the switch fails closed", async () => {
+    h.offReadError = true;
+    expect((await send(rehearsalBody())).status).toBe(404);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("another account is unaffected", async () => {
+    h.off = false;
+    expect((await send(rehearsalBody())).status).toBe(200);
+  });
+
+  it("an account switched off still chats normally in the ordinary (non-rehearsal) modes", async () => {
+    h.off = true;
+    const res = await send({
+      systemPrompt: scenarioPrompt("coffee", "en"),
+      callId: CALL,
+      messages: [{ role: "user", content: "hi" }],
+    });
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("a rehearsal that ran out of time", () => {
+  const AT = Date.parse("2026-12-10T12:00:00Z");
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(AT);
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("a dated one 7 days after its event is 409 closed, before any quota or model call", async () => {
+    h.rehearsal = row({ event_date: "2026-12-01", created_at: "2026-11-20T10:00:00Z" });
+    const res = await send(rehearsalBody());
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ error: "rehearsal_closed" });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(h.charge).not.toHaveBeenCalled();
+  });
+
+  it("a dated one inside its window still works", async () => {
+    h.rehearsal = row({ event_date: "2026-12-08", created_at: "2026-11-20T10:00:00Z" });
+    expect((await send(rehearsalBody())).status).toBe(200);
+  });
+
+  it("an undated one with no run for 30 days is closed; a recent finished run keeps it open", async () => {
+    h.rehearsal = row({ event_date: null, created_at: "2026-10-01T10:00:00Z" });
+    expect((await send(rehearsalBody())).status).toBe(409);
+    h.runs = [
+      {
+        practice_call_id: "c",
+        stage: "warmup",
+        finished_at: "2026-12-05T10:00:00Z",
+        moments_shown: [],
+        went_well: [],
+        corrections: [],
+      },
+    ];
+    expect((await send(rehearsalBody())).status).toBe(200);
+  });
+});
+
+describe("the partner's level is the learner's own, read on the server", () => {
+  it("uses language_progress, whatever level the request claims", async () => {
+    h.level = "A2";
+    await send(rehearsalBody({ cefrLevel: "C1" }));
+    const a2 = modelMessages()[0]!.content;
+    h.level = "C1";
+    fetchMock.mockClear();
+    await send(rehearsalBody({ cefrLevel: "A1" }));
+    const c1 = modelMessages()[0]!.content;
+    expect(a2).not.toBe(c1);
+    expect(a2).toContain(REHEARSAL_TEMPLATES.en.level("A2"));
+    expect(c1).toContain(REHEARSAL_TEMPLATES.en.level("C1"));
+  });
+
+  it("a learner with no progress row is A1, not the request's level and not B1", async () => {
+    h.level = null;
+    await send(rehearsalBody({ cefrLevel: "C1" }));
+    expect(modelMessages()[0]!.content).toContain(REHEARSAL_TEMPLATES.en.level("A1"));
+  });
+
+  it("C2 is spoken to as C1", async () => {
+    h.level = "C2";
+    await send(rehearsalBody());
+    expect(modelMessages()[0]!.content).toContain(REHEARSAL_TEMPLATES.en.level("C1"));
   });
 });

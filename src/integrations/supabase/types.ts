@@ -2121,6 +2121,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      rehearsals_off: {
+        Row: {
+          reason: string;
+          set_at: string;
+          set_by: string | null;
+          user_id: string;
+        };
+        Insert: {
+          reason: string;
+          set_at?: string;
+          set_by?: string | null;
+          user_id: string;
+        };
+        Update: {
+          reason?: string;
+          set_at?: string;
+          set_by?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       revenuecat_erasure_pending: {
         Row: {
           app_user_id: string;
@@ -3841,6 +3862,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      close_stale_rehearsals: { Args: { _today: string; _user_id: string }; Returns: number };
       complete_hector_call: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
       confirm_display_name: { Args: { _name: string }; Returns: string };
       consume_ai_quota: {
@@ -3962,6 +3984,7 @@ export type Database = {
           _call_id: string;
           _corrections: string[];
           _course: string;
+          _min_replies?: number;
           _mistakes: Json;
           _moments: string[];
           _save: boolean;
@@ -4421,6 +4444,10 @@ export type Database = {
       set_cefr_level: { Args: { _language: string; _level: string }; Returns: undefined };
       set_learner_time_zone: { Args: { _time_zone: string; _user_id: string }; Returns: string };
       set_my_time_zone: { Args: { _time_zone: string }; Returns: string };
+      set_rehearsals_off: {
+        Args: { _actor?: string; _off: boolean; _reason: string; _user_id: string };
+        Returns: boolean;
+      };
       settle_closed_weekly_challenges: { Args: Record<PropertyKey, never>; Returns: number };
       settle_lesson_hearts: {
         Args: {

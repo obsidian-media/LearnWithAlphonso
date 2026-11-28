@@ -14,6 +14,17 @@ const h = vi.hoisted(() => ({
   pro: vi.fn(),
   blocked: vi.fn(),
   rpcs: [] as { fn: string; args: Record<string, unknown> }[],
+  /** The timed-out-rehearsal closes (close_stale_rehearsals), kept apart so the write assertions stay about writes. */
+  closes: [] as Record<string, unknown>[],
+  /** Rehearsals switched OFF for this account (a row in rehearsals_off), and a failed read of that switch. */
+  off: false,
+  offReadError: false,
+  /** When true the close_stale_rehearsals call really ends the active rehearsal (the database does). */
+  clearActiveOnClose: false,
+  /** When true the close_stale_rehearsals call itself throws (the database is unreachable). */
+  closeThrows: false,
+  /** The usage counts written (ops_events). */
+  usage: [] as { event: string; detail: unknown; userId: unknown }[],
   rpcResult: null as { data: unknown; error: unknown } | null,
   /** What each table read returns. */
   active: null as unknown,
@@ -36,6 +47,12 @@ vi.mock("@/lib/llm-chat-model.server", () => ({
 }));
 vi.mock("@/lib/llm-chat.server", () => ({ llmChatCompletion: h.llm }));
 vi.mock("@/lib/call-recap.server", () => ({ proStateFor: h.pro }));
+vi.mock("@/lib/ops-events.server", () => ({
+  OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS: 500,
+  recordOpsEvent: async (event: string, detail: unknown, userId: unknown) => {
+    h.usage.push({ event, detail, userId });
+  },
+}));
 vi.mock("@/lib/ai-safety", () => ({
   makeBlockedTermCheck: () => async () => [],
   filterModelOutputs: async (t: string[]) => h.blocked(t),
@@ -59,6 +76,11 @@ vi.mock("@/integrations/supabase/client.server", () => {
         const ownerOk = eq("user_id") === undefined || eq("user_id") === row.user_id;
         return { data: idOk && ownerOk ? row : null, error: null };
       }
+      if (table === "rehearsals_off")
+        return {
+          data: h.off ? { user_id: "u1" } : null,
+          error: h.offReadError ? { message: "down" } : null,
+        };
       if (table === "rehearsal_free_used")
         return {
           data: h.freeUsed ? { user_id: "u1" } : null,
@@ -87,6 +109,12 @@ vi.mock("@/integrations/supabase/client.server", () => {
     supabaseAdmin: {
       from,
       rpc: async (fn: string, args: Record<string, unknown>) => {
+        if (fn === "close_stale_rehearsals") {
+          h.closes.push(args);
+          if (h.closeThrows) throw new Error("down");
+          if (h.clearActiveOnClose) h.active = null;
+          return { data: 0, error: null };
+        }
         h.rpcs.push({ fn, args });
         return h.rpcResult ?? { data: rowFor(args), error: null };
       },
@@ -152,6 +180,12 @@ beforeEach(() => {
   vi.clearAllMocks();
   process.env.REHEARSALS_ENABLED = "true";
   h.rpcs = [];
+  h.closes = [];
+  h.off = false;
+  h.offReadError = false;
+  h.clearActiveOnClose = false;
+  h.closeThrows = false;
+  h.usage = [];
   h.rpcResult = null;
   h.active = null;
   h.history = [];
@@ -414,19 +448,31 @@ describe("adjust, cancel and delete", () => {
 });
 
 describe("the REHEARSALS_ENABLED flag", () => {
-  it("is off by default: every verb is 404 and nothing is read or written", async () => {
+  it("is off by default: create, adjust and outcome are 404 and nothing is read or written", async () => {
     delete process.env.REHEARSALS_ENABLED;
     expect((await create()).status).toBe(404);
-    expect((await get("?course=en")).status).toBe(404);
-    expect((await post({ action: "delete", id: ID })).status).toBe(404);
+    expect((await post({ action: "adjust", id: ID })).status).toBe(404);
+    expect((await post({ action: "outcome", id: ID, choice: "well" })).status).toBe(404);
     expect(h.authorize).not.toHaveBeenCalled();
     expect(h.verify).not.toHaveBeenCalled();
     expect(h.rpcs).toEqual([]);
   });
 
+  it("with it off, a learner can still read what they have and delete or cancel it (never create)", async () => {
+    delete process.env.REHEARSALS_ENABLED;
+    h.active = rowFor({});
+    const res = await get("?course=en");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ active: { id: ID }, freeAvailable: false });
+    expect((await post({ action: "delete", id: ID })).status).toBe(200);
+    expect((await post({ action: "cancel", id: ID })).status).toBe(200);
+    expect(h.deletedTables).toContain("rehearsals");
+    expect(h.rpcs.map((r) => r.fn)).toEqual(["cancel_rehearsal"]);
+  });
+
   it("is on only when exactly 'true'", async () => {
     process.env.REHEARSALS_ENABLED = "1";
-    expect((await get("?course=en")).status).toBe(404);
+    expect((await create()).status).toBe(404);
   });
 });
 
@@ -641,5 +687,181 @@ describe("GET /api/rehearsal?course=", () => {
     expect((await get("?course=de")).status).toBe(400);
     h.verify.mockResolvedValue({ ok: false, status: 401, message: "Sign in" });
     expect((await get("?course=en")).status).toBe(401);
+  });
+});
+
+describe("the per-account switch", () => {
+  const everyVerb = () =>
+    [
+      ["create", () => create()],
+      [
+        "adjust",
+        () =>
+          post({
+            action: "adjust",
+            id: ID,
+            eventKind: "meeting",
+            course: "en",
+            counterpart: "a lead",
+          }),
+      ],
+      ["cancel", () => post({ action: "cancel", id: ID })],
+      ["delete", () => post({ action: "delete", id: ID })],
+      ["outcome", () => post({ action: "outcome", id: ID, choice: "well" })],
+      ["GET", () => get("?course=en")],
+    ] as const;
+
+  it.each(["create", "adjust", "outcome"] as const)(
+    "%s is 404 not_enabled for an account switched off, and spends and writes nothing",
+    async (verb) => {
+      h.off = true;
+      h.active = rowFor({});
+      const res = await everyVerb().find(([v]) => v === verb)![1]();
+      expect(res.status).toBe(404);
+      expect(await res.json()).toEqual({ error: "not_enabled" });
+      expect(h.charge).not.toHaveBeenCalled();
+      expect(h.llm).not.toHaveBeenCalled();
+      expect(h.rpcs).toEqual([]);
+      expect(h.deleted).toEqual([]);
+      expect(h.closes).toEqual([]);
+    },
+  );
+
+  it("every verb still works for an account that is not switched off, when another one is", async () => {
+    h.off = false;
+    h.active = rowFor({});
+    expect((await get("?course=en")).status).toBe(200);
+    h.active = null;
+    expect((await create()).status).toBe(200);
+  });
+
+  it("an account switched off can still read its rehearsals and history, and delete or cancel them", async () => {
+    h.off = true;
+    h.active = rowFor({});
+    h.history = [
+      { ...rowFor({}), id: OTHER_ID, status: "done", closed_at: "2026-11-01T00:00:00Z" },
+    ];
+    const res = await get("?course=en");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      active: { id: string };
+      history: unknown[];
+      freeAvailable: boolean;
+    };
+    expect(body.active.id).toBe(ID);
+    expect(body.history).toHaveLength(1);
+    expect(body.freeAvailable).toBe(false);
+    expect((await post({ action: "delete", id: ID })).status).toBe(200);
+    expect(h.deletedTables).toContain("rehearsals");
+    expect((await post({ action: "cancel", id: ID })).status).toBe(200);
+    expect(h.rpcs.map((r) => r.fn)).toEqual(["cancel_rehearsal"]);
+    expect(h.charge).not.toHaveBeenCalled();
+    expect(h.llm).not.toHaveBeenCalled();
+  });
+
+  it("a failed read of the switch fails closed for create, but never blocks reading or deleting", async () => {
+    h.offReadError = true;
+    expect((await create()).status).toBe(404);
+    expect((await get("?course=en")).status).toBe(200);
+    expect((await post({ action: "delete", id: ID })).status).toBe(200);
+    expect(h.charge).not.toHaveBeenCalled();
+  });
+});
+
+describe("rehearsals that ran out of time", () => {
+  it("reading the plan ends a timed-out one first, by the learner's own calendar day", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-12-01T22:30:00Z"));
+    try {
+      h.zone = "Pacific/Auckland"; // already 2026-12-02 there
+      await get("?course=en");
+      expect(h.closes).toEqual([{ _user_id: "u1", _today: "2026-12-02" }]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("with no stored zone the day is the UTC one", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-12-01T22:30:00Z"));
+    try {
+      await get("?course=en");
+      expect(h.closes).toEqual([{ _user_id: "u1", _today: "2026-12-01" }]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a rehearsal that timed out no longer blocks creating one (the close happens before the active check)", async () => {
+    h.active = { id: ID };
+    h.clearActiveOnClose = true;
+    expect((await create()).status).toBe(200);
+    expect(h.closes).toHaveLength(1);
+    expect(h.rpcs.map((r) => r.fn)).toEqual(["create_rehearsal"]);
+  });
+
+  it("an active one that has NOT timed out still blocks (409)", async () => {
+    h.active = { id: ID };
+    h.clearActiveOnClose = false;
+    expect((await create()).status).toBe(409);
+  });
+
+  it("a paywalled create does no closing and no writing", async () => {
+    h.freeUsed = true;
+    expect((await create()).status).toBe(402);
+    expect(h.closes).toEqual([]);
+  });
+
+  it("a failed close never fails the request: the plan is still read, the rehearsal left as it was", async () => {
+    h.closeThrows = true;
+    h.active = rowFor({});
+    const res = await get("?course=en");
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { active: { id: string } }).active.id).toBe(ID);
+    expect(h.closes).toHaveLength(1);
+  });
+});
+
+describe("usage counts (counts only, never text)", () => {
+  it("a created rehearsal counts once, from the intake, with no account and no text", async () => {
+    expect((await create({ counterpart: "my secret boss Maria", worries: "money" })).status).toBe(
+      200,
+    );
+    expect(h.usage).toEqual([
+      { event: "rehearsal_created", detail: { source: "intake" }, userId: null },
+    ]);
+    expect(JSON.stringify(h.usage)).not.toMatch(/Maria|money|boss/);
+  });
+
+  it("a refused create counts nothing as created; the paywall counts as shown", async () => {
+    h.freeUsed = true;
+    expect((await create()).status).toBe(402);
+    expect(h.usage).toEqual([
+      { event: "rehearsal_paywall", detail: { reason: "free_used" }, userId: null },
+    ]);
+  });
+
+  it("a 409 or a 503 counts nothing", async () => {
+    h.active = { id: ID };
+    await create();
+    h.active = null;
+    h.pro.mockResolvedValue("unavailable");
+    await create();
+    expect(h.usage).toEqual([]);
+  });
+
+  it("an outcome tap counts with its choice only", async () => {
+    h.active = rowFor({});
+    h.rpcResult = { data: { ...rowFor({}), status: "done" }, error: null };
+    expect((await post({ action: "outcome", id: ID, choice: "hard" })).status).toBe(200);
+    expect(h.usage).toEqual([
+      { event: "rehearsal_outcome", detail: { choice: "hard" }, userId: null },
+    ]);
+  });
+
+  it("a refused outcome (closed) counts nothing", async () => {
+    h.active = { ...rowFor({}), status: "done" };
+    expect((await post({ action: "outcome", id: ID, choice: "well" })).status).toBe(409);
+    expect(h.usage).toEqual([]);
   });
 });
