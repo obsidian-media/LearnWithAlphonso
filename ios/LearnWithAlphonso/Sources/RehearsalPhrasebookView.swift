@@ -224,8 +224,8 @@ struct RehearsalPhrasebookView: View {
         if voiceSession.failure == .aiConsentRequired { return nil }
         // Permission denied: say so under the row; a tap tries the permission request again, as on the other screens.
         if voiceSession.microphoneUnavailable { return VoiceCopy.microphoneOff }
-        return voiceSession.failure?.cardMessage()
-            ?? (voiceSession.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil)
+        if let message = voiceSession.failure?.cardMessage() { return message }
+        return voiceSession.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil
     }
 
     private func micTapped(index: Int) {
