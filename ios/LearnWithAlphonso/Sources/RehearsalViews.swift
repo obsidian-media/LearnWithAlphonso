@@ -791,10 +791,14 @@ struct RehearsalRunView: View {
             turns: conversation.turns, replyVerdict: replyVerdict, notice: notice,
             onPress: {
                 if ending { return }
+                var partnerWasSpeaking = false
+                if case .speaking = voice.phase { partnerWasSpeaking = true }
                 if voice.pressBegan() {
                     notice = nil
-                    // Hold to talk: the press is when the learner starts. In hands-free the first voice activity is (below).
-                    if !voice.isHandsFreeOn { replyLatency.learnerStarted(atMs: MonotonicClock.nowMs()) }
+                    // Hold to talk: the press is when the learner starts (a press over the partner's voice measures
+                    // nothing). In hands-free the first voice activity is (below).
+                    replyLatency.pressBegan(atMs: MonotonicClock.nowMs(), partnerWasSpeaking: partnerWasSpeaking,
+                                            handsFree: voice.isHandsFreeOn)
                 }
             },
             onEnd: { Task { await finishCall() } },
@@ -830,14 +834,15 @@ struct RehearsalRunView: View {
         .onChange(of: voice.handsFreeStatus) { _, new in
             if new == .listening { notice = nil }
             // Hands-free presses for the learner the moment listening opens; speech detected is when they start.
-            if new == .hearing { replyLatency.learnerStarted(atMs: MonotonicClock.nowMs()) }
+            if new == .hearing { replyLatency.voiceHeard(atMs: MonotonicClock.nowMs()) }
+            // Paused or switched off: what was being heard will not become a reply.
+            if new == .off { replyLatency.listeningStopped() }
+            if case .paused = new { replyLatency.listeningStopped() }
         }
-        // The partner's voice (the opening line or a reply) just finished playing: the learner's thinking time starts.
+        // The partner's voice finishing on its own starts the learner's thinking time; a press that never produces a
+        // capture (mic refused, recorder failed, a cancelled turn) throws its start away. The rules live in the Kit.
         .onChange(of: voice.phase) { old, new in
-            guard case .speaking = old else { return }
-            if case .speaking = new { return }
-            if case .failed = new { return }
-            replyLatency.partnerFinished(atMs: MonotonicClock.nowMs())
+            replyLatency.phaseChanged(from: old, to: new, atMs: MonotonicClock.nowMs())
         }
     }
 
@@ -883,13 +888,13 @@ struct RehearsalRunView: View {
     private func sendReply(_ text: String, confidence: Double?, generation: Int, client: AIConversationClient) async {
         do {
             conversation.turns.append(ChatMessage(role: "user", content: text))
-            // Transcribed and sent: only now does this reply's gap count.
-            replyLatency.replySent()
             voice.transcribed(generation)
             // The rehearsal's id and stage only: the server builds the prompt from the stored rehearsal.
             let chat = try await client.chatReply(
                 source: source, messages: source.sendableTurns(conversation), systemPrompt: nil, cefrLevel: cefrLevel,
                 course: nil, callId: callId)
+            // Transcribed and answered: only now does this reply's gap count (a failed chat drops it, below).
+            replyLatency.replySent()
             conversation.turns.append(ChatMessage(role: "assistant", content: chat.content))
             replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chat.verdict)
             do {
@@ -905,6 +910,7 @@ struct RehearsalRunView: View {
                 notice = "Got a reply, but couldn't play it back."
             }
         } catch {
+            replyLatency.clearPartnerClock()   // the chat failed: this reply's entry is dropped, and no partner voice follows
             let failure = TutorError.from(error)
             // The free rehearsal's runs are used up: the Pro sheet, with the learner's turn left where it was.
             if failure == .notEntitled { onPaywall() }

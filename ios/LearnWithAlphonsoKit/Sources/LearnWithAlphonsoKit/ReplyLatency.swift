@@ -38,7 +38,7 @@ public struct ReplyLatencyTracker: Equatable, Sendable {
 
     /// The learner's words were transcribed and sent: keep the gap, and close the clock until the partner speaks again.
     public mutating func replySent() {
-        defer { partnerDoneAtMs = nil; learnerStartedAtMs = nil }
+        defer { partnerDoneAtMs = nil; learnerStartedAtMs = nil; ignoreNextPartnerFinish = false }
         guard let done = partnerDoneAtMs, let started = learnerStartedAtMs else { return }
         recorded.append(started - done)
     }
@@ -50,6 +50,46 @@ public struct ReplyLatencyTracker: Equatable, Sendable {
     }
 
     public mutating func reset() { self = ReplyLatencyTracker() }
+
+    // MARK: - From the call screen
+
+    /// Set by a press that cut the partner off: the playback finish that press causes is not a natural end.
+    private var ignoreNextPartnerFinish = false
+
+    /// The learner pressed to talk (`pressBegan` returned true). `partnerWasSpeaking` is the voice phase just before the
+    /// press. A press over the partner's voice (barge-in) measures no gap and closes the clock, and the playback
+    /// stopping because of it must not start a new one; otherwise hold-to-talk starts the learner's clock here
+    /// (hands-free starts it at the first voice activity instead).
+    public mutating func pressBegan(atMs: Int, partnerWasSpeaking: Bool, handsFree: Bool) {
+        if partnerWasSpeaking {
+            clearPartnerClock()
+            ignoreNextPartnerFinish = true
+        } else if !handsFree {
+            learnerStarted(atMs: atMs)
+        }
+    }
+
+    /// Hands-free heard the learner's voice.
+    public mutating func voiceHeard(atMs: Int) { learnerStarted(atMs: atMs) }
+
+    /// Hands-free paused or switched off: whatever was being heard will not become a reply.
+    public mutating func listeningStopped() { attemptFailed() }
+
+    /// Feed every change of the voice phase. The partner's voice ending on its own starts the clock; a press that never
+    /// produces a capture (microphone refused, recorder failed, a cancelled or interrupted turn) throws its start away.
+    public mutating func phaseChanged(from old: VoicePhase, to new: VoicePhase, atMs: Int) {
+        if case .failed = new { attemptFailed(); return }
+        switch old {
+        case .speaking:
+            if case .speaking = new { return }
+            if ignoreNextPartnerFinish { ignoreNextPartnerFinish = false; return }
+            partnerFinished(atMs: atMs)
+        case .requestingPermission, .recording:
+            if new == .idle { attemptFailed() }
+        default:
+            break
+        }
+    }
 
     /// In the order they happened, each clamped to 0...maxMs, at most `maxEntries`.
     public var values: [Int] { Self.sanitize(recorded) }

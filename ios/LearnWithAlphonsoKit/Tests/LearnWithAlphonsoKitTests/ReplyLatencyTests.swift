@@ -101,6 +101,85 @@ final class ReplyLatencyTests: XCTestCase {
         XCTAssertEqual(t.values, [])
     }
 
+    // MARK: from the call screen
+
+    func testBargeInThenAFailedRecordingThenARetryRecordsNothingSpurious() {
+        var t = ReplyLatencyTracker()
+        t.partnerFinished(atMs: 0)                                     // the opener ended
+        t.learnerStarted(atMs: 1_000); t.replySent()                   // a normal first reply: 1000
+        t.partnerFinished(atMs: 5_000)                                 // Alphonso answered; the learner thinks
+        // The next partner reply starts playing and the learner presses over it.
+        t.pressBegan(atMs: 9_000, partnerWasSpeaking: true, handsFree: false)
+        // The press stops the playback: speaking -> requestingPermission. That is not a natural end.
+        t.phaseChanged(from: .speaking(generation: 2), to: .requestingPermission(generation: 3), atMs: 9_001)
+        // The recording fails to start, and the learner presses again.
+        t.phaseChanged(from: .requestingPermission(generation: 3), to: .failed(.network), atMs: 9_100)
+        t.pressBegan(atMs: 40_000, partnerWasSpeaking: false, handsFree: false)
+        t.replySent()
+        XCTAssertEqual(t.values, [1_000], "no gap for the barge-in reply, and none invented for the retry")
+    }
+
+    func testAPlaybackEndingOnItsOwnStartsTheClockAndAPressMeasuresIt() {
+        var t = ReplyLatencyTracker()
+        t.phaseChanged(from: .speaking(generation: 1), to: .idle, atMs: 2_000)
+        t.pressBegan(atMs: 3_500, partnerWasSpeaking: false, handsFree: false)
+        t.replySent()
+        XCTAssertEqual(t.values, [1_500])
+    }
+
+    func testInHandsFreeTheFirstVoiceActivityIsTheStartNotThePress() {
+        var t = ReplyLatencyTracker()
+        t.phaseChanged(from: .speaking(generation: 1), to: .idle, atMs: 1_000)
+        t.pressBegan(atMs: 1_010, partnerWasSpeaking: false, handsFree: true)   // the loop opens the mic
+        t.voiceHeard(atMs: 4_000)
+        t.voiceHeard(atMs: 4_500)
+        t.replySent()
+        XCTAssertEqual(t.values, [3_000])
+    }
+
+    func testAPressThatNeverProducesACaptureThrowsItsStartAway() {
+        // The microphone was refused, the recorder failed, or a turn was cancelled: the next attempt has its own start.
+        let endings: [VoicePhase] = [.failed(.network), .idle]
+        for ending in endings {
+            var t = ReplyLatencyTracker()
+            t.phaseChanged(from: .speaking(generation: 1), to: .idle, atMs: 0)
+            t.pressBegan(atMs: 500, partnerWasSpeaking: false, handsFree: false)
+            t.phaseChanged(from: .requestingPermission(generation: 2), to: ending, atMs: 600)
+            t.pressBegan(atMs: 7_000, partnerWasSpeaking: false, handsFree: false)
+            t.replySent()
+            XCTAssertEqual(t.values, [7_000], "measured from the retry's own press, not the stale one")
+        }
+    }
+
+    func testACancelledHandsFreeTurnOrAPauseThrowsTheHeardStartAway() {
+        var t = ReplyLatencyTracker()
+        t.phaseChanged(from: .speaking(generation: 1), to: .idle, atMs: 0)
+        t.voiceHeard(atMs: 800)
+        t.phaseChanged(from: .recording(generation: 2), to: .idle, atMs: 900)   // the turn was cancelled
+        t.voiceHeard(atMs: 6_000)
+        t.listeningStopped()                                                    // then paused
+        t.replySent()
+        XCTAssertEqual(t.values, [])
+    }
+
+    func testARecordingThatIsSubmittedKeepsItsStart() {
+        var t = ReplyLatencyTracker()
+        t.phaseChanged(from: .speaking(generation: 1), to: .idle, atMs: 0)
+        t.pressBegan(atMs: 700, partnerWasSpeaking: false, handsFree: false)
+        t.phaseChanged(from: .recording(generation: 2), to: .transcribing(generation: 2), atMs: 2_000)
+        t.replySent()
+        XCTAssertEqual(t.values, [700])
+    }
+
+    func testAFailedChatDropsTheEntry() {
+        // The call screen commits (replySent) only after the chat answered; on a failure it clears the clock instead.
+        var t = ReplyLatencyTracker()
+        t.partnerFinished(atMs: 0); t.learnerStarted(atMs: 900)
+        t.clearPartnerClock()
+        t.learnerStarted(atMs: 50_000); t.replySent()
+        XCTAssertEqual(t.values, [])
+    }
+
     func testTheMonotonicClockNeverGoesBackwards() {
         let a = MonotonicClock.nowMs()
         let b = MonotonicClock.nowMs()
