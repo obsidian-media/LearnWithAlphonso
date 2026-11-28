@@ -63,6 +63,10 @@ struct RehearsalPhrasebookView: View {
     /// The row whose attempt last ran, so the existing mic / upload / quota message sits under that phrase.
     @State private var errorRow: Int?
     @State private var showDisclosure = false
+    /// A short note under one row: the offline line, or "Tap Say it again" after the learner allows AI.
+    @State private var rowNote: [Int: String] = [:]
+    /// The row that needs the learner's consent, so "Tap Say it again" lands on it.
+    @State private var consentRow: Int?
 
     private var online: Bool { networkMonitor?.isConnected ?? true }
 
@@ -98,7 +102,9 @@ struct RehearsalPhrasebookView: View {
             try? await Task.sleep(nanoseconds: 350_000_000)
             titleFocused = true
         }
-        .aiDisclosureSheet(isPresented: $showDisclosure) {}
+        .aiDisclosureSheet(isPresented: $showDisclosure) {
+            if let row = consentRow { rowNote[row] = PhraseSayCopy.tapAgain }
+        }
         .onAppear {
             voiceSession.onCapture = { capture in await handle(capture) }
             voiceSession.appeared()
@@ -109,9 +115,16 @@ struct RehearsalPhrasebookView: View {
             voiceSession.onCapture = nil
             say.reset()
         }
-        // A mic that could not start (permission, recorder) never reaches onCapture: close the row's attempt here.
-        .onChange(of: voiceTrouble) { _, trouble in
-            if trouble, say.busyRow != nil, !voiceSession.isBusy { say.failed() }
+        // An interruption (a phone call, Siri) or a refused microphone never reaches onCapture: the Kit frees the row.
+        .onChange(of: voiceSession.phase) { _, phase in
+            say.voiceChanged(to: phase)
+        }
+        // The server says consent is missing: ask, instead of swallowing it. After allowing, the row says to tap again.
+        .onChange(of: voiceSession.failure) { _, failure in
+            if failure == .aiConsentRequired {
+                consentRow = errorRow
+                showDisclosure = true
+            }
         }
         // The recording stops itself at the shared cap, as on the other speaking screens.
         .task(id: voiceSession.isRecording) {
@@ -122,8 +135,8 @@ struct RehearsalPhrasebookView: View {
                 voiceSession.pressEnded()
             }
         }
-        .onChange(of: say.isRecording) { _, recording in
-            if recording { AccessibilityNotification.Announcement(PhraseSayCopy.listening).post() }
+        .onChange(of: voiceSession.isRecording) { _, recording in
+            if recording, say.isRecording { AccessibilityNotification.Announcement(PhraseSayCopy.listening).post() }
         }
         .onChange(of: say.results) { old, new in
             for (row, check) in new where old[row] != check {
@@ -132,9 +145,6 @@ struct RehearsalPhrasebookView: View {
         }
     }
 
-    private var voiceTrouble: Bool {
-        voiceSession.failure != nil || voiceSession.recorderStartFailed || voiceSession.microphoneUnavailable
-    }
 
     /// The row: "Hear" (the phrase and its meaning, one button) and "Say" (a microphone), with the outcome inline below.
     /// While one row is recording or being checked, the other rows' microphones and every Hear button are off.
@@ -167,12 +177,15 @@ struct RehearsalPhrasebookView: View {
 
                 micButton(row.text, index: index)
             }
-            if let line = say.status(row: index) {
+            if let line = say.status(row: index, voicePhase: voiceSession.phase) {
                 Text(line).dsText(.footnote).foregroundStyle(ds.inkSoft)
                     .accessibilityIdentifier("phraseSayStatus\(index)")
             }
             if errorRow == index, let message = visibleError {
                 Text(message).dsText(.footnote).foregroundStyle(ds.inkSoft)
+            }
+            if let note = rowNote[index] {
+                Text(note).dsText(.footnote).foregroundStyle(ds.inkSoft)
             }
         }
         .padding(AlphonsoDS.Space.s3)
@@ -182,7 +195,8 @@ struct RehearsalPhrasebookView: View {
     }
 
     private func micButton(_ phrase: String, index: Int) -> some View {
-        let recordingHere = say.isRecording && say.busyRow == index
+        // The stop icon, like "Listening...", waits for the engine to be recording (not the permission prompt).
+        let recordingHere = say.isRecording && say.busyRow == index && voiceSession.isRecording
         return Button { micTapped(index: index) } label: {
             Group {
                 if recordingHere {
@@ -196,7 +210,7 @@ struct RehearsalPhrasebookView: View {
             .background(Circle().fill(recordingHere ? ds.choice : ds.sunk))
         }
         .buttonStyle(.plain)
-        .disabled(!say.micEnabled(row: index) || voiceSession.microphoneUnavailable)
+        .disabled(!say.micEnabled(row: index))
         .accessibilityLabel(PhraseSayCopy.micLabel(phrase: phrase))
         .accessibilityValue(recordingHere ? PhraseSayCopy.listening : "")
         .accessibilityAddTraits(.isButton)
@@ -208,13 +222,20 @@ struct RehearsalPhrasebookView: View {
     /// The existing mic / upload / quota message. Neutral colour, never red.
     private var visibleError: String? {
         if voiceSession.failure == .aiConsentRequired { return nil }
+        // Permission denied: say so under the row; a tap tries the permission request again, as on the other screens.
+        if voiceSession.microphoneUnavailable { return VoiceCopy.microphoneOff }
         return voiceSession.failure?.cardMessage()
             ?? (voiceSession.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil)
     }
 
     private func micTapped(index: Int) {
         // Voice goes to Deepgram, so it needs the learner's AI consent: ask, never block the phrasebook.
-        guard aiConsent.isGranted else { showDisclosure = true; return }
+        rowNote[index] = nil
+        guard aiConsent.isGranted else { consentRow = index; showDisclosure = true; return }
+        // Transcribing needs a connection; the phrases can still be heard.
+        guard online else { if say.busyRow == nil { rowNote[index] = PhraseSayCopy.offline }; return }
+        // A tap while the permission prompt is up would stop a recording that has not started.
+        if case .requestingPermission = voiceSession.phase { return }
         switch say.micTapped(row: index) {
         case .startRecording:
             hearing?.cancel(); player.stop(); HectorFixSpeaker.shared.stop()

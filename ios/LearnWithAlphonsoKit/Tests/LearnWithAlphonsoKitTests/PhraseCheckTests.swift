@@ -52,4 +52,12 @@ final class PhraseCheckTests: XCTestCase {
         XCTAssertEqual(PhraseChecker.heardWords(from: raw), [HeardWord(word: "good", confidence: 0.9)])
         XCTAssertNil(PhraseChecker.heardWords(from: nil))
     }
+
+    func testABooleanConfidenceIsNotANumber() throws {
+        // Parsed from JSON the way /api/stt's body is: true and false bridge to numbers but are not numbers.
+        let json = #"[{"word":"a","confidence":true},{"word":"b","confidence":false},{"word":"c","confidence":1},{"word":"d","confidence":0.5}]"#
+        let raw = try JSONSerialization.jsonObject(with: Data(json.utf8))
+        XCTAssertEqual(PhraseChecker.heardWords(from: raw),
+                       [HeardWord(word: "c", confidence: 1), HeardWord(word: "d", confidence: 0.5)])
+    }
 }

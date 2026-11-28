@@ -106,6 +106,52 @@ final class PhraseSayTests: XCTestCase {
         XCTAssertNil(s.resultLine(row: 1))
     }
 
+    func testAnInterruptionFreesTheRowsInsteadOfLeavingThemDisabled() {
+        // A phone call or Siri sends the engine to idle without a capture.
+        var s = PhraseSayState()
+        _ = s.micTapped(row: 1)
+        XCTAssertFalse(s.hearEnabled)
+        s.voiceChanged(to: .idle)
+        XCTAssertNil(s.busyRow)
+        XCTAssertTrue(s.hearEnabled)
+        XCTAssertTrue(s.micEnabled(row: 0))
+        XCTAssertNil(s.results[1])
+        // A refused microphone ends in failed, the same way, also while checking.
+        _ = s.micTapped(row: 0)
+        _ = s.micTapped(row: 0)
+        XCTAssertTrue(s.isChecking)
+        s.voiceChanged(to: .failed(.network))
+        XCTAssertNil(s.busyRow)
+    }
+
+    func testTheEngineStillWorkingLeavesTheRowAlone() {
+        var s = PhraseSayState()
+        _ = s.micTapped(row: 0)
+        s.voiceChanged(to: .requestingPermission(generation: 1))
+        XCTAssertEqual(s.busyRow, 0)
+        s.voiceChanged(to: .recording(generation: 1))
+        XCTAssertTrue(s.isRecording)
+        _ = s.micTapped(row: 0)
+        s.voiceChanged(to: .transcribing(generation: 1))
+        XCTAssertTrue(s.isChecking)
+        // With nothing busy, an idle engine changes nothing (the results stay).
+        s.transcribed(expected: "Hello", heard: "hello", words: nil)
+        s.voiceChanged(to: .idle)
+        XCTAssertEqual(s.status(row: 0), "Understood clearly")
+    }
+
+    func testListeningShowsOnlyOnceTheEngineIsRecording() {
+        var s = PhraseSayState()
+        _ = s.micTapped(row: 0)
+        XCTAssertNil(s.status(row: 0, voicePhase: .requestingPermission(generation: 1)))
+        XCTAssertEqual(s.status(row: 0, voicePhase: .recording(generation: 1)), "Listening\u{2026}")
+    }
+
+    func testOfflineAndTapAgainCopy() {
+        XCTAssertEqual(PhraseSayCopy.offline, "You're offline. You can still hear each phrase.")
+        XCTAssertEqual(PhraseSayCopy.tapAgain, "Tap Say it again")
+    }
+
     func testResetForgetsEverything() {
         var s = PhraseSayState()
         _ = s.micTapped(row: 0)

@@ -194,6 +194,16 @@ public enum PhraseChecker {
         return out
     }
 
+    /// A JSON `true` / `false` bridges to a number; the web's `typeof === "number"` rejects it, so this does too.
+    private static func isBoolean(_ raw: Any?) -> Bool {
+        guard let number = raw as? NSNumber else { return false }
+        #if canImport(Darwin)
+        return CFGetTypeID(number) == CFBooleanGetTypeID()
+        #else
+        return String(cString: number.objCType) == "c"
+        #endif
+    }
+
     /// Rule 4's entry filter for a raw `/api/stt` `words` value: entries without a string `word` and a finite numeric
     /// `confidence` are skipped.
     public static func heardWords(from raw: Any?) -> [HeardWord]? {
@@ -201,7 +211,8 @@ public enum PhraseChecker {
         var out: [HeardWord] = []
         for item in list {
             guard let dict = item as? [String: Any], let word = dict["word"] as? String,
-                let value = dict["confidence"] as? Double, value.isFinite
+                let value = dict["confidence"] as? Double, value.isFinite,
+                !isBoolean(dict["confidence"])
             else { continue }
             out.append(HeardWord(word: word, confidence: value))
         }

@@ -5,6 +5,8 @@ import Foundation
 public enum PhraseSayCopy {
     public static let checking = "Checking how clearly that came across\u{2026}"
     public static let listening = "Listening\u{2026}"
+    public static let offline = "You're offline. You can still hear each phrase."
+    public static let tapAgain = "Tap Say it again"
     public static let framing = "Say a phrase to hear how clearly you were understood."
 
     /// The inline result line for one attempt.
@@ -74,9 +76,13 @@ public struct PhraseSayState: Equatable, Sendable {
     public var hearEnabled: Bool { phase == .idle }
 
     /// The line under a row: "Listening...", "Checking...", or the row's result. Nil when the row has nothing to show.
-    public func status(row: Int) -> String? {
+    ///
+    /// "Listening..." shows only once the voice engine is actually recording, never during the permission prompt.
+    public func status(row: Int, voicePhase: VoicePhase = .recording(generation: 0)) -> String? {
         switch phase {
-        case .recording(row): return PhraseSayCopy.listening
+        case .recording(row):
+            if case .recording = voicePhase { return PhraseSayCopy.listening }
+            return nil
         case .checking(row): return PhraseSayCopy.checking
         default: break
         }
@@ -121,6 +127,17 @@ public struct PhraseSayState: Equatable, Sendable {
         guard let row = busyRow else { return }
         results[row] = PhraseCheck(result: .notYet, listenAgain: [])
         phase = .idle
+    }
+
+    /// The voice engine moved. An interruption (a phone call, Siri) or a refused microphone sends it back to idle or
+    /// failed WITHOUT a capture, so a row left recording or checking would keep every mic and Hear button disabled.
+    /// Anything the engine is still doing (permission prompt, recording, transcribing, replying) leaves the row alone.
+    public mutating func voiceChanged(to voicePhase: VoicePhase) {
+        guard busyRow != nil else { return }
+        switch voicePhase {
+        case .idle, .failed: phase = .idle
+        default: break
+        }
     }
 
     /// The attempt failed (mic, upload, quota): no result is shown, and the existing error message takes the row.
