@@ -1,6 +1,7 @@
 import { SCENARIOS, CONTENT_COURSES } from "@/data/scenarios";
 import { CAMPAIGNS } from "@/data/campaigns";
 import { namelessHectorGreetings } from "./hector-greeting";
+import { presetSpokenLines } from "./rehearsal-presets";
 
 /**
  * Which spoken lines /api/tts may keep, and the key they are kept under. Pure: the storage side is
@@ -43,6 +44,8 @@ export function fixedSpokenLines(): ReadonlySet<string> {
       for (const course of CONTENT_COURSES) lines.add(normalizeSpokenLine(scene.opener[course]));
     }
   }
+  // Quick-start rehearsals (rehearsal-presets.ts): the counterpart's opener and the key phrases, hand-written and fixed.
+  for (const line of presetSpokenLines()) lines.add(normalizeSpokenLine(line));
   for (const greeting of namelessHectorGreetings()) lines.add(normalizeSpokenLine(greeting));
   lines.delete("");
   fixed = lines;
