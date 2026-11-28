@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.update
 interface RehearsalApi {
     suspend fun state(course: String): RehearsalResult<RehearsalState>
     suspend fun create(intake: RehearsalIntake): RehearsalResult<Rehearsal>
+    suspend fun createFromPreset(course: String, presetId: String, eventDate: String?): RehearsalResult<Rehearsal>
+    suspend fun presets(course: String): RehearsalResult<List<RehearsalPreset>>
+    /** Adds (or clears, with null) the day of an existing rehearsal without touching its other answers. */
+    suspend fun setDate(id: String, eventDate: String?): RehearsalResult<Rehearsal>
     suspend fun adjust(id: String, intake: RehearsalIntake): RehearsalResult<Rehearsal>
     suspend fun cancel(id: String): RehearsalResult<Rehearsal>
     suspend fun outcome(id: String, choice: OutcomeChoice, newDate: String?): RehearsalResult<Rehearsal>
@@ -44,6 +48,11 @@ data class RehearsalUiState(
     val busy: Boolean = false,
     /** The Pro sheet is open: the entry was tapped by a learner who may not rehearse, or the server said 402. */
     val paywall: Boolean = false,
+    /** The quick-starts in the server's order; null until they load. */
+    val presets: List<RehearsalPreset>? = null,
+    val presetsLoading: Boolean = false,
+    /** The list could not be had (offline, an error, or the feature off): the picker offers "Something else" and a retry. */
+    val presetsFailed: Boolean = false,
 )
 
 /**
@@ -80,10 +89,28 @@ class RehearsalController(private val api: RehearsalApi, private val course: Str
     fun runsBefore(callId: String, stage: Stage): Int =
         baselines.getOrPut(callId) { _ui.value.state?.runs?.count { it.stage == stage.wire } ?: 0 }
 
+    /** Forgets the last refusal, so a stale one never shows under another preset or after going back. */
+    fun clearError() = _ui.update { it.copy(error = null) }
+
     fun dismissPaywall() = _ui.update { it.copy(paywall = false) }
 
     /** Creates the rehearsal; true when it exists now. A 402 opens the Pro sheet. */
     suspend fun create(intake: RehearsalIntake): Boolean = mutate { api.create(intake) }
+
+    /** Loads the quick-starts; a failure is [RehearsalUiState.presetsFailed], never an exception, and a list already loaded is kept. */
+    suspend fun loadPresets() {
+        _ui.update { it.copy(presetsLoading = true, presetsFailed = false) }
+        when (val r = api.presets(course)) {
+            is RehearsalResult.Ok -> _ui.update { it.copy(presetsLoading = false, presets = r.value, presetsFailed = false) }
+            is RehearsalResult.Failed -> _ui.update { it.copy(presetsLoading = false, presetsFailed = it.presets == null) }
+        }
+    }
+
+    /** Creates the rehearsal from a quick-start, with no intake; the refusals (a 402 opens the Pro sheet) are [create]'s. */
+    suspend fun createFromPreset(presetId: String, eventDate: String?): Boolean = mutate { api.createFromPreset(course, presetId, eventDate) }
+
+    /** Groundwork, no screen yet: adds (or clears) the day of an existing rehearsal. */
+    suspend fun setDate(id: String, eventDate: String?): Boolean = mutate { api.setDate(id, eventDate) }
 
     suspend fun adjust(id: String, intake: RehearsalIntake): Boolean = mutate { api.adjust(id, intake) }
 
