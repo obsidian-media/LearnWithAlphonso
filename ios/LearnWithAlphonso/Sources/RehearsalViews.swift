@@ -249,7 +249,7 @@ struct RehearsalFlowView: View {
             .background(ds.surface)
             .sheet(item: $choosing) { pick in
                 RehearsalPartnerSheet(
-                    stage: pick.stage, hectorAvailable: model.state?.hectorAvailable, entitlementStore: entitlementStore,
+                    stage: pick.stage, stateHectorAvailable: model.state?.hectorAvailable, entitlementStore: entitlementStore,
                     onChoose: { persona, hard in
                         runPersona = persona
                         runHardMode = hard
@@ -257,7 +257,8 @@ struct RehearsalFlowView: View {
                         choosing = nil
                         screen = .run(pick.stage)
                     },
-                    onClose: { choosing = nil })
+                    onClose: { choosing = nil },
+                    onPaywallClosed: { Task { await model.refresh() } })
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -274,7 +275,10 @@ struct RehearsalFlowView: View {
         }
         .sheet(isPresented: $showHectorPaywall) {
             if let entitlementStore {
-                PaywallView(entitlementStore: entitlementStore, source: .rehearsalEntry, onClose: { showHectorPaywall = false })
+                PaywallView(entitlementStore: entitlementStore, source: .rehearsalEntry, onClose: {
+                    showHectorPaywall = false
+                    Task { await model.refresh() }
+                })
             }
         }
     }
@@ -924,6 +928,9 @@ struct RehearsalRunView: View {
             }
         } catch {
             let failure = TutorError.from(error)
+            // The turn did not reach the partner: take it out, so a retry (503 retry included) never sends two user
+            // messages in a row. The learner simply says it again.
+            if conversation.turns.last == ChatMessage(role: "user", content: text) { conversation.turns.removeLast() }
             // The free rehearsal's runs are used up: the Pro sheet, with the learner's turn left where it was. Hector or hard
             // mode without Pro (pro_required) is a different refusal: the plain Pro paywall, and its own words.
             if failure == .notEntitled { onPaywall() }

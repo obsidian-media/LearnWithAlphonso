@@ -635,16 +635,36 @@ final class RehearsalsTests: XCTestCase {
         NSDictionary(dictionary: try XCTUnwrap(chatBody(source)["rehearsal"] as? [String: Any]))
     }
 
-    func testAHectorBodyMatchesTheSharedFixtureOnEveryTurn() throws {
+    /// Drives the real client three times with the source the screen builds (`RehearsalPartner.source`, the same call
+    /// `RehearsalRunView` makes) and reads what went over the wire.
+    func testAHectorCallSendsTheSameModeOnTurnsOneAndThreeOnTheWire() async throws {
         let f = try fixture()
-        let hector = try XCTUnwrap(f["chatBodyHector"] as? [String: Any])["rehearsal"] as! [String: Any]
-        let hard = try XCTUnwrap(f["chatBodyHard"] as? [String: Any])["rehearsal"] as! [String: Any]
-        let one = CallSource.rehearsal(id: rid, stage: .conversation, persona: .hector)
-        let two = CallSource.rehearsal(id: rid, stage: .hardMoments, persona: .hector, hardMode: true)
-        // The same source builds the same fields on turn 1 and turn 5: nothing about the call changes between turns.
-        for _ in 0..<5 {
-            XCTAssertEqual(try rehearsalPart(one), NSDictionary(dictionary: hector))
-            XCTAssertEqual(try rehearsalPart(two), NSDictionary(dictionary: hard))
+        let cases: [(RehearsalStage, Bool, String)] = [(.conversation, false, "chatBodyHector"), (.hardMoments, true, "chatBodyHard")]
+        for (stage, hard, key) in cases {
+            let expected = try XCTUnwrap(f[key] as? [String: Any])["rehearsal"] as! [String: Any]
+            let sent = TestCapture<[[String: Any]]>([])
+            let client = AIConversationClient(baseURL: URL(string: "https://learn.example")!, accessToken: { "tok" }) { request in
+                let payload = try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
+                sent.value.append(payload)
+                let body = try! JSONSerialization.data(withJSONObject: ["content": "Fine."])
+                return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+            let source = RehearsalPartner.source(rehearsalId: rid, stage: stage, persona: .hector, hardMode: hard)
+            var turns: [ChatMessage] = []
+            for n in 1...3 {
+                turns.append(ChatMessage(role: "user", content: "turn \(n)"))
+                _ = try await client.chatReply(source: source, messages: turns, systemPrompt: nil, cefrLevel: "B1", course: nil, callId: "call-1")
+                turns.append(ChatMessage(role: "assistant", content: "reply \(n)"))
+            }
+            XCTAssertEqual(sent.value.count, 3)
+            for payload in sent.value {
+                XCTAssertEqual(NSDictionary(dictionary: payload["rehearsal"] as! [String: Any]), NSDictionary(dictionary: expected), key)
+            }
+            var first = sent.value[0], third = sent.value[2]
+            XCTAssertNotEqual(NSArray(array: first["messages"] as! [Any]), NSArray(array: third["messages"] as! [Any]))
+            first.removeValue(forKey: "messages")
+            third.removeValue(forKey: "messages")
+            XCTAssertEqual(NSDictionary(dictionary: first), NSDictionary(dictionary: third), "turns 1 and 3 differ only in messages")
         }
     }
 

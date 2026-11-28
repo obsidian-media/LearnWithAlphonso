@@ -10,19 +10,28 @@ import LearnWithAlphonsoKit
 /// try (the run's own first turn checks Pro once, and a refusal there opens the paywall).
 struct RehearsalPartnerSheet: View {
     let stage: RehearsalStage
-    let hectorAvailable: Bool?
+    /// The server's answer from the last state read; it can be stale (a purchase made a moment ago).
+    let stateHectorAvailable: Bool?
     let entitlementStore: EntitlementStore?
     /// The learner's choice: who, and whether hard mode.
     let onChoose: (RehearsalPersona, Bool) -> Void
     let onClose: () -> Void
+    /// The paywall was closed: the caller reads the rehearsal state again (a purchase changes `hectorAvailable`).
+    var onPaywallClosed: () -> Void = {}
 
     @State private var hardMode = false
     @State private var showingPaywall = false
     @Environment(\.alphonsoDS) private var ds
 
+    /// Pro on this device (a purchase just made in this sheet) wins over a stale `hectorAvailable == false`.
+    private var hectorAvailable: Bool? { entitlementStore?.isPro == true ? true : stateHectorAvailable }
+
     var body: some View {
         if showingPaywall, let entitlementStore {
-            PaywallView(entitlementStore: entitlementStore, source: .rehearsalEntry, onClose: onClose)
+            PaywallView(entitlementStore: entitlementStore, source: .rehearsalEntry, onClose: {
+                onPaywallClosed()
+                onClose()
+            })
         } else {
             sheet
         }
