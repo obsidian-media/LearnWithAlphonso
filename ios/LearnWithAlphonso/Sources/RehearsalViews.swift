@@ -54,6 +54,27 @@ final class RehearsalModel {
         await change { if case .failure(let e) = await $0.create(intake) { return e } else { return nil } }
     }
 
+    /// A quick-start create: the server builds the brief from the preset, then the state is read again.
+    func create(preset: String, eventDate: String?) async -> RehearsalError? {
+        let course = courseCode
+        return await change { if case .failure(let e) = await $0.create(course: course, preset: preset, eventDate: eventDate) { return e } else { return nil } }
+    }
+
+    /// The quick-start cards for this course, in server order. nil error and an empty list never happen together.
+    private(set) var presets: [RehearsalPreset] = []
+    private(set) var presetsError: RehearsalError?
+    private(set) var presetsLoading = false
+
+    func loadPresets() async {
+        presetsLoading = true
+        defer { presetsLoading = false }
+        guard let client = await client() else { presetsError = .failed; return }
+        switch await client.presets(course: courseCode) {
+        case .success(let list): presets = list; presetsError = nil
+        case .failure(let e): presets = []; presetsError = e
+        }
+    }
+
     func adjust(id: String, _ intake: RehearsalIntake) async -> RehearsalError? {
         await change { if case .failure(let e) = await $0.adjust(id: id, intake) { return e } else { return nil } }
     }
@@ -148,6 +169,8 @@ struct RehearsalFlowView: View {
 
     private enum Screen: Equatable {
         case loading
+        case picker
+        case preview(RehearsalPreset)
         case intake(adjusting: Bool)
         case plan
         case run(RehearsalStage)
@@ -176,11 +199,19 @@ struct RehearsalFlowView: View {
                     }
                     .padding(AlphonsoDS.Space.gutter)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .picker:
+                    RehearsalPresetPickerView(model: model, onPick: { screen = .preview($0) },
+                                              onSomethingElse: { screen = .intake(adjusting: false) }, onCancel: { onClose() })
+                case .preview(let preset):
+                    RehearsalPresetPreviewView(model: model, preset: preset, onPaywall: { showPaywall = true },
+                                               onStarted: { screen = .plan },
+                                               onPersonalise: { screen = .intake(adjusting: true) },
+                                               onBack: { screen = .picker })
                 case .intake(let adjusting):
                     RehearsalIntakeView(model: model, course: course, adjusting: adjusting ? model.state?.active : nil,
                                         onPaywall: { showPaywall = true }, onDone: { screen = .plan },
                                         onCancel: {
-                                            if adjusting { screen = .plan } else { onClose() }
+                                            if adjusting { screen = .plan } else { screen = .picker }
                                         })
                 case .plan:
                     if let active = model.state?.active {
@@ -221,11 +252,180 @@ struct RehearsalFlowView: View {
     private func open() async {
         await model.refresh()
         guard let state = model.state else { screen = .loading; return }
-        guard state.active != nil else { screen = .intake(adjusting: false); return }
+        guard state.active != nil else { screen = .picker; return }
         switch (screen == .loading ? start : .auto) {
         case .run(let stage): screen = .run(stage)
         case .outcome: screen = .outcome
         case .auto: screen = .plan
+        }
+    }
+}
+
+// MARK: - Quick-starts
+
+/// The first screen when there is no active rehearsal: the server's quick-start cards, then "Something else", which
+/// opens the four-step intake. A list that will not load leaves "Something else" and a retry, never a dead end.
+struct RehearsalPresetPickerView: View {
+    let model: RehearsalModel
+    let onPick: (RehearsalPreset) -> Void
+    let onSomethingElse: () -> Void
+    let onCancel: () -> Void
+
+    @State private var asked = false
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                Text(RehearsalPresetCopy.title).dsText(.title).foregroundStyle(ds.ink)
+                    .accessibilityAddTraits(.isHeader)
+                Text(RehearsalPresetCopy.subtitle).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                if model.presetsLoading && model.presets.isEmpty {
+                    ProgressView("Loading\u{2026}").tint(ds.choice).frame(maxWidth: .infinity)
+                        .padding(.vertical, AlphonsoDS.Space.s3)
+                }
+                ForEach(model.presets) { preset in
+                    Button { onPick(preset) } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(preset.title).dsText(.headline).foregroundStyle(ds.ink)
+                            if !preset.blurb.isEmpty {
+                                Text(preset.blurb).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                                    .multilineTextAlignment(.leading)
+                            }
+                        }
+                        .cardRow(ds)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityHint("Opens a preview")
+                }
+                if !model.presetsLoading, model.presets.isEmpty, model.presetsError != nil {
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                        Text(RehearsalPresetCopy.loadFailed).dsText(.footnote).foregroundStyle(ds.wrongInk)
+                            .accessibilityAddTraits(.updatesFrequently)
+                        if let e = model.presetsError, e != .failed { RehearsalErrorLine(error: e) }
+                        Button(RehearsalPresetCopy.retry) { Task { await model.loadPresets() } }
+                            .buttonStyle(.alphonsoSecondary)
+                    }
+                }
+                Button { onSomethingElse() } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(RehearsalPresetCopy.somethingElse).dsText(.headline).foregroundStyle(ds.actionText)
+                        Text(RehearsalPresetCopy.somethingElseHint).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    }
+                    .cardRow(ds)
+                }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+                .accessibilityHint("Opens four short questions about your own conversation")
+                Button("Not now") { onCancel() }
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
+            }
+            .padding(AlphonsoDS.Space.gutter)
+        }
+        .task {
+            guard !asked else { return }
+            asked = true
+            await model.loadPresets()
+        }
+    }
+}
+
+private extension View {
+    /// One tappable row in the picker: the card look, a 44pt minimum height and a chevron.
+    func cardRow(_ ds: AlphonsoDS.Colors) -> some View {
+        HStack {
+            self
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right").foregroundStyle(ds.inkSoft).accessibilityHidden(true)
+        }
+        .padding(AlphonsoDS.Space.s3)
+        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+        .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 1))
+    }
+}
+
+/// What a quick-start holds, before the learner commits: the counterpart, the three stages with their goals, an optional
+/// date, "Start now" and "Personalise". Both buttons create from the preset; Personalise then opens the adjust flow.
+struct RehearsalPresetPreviewView: View {
+    let model: RehearsalModel
+    let preset: RehearsalPreset
+    let onPaywall: () -> Void
+    let onStarted: () -> Void
+    let onPersonalise: () -> Void
+    let onBack: () -> Void
+
+    @State private var withDate = false
+    @State private var pickedDate = Date().addingTimeInterval(86_400)
+    @State private var error: RehearsalError?
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                Text(preset.title).dsText(.title).foregroundStyle(ds.ink).accessibilityAddTraits(.isHeader)
+                if !preset.blurb.isEmpty { Text(preset.blurb).dsText(.body).foregroundStyle(ds.inkSoft) }
+                if !preset.counterpart.isEmpty {
+                    Text(preset.counterpartLine).dsText(.headline).foregroundStyle(ds.ink)
+                }
+                if !preset.stages.isEmpty {
+                    RehearsalCard {
+                        ForEach(Array(preset.stages.enumerated()), id: \.offset) { index, stage in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Stage \(index + 1): \(stage.stage?.label ?? stage.key)").dsText(.headline).foregroundStyle(ds.ink)
+                                Text(stage.goal).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                            }
+                            .accessibilityElement(children: .combine)
+                        }
+                    }
+                }
+                dateRow
+                RehearsalErrorLine(error: error)
+                Button(RehearsalPresetCopy.startNow) { Task { await create(personalise: false) } }
+                    .buttonStyle(.alphonsoPrimary(fullWidth: true))
+                    .disabled(model.busy)
+                Button(RehearsalPresetCopy.personalise) { Task { await create(personalise: true) } }
+                    .buttonStyle(.alphonsoSecondary(fullWidth: true))
+                    .disabled(model.busy)
+                    .accessibilityHint(RehearsalPresetCopy.personaliseHint)
+                Button("Back") { onBack() }
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
+            }
+            .padding(AlphonsoDS.Space.gutter)
+        }
+    }
+
+    @ViewBuilder
+    private var dateRow: some View {
+        if withDate {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                DatePicker("Date", selection: $pickedDate, in: Date()..., displayedComponents: .date)
+                    .datePickerStyle(.compact)
+                    .tint(ds.action)
+                Button(RehearsalPresetCopy.removeDate) { withDate = false }
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    .frame(minHeight: AlphonsoDS.Space.minTouch)
+            }
+        } else {
+            Button(RehearsalPresetCopy.addDate) { withDate = true }
+                .dsText(.headline).foregroundStyle(ds.actionText)
+                .frame(minHeight: AlphonsoDS.Space.minTouch)
+        }
+    }
+
+    private func create(personalise: Bool) async {
+        error = nil
+        let date = withDate ? RehearsalDates.string(from: pickedDate) : nil
+        if let failure = await model.create(preset: preset.id, eventDate: date) {
+            if failure == .paywall { onPaywall() }
+            error = failure
+        } else if personalise {
+            onPersonalise()
+        } else {
+            onStarted()
         }
     }
 }
