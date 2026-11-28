@@ -37,6 +37,7 @@ import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalChatRefusal
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalCopy
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalPartner
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalOpeners
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalSpeaking
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.Stage
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
@@ -156,6 +157,7 @@ fun RehearsalCallScreen(
         RehearsalDebrief(
             rehearsal.kind, stage, state, runsBefore, vm.elapsedSeconds, callState.turns.count { it.role == "user" },
             pending = recapUi.status == CallRecapController.Status.PENDING, fixCount = recapUi.recap?.reviewCount ?: 0,
+            rehearsalSpeaking = recapUi.rehearsalSpeaking, courseCode = course.code,
             // The next stage keeps the partner (hard mode is the last stage's own choice); a repeat is the same run again.
             onNext = { s -> onOpenStage(id, s, partner, false) }, onAgain = { onOpenStage(id, stage, partner, hardMode) }, onDone = onBack,
         )
@@ -184,6 +186,7 @@ fun RehearsalCallScreen(
 fun RehearsalDebrief(
     kind: EventKind, stage: Stage, state: com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalState?, runsBefore: Int,
     seconds: Int, turns: Int, pending: Boolean, fixCount: Int, onNext: (Stage) -> Unit, onAgain: () -> Unit, onDone: () -> Unit,
+    rehearsalSpeaking: RehearsalSpeaking? = null, courseCode: String = "en",
 ) {
     val ds = LocalAlphonsoTokens.current
     val counted = state != null && state.runs.count { it.stage == stage.wire } > runsBefore
@@ -198,6 +201,7 @@ fun RehearsalDebrief(
             run != null -> {
                 Text(RehearsalCopy.debriefHeadline(kind, stage), style = TitleType, color = ds.ink, modifier = Modifier.semantics { heading() })
                 Text(RehearsalCopy.debriefStats(seconds, turns), style = FootnoteType, color = ds.inkSoft)
+                HowYouSpokeCard(rehearsalSpeaking, courseCode)
                 if (run.wentWell.isNotEmpty()) DebriefList("What went well", run.wentWell)
                 if (run.corrections.isNotEmpty()) DebriefList("Try again next time", run.corrections.take(2))
                 RehearsalCopy.fixLine(fixCount)?.let { DsCard(padding = AlphonsoTokens.Space.s3, fill = ds.heartTint) { Text(it, style = HeadlineType, color = ds.heartText) } }
