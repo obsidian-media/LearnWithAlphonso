@@ -340,7 +340,7 @@ public final class AIConversationClient: Sendable {
 
     /// As `callRecap`, but tells a failure a second try may fix (offline, timeout, a 5xx, or the server's `retry`) from
     /// "nothing to show" (a short call, consent off, over the limit), so the result screen can offer "Try again".
-    public func callRecapAttempt(callId: String, transcript: [ChatMessage], cefrLevel: String? = nil, scene: String? = nil, timeout: TimeInterval = 10) async -> CallRecapAttempt {
+    public func callRecapAttempt(callId: String, transcript: [ChatMessage], cefrLevel: String? = nil, scene: String? = nil, replyLatenciesMs: [Int] = [], timeout: TimeInterval = 10) async -> CallRecapAttempt {
         guard CallRecap.qualifies(transcript) else { return .empty }
         var payload: [String: Any] = [
             "callId": callId,
@@ -348,6 +348,10 @@ public final class AIConversationClient: Sendable {
         ]
         if let cefrLevel { payload["cefrLevel"] = cefrLevel }
         if let scene { payload["scene"] = scene }
+        // A rehearsal call's reply gaps (the caller passes none for any other call). Left out when empty, so a plain
+        // call and an older server see the old body.
+        let latencies = ReplyLatencyTracker.sanitize(replyLatenciesMs)
+        if !latencies.isEmpty { payload["replyLatenciesMs"] = latencies }
         guard var request = try? recapRequest("api/call-recap", method: "POST", body: payload) else { return .empty }
         request.timeoutInterval = timeout
         // A total deadline: timeoutInterval only limits idle time, so a slow trickle could hold the recap up for minutes.
@@ -366,7 +370,9 @@ public final class AIConversationClient: Sendable {
         guard let (data, response) = outcome, let http = response as? HTTPURLResponse else { return .retry }
         guard (200...299).contains(http.statusCode) else { return http.statusCode >= 500 && http.statusCode != 503 ? .retry : .empty }
         if let recap = CallRecap.parse(data) { return .got(recap) }
-        return CallRecap.retryRequested(data) ? .retry : .empty
+        if CallRecap.retryRequested(data) { return .retry }
+        if let speaking = RehearsalSpeaking.parse(data) { return .speakingOnly(speaking) }
+        return .empty
     }
 
     /// POST /api/call-recap-review -- "Review these": the server adds the recap's items to the review queue from the

@@ -726,6 +726,9 @@ struct RehearsalRunView: View {
     @State private var openerCue = 0
     @State private var initialized = false
     @State private var recapModel = CallRecapModel()
+    /// How long the learner took to start each reply, sent with the recap so the debrief can note long pauses.
+    @State private var replyLatency = ReplyLatencyTracker()
+    @State private var rehearsalSpeaking: RehearsalSpeaking?
     /// The stage's latest finished run before this call, so a debrief is only built from a run this call made.
     @State private var previousFinishedAt: String?
     @Environment(\.scenePhase) private var scenePhase
@@ -743,7 +746,9 @@ struct RehearsalRunView: View {
                     Text("Alphonso (AI) is going over the conversation.").dsText(.footnote).foregroundStyle(ds.inkSoft)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .debrief(let outcome): RehearsalDebriefView(outcome: outcome, stage: stage,
+            case .debrief(let outcome): RehearsalDebriefView(outcome: outcome, stage: stage, speaking: rehearsalSpeaking,
+                                                              language: RehearsalSpeaking.languageName(courseCode: course.wireCode),
+                                                              courseCode: course.wireCode,
                                                               onRunStage: onRunStage, onPlan: onPlan)
             case .notSaved:
                 VStack(spacing: AlphonsoDS.Space.s3) {
@@ -784,7 +789,18 @@ struct RehearsalRunView: View {
         PracticeCallView(
             title: stage.label, scenarioID: "rehearsal", voice: voice, course: course,
             turns: conversation.turns, replyVerdict: replyVerdict, notice: notice,
-            onPress: { if ending { return }; if voice.pressBegan() { notice = nil } },
+            onPress: {
+                if ending { return }
+                var partnerWasSpeaking = false
+                if case .speaking = voice.phase { partnerWasSpeaking = true }
+                if voice.pressBegan() {
+                    notice = nil
+                    // Hold to talk: the press is when the learner starts (a press over the partner's voice measures
+                    // nothing). In hands-free the first voice activity is (below).
+                    replyLatency.pressBegan(atMs: MonotonicClock.nowMs(), partnerWasSpeaking: partnerWasSpeaking,
+                                            handsFree: voice.isHandsFreeOn)
+                }
+            },
             onEnd: { Task { await finishCall() } },
             rehearsalHeader: RehearsalCallHeaderInfo(
                 title: rehearsal.kind?.callTitle ?? RehearsalEventKind.other.callTitle,
@@ -817,6 +833,16 @@ struct RehearsalRunView: View {
         .toolbar(.hidden, for: .tabBar)
         .onChange(of: voice.handsFreeStatus) { _, new in
             if new == .listening { notice = nil }
+            // Hands-free presses for the learner the moment listening opens; speech detected is when they start.
+            if new == .hearing { replyLatency.voiceHeard(atMs: MonotonicClock.nowMs()) }
+            // Paused or switched off: what was being heard will not become a reply.
+            if new == .off { replyLatency.listeningStopped() }
+            if case .paused = new { replyLatency.listeningStopped() }
+        }
+        // The partner's voice finishing on its own starts the learner's thinking time; a press that never produces a
+        // capture (mic refused, recorder failed, a cancelled turn) throws its start away. The rules live in the Kit.
+        .onChange(of: voice.phase) { old, new in
+            replyLatency.phaseChanged(from: old, to: new, atMs: MonotonicClock.nowMs())
         }
     }
 
@@ -825,6 +851,7 @@ struct RehearsalRunView: View {
     private func handle(_ capture: VoiceCapture) async {
         switch capture {
         case .tooShort:
+            replyLatency.attemptFailed()   // nothing was sent: the retry measures its own start
             notice = voice.isHandsFreeOn ? nil : "Didn't catch that. Hold the button while you speak."
         case let .audio(audio, generation, debugTiming):
             await runTurn(audio: audio, generation: generation, debugTiming: debugTiming)
@@ -836,6 +863,7 @@ struct RehearsalRunView: View {
         pendingTurns += 1
         defer { pendingTurns -= 1 }
         guard let accessToken = await session.freshAccessToken() else {
+            replyLatency.attemptFailed()
             voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
             return
         }
@@ -846,11 +874,13 @@ struct RehearsalRunView: View {
             let result = try await client.transcribe(
                 audio: audio, mimeType: "audio/m4a", course: course.wireCode, debugTiming: debugTiming)
             guard !result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                replyLatency.attemptFailed()
                 if voice.isHandsFreeOn { voice.handsFreeHeardNoWords() } else { notice = "Didn't catch that \u{2014} try again." }
                 return
             }
             await sendReply(result.text, confidence: result.confidence, generation: generation, client: client)
         } catch {
+            replyLatency.attemptFailed()
             voice.fail(generation, TutorError.from(error))
         }
     }
@@ -863,17 +893,24 @@ struct RehearsalRunView: View {
             let chat = try await client.chatReply(
                 source: source, messages: source.sendableTurns(conversation), systemPrompt: nil, cefrLevel: cefrLevel,
                 course: nil, callId: callId)
+            // Transcribed and answered: only now does this reply's gap count (a failed chat drops it, below).
+            replyLatency.replySent()
             conversation.turns.append(ChatMessage(role: "assistant", content: chat.content))
             replyVerdict = AvatarReplyVerdict(serial: replyVerdict.serial + 1, verdict: chat.verdict)
             do {
                 let speech = try await client.synthesizeSpeech(
                     text: chat.content, voice: VoicePrefsCache().voice(.alphonso, course: course.wireCode), course: course.wireCode)
-                if !voice.play(speech, generation: generation) { notice = "Got a reply, but couldn't play it back." }
+                if !voice.play(speech, generation: generation) {
+                    replyLatency.clearPartnerClock()   // no partner voice to wait for
+                    notice = "Got a reply, but couldn't play it back."
+                }
             } catch {
+                replyLatency.clearPartnerClock()
                 voice.replyWithoutAudio(generation)
                 notice = "Got a reply, but couldn't play it back."
             }
         } catch {
+            replyLatency.clearPartnerClock()   // the chat failed: this reply's entry is dropped, and no partner voice follows
             let failure = TutorError.from(error)
             // The free rehearsal's runs are used up: the Pro sheet, with the learner's turn left where it was.
             if failure == .notEntitled { onPaywall() }
@@ -910,11 +947,12 @@ struct RehearsalRunView: View {
         }
         recapModel = CallRecapModel()
         recapModel.start(session: session, callId: callId, transcript: source.sendableTurns(conversation),
-                         cefrLevel: cefrLevel, scene: nil)
+                         cefrLevel: cefrLevel, scene: nil, replyLatenciesMs: replyLatency.values)
         // The server writes the run's memory when the recap finishes; wait for it, then read the state again.
         while recapModel.status == .pending { try? await Task.sleep(for: .milliseconds(300)) }
         await model.refresh()
         let added = (recapModel.status == .ready && recapModel.recap?.saved == true) ? (recapModel.recap?.reviewCount ?? 0) : 0
+        rehearsalSpeaking = recapModel.rehearsalSpeaking
         phase = .debrief(RehearsalDebrief.make(
             stage: stage, kind: rehearsal.kind, runs: model.state?.runs ?? [], previousFinishedAt: previousFinishedAt,
             seconds: elapsed, turns: conversation.turns.count - conversation.openerIndices.count, addedToFix: added))
@@ -926,6 +964,10 @@ struct RehearsalRunView: View {
 struct RehearsalDebriefView: View {
     let outcome: RehearsalDebrief.Outcome
     let stage: RehearsalStage
+    var speaking: RehearsalSpeaking?
+    var language: String = "English"
+    /// The course's wire code: the pause note's filler ("Let me think…") comes in the course's own language.
+    var courseCode: String = "en"
     let onRunStage: (RehearsalStage) -> Void
     let onPlan: () -> Void
     @Environment(\.alphonsoDS) private var ds
@@ -946,6 +988,7 @@ struct RehearsalDebriefView: View {
                         Text(d.headline).dsText(.title).foregroundStyle(ds.ink).accessibilityAddTraits(.isHeader)
                         Text(d.stats).dsText(.footnote).foregroundStyle(ds.inkSoft)
                     }
+                    if let speaking, !speaking.notes.isEmpty { speakingCard(speaking) }
                     if !d.wentWell.isEmpty { listCard("What went well", d.wentWell, tint: ds.rightInk) }
                     if !d.tryAgain.isEmpty { listCard("Try again next time", d.tryAgain, tint: ds.heartText) }
                     if let fix = d.fixLine {
@@ -967,6 +1010,27 @@ struct RehearsalDebriefView: View {
                 }
             }
             .padding(AlphonsoDS.Space.gutter)
+        }
+    }
+
+    /// "How you spoke": up to three plain sentences, each with a small decorative arrow against last time. Neutral ink
+    /// throughout, no score, no percentage, never red.
+    private func speakingCard(_ speaking: RehearsalSpeaking) -> some View {
+        RehearsalCard {
+            Text("How you spoke").dsText(.headline).foregroundStyle(ds.choice).accessibilityAddTraits(.isHeader)
+            ForEach(speaking.notes) { note in
+                HStack(alignment: .firstTextBaseline, spacing: AlphonsoDS.Space.s2) {
+                    Image(systemName: note.arrowSymbol ?? "circle.fill")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(ds.inkSoft)
+                        .opacity(note.arrowSymbol == nil ? 0.35 : 1)
+                        .frame(width: 18)
+                        .accessibilityHidden(true)
+                    Text(note.sentence(language: language, courseCode: courseCode)).dsText(.footnote).foregroundStyle(ds.ink)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(note.sentence(language: language, courseCode: courseCode))
+            }
         }
     }
 

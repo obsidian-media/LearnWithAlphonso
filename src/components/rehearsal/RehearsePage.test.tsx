@@ -76,11 +76,8 @@ describe("RehearsePage", () => {
     api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
     render(<RehearsePage course="en" today="2026-11-26" />);
     expect(await screen.findByRole("heading", { name: "Job interview" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Next: The real conversation" })).toHaveAttribute(
-      "href",
-      `/rehearse/${ID}/conversation`,
-    );
-    expect(screen.getByRole("link", { name: "Repeat Warm-up" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Next: The real conversation" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Repeat Warm-up" })).toBeInTheDocument();
     expect(screen.queryByRole("form")).toBeNull();
   });
 
@@ -97,7 +94,7 @@ describe("RehearsePage", () => {
     api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
     render(<RehearsePage course="en" today="2026-12-02" />);
     expect(await screen.findByRole("heading", { name: "How did it go?" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Next:/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Next:/ })).toBeNull();
   });
 
   it("on the event day itself it is still the plan", async () => {
@@ -318,7 +315,7 @@ describe("RehearsePage phrasebook", () => {
     render(<RehearsePage course="en" today="2026-11-26" />);
     const row = await screen.findByRole("button", { name: /^Your phrases/ });
     expect(row).toHaveTextContent("6 phrases · tap to hear, say them");
-    const next = screen.getByRole("link", { name: "Next: The real conversation" });
+    const next = screen.getByRole("button", { name: "Next: The real conversation" });
     expect(row.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 

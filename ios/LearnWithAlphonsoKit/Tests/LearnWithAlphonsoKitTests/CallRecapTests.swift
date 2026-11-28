@@ -161,6 +161,15 @@ final class CallRecapTests: XCTestCase {
         XCTAssertEqual(short, .empty)
     }
 
+    func testSpeakingNextToANullRecapIsStillDelivered() async {
+        let t = call(learnerTurns: 3)
+        let notes: [[String: Any]] = [["kind": "key_phrases", "count": 3, "total": 8, "previous": NSNull()]]
+        let only = await client(body: ["recap": NSNull(), "rehearsalSpeaking": ["notes": notes]]).callRecapAttempt(callId: callId, transcript: t)
+        XCTAssertEqual(only, .speakingOnly(RehearsalSpeaking(notes: [.init(kind: .keyPhrases, count: 3, total: 8, previous: nil)])))
+        let retry = await client(body: ["recap": NSNull(), "retry": true, "rehearsalSpeaking": ["notes": notes]]).callRecapAttempt(callId: callId, transcript: t)
+        XCTAssertEqual(retry, .retry)
+    }
+
     func testOfflineIsARetry() async {
         let offline = AIConversationClient(baseURL: baseURL, accessToken: { "tok" }, requester: { _ in throw URLError(.notConnectedToInternet) })
         let r = await offline.callRecapAttempt(callId: callId, transcript: call(learnerTurns: 3))

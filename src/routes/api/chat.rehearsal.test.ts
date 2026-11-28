@@ -24,6 +24,11 @@ const h = vi.hoisted(() => ({
   proState: "active" as "active" | "inactive" | "unavailable",
   rpcs: [] as { fn: string; args: Record<string, unknown> }[],
   reads: [] as { table: string; eqs: [string, unknown][] }[],
+  /** The record_practice_reply error, when the store should fail. */
+  recordError: null as { message: string } | null,
+  /** The stored mode of an existing call. */
+  call: { persona: "alphonso", hard_mode: false },
+  proCalls: 0,
 }));
 
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest: h.authorize }));
@@ -33,6 +38,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
       h.rpcs.push({ fn, args });
       if (fn === "ai_output_blocked")
         return { data: ((args._texts as string[]) ?? []).map(() => false), error: null };
+      if (fn === "record_practice_reply") return { data: 1, error: h.recordError };
       return { data: 1, error: null };
     },
     from: (table: string) => {
@@ -50,7 +56,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
           return { data: ok ? h.runs : [], error: null };
         }
         if (table === "practice_calls")
-          return { data: h.callExists ? { id: CALL } : null, error: null };
+          return { data: h.callExists ? { id: CALL, ...h.call } : null, error: null };
         if (table === "rehearsals_off")
           return {
             data: h.off ? { user_id: "u1" } : null,
@@ -74,7 +80,10 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 }));
 vi.mock("@/lib/revenuecat-entitlement", () => ({
   revenueCatConfigFromEnv: () => ({ secretApiKey: "sk" }),
-  getProEntitlementStatus: async () => "active",
+  getProEntitlementStatus: async () => {
+    h.proCalls += 1;
+    return h.proState;
+  },
 }));
 vi.mock("@/lib/ops-events.server", () => ({
   OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS: 500,
@@ -137,6 +146,10 @@ beforeEach(() => {
   h.usage = [];
   h.rpcs = [];
   h.reads = [];
+  h.recordError = null;
+  h.call = { persona: "alphonso", hard_mode: false };
+  h.proCalls = 0;
+  h.proState = "active";
   h.authorize.mockResolvedValue({ ok: true, userId: "u1", supabase: {}, chargeQuota: h.charge });
   h.charge.mockResolvedValue(null);
   fetchMock.mockImplementation(
@@ -580,5 +593,149 @@ describe("adaptive pace: repetition request and placement", () => {
     const verdictAt = system.indexOf("[[verdict:correct]]");
     expect(at).toBeGreaterThan(-1);
     expect(verdictAt).toBeGreaterThan(at);
+  });
+});
+
+describe("Hector and hard mode (Pro)", () => {
+  const hector = (stage = "conversation", extra: Record<string, unknown> = {}) =>
+    rehearsalBody({ rehearsal: { id: REHEARSAL, stage, persona: "hector", ...extra } });
+  const recordCalls = () => h.rpcs.filter((r) => r.fn === "record_practice_reply");
+
+  it("a Pro learner's first Hector turn uses Hector's prompt, reads Pro once, and creates the call with its mode in one RPC", async () => {
+    const res = await send(hector());
+    expect(res.status).toBe(200);
+    expect(modelMessages()[0]!.content).toContain("You are Hector, an AI tutor");
+    expect(h.proCalls).toBe(1);
+    expect(recordCalls()).toHaveLength(1);
+    expect(recordCalls()[0]!.args).toMatchObject({
+      _call_id: CALL,
+      _persona: "hector",
+      _hard_mode: false,
+    });
+  });
+
+  it("if the mode could not be stored the first Hector turn gets no reply: 503 retry, never an Alphonso call played as Hector", async () => {
+    h.recordError = { message: "down" };
+    const res = await send(hector());
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "retry" });
+  });
+
+  it("a later turn that fails to record does not fail the reply (the mode is already stored)", async () => {
+    h.callExists = true;
+    h.call = { persona: "hector", hard_mode: false };
+    h.recordError = { message: "down" };
+    expect((await send(hector())).status).toBe(200);
+  });
+
+  it("a non-Pro learner gets 402 pro_required before the quota or the model", async () => {
+    h.proState = "inactive";
+    const res = await send(hector());
+    expect(res.status).toBe(402);
+    expect(await res.json()).toEqual({ error: "pro_required" });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(h.charge).not.toHaveBeenCalled();
+    expect(recordCalls()).toHaveLength(0);
+  });
+
+  it("a call already running finishes after Pro lapses: no Pro read, the stored mode is used", async () => {
+    h.proState = "inactive";
+    h.callExists = true;
+    h.call = { persona: "hector", hard_mode: false };
+    const res = await send(hector());
+    expect(res.status).toBe(200);
+    expect(h.proCalls).toBe(0);
+    expect(modelMessages()[0]!.content).toContain("You are Hector, an AI tutor");
+  });
+
+  it("hard mode on the last stage adds the hard-mode paragraph and is stored; it is refused anywhere else", async () => {
+    const ok = await send(hector("hard_moments", { hardMode: true }));
+    expect(ok.status).toBe(200);
+    expect(modelMessages()[0]!.content).toContain("Hard mode");
+    expect(recordCalls()[0]!.args).toMatchObject({ _persona: "hector", _hard_mode: true });
+    fetchMock.mockClear();
+    const bad = await send(hector("conversation", { hardMode: true }));
+    expect(bad.status).toBe(400);
+    expect(await bad.json()).toEqual({ error: "invalid_mode" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("an Alphonso run (no persona) is unchanged: no Pro read, no mode sent, Alphonso's prompt", async () => {
+    const res = await send(rehearsalBody());
+    expect(res.status).toBe(200);
+    expect(h.proCalls).toBe(0);
+    expect(recordCalls()[0]!.args).not.toHaveProperty("_persona");
+    expect(modelMessages()[0]!.content).not.toContain("Hector");
+  });
+
+  it("an Alphonso call whose first reply failed to record still answers (only a Hector start fails closed)", async () => {
+    h.recordError = { message: "down" };
+    expect((await send(rehearsalBody())).status).toBe(200);
+  });
+});
+
+describe("pace in Hector rehearsals", () => {
+  const thoroughAnswers = [
+    "Good morning, thank you very much for seeing me today.",
+    "I have worked in logistics for five years and I enjoy planning routes.",
+    "My last employer asked me to manage a small team of drivers.",
+  ].flatMap((t) => [
+    { role: "user", content: t },
+    { role: "assistant", content: "Go on." },
+  ]);
+  const withLast = (rehearsal: Record<string, unknown>) =>
+    rehearsalBody({
+      rehearsal,
+      messages: [
+        ...thoroughAnswers,
+        { role: "user", content: "I like to keep every delivery on time." },
+      ],
+    });
+
+  it("a normal Hector run keeps the pace line", async () => {
+    await send(withLast({ id: REHEARSAL, stage: "conversation", persona: "hector" }));
+    expect(modelMessages()[0]!.content).toContain("Pace for your next turn");
+  });
+
+  it("hard mode defines its own pace: no pace line is appended", async () => {
+    await send(
+      withLast({ id: REHEARSAL, stage: "hard_moments", persona: "hector", hardMode: true }),
+    );
+    expect(modelMessages()[0]!.content).not.toContain("Pace for your next turn");
+    expect(modelMessages()[0]!.content).toContain("Hard mode");
+  });
+});
+
+describe("Hector's spoken reply fits one /api/tts request", () => {
+  const long = Array.from(
+    { length: 30 },
+    (_, i) => `This is sentence number ${i + 1} of the debrief.`,
+  ).join(" ");
+  const answerWith = (text: string) =>
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: `${text}\n[[verdict:correct]]` } }] }),
+          {
+            status: 200,
+          },
+        ),
+    );
+
+  it("a long Hector reply is cut at a sentence boundary under the limit", async () => {
+    answerWith(long);
+    const res = await send(
+      rehearsalBody({ rehearsal: { id: REHEARSAL, stage: "conversation", persona: "hector" } }),
+    );
+    const { content } = (await res.json()) as { content: string };
+    expect(content.length).toBeLessThanOrEqual(600);
+    expect(content.endsWith(".")).toBe(true);
+    expect(long.startsWith(content)).toBe(true);
+  });
+
+  it("Alphonso's reply is never cut", async () => {
+    answerWith(long);
+    const res = await send(rehearsalBody());
+    expect(((await res.json()) as { content: string }).content).toBe(long);
   });
 });
