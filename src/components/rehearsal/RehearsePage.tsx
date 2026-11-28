@@ -126,6 +126,8 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
         rehearsal={active}
         progress={state.progress}
         nextStage={state.nextStage}
+        hectorAvailable={state.hectorAvailable}
+        hardModeDone={state.hardModeDone}
         today={today}
         onAdjust={() => setAdjusting(true)}
         onOpenPhrases={() => {

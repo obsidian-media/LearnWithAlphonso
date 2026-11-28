@@ -4,12 +4,14 @@ import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveTtsVoice } from "@/lib/voice-catalog";
 import { timedRoute } from "@/lib/stage-timer.server";
 
+import { TTS_MAX_CHARS } from "@/lib/tts-limits";
+
 /**
- * The most text one request may speak. A tutor turn is a few sentences, so this is generous for real use and bounds
- * what a single (or scripted) call can cost. Over the cap the request is refused, not shortened: a half-spoken reply
- * would be worse than a clear error, and the client already treats a failed speech request as "no voice this turn".
+ * The most text one request may speak (src/lib/tts-limits.ts). Over the cap the request is refused, not shortened: a
+ * half-spoken reply would be worse than a clear error, and the client already treats a failed speech request as "no
+ * voice this turn".
  */
-export const TTS_MAX_CHARS = 600;
+export { TTS_MAX_CHARS };
 
 /** The longest Hector reply /api/hector-respond sends (it refuses longer ones), so the most a turn token can speak. */
 export const HECTOR_TURN_MAX_CHARS = 2_000;
