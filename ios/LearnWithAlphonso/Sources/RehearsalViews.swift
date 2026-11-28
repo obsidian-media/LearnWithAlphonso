@@ -231,8 +231,7 @@ struct RehearsalFlowView: View {
                     } else { Color.clear.task { await open() } }
                 case .phrases:
                     // Live phrases when the state is loaded, else the copy kept on the device (offline).
-                    if let snapshot = model.state?.active.flatMap { RehearsalPhraseSnapshot(rehearsal: $0, progress: model.state?.progress) }
-                        ?? RehearsalPhraseStore().load(course: course.wireCode) {
+                    if let snapshot = phrasesSnapshot {
                         RehearsalPhrasebookView(snapshot: snapshot, course: course, session: session,
                                                 onBack: { returnedFromPhrases = true; screen = model.state?.active != nil ? .plan : .loading })
                     } else { Color.clear.task { await open() } }
@@ -263,6 +262,13 @@ struct RehearsalFlowView: View {
                 copy: RehearsalPaywallCopy.make(history: model.state?.history ?? []),
                 entitlementStore: entitlementStore, onClose: { showPaywall = false })
         }
+    }
+
+    /// The phrasebook's phrases: live from the loaded state, else the copy kept on the device (offline).
+    private var phrasesSnapshot: RehearsalPhraseSnapshot? {
+        let progress = model.state?.progress
+        let live = model.state?.active.flatMap({ RehearsalPhraseSnapshot(rehearsal: $0, progress: progress) })
+        return live ?? RehearsalPhraseStore().load(course: course.wireCode)
     }
 
     /// Reads the state and picks the screen: what the launcher asked for when it can be done, else the plan, else the intake.
