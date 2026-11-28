@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.ui.practice
 import com.obsidianmedia.learnwithalphonso.core.logic.CallRecap
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalSpeaking
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +21,7 @@ class CallRecapController(private val ai: AiConversationClient, private val scop
     /** FAILED: the attempt did not work and the call is not used up, so "Try again" is offered next to the slip. */
     enum class Status { OFF, PENDING, READY, FAILED }
     enum class Review { IDLE, ADDING, ADDED, FAILED }
-    data class Ui(val status: Status = Status.OFF, val recap: CallRecap? = null, val review: Review = Review.IDLE, val speaking: String? = null)
+    data class Ui(val status: Status = Status.OFF, val recap: CallRecap? = null, val review: Review = Review.IDLE, val speaking: String? = null, val rehearsalSpeaking: RehearsalSpeaking? = null)
 
     private val _ui = MutableStateFlow(Ui())
     val ui: StateFlow<Ui> = _ui.asStateFlow()
@@ -57,7 +58,8 @@ class CallRecapController(private val ai: AiConversationClient, private val scop
             if (this@CallRecapController.callId != callId) return@launch
             _ui.update {
                 when (attempt) {
-                    is AiConversationClient.RecapAttempt.Got -> Ui(Status.READY, attempt.recap)
+                    is AiConversationClient.RecapAttempt.Got -> Ui(Status.READY, attempt.recap, rehearsalSpeaking = attempt.rehearsalSpeaking)
+                    is AiConversationClient.RecapAttempt.SpeakingOnly -> Ui(rehearsalSpeaking = attempt.rehearsalSpeaking)
                     AiConversationClient.RecapAttempt.Retry -> Ui(Status.FAILED)
                     AiConversationClient.RecapAttempt.Empty -> Ui()
                 }

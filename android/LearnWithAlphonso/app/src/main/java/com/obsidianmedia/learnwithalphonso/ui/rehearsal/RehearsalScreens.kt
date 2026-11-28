@@ -36,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.Phrasebook
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.heading
@@ -115,6 +117,16 @@ fun RehearsalScreen(
     var screen by rememberSaveable { mutableStateOf(mode) }
     val hostScope = rememberCoroutineScope()
     LaunchedEffect(Unit) { c.load() }
+    // The last loaded brief's phrases stay on the phone, so the phrasebook opens with no connection.
+    val phraseStore = remember { PhrasebookStore(container.prefs) }
+    var returnedFromPhrases by remember { mutableStateOf(false) }
+    LaunchedEffect(ui.state) {
+        val loaded = ui.state ?: return@LaunchedEffect
+        val keep = Phrasebook.snapshot(loaded)
+        if (keep != null) phraseStore.save(course.code, keep) else phraseStore.clear(course.code)
+    }
+    // System Back from the phrasebook returns to the plan, focus on the entry.
+    BackHandler(enabled = screen == "phrases") { returnedFromPhrases = true; screen = "" }
     // System Back from a preview or the intake returns to the picker.
     BackHandler(enabled = ui.state?.active == null && (screen == "intake" || screen.startsWith(PRESET_PREFIX))) { c.clearError(); screen = "" }
     // A learner who may not rehearse (free one used, not Pro) with nothing active meets the Pro sheet at once.
@@ -125,14 +137,22 @@ fun RehearsalScreen(
             val state = ui.state
             when {
                 state == null && ui.loading -> Text("Loading…", style = BodyType, color = ds.inkSoft, modifier = Modifier.padding(AlphonsoTokens.Space.gutter))
+                screen == "phrases" && (state == null || state.active != null) -> {
+                    val snap = state?.let { Phrasebook.snapshot(it) } ?: phraseStore.load(course.code)
+                    if (snap == null) { LaunchedEffect(Unit) { screen = "" } } else RehearsalPhrasebookScreen(container, snap, onBack = { returnedFromPhrases = true; screen = "" })
+                }
                 state == null -> {
                     DsBackBar("Learn", onBack)
+                    // Offline: the saved phrases still open.
+                    phraseStore.load(course.code)?.let { saved ->
+                        PhrasebookEntryCard(saved.entries.size, remember { FocusRequester() }) { screen = "phrases" }
+                    }
                     Text(RehearsalCopy.errorText(ui.error ?: com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalError.FAILED), style = BodyType, color = ds.wrongInk, modifier = Modifier.padding(AlphonsoTokens.Space.gutter))
                     AlphonsoPrimaryButton("Try again", { hostScope.launch { c.load() } }, Modifier.padding(AlphonsoTokens.Space.gutter))
                 }
                 state.active != null && screen == "outcome" -> HowDidItGo(state.active!!, ui.busy, ui.error, c, onBack = { screen = "" }, onDone = onBack, onMoved = { screen = "" })
                 state.active != null && screen == "adjust" -> RehearsalIntakeScreen(course.code, state.active, ui.busy, ui.error, c, onBack = { screen = "" }, onSaved = { screen = "" })
-                state.active != null -> RehearsalPlan(state, c, onBack = onBack, onOpenStage = onOpenStage, onAdjust = { screen = "adjust" })
+                state.active != null -> RehearsalPlan(state, c, onBack = onBack, onOpenStage = onOpenStage, onAdjust = { screen = "adjust" }, onOpenPhrases = { screen = "phrases" }, refocusPhrases = returnedFromPhrases, onRefocused = { returnedFromPhrases = false })
                 // The free rehearsal is used and the learner is not Pro: the Pro sheet is the screen, the picker stays hidden.
                 entryOpensPaywall(state, container.entitlements.isPro) -> DsBackBar("Learn", onBack)
                 screen == "intake" -> RehearsalIntakeScreen(course.code, null, ui.busy, ui.error, c, onBack = { c.clearError(); screen = "" }, onSaved = { screen = "" })
@@ -239,8 +259,16 @@ fun RehearsalIntakeScreen(
 
 /** "Your rehearsal plan": three stages, one primary button (the server's next stage), Adjust and Delete quiet. */
 @Composable
-fun RehearsalPlan(state: RehearsalState, controller: RehearsalController, onBack: () -> Unit, onOpenStage: (String, Stage) -> Unit, onAdjust: () -> Unit) {
+fun RehearsalPlan(
+    state: RehearsalState, controller: RehearsalController, onBack: () -> Unit, onOpenStage: (String, Stage) -> Unit, onAdjust: () -> Unit,
+    onOpenPhrases: () -> Unit = {}, refocusPhrases: Boolean = false, onRefocused: () -> Unit = {},
+) {
     val r = state.active ?: return
+    val phraseCount = Phrasebook.entries(r.brief).size
+    val phrasesOpen = Phrasebook.isOpen(state)
+    val phrasesFocus = remember { FocusRequester() }
+    // Back from the phrasebook, TalkBack returns to the card that opened it.
+    LaunchedEffect(refocusPhrases) { if (refocusPhrases) { if (phrasesOpen) runCatching { phrasesFocus.requestFocus() }; onRefocused() } }
     val ds = LocalAlphonsoTokens.current
     val scope = rememberCoroutineScope()
     var confirming by remember { mutableStateOf(false) }
@@ -272,6 +300,8 @@ fun RehearsalPlan(state: RehearsalState, controller: RehearsalController, onBack
                     Text(if (done) "Repeat" else "Start", style = FootnoteType, color = ds.actionText)
                 }
             }
+            // After stage 1, the brief's phrases: above "Next:", hidden when the brief has none.
+            if (phrasesOpen) PhrasebookEntryCard(phraseCount, phrasesFocus, onOpenPhrases)
             AlphonsoPrimaryButton(RehearsalCopy.nextButton(next), { onOpenStage(r.id, next) })
             Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
                 TextButton(onClick = onAdjust) { Text("Adjust", color = ds.inkSoft) }
