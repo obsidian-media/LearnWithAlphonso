@@ -86,6 +86,12 @@ const call = () =>
     }),
   });
 
+const OWN = {
+  practice_call_id: CALL,
+  speaking_full: 3,
+  speaking_english: 1,
+  key_phrases_used: 2,
+};
 const LABELS = ["The salary question", "A misunderstanding", "Being interrupted"];
 const generated = (over: Record<string, unknown> = {}) => ({
   corrections: [
@@ -114,7 +120,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   h.rpcs = [];
   h.usage = [];
-  h.prevRuns = [];
+  h.prevRuns = [OWN];
   h.eqs = [];
   h.claim = true;
   h.finishResult = 1;
@@ -385,6 +391,7 @@ describe("How you spoke: numbers only, from the run just written", () => {
 
   it("holds at most 3 notes, the first positive", async () => {
     h.prevRuns = [
+      OWN,
       { practice_call_id: "p1", speaking_full: 0, speaking_english: 0, key_phrases_used: 0 },
     ];
     const body = await (await callWith(L)).json();
@@ -414,9 +421,18 @@ describe("How you spoke: numbers only, from the run just written", () => {
     expect(await (await callWith(L)).json()).not.toHaveProperty("rehearsalSpeaking");
   });
 
-  it("a failed read of the previous run only loses the comparison", async () => {
+  it("is ABSENT when no run row was written for this call (the rehearsal was deleted mid-call)", async () => {
+    h.prevRuns = [];
+    expect(await (await callWith(L)).json()).not.toHaveProperty("rehearsalSpeaking");
+    // Another call's run of the same stage is not this call's run.
+    h.prevRuns = [
+      { practice_call_id: "p1", speaking_full: 1, speaking_english: 0, key_phrases_used: 0 },
+    ];
+    expect(await (await callWith(L)).json()).not.toHaveProperty("rehearsalSpeaking");
+  });
+
+  it("a read that cannot confirm the run shows nothing", async () => {
     h.prevRuns = "not a list" as unknown as unknown[];
-    const body = await (await callWith(L)).json();
-    expect(body.rehearsalSpeaking.notes.length).toBeGreaterThan(0);
+    expect(await (await callWith(L)).json()).not.toHaveProperty("rehearsalSpeaking");
   });
 });

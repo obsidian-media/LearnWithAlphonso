@@ -40,6 +40,7 @@ const recapData = {
 const ctl = (over: Partial<RecapController>): RecapController => ({
   status: "ready",
   recap: recapData,
+  howYouSpoke: null,
   review: "idle",
   onRetry: vi.fn(),
   onReview: vi.fn(),

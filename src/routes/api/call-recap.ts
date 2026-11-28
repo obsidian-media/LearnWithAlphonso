@@ -69,14 +69,15 @@ async function speakingFor(
       .eq("stage", run.stage)
       .order("finished_at", { ascending: false })
       .limit(3);
-    const earlier = (
-      (data ?? []) as {
-        practice_call_id: string | null;
-        speaking_full: number | null;
-        speaking_english: number | null;
-        key_phrases_used: number | null;
-      }[]
-    ).find((r) => r.practice_call_id !== callId);
+    const rows = (data ?? []) as {
+      practice_call_id: string | null;
+      speaking_full: number | null;
+      speaking_english: number | null;
+      key_phrases_used: number | null;
+    }[];
+    // No row for THIS call means no run was written (the learner deleted the rehearsal mid-call): no card.
+    if (!rows.some((r) => r.practice_call_id === callId)) return undefined;
+    const earlier = rows.find((r) => r.practice_call_id !== callId);
     if (earlier)
       prev = {
         full_replies: earlier.speaking_full,
@@ -84,7 +85,8 @@ async function speakingFor(
         key_phrases: earlier.key_phrases_used,
       };
   } catch {
-    prev = null;
+    // The run cannot be confirmed, so nothing is shown.
+    return undefined;
   }
   const replies = row.replies ?? 0;
   return buildSpeaking(

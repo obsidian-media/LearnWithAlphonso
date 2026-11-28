@@ -21,18 +21,18 @@
 --           and re-run finish_rehearsal_recap from 20261130100000 (the 10-argument one).
 
 ALTER TABLE public.rehearsal_runs
-  ADD COLUMN speaking_replies integer CHECK (speaking_replies BETWEEN 0 AND 1000),
-  ADD COLUMN speaking_full integer CHECK (speaking_full >= 0),
-  ADD COLUMN speaking_english integer CHECK (speaking_english >= 0),
-  ADD COLUMN key_phrases_used integer CHECK (key_phrases_used >= 0),
-  ADD COLUMN key_phrases_total integer CHECK (key_phrases_total BETWEEN 0 AND 50),
+  ADD COLUMN IF NOT EXISTS speaking_replies integer CHECK (speaking_replies BETWEEN 0 AND 1000),
+  ADD COLUMN IF NOT EXISTS speaking_full integer CHECK (speaking_full >= 0),
+  ADD COLUMN IF NOT EXISTS speaking_english integer CHECK (speaking_english >= 0),
+  ADD COLUMN IF NOT EXISTS key_phrases_used integer CHECK (key_phrases_used >= 0),
+  ADD COLUMN IF NOT EXISTS key_phrases_total integer CHECK (key_phrases_total BETWEEN 0 AND 50),
   ADD CONSTRAINT rehearsal_runs_speaking_counts_ok CHECK (
     (speaking_full IS NULL OR (speaking_replies IS NOT NULL AND speaking_full <= speaking_replies))
     AND (speaking_english IS NULL OR (speaking_replies IS NOT NULL AND speaking_english <= speaking_replies))
     AND (key_phrases_used IS NULL OR (key_phrases_total IS NOT NULL AND key_phrases_used <= key_phrases_total))
   );
 
-DROP FUNCTION public.finish_rehearsal_recap(uuid, text, uuid, text[], jsonb, boolean, text[], text[], text[], integer);
+DROP FUNCTION IF EXISTS public.finish_rehearsal_recap(uuid, text, uuid, text[], jsonb, boolean, text[], text[], text[], integer);
 
 CREATE FUNCTION public.finish_rehearsal_recap(
   _user_id uuid,
