@@ -47,7 +47,8 @@ describe("buildStatus", () => {
     expect(buildStatus({ readyState: "READY" })).toBe("ready");
     expect(buildStatus({ state: "READY" })).toBe("ready");
     expect(buildStatus({ readyState: "ERROR" })).toBe("failed");
-    expect(buildStatus({ readyState: "CANCELED" })).toBe("failed");
+    expect(buildStatus({ readyState: "CANCELED" })).toBe("canceled");
+    expect(buildStatus({ readyState: "DELETED" })).toBe("failed");
     expect(buildStatus({ readyState: "BUILDING" })).toBe("pending");
     expect(buildStatus({ readyState: "QUEUED" })).toBe("pending");
   });
@@ -286,6 +287,38 @@ describe("run", () => {
     expect(
       lines.filter((l) => l.startsWith("::warning::") && l.includes("no production build")),
     ).toHaveLength(2);
+  });
+
+  it("skips, and stays green, when Vercel skipped the main build via the ignored build step (CANCELED)", async () => {
+    const v = fakeVercel({
+      builds: {
+        [WEB.projectId]: [dep("web-skipped", SHA, 2, "CANCELED")],
+        [ADMIN.projectId]: [dep("admin-skipped", SHA, 2, "CANCELED")],
+      },
+      aliases: { [WEB.domain]: "web-old", [ADMIN.domain]: "admin-old" },
+      shas: { "web-old": OLDER, "admin-old": OLDER },
+    });
+    const { d, lines } = deps(v.fetchImpl);
+    expect(await run(d)).toBe(0);
+    expect(v.promoted).toEqual([]);
+    expect(lines.filter((l) => l.startsWith("::warning::") && l.includes("skipped"))).toHaveLength(
+      2,
+    );
+    expect(lines.some((l) => l.startsWith("::error::"))).toBe(false);
+  });
+
+  it("still promotes admin when only web was skipped", async () => {
+    const v = fakeVercel({
+      builds: {
+        [WEB.projectId]: [dep("web-skipped", SHA, 2, "CANCELED")],
+        [ADMIN.projectId]: [dep("admin-new", SHA, 2)],
+      },
+      aliases: { [WEB.domain]: "web-old", [ADMIN.domain]: "admin-old" },
+      shas: { "web-old": OLDER, "admin-old": OLDER },
+    });
+    const { d } = deps(v.fetchImpl, { isAncestor: () => false });
+    expect(await run(d)).toBe(0);
+    expect(v.promoted).toEqual(["admin-new"]);
   });
 
   it("fails when the build failed", async () => {

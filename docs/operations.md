@@ -16,6 +16,33 @@ Email goes through Resend from `@hello.learnwithalphonso.com`: owner report aler
 
 Vercel Production variables on the web project, by name (`vercel env ls production`, 2026-11-22; values never read): `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`, `REVENUECAT_PROJECT_ID`, `REVENUECAT_V2_SECRET_KEY`, `REVENUECAT_SECRET_API_KEY`, `REVENUECAT_WEB_PRODUCT_ID`, `REVENUECAT_WEB_YEARLY_PRODUCT_ID`, four `REVENUECAT_WEB_*PURCHASE_LINK*` links, `VITE_POSTHOG_KEY`, `SUBSCRIPTION_ID_SECRET`, `VITE_TURNSTILE_SITE_KEY`, `OPENROUTER_API_KEY`, `DEEPGRAM_API_KEY`, `LESSON_SESSION_SECRET`, `REPORT_NOTIFY_TO`, `REPORT_NOTIFY_SECRET`, `RESEND_API_KEY`, `DEMO_ACCOUNT_EMAIL`, `REVIEW_DEMO_CODE_KEY`, `APPLE_CLIENT_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_TEAM_ID`, `HECTOR_VOICE_SUPABASE_URL`, `HECTOR_VOICE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_URL`, `VITE_SUPABASE_URL` (meant to be the `api.learnwithalphonso.com` custom domain; (unverified: the values were deliberately not read)), `SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. **Not set on the web project:** `ADMIN_REQUIRE_AAL2` (web has no console), `APPLE_TOKEN_ENCRYPTION_KEY`, `SERVER_HEARTS` (defaults to enforcing), `REVENUECAT_REJECT_SANDBOX`, every `AI_MONTHLY_CAP_*`, `AI_COST_*` and `AI_SPEND_BREAKER_*` (all defaults apply). Update 2026-11-25: `SUPPORT_NOTIFY_FROM` and `REPORT_NOTIFY_FROM` are now SET on the web Production environment (coordinator read-back of names on 2026-11-22; the agent API answers 403 on these, so the values were not read and are not re-verified here). The admin project does not read them. Why it matters: without `SUPPORT_NOTIFY_FROM` the daily AI spend alert, the spend-breaker email and the operational-event alert are logged and skipped (see below), so a tripped breaker would switch AI off and tell nobody. Per the same read-back `NVIDIA_*` settings exist in neither project, `AI_COST_ALERT_DAILY_*` are unset (code defaults apply) and all six `REVENUECAT_WEB_*` settings and `REVENUECAT_SECRET_API_KEY` are set on both projects. On the admin project the Numbers providers PostHog (`POSTHOG_PERSONAL_API_KEY`, `POSTHOG_PROJECT_ID`), App Store Connect (`ASC_*`) and Google Play (`GOOGLE_PLAY_*`) are NOT set, so those groups show Not connected (open item). The admin project holds `ADMIN_REQUIRE_AAL2`, `SUPABASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_*` (including `SENTRY_API_TOKEN`) and the RevenueCat keys (`REVENUECAT_METRICS_KEY`, `REVENUECAT_PROJECT_ID`, `REVENUECAT_V2_SECRET_KEY`, `REVENUECAT_SECRET_API_KEY`).
 
+## Build costs (Vercel)
+
+Both Vercel projects (`learnwithalphonso`, `learnwithalphonso-admin`) build from this repo's root `vercel.json`. Build
+CPU was the bill driver (about 7,700 minutes a month on each project), so `vercel.json` sets
+`"ignoreCommand": "sh scripts/vercel-ignore-build.sh"`:
+
+- **Previews are off by design.** Every PR and branch push (`VERCEL_ENV` not `production`) is skipped. PR checks run in
+  GitHub Actions (`.github/workflows/ci.yml`) and production is promoted by `scripts/promote-vercel.ts`; none of that
+  needs a preview URL, and the Vercel PR checks are not among the required checks.
+- **Production builds are skipped for native, docs, CI and database-only commits.** A main commit is skipped only when
+  every file changed since the last built commit is under `ios/`, `android/`, `docs/`, `.github/`, `.claude/`,
+  `supabase/migrations/`, `supabase/functions/` or is a root-level `*.md`. Anything else, an unknown previous commit or
+  a failing `git diff` builds. The list lives in `src/lib/vercel-ignore-build.ts` (tested, with a parity test against
+  the script). Vercel records a skipped build as Canceled; the "Promote web to production" CI job treats that as
+  "nothing to promote" and stays green.
+- **One-off preview:** run `vercel deploy` from a checkout (it uploads a build, the ignore step only applies to
+  git-triggered builds), or temporarily remove `ignoreCommand` on a branch (the rule is per commit, so the branch's own
+  `vercel.json` decides).
+
+Owner dashboard settings (not in code, set per project, both projects):
+
+1. Settings -> Build and Deployment -> Build Machine: **Standard** (the larger machines bill more per minute).
+2. Settings -> Build and Deployment -> Deployment Retention: shorten it for **Preview** deployments (leftover previews
+   of merged branches pile up).
+3. Team Settings -> Billing -> Spend Management: set a monthly budget and alerts so a spike pauses or warns instead of
+   showing up on the invoice.
+
 ## Off switches
 
 Table `public.app_switches` (service role only). Three rows, all currently `enabled = true` in production (2026-11-22; the `support_ai` row is described below the table):

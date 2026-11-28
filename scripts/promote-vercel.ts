@@ -12,7 +12,8 @@
  * - VERCEL_TOKEN unset: warns and exits 0 (the job can merge before the secret exists).
  * - Auto-assign still on: Vercel has already pointed the domain at this build, so the script sees that and does
  *   nothing (no promote request is sent).
- * - No Vercel build for this commit (Vercel skipped it): warns and skips that project.
+ * - No Vercel build for this commit, or one that Vercel canceled/skipped (vercel.json ignoreCommand skips native- and
+ *   docs-only main commits): warns and skips that project, and the job stays green.
  * - A newer main commit is already live: skips, so an older build never replaces a newer one.
  *
  * Usage (CI): VERCEL_TOKEN=... GITHUB_SHA=... bun scripts/promote-vercel.ts
@@ -82,12 +83,15 @@ export function selectDeployment(
   return best;
 }
 
-export type BuildStatus = "ready" | "failed" | "pending";
+export type BuildStatus = "ready" | "failed" | "pending" | "canceled";
 
 export function buildStatus(d: Deployment): BuildStatus {
   const s = d.readyState ?? d.state;
   if (s === "READY") return "ready";
-  if (s === "ERROR" || s === "CANCELED" || s === "DELETED") return "failed";
+  // CANCELED is how Vercel records a build its Ignored Build Step skipped (scripts/vercel-ignore-build.sh): nothing
+  // was built, so there is nothing to promote and production keeps serving the last built commit.
+  if (s === "CANCELED") return "canceled";
+  if (s === "ERROR" || s === "DELETED") return "failed";
   return "pending";
 }
 
@@ -246,6 +250,12 @@ export async function promoteProject(
       if (status === "ready") {
         target = found;
         break;
+      }
+      if (status === "canceled") {
+        deps.log(
+          `::warning::${label}: the Vercel build ${deploymentId(found)} for ${sha.slice(0, 12)} was canceled or skipped by the Ignored Build Step; nothing to promote, production keeps its current build.`,
+        );
+        return "skipped";
       }
       if (status === "failed") {
         deps.log(
