@@ -9,6 +9,8 @@ import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import com.obsidianmedia.learnwithalphonso.core.logic.CallRecap
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalSpeaking
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.ReplyLatencyTracker
+import kotlinx.serialization.json.JsonPrimitive
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemory
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryLoad
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
@@ -174,13 +176,16 @@ class AiConversationClient(private val http: ApiHttp) {
     }
 
     /** As [callRecap], but tells a retryable failure (offline, timeout, a 5xx, or the server's `retry`) from "nothing to show". */
-    suspend fun callRecapAttempt(callId: String, transcript: List<ChatMessage>, cefrLevel: String? = null, scene: String? = null): RecapAttempt {
+    suspend fun callRecapAttempt(callId: String, transcript: List<ChatMessage>, cefrLevel: String? = null, scene: String? = null, replyLatenciesMs: List<Int> = emptyList()): RecapAttempt {
         if (!CallRecap.qualifies(transcript.map { it.role })) return RecapAttempt.Empty
         val body = buildJsonObject {
             put("callId", callId)
             putJsonArray("messages") { transcript.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
             if (cefrLevel != null) put("cefrLevel", cefrLevel)
             if (scene != null) put("scene", scene)
+            // Rehearsal calls only (the caller passes none otherwise). Left out when empty, so a plain call and an old server are unchanged.
+            val latencies = ReplyLatencyTracker.sanitize(replyLatenciesMs.map { it.toLong() })
+            if (latencies.isNotEmpty()) putJsonArray("replyLatenciesMs") { latencies.forEach { add(JsonPrimitive(it)) } }
         }
         return runCatching {
             val response = http.post("api/call-recap", body, timeoutMillis = RECAP_TIMEOUT_MS)

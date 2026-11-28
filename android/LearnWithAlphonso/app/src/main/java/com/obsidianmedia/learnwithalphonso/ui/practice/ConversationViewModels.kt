@@ -11,6 +11,8 @@ import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Scenario
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.CallSource
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.ReplyLatencyTracker
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeBinding
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
@@ -85,13 +87,20 @@ abstract class BaseConversationViewModel(
     val recap = CallRecapController(ai, viewModelScope)
     /** The stored hands-free choice starts a call only after the opener has finished (never under it). */
     private val storedStart = HandsFreeBinding.StoredStart(handsFree) { isCallOver }
+    /** Gaps between the partner finishing and the learner starting, sent with a rehearsal call's recap (never for other calls). */
+    private val replyLatency = ReplyLatencyTracker()
     override fun armAutoStartHandsFree(check: () -> Boolean) = storedStart.arm(check)
 
     // The opener being fetched or spoken; a press cancels it, which stops its playback.
     private val opener by lazy {
         OpenerSpeaker(
             viewModelScope, _state, { engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE },
-            player, openerCache, course.code, onFinished = { storedStart.openerFinished() },
+            player, openerCache, course.code,
+            onFinished = {
+                // Only the first opener starts a clock: a re-run of speakOpener() mid-call must not restart it.
+                if (_state.value.turns.none { it.role == "user" }) replyLatency.partnerFinished(System.currentTimeMillis())
+                storedStart.openerFinished()
+            },
         ) { text, voice -> ai.synthesizeSpeech(text, voice = voice, course = course.code) }
     }
 
@@ -132,7 +141,7 @@ abstract class BaseConversationViewModel(
             val r = runCatching { ai.finishPractice(id) }.getOrNull()
             if (r != null) analyticsScenarioId?.let { Analytics.track(AnalyticsEvent.PRACTICE_CALL_COMPLETED, mapOf("scenario_id" to it, "stars" to r.stars)) }
             _result.value = r
-            if (r != null) recap.start(id, callTurns(), analyticsScenarioId)
+            if (r != null) recap.start(id, callTurns(), analyticsScenarioId, if (callSource is CallSource.Rehearsal) replyLatency.values() else emptyList())
             r
         }
         finishJob = job
@@ -140,6 +149,7 @@ abstract class BaseConversationViewModel(
     }
     fun resetPractice() {
         _result.value = null; callId = UUID.randomUUID().toString(); startedAt = System.currentTimeMillis(); slip = null; finishing = false; finishJob = null
+        replyLatency.reset()
         recap.reset()
     }
     fun retryScenario(speak: Boolean = true) {
@@ -174,10 +184,21 @@ abstract class BaseConversationViewModel(
 
     init { HandsFreeBinding.feedPhases(viewModelScope, handsFree, engine, _state) }
 
+    /** Hands-free: the learner starts speaking at the first voice activity of a turn (status Hearing), not when listening opens. */
+    init {
+        viewModelScope.launch { handsFree.status.collect { if (it == HandsFreeLoop.Status.Hearing) replyLatency.learnerStarted(System.currentTimeMillis()) } }
+    }
+
     /** The microphone level while recording (the call's "You" tile), null otherwise. */
     override fun micLevelDBFS(): Double? = try { recorder.levelDBFS() } catch (e: Exception) { handsFree.failed(); null }
 
-    override fun pressBegan() { if (finishing) return; stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
+    override fun pressBegan() {
+        if (finishing) return
+        // Push to talk: the press starts the recorder, which is when the learner starts. Hands-free presses for them the moment
+        // listening opens, so there the first voice activity (below) is the start instead.
+        if (!handsFree.isOn) replyLatency.learnerStarted(System.currentTimeMillis())
+        stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan()
+    }
     override fun pressEnded() {
         // Marked before the engine is told: the conversation must already be busy when the engine returns to idle, or
         // hands-free would see a gap between "heard" and "thinking" and open the mic during the reply.
@@ -240,6 +261,7 @@ abstract class BaseConversationViewModel(
             }
             replyAudioJob = audioJob
             audioJob.await()
+            if (!finishing && callId == attemptId) replyLatency.partnerFinished(System.currentTimeMillis())
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
             if (callId == attemptId) {

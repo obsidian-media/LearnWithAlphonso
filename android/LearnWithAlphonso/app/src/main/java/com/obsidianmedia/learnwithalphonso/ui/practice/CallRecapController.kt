@@ -33,13 +33,16 @@ class CallRecapController(private val ai: AiConversationClient, private val scop
     private var job: Job? = null
     private var transcript: List<ChatMessage> = emptyList()
     private var scene: String? = null
+    private var replyLatenciesMs: List<Int> = emptyList()
 
-    fun start(callId: String, transcript: List<ChatMessage>, scene: String?) {
+    /** [replyLatenciesMs]: a rehearsal call's per-reply gaps (empty for every other call); kept for "Try again". */
+    fun start(callId: String, transcript: List<ChatMessage>, scene: String?, replyLatenciesMs: List<Int> = emptyList()) {
         if (attempted || !CallRecap.qualifies(transcript.map { it.role })) return
         attempted = true
         this.callId = callId
         this.transcript = transcript
         this.scene = scene
+        this.replyLatenciesMs = replyLatenciesMs
         launchAttempt(callId)
     }
 
@@ -53,7 +56,7 @@ class CallRecapController(private val ai: AiConversationClient, private val scop
     private fun launchAttempt(callId: String) {
         _ui.value = Ui(Status.PENDING)
         job = scope.launch {
-            val attempt = ai.callRecapAttempt(callId, transcript, scene = scene)
+            val attempt = ai.callRecapAttempt(callId, transcript, scene = scene, replyLatenciesMs = replyLatenciesMs)
             // A retry or the next scene may have reset this call while it was pending: its recap is not shown.
             if (this@CallRecapController.callId != callId) return@launch
             _ui.update {
