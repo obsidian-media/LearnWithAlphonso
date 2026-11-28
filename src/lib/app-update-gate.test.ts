@@ -62,8 +62,12 @@ describe("GET /api/app-config", () => {
     process.env.APP_IOS_STORE_URL = "https://apps.apple.com/app/id1";
     delete process.env.APP_MIN_ANDROID_VERSION_CODE;
     const { Route } = await import("../routes/api/app-config");
-    const GET = (Route.options.server!.handlers as unknown as { GET: () => Promise<Response> }).GET;
-    const res = await GET();
+    const GET = (
+      Route.options.server!.handlers as unknown as {
+        GET: (o: { request: Request }) => Promise<Response>;
+      }
+    ).GET;
+    const res = await GET({ request: new Request("https://x/api/app-config") });
     expect(res.status).toBe(200);
     const body = (await res.json()) as { ios: { minBuild: number }; android: { minBuild: null } };
     expect(body.ios.minBuild).toBe(59);
