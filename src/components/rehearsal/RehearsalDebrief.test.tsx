@@ -10,21 +10,35 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     params,
+    search,
     children,
+    onClick,
     ...rest
   }: {
     to: string;
     params?: Record<string, string>;
+    search?: Record<string, unknown>;
     children: React.ReactNode;
+    onClick?: () => void;
   }) => (
     <a
-      href={Object.entries(params ?? {}).reduce((t, [k, v]) => t.replace(`$${k}`, v), to)}
+      href={
+        Object.entries(params ?? {}).reduce((t, [k, v]) => t.replace(`$${k}`, v), to) +
+        (search ? `?${JSON.stringify(search)}` : "")
+      }
+      onClick={(e) => {
+        e.preventDefault();
+        onClick?.();
+      }}
       {...rest}
     >
       {children}
     </a>
   ),
 }));
+const pro = vi.hoisted(() => ({ state: "loading" as "loading" | "pro" | "free" | "error" }));
+vi.mock("@/lib/use-pro-status", () => ({ useProStatus: () => ({ state: pro.state }) }));
+vi.mock("../WebPaywall", () => ({ WebPaywallSheet: () => <p>paywall</p> }));
 
 const { RehearsalDebrief } = await import("./RehearsalDebrief");
 
@@ -59,6 +73,7 @@ beforeEach(() => {
   api.fetchRehearsals.mockReset();
   props.onRunAgain.mockReset();
   props.onDone.mockReset();
+  pro.state = "error";
 });
 
 describe("RehearsalDebrief (after a run, in place of stars)", () => {
@@ -78,17 +93,75 @@ describe("RehearsalDebrief (after a run, in place of stars)", () => {
     api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
     render(<RehearsalDebrief {...props} />);
     expect(await screen.findByText(/2 items\. They will come back in Review/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Next: The hard moments" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Next: The hard moments" })).toBeInTheDocument();
+  });
+
+  it("Next stage opens the partner sheet for the NEXT stage and starts no call by itself", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
+    const user = userEvent.setup();
+    render(<RehearsalDebrief {...props} />);
+    await user.click(await screen.findByRole("button", { name: "Next: The hard moments" }));
+    expect(screen.getByRole("heading", { name: "The hard moments" })).toBeInTheDocument();
+    expect(screen.getByText("Who do you want to practise with?")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Start with Alphonso" })).toHaveAttribute(
       "href",
       `/rehearse/${ID}/hard_moments`,
     );
+    expect(props.onRunAgain).not.toHaveBeenCalled();
   });
 
-  it("'Run this stage again' starts a fresh call", async () => {
+  it("choosing Alphonso from the sheet starts the call without a persona", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
+    const user = userEvent.setup();
+    render(<RehearsalDebrief {...props} />);
+    await user.click(await screen.findByRole("button", { name: "Next: The hard moments" }));
+    const href = screen.getByRole("link", { name: "Start with Alphonso" }).getAttribute("href");
+    expect(href).toBe(`/rehearse/${ID}/hard_moments`);
+    expect(href).not.toContain("persona");
+  });
+
+  it("a Pro client with hectorAvailable:false is not locked out of Hector", async () => {
+    pro.state = "pro";
+    api.fetchRehearsals.mockResolvedValue({
+      ok: true,
+      value: { ...withRun, hectorAvailable: false },
+    });
+    const user = userEvent.setup();
+    render(<RehearsalDebrief {...props} />);
+    await user.click(await screen.findByRole("button", { name: "Next: The hard moments" }));
+    expect(screen.getByRole("link", { name: "Start with Hector" })).toBeInTheDocument();
+  });
+
+  it("Run again after a Hector run, choosing Alphonso, restarts nothing by itself: the navigation remounts once", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
+    const user = userEvent.setup();
+    render(<RehearsalDebrief {...props} currentPartner={{ persona: "hector" }} />);
+    await user.click(await screen.findByRole("button", { name: "Run this stage again" }));
+    await user.click(screen.getByRole("link", { name: "Start with Alphonso" }));
+    expect(props.onRunAgain).not.toHaveBeenCalled();
+  });
+
+  it("Run again with the SAME partner restarts the call, since the URL does not change", async () => {
+    pro.state = "pro";
+    api.fetchRehearsals.mockResolvedValue({
+      ok: true,
+      value: { ...withRun, hectorAvailable: true },
+    });
+    const user = userEvent.setup();
+    render(<RehearsalDebrief {...props} currentPartner={{ persona: "hector" }} />);
+    await user.click(await screen.findByRole("button", { name: "Run this stage again" }));
+    await user.click(screen.getByRole("link", { name: "Start with Hector" }));
+    expect(props.onRunAgain).toHaveBeenCalledTimes(1);
+  });
+
+  it("Run this stage again opens the sheet for the SAME stage; the call restarts only once a partner is chosen", async () => {
     api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
     const user = userEvent.setup();
     render(<RehearsalDebrief {...props} />);
     await user.click(await screen.findByRole("button", { name: "Run this stage again" }));
+    expect(props.onRunAgain).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { name: "The real conversation" })).toBeInTheDocument();
+    await user.click(screen.getByRole("link", { name: "Start with Alphonso" }));
     expect(props.onRunAgain).toHaveBeenCalledTimes(1);
   });
 
