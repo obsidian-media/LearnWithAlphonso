@@ -30,7 +30,8 @@ CPU was the bill driver (about 7,700 minutes a month on each project), so `verce
   `supabase/migrations/`, `supabase/functions/` or is a root-level `*.md`. Anything else, an unknown previous commit or
   a failing `git diff` builds. The list lives in `src/lib/vercel-ignore-build.ts` (tested, with a parity test against
   the script). Vercel records a skipped build as Canceled; the "Promote web to production" CI job treats that as
-  "nothing to promote" and stays green.
+  "nothing to promote" and stays green, but only after re-checking the files between the live commit and that commit
+  with the same rule: a canceled build of a real code change (superseded or canceled by hand) fails the job.
 - **One-off preview:** run `vercel deploy` from a checkout (it uploads a build, the ignore step only applies to
   git-triggered builds), or temporarily remove `ignoreCommand` on a branch (the rule is per commit, so the branch's own
   `vercel.json` decides).

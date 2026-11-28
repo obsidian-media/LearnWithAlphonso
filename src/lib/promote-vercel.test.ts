@@ -189,6 +189,7 @@ function deps(fetchImpl: typeof fetch, overrides: Partial<Deps> = {}) {
     env: { VERCEL_TOKEN: "secret-token-value", GITHUB_SHA: SHA },
     fetch: fetchImpl,
     isAncestor: () => false,
+    changedFiles: () => ["ios/App/A.swift"],
     sleep: async (ms) => {
       clock += ms;
     },
@@ -319,6 +320,58 @@ describe("run", () => {
     const { d } = deps(v.fetchImpl, { isAncestor: () => false });
     expect(await run(d)).toBe(0);
     expect(v.promoted).toEqual(["admin-new"]);
+  });
+
+  it("FAILS when a canceled build carried a real src change (superseded or manual cancel)", async () => {
+    const v = fakeVercel({
+      builds: {
+        [WEB.projectId]: [dep("web-canceled", SHA, 2, "CANCELED")],
+        [ADMIN.projectId]: [dep("admin-canceled", SHA, 2, "CANCELED")],
+      },
+      aliases: { [WEB.domain]: "web-old", [ADMIN.domain]: "admin-old" },
+      shas: { "web-old": OLDER, "admin-old": OLDER },
+    });
+    const asked: Array<[string, string]> = [];
+    const { d, lines } = deps(v.fetchImpl, {
+      changedFiles: (from, to) => {
+        asked.push([from, to]);
+        return ["ios/App/A.swift", "src/lib/x.ts"];
+      },
+    });
+    expect(await run(d)).toBe(1);
+    expect(asked[0]).toEqual([OLDER, SHA]);
+    expect(v.promoted).toEqual([]);
+    expect(
+      lines.filter((l) => l.startsWith("::error::") && l.includes("needed a build")),
+    ).toHaveLength(2);
+  });
+
+  it("fails a canceled build when the live commit or the diff is unknown", async () => {
+    const noLive = fakeVercel({
+      builds: { [WEB.projectId]: [dep("w", SHA, 2, "CANCELED")], [ADMIN.projectId]: [] },
+      aliases: {},
+      shas: {},
+    });
+    expect(await run(deps(noLive.fetchImpl).d)).toBe(1);
+    const noDiff = fakeVercel({
+      builds: { [WEB.projectId]: [dep("w", SHA, 2, "CANCELED")], [ADMIN.projectId]: [] },
+      aliases: { [WEB.domain]: "web-old" },
+      shas: { "web-old": OLDER },
+    });
+    expect(await run(deps(noDiff.fetchImpl, { changedFiles: () => null }).d)).toBe(1);
+  });
+
+  it("stays green for a canceled build that is older than the live commit", async () => {
+    const v = fakeVercel({
+      builds: { [WEB.projectId]: [dep("w", SHA, 2, "CANCELED")], [ADMIN.projectId]: [] },
+      aliases: { [WEB.domain]: "web-newer" },
+      shas: { "web-newer": NEWER },
+    });
+    const { d } = deps(v.fetchImpl, {
+      isAncestor: (a, b) => a === SHA && b === NEWER,
+      changedFiles: () => ["src/lib/x.ts"],
+    });
+    expect(await run(d)).toBe(0);
   });
 
   it("fails when the build failed", async () => {

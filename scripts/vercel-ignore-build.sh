@@ -38,6 +38,8 @@ OLD_IFS=$IFS
 NL='
 '
 IFS=$NL
+# No glob expansion: a changed file named like a pattern (a name with *, ? or [ ]) must be judged literally.
+set -f
 for file in $changed; do
   skippable=0
   case "$file" in

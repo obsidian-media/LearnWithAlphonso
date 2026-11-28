@@ -193,6 +193,32 @@ describe.skipIf(!hasSh || !hasGit)("scripts/vercel-ignore-build.sh behaviour", (
     expect(r.out).toContain("git diff failed");
   });
 
+  it("judges a file name containing a glob character literally, not as a pattern", () => {
+    // "[d]ocs/x.ts" is a source file; unquoted globbing would turn it into the skippable docs/x.ts.
+    const r = check(["docs/x.ts", "[d]ocs/x.ts"], prod);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("[d]ocs/x.ts");
+    if (process.platform !== "win32") {
+      // A file literally named "*" must not expand to the repo's files either.
+      const star = check(["docs/a.md", "*"], prod);
+      expect(star.code).toBe(1);
+      expect(star.out).toContain("(* is used");
+    }
+  });
+
+  it("handles file names with spaces", () => {
+    expect(check(["docs/my notes.md", "ios/App/My File.swift"], prod).code).toBe(0);
+    const r = check(["docs/a.md", "src/my file.ts"], prod);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("src/my file.ts");
+  });
+
+  it("builds when the diff is empty (same commit)", () => {
+    const r = check(["docs/a.md"], (s) => ({ ...prod(s), VERCEL_GIT_PREVIOUS_SHA: s.head }));
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("empty change list");
+  });
+
   it("decides the same as shouldBuild for the same file lists", () => {
     const cases = [
       ["ios/A.swift"],
