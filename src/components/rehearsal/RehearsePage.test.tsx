@@ -313,12 +313,11 @@ describe("RehearsePage phrasebook", () => {
     expect(screen.getByRole("button", { name: /^Your phrases/ })).toHaveFocus();
   });
 
-  it("the entry row counts the phrases and does not promise saying them yet", async () => {
+  it("the entry row counts the phrases and says they can be heard and said", async () => {
     api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
     render(<RehearsePage course="en" today="2026-11-26" />);
     const row = await screen.findByRole("button", { name: /^Your phrases/ });
-    expect(row).toHaveTextContent("6 phrases · tap to hear");
-    expect(row.textContent).not.toMatch(/say/i);
+    expect(row).toHaveTextContent("6 phrases · tap to hear, say them");
     const next = screen.getByRole("link", { name: "Next: The real conversation" });
     expect(row.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });

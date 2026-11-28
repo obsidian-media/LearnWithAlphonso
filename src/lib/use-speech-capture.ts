@@ -30,11 +30,16 @@ export function useSpeechCapture({
   course,
   handsFree = false,
   onNoWords,
+  reportNoWords = false,
   onFailure,
   onMicDenied,
   onClip,
 }: {
-  onTranscript: (text: string, confidence: number | null) => void | Promise<void>;
+  onTranscript: (
+    text: string,
+    confidence: number | null,
+    words?: { word: string; confidence: number }[],
+  ) => void | Promise<void>;
   /** Forwarded to /api/stt so Deepgram transcribes in the right language
    * instead of defaulting to English. Optional and defaults server-side to
    * "en" -- the conversation routes pass the active course. */
@@ -45,6 +50,8 @@ export function useSpeechCapture({
    */
   handsFree?: boolean;
   onNoWords?: () => void;
+  /** Report a transcript with no words to `onNoWords` outside hands-free too (Say it in the phrasebook treats silence as a result, not an error). */
+  reportNoWords?: boolean;
   /** Called for a real failure (denied microphone, transcription error): the hands-free loop pauses. */
   onFailure?: () => void;
   /** The microphone was refused or could not open: hands-free falls back to hold-to-talk. */
@@ -82,6 +89,8 @@ export function useSpeechCapture({
   courseRef.current = course;
   const handsFreeRef = useRef(handsFree);
   handsFreeRef.current = handsFree;
+  const reportNoWordsRef = useRef(reportNoWords);
+  reportNoWordsRef.current = reportNoWords;
   const onNoWordsRef = useRef(onNoWords);
   onNoWordsRef.current = onNoWords;
   const onFailureRef = useRef(onFailure);
@@ -213,7 +222,11 @@ export function useSpeechCapture({
             signal: abort.signal,
           });
           if (!resp.ok) throw new Error((await readApiError(resp)) || "Transcription failed");
-          const data = (await resp.json()) as { text?: string; confidence?: number | null };
+          const data = (await resp.json()) as {
+            text?: string;
+            confidence?: number | null;
+            words?: { word: string; confidence: number }[];
+          };
           if (goneRef.current) return;
           const text = (data.text ?? "").trim();
           // Gate on the NORMALISED transcript, not the raw one. Deepgram
@@ -222,14 +235,16 @@ export function useSpeechCapture({
           // a raw-text gate let it through as an answer and the learner lost a
           // heart for clearing their throat.
           if (!normaliseSpoken(text)) {
-            if (handsFreeRef.current && onNoWordsRef.current) {
+            if ((handsFreeRef.current || reportNoWordsRef.current) && onNoWordsRef.current) {
               onNoWordsRef.current();
             } else {
               setError("Didn't catch that — try again.");
               setFailed(true);
             }
           } else {
-            await onTranscriptRef.current(text, data.confidence ?? null);
+            if (data.words)
+              await onTranscriptRef.current(text, data.confidence ?? null, data.words);
+            else await onTranscriptRef.current(text, data.confidence ?? null);
           }
         } catch (e) {
           // The screen was left mid-upload: nothing to show, nothing to grade.
