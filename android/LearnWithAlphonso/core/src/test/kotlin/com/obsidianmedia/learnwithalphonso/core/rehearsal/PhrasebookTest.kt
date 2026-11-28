@@ -5,7 +5,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -70,26 +69,41 @@ class PhrasebookTest {
 
     @Test fun `the server voice speaks when it works`() = runTest {
         var device = 0
-        val v = Phrasebook.speak({ byteArrayOf(1) }, { true }, { device++ })
+        val v = Phrasebook.speak({ byteArrayOf(1) }, { true }, { device++; true })
         assertEquals(PhraseVoice.SERVER, v)
         assertEquals(0, device)
     }
 
     @Test fun `the device voice speaks when the fetch fails, is empty, or will not play`() = runTest {
         var device = 0
-        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ throw java.io.IOException("offline") }, { true }, { device++ }))
-        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ null }, { true }, { device++ }))
-        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ ByteArray(0) }, { true }, { device++ }))
-        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ byteArrayOf(1) }, { false }, { device++ }))
-        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ byteArrayOf(1) }, { throw IllegalStateException("codec") }, { device++ }))
+        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ throw java.io.IOException("offline") }, { true }, { device++; true }))
+        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ null }, { true }, { device++; true }))
+        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ ByteArray(0) }, { true }, { device++; true }))
+        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ byteArrayOf(1) }, { false }, { device++; true }))
+        assertEquals(PhraseVoice.DEVICE, Phrasebook.speak({ byteArrayOf(1) }, { throw IllegalStateException("codec") }, { device++; true }))
         assertEquals(5, device)
+    }
+
+    @Test fun `nothing is claimed when the device voice is not ready`() = runTest {
+        assertEquals(PhraseVoice.NONE, Phrasebook.speak({ null }, { true }, { false }))
+    }
+
+    @Test fun `empty audio is never kept`() {
+        var threw = 0
+        for (a in listOf<ByteArray?>(null, ByteArray(0))) try { Phrasebook.requireAudio(a) } catch (e: IllegalStateException) { threw++ }
+        assertEquals(2, threw)
+        assertEquals(1, Phrasebook.requireAudio(byteArrayOf(1)).size)
+    }
+
+    @Test fun `a longer meanings list is not aligned either`() {
+        assertEquals(listOf(PhraseEntry("A"), PhraseEntry("B")), Phrasebook.entries(RehearsalBrief(keyPhrases = listOf("A", "B"), keyPhraseMeanings = listOf("a", "b", "c"))))
     }
 
     @Test fun `a cancellation is not a fallback`() = runTest {
         var device = 0
         var cancelled = false
         try {
-            Phrasebook.speak({ throw CancellationException("left") }, { true }, { device++ })
+            Phrasebook.speak({ throw CancellationException("left") }, { true }, { device++; true })
         } catch (e: CancellationException) {
             cancelled = true
         }

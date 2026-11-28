@@ -35,7 +35,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -55,6 +54,7 @@ import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import com.obsidianmedia.learnwithalphonso.ui.lesson.Speech
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /** The phrases of the last loaded brief, kept on the phone (text only) so the page opens with no connection. One per course. */
@@ -116,10 +116,15 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
     var onDeviceVoice by remember { mutableStateOf(false) }
     val titleFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { titleFocus.requestFocus() } }
-    DisposableEffect(Unit) { onDispose { playback.stop(); Speech.get(context).stop() } }
+    // Start the phone's voice now, so it is ready if the app's voice fails on a first tap.
+    LaunchedEffect(Unit) { Speech.get(context) }
+    var hearing by remember { mutableStateOf<Job?>(null) }
+    DisposableEffect(Unit) { onDispose { hearing?.cancel(); playback.stop(); Speech.stopIfStarted() } }
 
     fun hear(text: String) {
-        scope.launch {
+        // A new tap replaces the one before it.
+        hearing?.cancel()
+        hearing = scope.launch {
             playback.stop()
             Speech.get(context).stop()
             playing = text
@@ -127,13 +132,13 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
                 // Fetched once per phrase and voice: a replay plays the same bytes instead of asking /api/tts again.
                 fetch = {
                     val voice = container.voicePrefs.voice(VoiceCharacter.Alphonso, course.code)
-                    PhraseAudioCache.audio(text, voice, course.code) { container.aiClient.synthesizeSpeech(text, voice = voice, course = course.code) }
+                    PhraseAudioCache.audio(text, voice, course.code) { Phrasebook.requireAudio(container.aiClient.synthesizeSpeech(text, voice = voice, course = course.code)) }
                 },
                 play = { playback.play(it) },
                 device = { Speech.get(context).speak(text, course) },
             )
             onDeviceVoice = how == com.obsidianmedia.learnwithalphonso.core.rehearsal.PhraseVoice.DEVICE
-            playing = null
+            if (playing == text) playing = null
         }
     }
 
@@ -153,12 +158,13 @@ fun RehearsalPhrasebookScreen(container: AppContainer, snapshot: PhrasebookSnaps
                     Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card)
                         .border(2.dp, if (playing == phrase.text) ds.choice else ds.line, RoundedCornerShape(AlphonsoTokens.Radius.control))
                         .clickable(role = Role.Button, onClickLabel = label) { hear(phrase.text) }
-                        .semantics(mergeDescendants = true) { contentDescription = label }
+                        // Read as the phrase and its meaning; the click label says what a tap does.
+                        .semantics(mergeDescendants = true) {}
                         .padding(AlphonsoTokens.Space.s3),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
                 ) {
                     Box(Modifier.sizeIn(minWidth = AlphonsoTokens.Space.minTouch, minHeight = AlphonsoTokens.Space.minTouch), contentAlignment = Alignment.Center) {
-                        Text(if (playing == phrase.text) "…" else "▶", style = TitleType, color = ds.actionText)
+                        Text(if (playing == phrase.text) "…" else "▶", style = TitleType, color = ds.actionText, modifier = Modifier.clearAndSetSemantics {})
                     }
                     Column(Modifier.weight(1f)) {
                         Text(phrase.text, style = HeadlineType, color = ds.ink)

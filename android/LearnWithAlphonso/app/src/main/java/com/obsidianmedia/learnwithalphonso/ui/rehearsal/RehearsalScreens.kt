@@ -125,6 +125,8 @@ fun RehearsalScreen(
         val keep = Phrasebook.snapshot(loaded)
         if (keep != null) phraseStore.save(course.code, keep) else phraseStore.clear(course.code)
     }
+    // System Back from the phrasebook returns to the plan, focus on the entry.
+    BackHandler(enabled = screen == "phrases") { returnedFromPhrases = true; screen = "" }
     // System Back from a preview or the intake returns to the picker.
     BackHandler(enabled = ui.state?.active == null && (screen == "intake" || screen.startsWith(PRESET_PREFIX))) { c.clearError(); screen = "" }
     // A learner who may not rehearse (free one used, not Pro) with nothing active meets the Pro sheet at once.
