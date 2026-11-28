@@ -7,7 +7,12 @@ import { EVENT_KIND_LABELS } from "@/lib/rehearsal-rules";
 import { canSpeak, speak } from "@/lib/speech";
 import { fetchModelSpeech } from "@/lib/use-model-speech";
 import { voicePlayback } from "@/lib/voice-playback";
-import { SAY_IT_CHECKING, SAY_IT_FRAMING, sayItResultText } from "@/lib/say-it-copy";
+import {
+  SAY_IT_CHECKING,
+  SAY_IT_LISTENING,
+  SAY_IT_FRAMING,
+  sayItResultText,
+} from "@/lib/say-it-copy";
 import { useSayIt } from "./use-say-it";
 
 /**
@@ -66,7 +71,8 @@ export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack
               type="button"
               aria-label={`Hear: ${row.phrase}`}
               onClick={() => void play(row.phrase)}
-              className="grid size-11 shrink-0 place-items-center rounded-full bg-ds-brand text-ds-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              disabled={say.busyRow !== null}
+              className="disabled:opacity-50 grid size-11 shrink-0 place-items-center rounded-full bg-ds-brand text-ds-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <svg
                 width="18"
@@ -88,11 +94,13 @@ export function Phrasebook({ rehearsal, onBack }: { rehearsal: Rehearsal; onBack
                     aria-live="polite"
                     className="ds-type-caption font-semibold text-ds-ink-soft empty:hidden"
                   >
-                    {say.busyRow === i && say.state === "transcribing"
-                      ? SAY_IT_CHECKING
-                      : say.results[i]
-                        ? sayItResultText(say.results[i])
-                        : ""}
+                    {say.busyRow === i && say.state === "recording"
+                      ? SAY_IT_LISTENING
+                      : say.busyRow === i && say.state === "transcribing"
+                        ? SAY_IT_CHECKING
+                        : say.results[i]
+                          ? sayItResultText(say.results[i])
+                          : ""}
                   </p>
                   {say.error && say.errorRow === i && (
                     <p role="alert" className="ds-type-caption text-ds-ink-soft">

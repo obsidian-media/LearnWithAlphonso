@@ -120,6 +120,20 @@ describe("Say it in the phrasebook", () => {
     expect((mic(PHRASE) as HTMLButtonElement).disabled).toBe(false);
   });
 
+  it("turns the Hear buttons off while a row is recording or checking, so a phrase is never played into the mic", async () => {
+    render(<Phrasebook rehearsal={rehearsal} onBack={vi.fn()} />);
+    const hear = () => screen.getAllByRole("button", { name: /^Hear: / }) as HTMLButtonElement[];
+    expect(hear().every((b) => !b.disabled)).toBe(true);
+    await userEvent.click(mic(PHRASE));
+    set({ state: "recording" });
+    expect(hear().every((b) => b.disabled)).toBe(true);
+    expect(within(row(PHRASE)).getByRole("status").textContent).toBe("Listening…");
+    set({ state: "transcribing" });
+    expect(hear().every((b) => b.disabled)).toBe(true);
+    set({ state: "idle" });
+    expect(hear().every((b) => !b.disabled)).toBe(true);
+  });
+
   it("says it is checking, in a polite live region, while the clip is transcribed", async () => {
     render(<Phrasebook rehearsal={rehearsal} onBack={vi.fn()} />);
     await userEvent.click(mic(PHRASE));

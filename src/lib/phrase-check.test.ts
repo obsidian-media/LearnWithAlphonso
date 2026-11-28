@@ -81,7 +81,66 @@ describe("how words are matched", () => {
   });
   it("tokenises predictably", () => {
     expect(phraseTokens("Qu’est-ce que c’est ?")).toEqual(["est", "ce", "que", "est"]);
-    expect(phraseTokens("Mon cœur — I'm Æon")).toEqual(["mon", "coeur", "aeon"]);
+    expect(phraseTokens("Mon cœur — I'm Æon")).toEqual(["mon", "coeur", "im", "aeon"]);
+  });
+  it("keeps digits (even one), joins contraction endings and drops elision pieces", () => {
+    expect(phraseTokens("Room 4, can't")).toEqual(["room", "4", "cant"]);
+    expect(phraseTokens("J'ai l'amie d'accord")).toEqual(["ai", "amie", "accord"]);
+  });
+  it("uses the exact whitespace list: NBSP, narrow NBSP and BOM all separate words", () => {
+    expect(
+      checkPhrase("Bonjour madame merci﻿beaucoup", "bonjour madame merci beaucoup", null).result,
+    ).toBe("clear");
+  });
+  it("is not fooled by a number word that is not the same number", () => {
+    expect(checkPhrase("seven tickets", "8 tickets", null)).toEqual({
+      result: "mostly",
+      listenAgain: ["seven"],
+    });
+    expect(checkPhrase("seven tickets", "seven tickets", null).result).toBe("clear");
+  });
+  it("matches a number word only to digits, never to a different word of the same value", () => {
+    expect(checkPhrase("seven tickets", "siete tickets", null).result).toBe("mostly");
+  });
+  it("breaks a tie between heard tokens by the lowest index (the first one's confidence counts)", () => {
+    const words = [
+      { word: "no", confidence: 0.2 },
+      { word: "no", confidence: 0.99 },
+    ];
+    expect(checkPhrase("no", "no no", words)).toEqual({ result: "not_yet", listenAgain: [] });
+    expect(checkPhrase("no please", "no no please", words).result).toBe("mostly");
+  });
+  it("skips a confidence that is not a finite number", () => {
+    expect(
+      checkPhrase("good morning", "good morning", [
+        { word: "morning", confidence: Number.NaN },
+        { word: "good", confidence: Number.POSITIVE_INFINITY },
+      ]).result,
+    ).toBe("clear");
+  });
+  it("checks the value of a digit against the number word the other way round too", () => {
+    expect(checkPhrase("room 12 please", "room thirteen please", null)).toEqual({
+      result: "mostly",
+      listenAgain: ["12"],
+    });
+  });
+  it("lets a glued elision claim only a word that was elided in the expected text", () => {
+    expect(checkPhrase("I like it", "i like lit", null)).toEqual({
+      result: "mostly",
+      listenAgain: ["it"],
+    });
+    expect(checkPhrase("J'aime ca", "jaime ca", null).result).toBe("clear");
+  });
+  it("names a word after a no-break space on its own, not glued to its neighbour", () => {
+    const nbsp = String.fromCharCode(160);
+    expect(checkPhrase("Bonjour" + nbsp + "madame merci", "bonjour merci", null)).toEqual({
+      result: "mostly",
+      listenAgain: ["madame"],
+    });
+  });
+  it("keeps a combining mark at the end of a word when showing it", () => {
+    const shown = "cafe" + String.fromCharCode(0x301);
+    expect(checkPhrase(shown + " noir", "noir", null).listenAgain).toEqual([shown]);
   });
   it("treats a missing or malformed confidence list as unknown, not as unclear", () => {
     expect(checkPhrase("Good morning", "good morning", undefined).result).toBe("clear");

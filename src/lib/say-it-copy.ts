@@ -5,6 +5,7 @@ import type { PhraseCheck } from "./phrase-check";
  * score, and are neutral in tone (no "wrong", no red). The same three lines on every platform.
  */
 export const SAY_IT_CHECKING = "Checking how clearly that came across…";
+export const SAY_IT_LISTENING = "Listening…";
 export const SAY_IT_FRAMING = "Say a phrase to hear how clearly you were understood.";
 
 export function sayItResultText(check: PhraseCheck): string {
