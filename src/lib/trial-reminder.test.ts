@@ -8,6 +8,7 @@ import {
   type TrialSubscription,
 } from "./trial-reminder";
 import {
+  recordOncePerDay,
   supabaseTrialReminderStore,
   sweepTrialReminders,
   type TrialReminderDeps,
@@ -587,14 +588,48 @@ describe("a learner whose read keeps failing never starves the rest", () => {
     expect(JSON.stringify(events[0]!.detail)).not.toMatch(/bad\d|healthy|@/);
   });
 
-  it("a 403 stops the sweep too", async () => {
-    const { store } = makeStore({ candidates: ["a", "b"] });
+  it("a 403 is one odd account: it is marked and the sweep moves on to the healthy learner", async () => {
+    const { store, checked } = makeStore({ candidates: ["odd", "healthy"] });
     const { deps } = makeDeps({ store });
-    deps.readTrial = vi.fn(async () => {
-      throw new RevenueCatHttpError(403);
+    deps.readTrial = vi.fn(async (id: string) => {
+      if (id === "odd") throw new RevenueCatHttpError(403);
+      return null;
     });
-    expect((await sweepTrialReminders(deps)).status).toBe("auth-failed");
-    expect(deps.readTrial).toHaveBeenCalledTimes(1);
+    const r = await sweepTrialReminders(deps);
+    expect(r.status).toBe("done");
+    expect(checked.has("odd")).toBe(true);
+    expect(checked.has("healthy")).toBe(true);
+  });
+
+  it("a malformed body is the learner's own failure: marked, and the sweep moves on", async () => {
+    const { store, checked } = makeStore({ candidates: ["a", "b"] });
+    const { deps } = makeDeps({ store });
+    const bad = (async () => new Response("<html>not json", { status: 200 })) as typeof fetch;
+    deps.readTrial = async (id) => {
+      if (id === "a") return getTrialSubscription({ secretApiKey: "k" } as never, id, bad);
+      return null;
+    };
+    const r = await sweepTrialReminders(deps);
+    expect(r).toMatchObject({ status: "done", failed: 1 });
+    expect(checked.has("a")).toBe(true);
+    expect(checked.has("b")).toBe(true);
+  });
+
+  it("recordOncePerDay writes the event only when none was written in the last day", async () => {
+    const record = vi.fn(async () => {});
+    await recordOncePerDay("e", { n: 1 }, async () => true, record);
+    expect(record).not.toHaveBeenCalled();
+    await recordOncePerDay("e", { n: 1 }, async () => false, record);
+    expect(record).toHaveBeenCalledTimes(1);
+    await recordOncePerDay(
+      "e",
+      {},
+      async () => {
+        throw new Error("db down");
+      },
+      record,
+    );
+    expect(record).toHaveBeenCalledTimes(1);
   });
 
   it("404 and 422 reads are marked, so the next sweep reaches the healthy learner", async () => {
@@ -616,7 +651,7 @@ describe("a learner whose read keeps failing never starves the rest", () => {
     expect(checked.has("healthy")).toBe(true);
   });
 
-  it("a network error (no status) marks that learner and the sweep carries on", async () => {
+  it("a network error (no status) is an outage: the learner stays unchecked and the sweep carries on", async () => {
     const { store, checked } = makeStore({ candidates: ["a", "b"] });
     const { deps } = makeDeps({ store });
     deps.readTrial = async (id) => {
@@ -625,11 +660,29 @@ describe("a learner whose read keeps failing never starves the rest", () => {
     };
     const r = await sweepTrialReminders(deps);
     expect(r).toMatchObject({ status: "done", failed: 1 });
-    expect(checked.has("a")).toBe(true);
+    expect(checked.has("a")).toBe(false);
     expect(checked.has("b")).toBe(true);
   });
 
-  it("a 429 still stops, and three 5xx in a row still stop (unmarked)", async () => {
+  it("three network errors in a row stop the sweep and mark those three, so the next sweep reaches the rest", async () => {
+    const { store, checked } = makeStore({ candidates: ["a", "b", "c", "d"] });
+    const { deps, clock } = makeDeps({ store });
+    deps.readTrial = vi.fn(async (id: string) => {
+      if (id !== "d") throw new Error("getaddrinfo ENOTFOUND");
+      return null;
+    });
+    const r = await sweepTrialReminders(deps);
+    expect(r.status).toBe("rate-limited");
+    expect(deps.readTrial).toHaveBeenCalledTimes(3);
+    expect([...checked.keys()].sort()).toEqual(["a", "b", "c"]);
+    clock.t += 15 * 60_000;
+    (deps.readTrial as ReturnType<typeof vi.fn>).mockClear();
+    const next = await sweepTrialReminders(deps);
+    expect(next.status).toBe("done");
+    expect(deps.readTrial).toHaveBeenCalledWith("d");
+  });
+
+  it("a 429 still stops (unmarked), and three 5xx in a row still stop (the three are then marked)", async () => {
     const a = makeStore({ candidates: ["a", "b"] });
     const d1 = makeDeps({ store: a.store });
     d1.deps.readTrial = async () => {
@@ -645,7 +698,7 @@ describe("a learner whose read keeps failing never starves the rest", () => {
     });
     expect((await sweepTrialReminders(d2.deps)).status).toBe("rate-limited");
     expect(d2.deps.readTrial).toHaveBeenCalledTimes(3);
-    expect(b.checked.size).toBe(0);
+    expect([...b.checked.keys()].sort()).toEqual(["a", "b", "c"]);
   });
 
   it("checks the deadline before each send: a due learner past the budget is not emailed and is not marked", async () => {

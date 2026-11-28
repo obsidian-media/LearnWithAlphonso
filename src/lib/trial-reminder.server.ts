@@ -21,12 +21,13 @@ import {
  * checked first, never-checked first of all), and emails the ones whose trial ends within 3 days.
  *
  * Bounded: a sweep stops reading after SWEEP_BUDGET_MS (the pg_net call to the route times out at 30 s) and never
- * starts a send past it, pauses between reads, and stops at once on a 429, after 3 server errors in a row, or on a 401
- * or 403 (a revoked or wrong key: status "auth-failed", one count-only ops event, nobody marked). Each learner read is
- * recorded (trial_reminder_checked) right away, so a cut-off sweep is simply continued by the next one. A read that
- * fails for any other reason (a 404 or 422, a network error, a malformed body) is that learner's own: they are marked
- * checked too and retried at the normal 20-hour cadence, so the same failing learners are never re-read first on every
- * sweep. Only a server-error outage leaves learners unchecked (retried first next time); the 3-in-a-row stop bounds it.
+ * starts a send past it, pauses between reads, and stops at once on a 429 or a 401 (a bad key: status "auth-failed",
+ * nobody marked, one count-only ops event at most per day). Each learner read is recorded (trial_reminder_checked)
+ * right away, so a cut-off sweep is simply continued by the next one. A read that fails for the learner's own reason
+ * (a 403, a 404 or 422, a malformed body) marks them checked too: they are retried at the normal 20-hour cadence, so
+ * the same failing learners are never re-read first on every sweep. A read that gets no answer or a 5xx is an outage:
+ * the learner is left unchecked (retried first next sweep), and three outages in a row stop the sweep ("rate-limited")
+ * and mark those three checked, so three adjacent always-failing learners cannot block every sweep forever.
  *
  * ONE email per learner, ever (one free trial per person): the trial_reminders row is the dedupe, claimed BEFORE the
  * send and released again if the send fails, so the next sweep retries while the trial is still inside the window. A
@@ -79,7 +80,7 @@ export type TrialReminderResult = {
   /**
    * "off", "no-sender", "done" (every due learner was read), "budget" (time ran out; the next sweep continues) or
    * "rate-limited" (RevenueCat said 429 or kept failing; the next sweep tries again) or "auth-failed" (RevenueCat said
-   * 401 or 403, so its key needs attention: nobody was marked and one count-only ops event was recorded).
+   * 401, so its key needs attention: nobody was marked).
    */
   status: "off" | "no-sender" | "done" | "budget" | "rate-limited" | "auth-failed";
   checked: number;
@@ -92,6 +93,16 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 const statusOf = (e: unknown): number | null =>
   typeof (e as { status?: unknown })?.status === "number" ? (e as { status: number }).status : null;
+
+const isMalformed = (e: unknown): boolean => (e as { malformed?: unknown })?.malformed === true;
+
+async function markQuietly(deps: TrialReminderDeps, userId: string): Promise<void> {
+  try {
+    await deps.store.markChecked(userId, deps.now());
+  } catch {
+    console.error("[trial-reminder] could not record a failed read");
+  }
+}
 
 export async function sweepTrialReminders(deps: TrialReminderDeps): Promise<TrialReminderResult> {
   const result: TrialReminderResult = { status: "off", checked: 0, sent: 0, failed: 0 };
@@ -112,7 +123,7 @@ export async function sweepTrialReminders(deps: TrialReminderDeps): Promise<Tria
   );
   result.status = "done";
 
-  let serverErrorsInARow = 0;
+  const outageStreak: string[] = [];
   for (const userId of ids) {
     if (deps.now().getTime() >= deadline) {
       result.status = "budget";
@@ -124,7 +135,7 @@ export async function sweepTrialReminders(deps: TrialReminderDeps): Promise<Tria
     try {
       const trial = await deps.readTrial(userId);
       readDone = true;
-      serverErrorsInARow = 0;
+      outageStreak.length = 0;
       // Never start a send past the budget. Not marked, so this learner is first in line for the next sweep.
       if (trial && needsReminder(trial, deps.now()) && deps.now().getTime() >= deadline) {
         result.status = "budget";
@@ -161,30 +172,49 @@ export async function sweepTrialReminders(deps: TrialReminderDeps): Promise<Tria
         result.status = "rate-limited";
         break;
       }
-      if (!readDone && (status === 401 || status === 403)) {
-        // A revoked or wrong key: every learner would fail the same way. Stop, and mark nobody.
+      if (!readDone && status === 401) {
+        // A bad key: every learner would fail the same way. Stop, and mark nobody.
         result.status = "auth-failed";
         await deps.recordEvent?.("trial_reminder_auth_failed", { status, read: result.checked });
         break;
       }
-      serverErrorsInARow = status !== null && status >= 500 ? serverErrorsInARow + 1 : 0;
-      if (serverErrorsInARow >= MAX_CONSECUTIVE_5XX) {
-        result.status = "rate-limited";
-        break;
-      }
-      if (!readDone && !(status !== null && status >= 500)) {
-        // This learner's own failure (a 404 or 422, a network error, a malformed body): record that they were tried, so
-        // the same failures are not re-read first on every sweep while everyone after them waits. A server error is
-        // left unchecked: it is an outage, bounded by the 3-in-a-row stop above.
-        try {
-          await deps.store.markChecked(userId, deps.now());
-        } catch {
-          console.error("[trial-reminder] could not record a failed read");
+      // An outage: a 5xx, or no answer at all (network, timeout, DNS). Not the learner's fault, so not marked, unless
+      // the streak reaches the stop; then the streak's learners are marked so they cannot block every later sweep.
+      const outage = !readDone && !isMalformed(e) && (status === null || status >= 500);
+      if (outage) {
+        outageStreak.push(userId);
+        if (outageStreak.length >= MAX_CONSECUTIVE_5XX) {
+          result.status = "rate-limited";
+          for (const id of outageStreak) await markQuietly(deps, id);
+          break;
         }
+        continue;
       }
+      outageStreak.length = 0;
+      // This learner's own failure (a 403, a 404 or 422, a malformed body): record that they were tried, so the same
+      // failures are not re-read first on every sweep while everyone after them waits.
+      if (!readDone) await markQuietly(deps, userId);
     }
   }
   return result;
+}
+
+/** Records an ops event unless one was already written in the last 24 h, so a standing fault is one row a day. Never throws. */
+export async function recordOncePerDay(
+  event: string,
+  detail: Record<string, string | number | boolean | null>,
+  recentlyRecorded: () => Promise<boolean>,
+  record: (e: string, d: typeof detail) => Promise<void> = async (e, d) => {
+    const { recordOpsEvent } = await import("./ops-events.server");
+    await recordOpsEvent(e, d);
+  },
+): Promise<void> {
+  try {
+    if (await recentlyRecorded()) return;
+    await record(event, detail);
+  } catch {
+    console.error("[trial-reminder] could not record an event");
+  }
 }
 
 // ---- production wiring ----
@@ -269,10 +299,16 @@ export async function defaultTrialReminderDeps(): Promise<TrialReminderDeps> {
       return data.user?.email ?? null;
     },
     sendEmail: (m) => sendEmailViaResend(m),
-    async recordEvent(event, detail) {
-      const { recordOpsEvent } = await import("./ops-events.server");
-      await recordOpsEvent(event, detail);
-    },
+    recordEvent: (event, detail) =>
+      recordOncePerDay(event, detail, async () => {
+        const { data } = await supabaseAdmin
+          .from("ops_events")
+          .select("created_at")
+          .eq("event", event)
+          .gte("created_at", new Date(Date.now() - DAY_MS).toISOString())
+          .limit(1);
+        return (data?.length ?? 0) > 0;
+      }),
     from:
       process.env.TRIAL_REMINDER_FROM || process.env.SUPPORT_NOTIFY_FROM || DEFAULT_SUPPORT_FROM,
   };
