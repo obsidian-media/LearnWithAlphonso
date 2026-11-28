@@ -31,6 +31,7 @@ export function RehearsalDebrief({
   fixCount,
   speaking = null,
   onRunAgain,
+  currentPartner,
   onDone,
 }: {
   course: Course;
@@ -44,6 +45,8 @@ export function RehearsalDebrief({
   /** "How you spoke" from the recap answer; hidden when absent. */
   speaking?: RehearsalSpeaking | null;
   onRunAgain: () => void;
+  /** The partner this run was with; the call page remounts by itself when "Run again" picks a different one. */
+  currentPartner?: { persona?: "hector"; hard?: boolean };
   onDone: () => void;
 }) {
   const [load, setLoad] = useState<Load>({ kind: "loading" });
@@ -154,7 +157,18 @@ export function RehearsalDebrief({
           stage={choosing.stage}
           hectorAvailable={state?.hectorAvailable ?? null}
           onClose={() => setChoosing(null)}
-          onChosen={choosing.again ? onRunAgain : undefined}
+          onChosen={
+            choosing.again
+              ? (target) => {
+                  // A different partner changes the URL, so the call page remounts once by itself; restarting here
+                  // too would mount twice and play the opener in the previous partner's voice.
+                  const same =
+                    (target.persona ?? null) === (currentPartner?.persona ?? null) &&
+                    !!target.hard === !!currentPartner?.hard;
+                  if (same) onRunAgain();
+                }
+              : undefined
+          }
         />
       )}
 

@@ -34,7 +34,7 @@ const open = (stage: "warmup" | "conversation" | "hard_moments", hectorAvailable
   );
 
 beforeEach(() => {
-  pro.state = "loading";
+  pro.state = "error";
 });
 
 describe("the partner is chosen at the start of each stage", () => {
@@ -116,7 +116,24 @@ describe("the partner is chosen at the start of each stage", () => {
     );
     await user.click(screen.getByRole("link", { name: "Start with Alphonso" }));
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(onChosen).toHaveBeenCalledTimes(1);
+    expect(onChosen).toHaveBeenCalledWith({});
+  });
+
+  it("while this device's Pro status is loading, Hector is disabled with no Pro badge, then settles", () => {
+    pro.state = "loading";
+    const { rerender } = open("conversation", false);
+    expect(screen.queryByText("Pro")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start with Hector" })).toBeDisabled();
+    pro.state = "free";
+    rerender(
+      <StagePartnerSheet
+        rehearsalId={ID}
+        stage="conversation"
+        hectorAvailable={false}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("Pro")).toBeInTheDocument();
   });
 
   it("labels the partner an AI", () => {

@@ -73,7 +73,7 @@ beforeEach(() => {
   api.fetchRehearsals.mockReset();
   props.onRunAgain.mockReset();
   props.onDone.mockReset();
-  pro.state = "loading";
+  pro.state = "error";
 });
 
 describe("RehearsalDebrief (after a run, in place of stars)", () => {
@@ -130,6 +130,28 @@ describe("RehearsalDebrief (after a run, in place of stars)", () => {
     render(<RehearsalDebrief {...props} />);
     await user.click(await screen.findByRole("button", { name: "Next: The hard moments" }));
     expect(screen.getByRole("link", { name: "Start with Hector" })).toBeInTheDocument();
+  });
+
+  it("Run again after a Hector run, choosing Alphonso, restarts nothing by itself: the navigation remounts once", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
+    const user = userEvent.setup();
+    render(<RehearsalDebrief {...props} currentPartner={{ persona: "hector" }} />);
+    await user.click(await screen.findByRole("button", { name: "Run this stage again" }));
+    await user.click(screen.getByRole("link", { name: "Start with Alphonso" }));
+    expect(props.onRunAgain).not.toHaveBeenCalled();
+  });
+
+  it("Run again with the SAME partner restarts the call, since the URL does not change", async () => {
+    pro.state = "pro";
+    api.fetchRehearsals.mockResolvedValue({
+      ok: true,
+      value: { ...withRun, hectorAvailable: true },
+    });
+    const user = userEvent.setup();
+    render(<RehearsalDebrief {...props} currentPartner={{ persona: "hector" }} />);
+    await user.click(await screen.findByRole("button", { name: "Run this stage again" }));
+    await user.click(screen.getByRole("link", { name: "Start with Hector" }));
+    expect(props.onRunAgain).toHaveBeenCalledTimes(1);
   });
 
   it("Run this stage again opens the sheet for the SAME stage; the call restarts only once a partner is chosen", async () => {

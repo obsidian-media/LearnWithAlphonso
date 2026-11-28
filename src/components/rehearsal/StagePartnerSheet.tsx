@@ -27,8 +27,8 @@ export function StagePartnerSheet({
   stage: Stage;
   hectorAvailable: boolean | null;
   onClose: () => void;
-  /** Runs when a partner is picked: for "Run this stage again", whose link may land on the URL it is already on. */
-  onChosen?: () => void;
+  /** Runs when a partner is picked, with where the call will open. For "Run this stage again", whose link may land on the URL it is already on. */
+  onChosen?: (target: { persona?: "hector"; hard?: true }) => void;
 }) {
   const [paywall, setPaywall] = useState(false);
   const [hard, setHard] = useState(false);
@@ -37,9 +37,12 @@ export function StagePartnerSheet({
   const clientState = useProStatus().state;
   const isPro =
     clientState === "pro" || (hectorAvailable === null ? clientState !== "free" : hectorAvailable);
-  const chosen = () => {
+  // Until this device's own answer is in, Hector is neither offered nor badged (no flash of "Pro" that then vanishes),
+  // unless the server already said Pro.
+  const settling = clientState === "loading" && hectorAvailable !== true;
+  const chosen = (target: { persona?: "hector"; hard?: true }) => {
     onClose();
-    onChosen?.();
+    onChosen?.(target);
   };
   const hardAvailable = stage === "hard_moments";
 
@@ -67,7 +70,7 @@ export function StagePartnerSheet({
         <Link
           to="/rehearse/$id/$stage"
           params={{ id: rehearsalId, stage }}
-          onClick={chosen}
+          onClick={() => chosen({})}
           className="rounded-full bg-ds-brand px-5 py-3 text-center font-semibold text-ds-card"
         >
           Start with Alphonso
@@ -77,7 +80,7 @@ export function StagePartnerSheet({
           <div className="flex items-center gap-2">
             <h3 className="ds-type-headline font-semibold text-ds-ink">Hector</h3>
             <AiLabel />
-            {!isPro && (
+            {!isPro && !settling && (
               <span className="rounded-full bg-ds-choice-tint px-2 py-0.5 ds-type-caption font-semibold text-ds-brand">
                 Pro
               </span>
@@ -86,7 +89,7 @@ export function StagePartnerSheet({
           <p className="ds-type-footnote text-ds-ink-soft">
             A tougher, more realistic partner, and a longer debrief at the end.
           </p>
-          {isPro && hardAvailable && (
+          {isPro && !settling && hardAvailable && (
             <label className="flex items-start gap-3 ds-type-footnote text-ds-ink">
               <input
                 type="checkbox"
@@ -100,7 +103,16 @@ export function StagePartnerSheet({
               </span>
             </label>
           )}
-          {isPro ? (
+          {settling ? (
+            <button
+              type="button"
+              disabled
+              aria-busy="true"
+              className="rounded-full border border-ds-line px-5 py-3 text-center font-semibold text-ds-ink-soft opacity-60"
+            >
+              Start with Hector
+            </button>
+          ) : isPro ? (
             <Link
               to="/rehearse/$id/$stage"
               params={{ id: rehearsalId, stage }}
@@ -108,7 +120,12 @@ export function StagePartnerSheet({
                 persona: "hector",
                 ...(hardAvailable && hard ? { hard: true as const } : {}),
               }}
-              onClick={chosen}
+              onClick={() =>
+                chosen({
+                  persona: "hector",
+                  ...(hardAvailable && hard ? { hard: true as const } : {}),
+                })
+              }
               className="rounded-full border border-ds-line px-5 py-3 text-center font-semibold text-ds-ink"
             >
               {hardAvailable && hard ? "Start hard mode with Hector" : "Start with Hector"}
