@@ -38,13 +38,17 @@ export type RunMemory = {
   momentsShown: string[];
   wentWell: string[];
   corrections: string[];
+  /** Who played the partner, and whether it was hard mode. Absent on a run from before Hector rehearsals: Alphonso, not hard. */
+  persona?: Persona;
+  hardMode?: boolean;
 };
 
 export type StageProgress = Record<Stage, "todo" | "done">;
 
 /** A stage is done once it has a finished run (a rehearsal_runs row exists only for a run that met the finish rule). */
 export function stageProgress(runs: readonly RunMemory[]): StageProgress {
-  const done = (s: Stage) => (runs.some((r) => r.stage === s) ? "done" : "todo");
+  // A hard-mode run is its own thing ("hard mode done"): it never marks its stage done, and never replaces the stage's own run.
+  const done = (s: Stage) => (runs.some((r) => r.stage === s && !r.hardMode) ? "done" : "todo");
   return {
     warmup: done("warmup"),
     conversation: done("conversation"),
@@ -64,7 +68,7 @@ export function nextStage(progress: StageProgress, runs: readonly RunMemory[]): 
   let most = -1;
   for (const s of STAGES) {
     const last = runs
-      .filter((r) => r.stage === s)
+      .filter((r) => r.stage === s && !r.hardMode)
       .reduce<RunMemory | null>(
         (a, r) => (a === null || r.finishedAt > a.finishedAt ? r : a),
         null,
@@ -166,7 +170,23 @@ export function canCreateRehearsal(
  * run starts (the first turn of its call), never on every turn: an in-progress call always finishes, and a lapse
  * costs nothing per turn.
  */
-export type RunKind = { persona?: "alphonso" | "hector"; hard?: boolean };
+export const PERSONAS = ["alphonso", "hector"] as const;
+export type Persona = (typeof PERSONAS)[number];
+export const isPersona = (v: unknown): v is Persona =>
+  typeof v === "string" && (PERSONAS as readonly string[]).includes(v);
+
+export type RunKind = { persona?: Persona; hard?: boolean };
+
+/**
+ * Hard mode exists only for Hector on the last stage (hard moments). Everything else is a plain run: Alphonso at the
+ * normal level, or Hector without hard mode, on any stage.
+ */
+export const runModeAllowed = (run: RunKind, stage: Stage): boolean =>
+  run.hard !== true || (run.persona === "hector" && stage === "hard_moments");
+
+/** Has this rehearsal a finished hard-mode run? ("Hard mode done" in the plan.) */
+export const hardModeDone = (runs: readonly RunMemory[]): boolean =>
+  runs.some((r) => r.hardMode === true);
 export const runNeedsPro = (run: RunKind): boolean => run.persona === "hector" || run.hard === true;
 
 export type RunStart = "ok" | "paywall" | "retry";
