@@ -282,3 +282,32 @@ describe("RehearsePage quick-starts", () => {
     expect(await screen.findByRole("form", { name: "Plan a rehearsal" })).toBeInTheDocument();
   });
 });
+
+describe("RehearsePage phrasebook", () => {
+  it("hides the phrasebook until stage 1 (the warm-up) is done", async () => {
+    api.fetchRehearsals.mockResolvedValue({
+      ok: true,
+      value: {
+        ...state,
+        progress: { warmup: "todo", conversation: "todo", hard_moments: "todo" },
+        nextStage: "warmup",
+      },
+    });
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    await screen.findByRole("heading", { name: "Job interview" });
+    expect(screen.queryByRole("button", { name: "Your phrases for the day" })).toBeNull();
+  });
+
+  it("opens the phrasebook from the plan once the warm-up is done, and goes back", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
+    const user = userEvent.setup();
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    await user.click(await screen.findByRole("button", { name: "Your phrases for the day" }));
+    expect(
+      screen.getByRole("heading", { name: /Your phrases for this job interview/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hear: I have experience in" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Back to the plan" }));
+    expect(screen.getByRole("heading", { name: "Job interview" })).toBeInTheDocument();
+  });
+});

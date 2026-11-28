@@ -24,8 +24,11 @@ export function ActiveRehearsal({
   nextStage,
   onDeleted,
   onAdjust,
+  onOpenPhrases,
   today = localToday(),
 }: {
+  /** Opens the phrasebook; the button shows only once the warm-up (stage 1) is done. */
+  onOpenPhrases?: () => void;
   rehearsal: Rehearsal;
   progress: StageProgress | null;
   nextStage: Stage | null;
@@ -118,6 +121,16 @@ export function ActiveRehearsal({
       >
         Next: {STAGE_LABELS[next]}
       </Link>
+
+      {progress?.warmup === "done" && onOpenPhrases && (
+        <button
+          type="button"
+          onClick={onOpenPhrases}
+          className="min-h-11 rounded-full border border-ds-line px-5 py-2 text-center font-semibold text-ds-ink"
+        >
+          Your phrases for the day
+        </button>
+      )}
 
       <p className="flex items-start gap-2 ds-type-caption text-ds-ink-soft">
         <AiLabel className="mt-0.5" />
