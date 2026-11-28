@@ -18,6 +18,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
@@ -127,7 +128,38 @@ class ConversationViewModelsTest {
         v.pressBegan(); v.pressEnded()
         awaitTrue("error") { v.state.value.error != null }
         assertEquals("You've reached today's AI practice limit. Try again tomorrow.", v.state.value.error)
-        assertEquals(2, v.state.value.turns.size)
+        // The refused turn is not part of the conversation: only the opener is left.
+        assertEquals(listOf("assistant"), v.state.value.turns.map { it.role })
+        assertTrue(v.state.value.confidenceByTurn.isEmpty())
+    }
+
+    @Test
+    fun `a turn that failed is dropped, so the retry never sends two learner messages in a row`() = runBlocking {
+        val chats = java.util.concurrent.atomic.AtomicInteger()
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("/api/stt") -> json("""{"text":"I would like a coffee","confidence":0.9}""")
+                req.path.endsWith("/api/chat") ->
+                    if (chats.getAndIncrement() == 0) json("""{"error":"retry"}""", HttpStatusCode.ServiceUnavailable) else json("""{"content":"Certainly, what size?"}""")
+                req.path.endsWith("/api/tts") -> respond(byteArrayOf(1, 2, 3), HttpStatusCode.OK)
+                req.query["select"] == "cefr_level" -> json("""[{"cefr_level":"B1"}]""")
+                else -> json("[]")
+            }
+        }
+        val v = scenarioVm(s)
+        awaitTrue("level") { v.state.value.cefrLevel == "B1" }
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("the first turn failed") { v.state.value.error != null }
+        assertEquals(listOf("assistant"), v.state.value.turns.map { it.role })
+        v.pressBegan(); v.pressEnded()
+        awaitTrue("the second turn was answered") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        val bodies = s.seen.filter { it.path.endsWith("/api/chat") }.map { Json.parseToJsonElement(it.body).jsonObject }
+        assertEquals(2, bodies.size)
+        bodies.forEach { b ->
+            val roles = b.getValue("messages").jsonArray.map { it.jsonObject.getValue("role").jsonPrimitive.content }
+            assertEquals("no two learner messages in a row: $roles", roles.zipWithNext().count { it.first == "user" && it.second == "user" }, 0)
+            assertEquals(listOf("assistant", "user"), roles)
+        }
     }
 
     @Test
