@@ -27,7 +27,6 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 
@@ -63,7 +62,8 @@ class HectorCallViewModelTest {
     private class Fixture(val vm: HectorViewModel, val logs: MutableList<String>, val prefs: MutableMap<String, Int>, val background: CountingDispatcher)
 
     private fun fixture(s: FakeServer, greetingTimeoutMs: Long = 5_000): Fixture {
-        val logs = Collections.synchronizedList(ArrayList<String>())
+        // Copy-on-write: a plain or synchronized list throws ConcurrentModificationException when a test polls it with `any` while the VM logs from another thread.
+        val logs: MutableList<String> = java.util.concurrent.CopyOnWriteArrayList()
         val prefs = HashMap<String, Int>()
         val background = CountingDispatcher()
         val vm = HectorViewModel(

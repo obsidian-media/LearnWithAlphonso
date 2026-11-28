@@ -98,6 +98,9 @@ data class RunMemory(
     val momentsShown: List<String> = emptyList(),
     val wentWell: List<String> = emptyList(),
     val corrections: List<String> = emptyList(),
+    /** Who played the partner ("alphonso" or "hector") and whether it was hard mode. A run from before Hector rehearsals has neither. */
+    val persona: String? = null,
+    val hardMode: Boolean = false,
 ) {
     val stageOrNull: Stage? get() = Stage.fromWire(stage)
 }
@@ -132,6 +135,10 @@ data class RehearsalState(
     val history: List<RehearsalSummary> = emptyList(),
     /** True while the account's one free rehearsal has not been used. */
     val freeAvailable: Boolean = false,
+    /** The active rehearsal has a finished hard-mode run ("Hard mode done"). An older server omits it: false. */
+    val hardModeDone: Boolean = false,
+    /** Hector (Pro): true Pro, false not Pro, null "could not tell" (the run's own start decides). An older server omits it: null. */
+    val hectorAvailable: Boolean? = null,
 ) {
     val next: Stage? get() = Stage.fromWire(nextStage)
 
@@ -179,7 +186,13 @@ object RehearsalDecoding {
         if (!root.containsKey("active")) return null
         if (runCatching { root["history"]?.jsonArray }.getOrNull() == null) return null
         if (runCatching { (root["freeAvailable"] as? JsonPrimitive)?.takeIf { !it.isString }?.booleanOrNull }.getOrNull() == null) return null
-        return runCatching { ContentJson.json.decodeFromJsonElement(RehearsalState.serializer(), root) }.getOrNull()
+        // The two Hector fields are read the web's way: anything but a real boolean is "unknown" (null) or false, never a failure.
+        val lenient = buildJsonObject {
+            root.forEach { (k, v) -> if (k != "hectorAvailable" && k != "hardModeDone") put(k, v) }
+            put("hardModeDone", (root["hardModeDone"] as? JsonPrimitive)?.takeIf { !it.isString }?.booleanOrNull == true)
+            put("hectorAvailable", (root["hectorAvailable"] as? JsonPrimitive)?.takeIf { !it.isString }?.booleanOrNull)
+        }
+        return runCatching { ContentJson.json.decodeFromJsonElement(RehearsalState.serializer(), lenient) }.getOrNull()
     }
 
     /** `{ rehearsal }` from create, adjust, cancel and outcome. */
@@ -303,7 +316,14 @@ sealed interface CallSource {
     data object Scenario : CallSource
 
     /** A rehearsal sends only its id and stage: the server builds the prompt from the stored brief and the earlier runs. */
-    data class Rehearsal(val id: String, val stage: Stage) : CallSource
+    data class Rehearsal(
+        val id: String,
+        val stage: Stage,
+        /** Who plays the partner (Hector is Pro). Alphonso, at the normal level, sends nothing extra. */
+        val partner: RehearsalPartner = RehearsalPartner.ALPHONSO,
+        /** Hard mode: Hector on the last stage only. Sent on every turn of the call, with the same value. */
+        val hardMode: Boolean = false,
+    ) : CallSource
 }
 
 /** The /api/chat body for one reply of a call (the web's chatRequestBody). */
@@ -321,12 +341,106 @@ object ChatRequestBody {
         })
         // The key order is the scenario body's original one (systemPrompt, cefrLevel, course, callId): pinned by the chat client tests.
         when (source) {
-            is CallSource.Rehearsal -> put("rehearsal", buildJsonObject { put("id", source.id); put("stage", source.stage.wire) })
+            is CallSource.Rehearsal -> put("rehearsal", buildJsonObject {
+                put("id", source.id); put("stage", source.stage.wire)
+                // Alphonso's body is exactly what it was before Hector rehearsals. For Hector, every turn of the call carries the
+                // same two values (the server binds them to the call on its first turn); hardMode only where it can exist.
+                if (source.partner == RehearsalPartner.HECTOR) {
+                    put("persona", source.partner.wire)
+                    if (source.hardMode && source.stage == Stage.HARD_MOMENTS) put("hardMode", true)
+                }
+            })
             CallSource.Scenario -> if (systemPrompt != null) put("systemPrompt", systemPrompt)
         }
         if (cefrLevel != null) put("cefrLevel", cefrLevel)
         if (source == CallSource.Scenario && course != null) put("course", course)
         if (callId != null) put("callId", callId)
+    }
+}
+
+/** Who plays the other person in a rehearsal stage. Alphonso is for everyone; Hector is Pro. */
+enum class RehearsalPartner(val wire: String, val displayName: String) {
+    ALPHONSO("alphonso", "Alphonso"),
+    HECTOR("hector", "Hector");
+
+    companion object {
+        fun fromWire(raw: String?): RehearsalPartner = entries.firstOrNull { it.wire == raw } ?: ALPHONSO
+    }
+}
+
+/**
+ * The partner sheet shown at the start of EACH stage (pick 5B): the rules of what it offers and where each choice goes.
+ * `hectorAvailable` is the server's answer: true is Pro, false is not (the Pro badge and the paywall), null is "could not
+ * tell", which lets the learner try (the run's start checks Pro once and a refusal there explains itself).
+ */
+object StagePartnerRules {
+    /**
+     * A Pro badge on Hector, and the paywall behind him. Only a definite false from the server, and only while the app does not
+     * know the learner is Pro: the state can be older than a purchase just made, and unknown lets the learner try.
+     */
+    fun hectorLocked(hectorAvailable: Boolean?, isPro: Boolean): Boolean = hectorAvailable == false && !isPro
+
+    /** The Hard mode toggle: the last stage, and only where Hector is not locked. */
+    fun hardModeOffered(stage: Stage, hectorAvailable: Boolean?, isPro: Boolean): Boolean = stage == Stage.HARD_MOMENTS && !hectorLocked(hectorAvailable, isPro)
+
+    sealed interface Choice {
+        /** Start the call with this partner; [hardMode] is only ever true for Hector on the last stage. */
+        data class Start(val partner: RehearsalPartner, val hardMode: Boolean) : Choice
+        /** Hector, and the learner is not Pro: the existing Pro screen opens. */
+        data object Paywall : Choice
+    }
+
+    fun alphonso(): Choice = Choice.Start(RehearsalPartner.ALPHONSO, false)
+
+    /** The Hector button. [hardRequested] is the toggle; it counts only where it is offered. */
+    fun hector(stage: Stage, hectorAvailable: Boolean?, isPro: Boolean, hardRequested: Boolean): Choice =
+        if (hectorLocked(hectorAvailable, isPro)) Choice.Paywall
+        else Choice.Start(RehearsalPartner.HECTOR, hardRequested && hardModeOffered(stage, hectorAvailable, isPro))
+
+    fun hectorButton(stage: Stage, hectorAvailable: Boolean?, isPro: Boolean, hardMode: Boolean): String = when {
+        hectorLocked(hectorAvailable, isPro) -> "Start with Hector (Pro)"
+        hardMode && stage == Stage.HARD_MOMENTS -> "Start hard mode with Hector"
+        else -> "Start with Hector"
+    }
+
+    const val ALPHONSO_BUTTON = "Start with Alphonso"
+    const val SUBTITLE = "Who do you want to practise with?"
+    const val HECTOR_LINE = "A tougher, more realistic partner, and a longer debrief at the end."
+    const val HARD_MODE_TITLE = "Hard mode."
+    const val HARD_MODE_LINE = "Faster, with interruptions and surprise questions. Still inside your plan, and still kind."
+    const val NOT_NOW = "Not now"
+    const val PRO_BADGE = "Pro"
+    const val PRO_BADGE_DESCRIPTION = "Hector is part of Alphonso Pro"
+    const val HARD_MODE_DONE = "Hard mode done"
+}
+
+/**
+ * What a refused /api/chat turn of a rehearsal means (the contract's chatErrors). A 402 `pro_required` (Hector or hard mode
+ * without Pro) opens the Pro screen; a 402 `free_runs_used` is the free rehearsal's own limit and keeps its own words.
+ */
+enum class RehearsalChatRefusal {
+    PRO_REQUIRED, FREE_RUNS_USED, INVALID_MODE, RETRY, NOT_FOUND, CLOSED, OTHER;
+
+    companion object {
+        fun of(status: Int, code: String?): RehearsalChatRefusal = when {
+            status == 402 && code == "pro_required" -> PRO_REQUIRED
+            status == 402 -> FREE_RUNS_USED
+            status == 400 && code == "invalid_mode" -> INVALID_MODE
+            status == 503 -> RETRY
+            status == 404 -> NOT_FOUND
+            status == 409 && code == "rehearsal_closed" -> CLOSED
+            else -> OTHER
+        }
+
+        fun of(e: Throwable): RehearsalChatRefusal =
+            (e as? com.obsidianmedia.learnwithalphonso.core.net.AiConversationError.Server)?.let { of(it.status, it.code) } ?: OTHER
+
+        /** The words under the call: pro_required and free_runs_used are the web's; every other refusal keeps the shared AI error words. */
+        fun message(e: Throwable): String = when (of(e)) {
+            PRO_REQUIRED -> "Hector rehearsals are part of Alphonso Pro. You can start this stage with Alphonso instead."
+            FREE_RUNS_USED -> "You have used all the runs of your free rehearsal. More rehearsals are part of Alphonso Pro."
+            else -> com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy.userMessage(e)
+        }
     }
 }
 
@@ -450,7 +564,8 @@ object RehearsalCopy {
     /** The call header: the event as the title, the stage under the tutor's name. */
     fun callTitle(kind: EventKind): String = "${kind.short.replaceFirstChar { it.uppercase() }} rehearsal"
 
-    fun callSubline(stage: Stage): String = "Alphonso · Stage ${stage.number} of 3: ${stage.label}"
+    fun callSubline(stage: Stage, partner: RehearsalPartner = RehearsalPartner.ALPHONSO, hardMode: Boolean = false): String =
+        "${partner.displayName} · Stage ${stage.number} of 3: ${stage.label}${if (hardMode && partner == RehearsalPartner.HECTOR) " · Hard mode" else ""}"
 
     fun debriefStageLine(stage: Stage): String = "Stage ${stage.number} · ${stage.label}"
 

@@ -33,10 +33,13 @@ import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.CallSource
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.EventKind
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.REHEARSAL_FINISH_MIN_REPLIES
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalChatRefusal
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalCopy
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalPartner
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalOpeners
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalSpeaking
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.Stage
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.StagePartnerRules
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
@@ -59,9 +62,13 @@ import com.obsidianmedia.learnwithalphonso.ui.practice.RehearsalTranscript
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.CallHeader
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.PracticeCallScreen
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.alphonsoKit
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.hectorKit
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.systemMotionReduced
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -77,16 +84,34 @@ class RehearsalConversationViewModel(
     course: Course = Course.ENGLISH,
     alphonsoVoice: (String) -> String? = { null },
     openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
+    /** Who plays the other person (Hector is Pro) and hard mode: the same two values go with EVERY turn of this call. */
+    private val partner: RehearsalPartner = RehearsalPartner.ALPHONSO,
+    private val hardMode: Boolean = false,
 ) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, RehearsalOpeners.opener(course.code, stage), course, alphonsoVoice, openerCache) {
     override fun systemPrompt(): String = ""
-    override val callSource: CallSource get() = CallSource.Rehearsal(rehearsalId, stage)
+    override val callSource: CallSource get() = CallSource.Rehearsal(rehearsalId, stage, partner, hardMode)
+    /** A Hector call speaks in Hector's voice (/api/tts character "hector"); the voice id the screen passes is his own choice. */
+    override val speechCharacter: VoiceCharacter? get() = if (partner == RehearsalPartner.HECTOR) VoiceCharacter.Hector else null
+
+    private val _proRequired = MutableStateFlow(false)
+    /** The server refused the first turn of a Hector or hard-mode call for want of Pro (402 pro_required): the screen opens the Pro screen. */
+    val proRequired: StateFlow<Boolean> = _proRequired.asStateFlow()
+    fun proRequiredHandled() { _proRequired.value = false }
+
+    override fun chatErrorMessage(e: Throwable): String {
+        if (RehearsalChatRefusal.of(e) == RehearsalChatRefusal.PRO_REQUIRED) _proRequired.value = true
+        return RehearsalChatRefusal.message(e)
+    }
 }
 
 /** The stage call, then its debrief in place of a stars result. */
 @Composable
 fun RehearsalCallScreen(
     container: AppContainer, id: String, stageWire: String, onBack: () -> Unit,
-    onOpenStage: (String, Stage) -> Unit, onOpenMemory: () -> Unit = {},
+    onOpenStage: (String, Stage, RehearsalPartner, Boolean) -> Unit, onOpenMemory: () -> Unit = {},
+    /** Who plays the partner (Hector is Pro) and hard mode, from the stage's partner sheet. */
+    partner: RehearsalPartner = RehearsalPartner.ALPHONSO, hardMode: Boolean = false,
+    onOpenPaywall: () -> Unit = {},
 ) {
     val stage = Stage.fromWire(stageWire) ?: run { onBack(); return }
     val course = remember { container.activeCourse.course.value }
@@ -108,12 +133,17 @@ fun RehearsalCallScreen(
         return
     }
     val playback = remember { container.newPlayback() }
-    val vm: RehearsalConversationViewModel = viewModel(key = "rehearsal-call-${course.code}-$id-${stage.wire}") {
+    val vm: RehearsalConversationViewModel = viewModel(key = "rehearsal-call-${course.code}-$id-${stage.wire}-${partner.wire}-$hardMode") {
         RehearsalConversationViewModel(
             id, stage, container.newRecorder(), { container.micPermission.request() }, container.aiClient, container.progressClient, { playback.play(it) }, course,
-            alphonsoVoice = { cc -> container.voicePrefs.voice(VoiceCharacter.Alphonso, cc) },
+            // The voice chosen in Settings > Voices for the partner of this call: Hector's own for a Hector rehearsal.
+            alphonsoVoice = { cc -> container.voicePrefs.voice(if (partner == RehearsalPartner.HECTOR) VoiceCharacter.Hector else VoiceCharacter.Alphonso, cc) },
+            partner = partner, hardMode = hardMode,
         )
     }
+    val proRequired by vm.proRequired.collectAsState()
+    // A 402 pro_required on the first turn (Pro lapsed, or unknown at the sheet): the existing Pro screen, once.
+    LaunchedEffect(proRequired) { if (proRequired) { vm.proRequiredHandled(); onOpenPaywall() } }
     // Runs of this stage before this call (kept by the controller per call, so a rotation keeps it): a new one after it is what the debrief shows.
     val runsBefore = c.runsBefore(vm.callId, stage)
     val callState by vm.state.collectAsState()
@@ -123,14 +153,28 @@ fun RehearsalCallScreen(
     BackHandler(enabled = result == null, onBack = endCall)
     if (result != null) {
         val recapUi by vm.recap.ui.collectAsState()
+        var choosing by remember { mutableStateOf<Stage?>(null) }
         // The run is written when the recap lands; read the state again once it is over (done, empty or failed).
         LaunchedEffect(recapUi.status) { if (recapUi.status != CallRecapController.Status.PENDING) c.load() }
         RehearsalDebrief(
             rehearsal.kind, stage, state, runsBefore, vm.elapsedSeconds, callState.turns.count { it.role == "user" },
             pending = recapUi.status == CallRecapController.Status.PENDING, fixCount = recapUi.recap?.reviewCount ?: 0,
             rehearsalSpeaking = recapUi.rehearsalSpeaking, courseCode = course.code,
-            onNext = { s -> onOpenStage(id, s) }, onAgain = { onOpenStage(id, stage) }, onDone = onBack,
+            // Each stage start asks who to practise with (pick 5B), the next stage and a repeat included: nothing is carried over.
+            onNext = { s -> choosing = s }, onAgain = { choosing = stage }, onDone = onBack,
         )
+        choosing?.let { next ->
+            StagePartnerSheet(
+                next, state?.hectorAvailable, container.entitlements.isPro, onDismiss = { choosing = null },
+                onChoose = { choice ->
+                    choosing = null
+                    when (choice) {
+                        is StagePartnerRules.Choice.Start -> onOpenStage(id, next, choice.partner, choice.hardMode)
+                        StagePartnerRules.Choice.Paywall -> onOpenPaywall()
+                    }
+                },
+            )
+        }
         return
     }
     val context = LocalContext.current
@@ -138,8 +182,9 @@ fun RehearsalCallScreen(
         LaunchedEffect(Unit) { vm.speakOpener() }
         DisposableEffect(Unit) { onDispose { vm.onLeave() } }
         PracticeCallScreen(
-            kit = remember { alphonsoKit(context) }, title = RehearsalCopy.callTitle(rehearsal.kind), scenarioId = "rehearsal", course = course,
-            header = CallHeader(RehearsalCopy.callTitle(rehearsal.kind), RehearsalCopy.callSubline(stage), stage.number),
+            // Hector brings his own art and name; the header's AI label stays for either partner.
+            kit = remember(partner) { if (partner == RehearsalPartner.HECTOR) hectorKit(context) else alphonsoKit(context) }, title = RehearsalCopy.callTitle(rehearsal.kind), scenarioId = "rehearsal", course = course,
+            header = CallHeader(RehearsalCopy.callTitle(rehearsal.kind), RehearsalCopy.callSubline(stage, partner, hardMode), stage.number),
             vm = vm, playback = playback, reducedMotion = systemMotionReduced(context), onEnd = endCall,
             statusHost = { AiReportStatusHost(container.aiReports) },
             transcript = { RehearsalTranscript(container, vm, course.code) },
