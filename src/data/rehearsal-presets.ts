@@ -678,9 +678,9 @@ const FR: Record<PresetId, PresetCourse> = {
     role: "un responsable qui accueille une nouvelle personne",
     tone: "chaleureux, rapide et serviable",
     opener:
-      "Bienvenue ! Tu dois être la nouvelle personne. Je suis content que tu sois là. Je te montre les lieux.",
+      "Bienvenue ! Tu dois être la nouvelle personne. Ça me fait plaisir que tu sois là. Je te montre les lieux.",
     phrases: [
-      ["Ravi de faire ta connaissance.", "A polite first hello."],
+      ["Ça me fait plaisir de faire ta connaissance.", "A polite first hello."],
       ["Ça me fait plaisir d'être ici.", "Say you are glad to start."],
       ["Où puis-je poser mes affaires ?", "Ask where to leave your bag."],
       ["À qui puis-je poser mes questions ?", "Ask who can help you."],
