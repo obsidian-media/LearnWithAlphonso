@@ -8,6 +8,7 @@ import {
   type RecapView,
   type Transcript,
 } from "./call-recap-api";
+import type { RehearsalSpeaking } from "./rehearsal-speaking";
 import { voiceFor } from "./voice-prefs";
 import { track } from "./analytics";
 import { canSpeak, speak } from "./speech";
@@ -23,6 +24,8 @@ export type RecapController = {
   /** "failed": the attempt did not work and the call is not used up, so "Try again" is offered. */
   status: "off" | "pending" | "ready" | "failed";
   recap: RecapView | null;
+  /** "How you spoke" for a rehearsal run (counts only), when the server sent it. */
+  howYouSpoke: RehearsalSpeaking | null;
   review: "idle" | "adding" | "added" | "failed";
   onRetry: () => void;
   onReview: () => void;
@@ -45,7 +48,8 @@ export function useCallRecap(args: {
     done: boolean;
     recap: RecapView | null;
     retry: boolean;
-  }>({ done: false, recap: null, retry: false });
+    speaking: RehearsalSpeaking | null;
+  }>({ done: false, recap: null, retry: false, speaking: null });
   const [attempt, setAttempt] = useState(0);
   const [review, setReview] = useState<RecapController["review"]>("idle");
   const [speaking, setSpeaking] = useState<string | null>(null);
@@ -56,7 +60,7 @@ export function useCallRecap(args: {
   useEffect(() => {
     if (!qualifies || !callId) return;
     let live = true;
-    setState({ done: false, recap: null, retry: false });
+    setState({ done: false, recap: null, retry: false, speaking: null });
     setReview("idle");
     const a = argsRef.current;
     void fetchCallRecapAttempt({
@@ -64,7 +68,9 @@ export function useCallRecap(args: {
       messages: a.messages,
       cefrLevel: a.cefrLevel,
       scene: a.scene,
-    }).then((r) => live && setState({ done: true, recap: r.recap, retry: r.retry }));
+    }).then(
+      (r) => live && setState({ done: true, recap: r.recap, retry: r.retry, speaking: r.speaking }),
+    );
     return () => {
       live = false;
     };
@@ -140,5 +146,14 @@ export function useCallRecap(args: {
         : state.retry
           ? "failed"
           : "off";
-  return { status, recap: state.recap, review, onRetry, onReview, speaking, onSpeak };
+  return {
+    status,
+    recap: state.recap,
+    howYouSpoke: state.speaking,
+    review,
+    onRetry,
+    onReview,
+    speaking,
+    onSpeak,
+  };
 }

@@ -282,3 +282,54 @@ describe("RehearsePage quick-starts", () => {
     expect(await screen.findByRole("form", { name: "Plan a rehearsal" })).toBeInTheDocument();
   });
 });
+
+describe("RehearsePage phrasebook", () => {
+  it("hides the phrasebook until stage 1 (the warm-up) is done", async () => {
+    api.fetchRehearsals.mockResolvedValue({
+      ok: true,
+      value: {
+        ...state,
+        progress: { warmup: "todo", conversation: "todo", hard_moments: "todo" },
+        nextStage: "warmup",
+      },
+    });
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    await screen.findByRole("heading", { name: "Job interview" });
+    expect(screen.queryByRole("button", { name: /^Your phrases/ })).toBeNull();
+  });
+
+  it("opens the phrasebook from the plan once the warm-up is done, and goes back", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
+    const user = userEvent.setup();
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    await user.click(await screen.findByRole("button", { name: /^Your phrases/ }));
+    expect(
+      screen.getByRole("heading", { name: /Your phrases for this job interview/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hear: I have experience in" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "Back to the plan" }));
+    expect(screen.getByRole("heading", { name: "Job interview" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Your phrases/ })).toHaveFocus();
+  });
+
+  it("the entry row counts the phrases and says they can be heard and said", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    const row = await screen.findByRole("button", { name: /^Your phrases/ });
+    expect(row).toHaveTextContent("6 phrases · tap to hear, say them");
+    const next = screen.getByRole("link", { name: "Next: The real conversation" });
+    expect(row.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("hides the entry when the brief has no key phrases", async () => {
+    const active = state.active as unknown as { brief: object };
+    api.fetchRehearsals.mockResolvedValue({
+      ok: true,
+      value: { ...state, active: { ...active, brief: { ...active.brief, keyPhrases: [] } } },
+    });
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    await screen.findByRole("heading", { name: "Job interview" });
+    expect(screen.queryByRole("button", { name: /^Your phrases/ })).toBeNull();
+  });
+});

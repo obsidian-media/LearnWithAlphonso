@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
 import { deleteRehearsal, type Rehearsal } from "@/lib/rehearsal-api";
 import { daysToGoText, localToday, shortDay } from "@/lib/rehearsal-dates";
@@ -24,8 +24,14 @@ export function ActiveRehearsal({
   nextStage,
   onDeleted,
   onAdjust,
+  onOpenPhrases,
+  restoreFocus = false,
   today = localToday(),
 }: {
+  /** Opens the phrasebook; the button shows only once the warm-up (stage 1) is done. */
+  onOpenPhrases?: () => void;
+  /** Back from the phrasebook: focus returns to its entry row. */
+  restoreFocus?: boolean;
   rehearsal: Rehearsal;
   progress: StageProgress | null;
   nextStage: Stage | null;
@@ -37,6 +43,10 @@ export function ActiveRehearsal({
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const next = nextStage ?? "warmup";
+  const phrasesRow = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (restoreFocus) phrasesRow.current?.focus();
+  }, [restoreFocus]);
 
   async function remove() {
     setBusy(true);
@@ -110,6 +120,51 @@ export function ActiveRehearsal({
           );
         })}
       </ol>
+
+      {progress?.warmup === "done" && onOpenPhrases && rehearsal.brief.keyPhrases.length > 0 && (
+        <button
+          ref={phrasesRow}
+          type="button"
+          onClick={onOpenPhrases}
+          className="flex min-h-11 items-center gap-3 rounded-2xl border border-ds-line bg-ds-card p-4 text-left"
+        >
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-ds-sunk text-ds-brand">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5zM4 5.5v16" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block ds-type-headline font-semibold text-ds-ink">Your phrases</span>
+            <span className="block ds-type-caption text-ds-ink-soft">
+              {rehearsal.brief.keyPhrases.length} phrases · tap to hear, say them
+            </span>
+          </span>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0 text-ds-ink-soft"
+            aria-hidden="true"
+          >
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+      )}
 
       <Link
         to="/rehearse/$id/$stage"

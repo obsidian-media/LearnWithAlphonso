@@ -250,6 +250,87 @@ class RehearsalsTest {
         assertEquals(RehearsalResult.Failed(RehearsalError.FAILED), client(ArrayList(), HttpStatusCode.OK, "{}").create(intake))
     }
 
+    // ---------------------------------------------------------------- the quick-starts
+
+    private val presetsJson = """{"presets":[
+        {"id":"job_interview","eventKind":"interview","title":"Job interview","blurb":"A hiring manager asks about you.","counterpart":"a hiring manager",
+         "stages":[{"key":"warmup","goal":"Say hello and your name"},{"key":"conversation","goal":"Answer the usual questions"},{"key":"hard_moments","goal":"Handle a tough question"}],
+         "keyPhrases":[{"text":"Nice to meet you","meaning":"A polite hello"}],"futureField":{"x":1}},
+        {"id":"first_day","eventKind":"first_day","title":"First day","blurb":"b","counterpart":"my new manager","stages":[],"keyPhrases":[]},
+        {"id":"","title":"no id"},
+        {"id":"no_title","title":""}
+    ],"extra":true}"""
+
+    @Test fun `the quick-start list decodes in the server's order, ignores unknown keys and drops entries with no id or title`() {
+        val list = RehearsalDecoding.presets(presetsJson)!!
+        assertEquals(listOf("job_interview", "first_day"), list.map { it.id })
+        val first = list.first()
+        assertEquals("a hiring manager", first.counterpart)
+        assertEquals(listOf("warmup", "conversation", "hard_moments"), first.stages.map { it.key })
+        assertEquals("Handle a tough question", first.stages.last().goal)
+        assertEquals("Nice to meet you", first.keyPhrases.single().text)
+        assertEquals("A polite hello", first.keyPhrases.single().meaning)
+        assertNull(RehearsalDecoding.presets("""{"nope":1}"""))
+        assertNull(RehearsalDecoding.presets("not json"))
+        assertEquals(emptyList<RehearsalPreset>(), RehearsalDecoding.presets("""{"presets":[]}"""))
+    }
+
+    @Test fun `the shared fixture's preset list decodes to the eight presets in order, each with three stages and phrases`() {
+        val list = RehearsalDecoding.presets(fixture.getValue("presets").jsonObject.getValue("response").toString())!!
+        assertEquals(
+            listOf("job_interview", "talk_to_manager", "doctor_appointment", "apartment_landlord", "bank_account", "parent_teacher", "first_day", "customer_service_call"),
+            list.map { it.id },
+        )
+        for (p in list) {
+            assertEquals(listOf("warmup", "conversation", "hard_moments"), p.stages.map { it.key }, p.id)
+            assertTrue(p.title.isNotBlank() && p.blurb.isNotBlank() && p.counterpart.isNotBlank() && p.keyPhrases.isNotEmpty(), p.id)
+        }
+    }
+
+    @Test fun `the quick-start create body is exactly the shared fixture's, and a date is carried when there is one`() {
+        assertEquals(fixture.getValue("createFromPreset").jsonObject, RehearsalClient.presetBody("en", "doctor_appointment", null))
+        val withDate = RehearsalClient.presetBody("fr", "bank_account", "2026-12-04")
+        assertEquals("create", withDate.getValue("action").jsonPrimitive.content)
+        assertEquals("fr", withDate.getValue("course").jsonPrimitive.content)
+        assertEquals("bank_account", withDate.getValue("preset").jsonPrimitive.content)
+        assertEquals("2026-12-04", withDate.getValue("eventDate").jsonPrimitive.content)
+        assertFalse(withDate.containsKey("eventKind"))
+        assertFalse(withDate.containsKey("counterpart"))
+    }
+
+    @Test fun `adding a date after creation is exactly the shared fixture's adjust body`() {
+        assertEquals(fixture.getValue("addDate").jsonObject, RehearsalClient.dateBody("11111111-1111-4111-8111-111111111111", "2026-12-04"))
+        assertTrue(RehearsalClient.dateBody("x", null).getValue("eventDate") is kotlinx.serialization.json.JsonNull)
+    }
+
+    @Test fun `the client asks for the presets of the course and posts a preset create over the wire`() = runTest {
+        val seen = ArrayList<Seen>()
+        val r = client(seen, HttpStatusCode.OK, presetsJson).presets("es")
+        assertEquals(HttpMethod.Get, seen.single().method)
+        assertEquals("/api/rehearsal-presets", seen.single().path)
+        assertEquals("course=es", seen.single().query)
+        assertEquals(2, (r as RehearsalResult.Ok).value.size)
+        val seen2 = ArrayList<Seen>()
+        val created = client(seen2, HttpStatusCode.OK, ContentJson.json.parseToJsonElement(fixture.getValue("state").toString()).jsonObject.let { buildJsonObject { put("rehearsal", it.getValue("active")) }.toString() })
+            .createFromPreset("en", "talk_to_manager", null)
+        assertTrue(created is RehearsalResult.Ok)
+        assertEquals(HttpMethod.Post, seen2.single().method)
+        assertEquals("/api/rehearsal", seen2.single().path)
+        val body = ContentJson.json.parseToJsonElement(seen2.single().body).jsonObject
+        assertEquals("talk_to_manager", body.getValue("preset").jsonPrimitive.content)
+        assertTrue(body.getValue("eventDate") is kotlinx.serialization.json.JsonNull)
+    }
+
+    @Test fun `quick-start refusals map like create's, and an unknown preset is its own error`() = runTest {
+        assertEquals(RehearsalResult.Failed(RehearsalError.INVALID_PRESET), client(ArrayList(), HttpStatusCode.BadRequest, """{"error":"invalid_preset"}""").createFromPreset("en", "x", null))
+        assertEquals(RehearsalResult.Failed(RehearsalError.INVALID), client(ArrayList(), HttpStatusCode.BadRequest, """{"error":"invalid"}""").createFromPreset("en", "x", null))
+        assertEquals(RehearsalResult.Failed(RehearsalError.PAYWALL), client(ArrayList(), HttpStatusCode.PaymentRequired, """{"error":"paywall"}""").createFromPreset("en", "x", null))
+        assertEquals(RehearsalResult.Failed(RehearsalError.ACTIVE_EXISTS), client(ArrayList(), HttpStatusCode.Conflict, """{"error":"active_exists"}""").createFromPreset("en", "x", null))
+        assertEquals(RehearsalResult.Failed(RehearsalError.NOT_ENABLED), client(ArrayList(), HttpStatusCode.NotFound, """{"error":"not_enabled"}""").presets("en"))
+        assertEquals(RehearsalResult.Failed(RehearsalError.FAILED), client(ArrayList(), HttpStatusCode.OK, "{}").presets("en"))
+        assertTrue(RehearsalCopy.errorText(RehearsalError.INVALID_PRESET).isNotBlank())
+    }
+
     @Test fun `the outcome body carries the choice, and the new date only with a value`() {
         val well = RehearsalClient.outcomeBody("id1", OutcomeChoice.WELL, null)
         assertEquals("outcome", well.getValue("action").jsonPrimitive.content)
