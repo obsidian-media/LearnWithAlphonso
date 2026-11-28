@@ -17,6 +17,7 @@ import { ActiveRehearsal } from "./ActiveRehearsal";
 import { HowDidItGo } from "./HowDidItGo";
 import { RehearsalIntakeForm } from "./RehearsalIntakeForm";
 import { RehearsalPaywallSheet } from "./RehearsalPaywallSheet";
+import { Phrasebook } from "./Phrasebook";
 import { PresetPreview } from "./PresetPreview";
 import { QuickStartPicker } from "./QuickStartPicker";
 
@@ -33,6 +34,8 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
   const [error, setError] = useState<RehearsalError | null>(null);
   const [adjusting, setAdjusting] = useState(false);
   const [sheet, setSheet] = useState(true);
+  const [phrases, setPhrases] = useState(false);
+  const [cameBack, setCameBack] = useState(false);
   // The quick-starts (empty when the server has none, which shows the four questions straight away), the one being
   // previewed, and whether the learner chose "Something else".
   const [presets, setPresets] = useState<PresetSummary[]>([]);
@@ -43,6 +46,7 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
   const load = useCallback(async () => {
     setError(null);
     setAdjusting(false);
+    setPhrases(false);
     const [result, quick] = await Promise.all([fetchRehearsals(course), fetchPresets(course)]);
     setPresets(quick.ok ? quick.value : []);
     setPicked(null);
@@ -107,6 +111,16 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
           onDone={() => void load()}
         />
       );
+    if (phrases && state.progress?.warmup === "done")
+      return (
+        <Phrasebook
+          rehearsal={active}
+          onBack={() => {
+            setPhrases(false);
+            setCameBack(true);
+          }}
+        />
+      );
     return (
       <ActiveRehearsal
         rehearsal={active}
@@ -114,6 +128,11 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
         nextStage={state.nextStage}
         today={today}
         onAdjust={() => setAdjusting(true)}
+        onOpenPhrases={() => {
+          setCameBack(false);
+          setPhrases(true);
+        }}
+        restoreFocus={cameBack}
         onDeleted={() => void load()}
       />
     );
