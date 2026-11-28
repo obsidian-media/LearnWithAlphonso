@@ -1,0 +1,656 @@
+[
+  {
+    "expected": "Nice to meet you",
+    "heard": "Nice to meet you.",
+    "words": [
+      {
+        "word": "nice",
+        "confidence": 0.95
+      },
+      {
+        "word": "to",
+        "confidence": 0.95
+      },
+      {
+        "word": "meet",
+        "confidence": 0.95
+      },
+      {
+        "word": "you",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Could you repeat that, please?",
+    "heard": "could you repeat that please",
+    "words": [
+      {
+        "word": "could",
+        "confidence": 0.95
+      },
+      {
+        "word": "you",
+        "confidence": 0.95
+      },
+      {
+        "word": "repeat",
+        "confidence": 0.95
+      },
+      {
+        "word": "that",
+        "confidence": 0.95
+      },
+      {
+        "word": "please",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "I would like a table for two",
+    "heard": "I would like a table for two",
+    "words": [
+      {
+        "word": "i",
+        "confidence": 0.95
+      },
+      {
+        "word": "would",
+        "confidence": 0.95
+      },
+      {
+        "word": "like",
+        "confidence": 0.95
+      },
+      {
+        "word": "a",
+        "confidence": 0.95
+      },
+      {
+        "word": "table",
+        "confidence": 0.45
+      },
+      {
+        "word": "for",
+        "confidence": 0.95
+      },
+      {
+        "word": "two",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "mostly",
+      "listenAgain": [
+        "table"
+      ]
+    }
+  },
+  {
+    "expected": "Where is the nearest pharmacy?",
+    "heard": "Where is the pharmacy",
+    "words": [
+      {
+        "word": "where",
+        "confidence": 0.95
+      },
+      {
+        "word": "is",
+        "confidence": 0.95
+      },
+      {
+        "word": "the",
+        "confidence": 0.95
+      },
+      {
+        "word": "pharmacy",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "mostly",
+      "listenAgain": [
+        "nearest"
+      ]
+    }
+  },
+  {
+    "expected": "Could you speak more slowly please",
+    "heard": "Could you speak slowly",
+    "words": [
+      {
+        "word": "could",
+        "confidence": 0.95
+      },
+      {
+        "word": "you",
+        "confidence": 0.95
+      },
+      {
+        "word": "speak",
+        "confidence": 0.95
+      },
+      {
+        "word": "slowly",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "mostly",
+      "listenAgain": [
+        "more",
+        "please"
+      ]
+    }
+  },
+  {
+    "expected": "I would like to open an account",
+    "heard": "I would like account",
+    "words": [
+      {
+        "word": "i",
+        "confidence": 0.95
+      },
+      {
+        "word": "would",
+        "confidence": 0.95
+      },
+      {
+        "word": "like",
+        "confidence": 0.95
+      },
+      {
+        "word": "account",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "not_yet",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Open an account",
+    "heard": "Open",
+    "words": [
+      {
+        "word": "open",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "not_yet",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Could you please show me the way to the station",
+    "heard": "Could you show me way to station",
+    "words": [
+      {
+        "word": "could",
+        "confidence": 0.95
+      },
+      {
+        "word": "you",
+        "confidence": 0.95
+      },
+      {
+        "word": "show",
+        "confidence": 0.95
+      },
+      {
+        "word": "me",
+        "confidence": 0.95
+      },
+      {
+        "word": "way",
+        "confidence": 0.95
+      },
+      {
+        "word": "to",
+        "confidence": 0.95
+      },
+      {
+        "word": "station",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "not_yet",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Pharmacy",
+    "heard": "farmacy",
+    "words": [
+      {
+        "word": "farmacy",
+        "confidence": 0.9
+      }
+    ],
+    "want": {
+      "result": "not_yet",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Thank you very much",
+    "heard": "",
+    "words": [],
+    "want": {
+      "result": "not_yet",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "I don't understand",
+    "heard": "I dont understand",
+    "words": [
+      {
+        "word": "i",
+        "confidence": 0.95
+      },
+      {
+        "word": "dont",
+        "confidence": 0.95
+      },
+      {
+        "word": "understand",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Let's go",
+    "heard": "let us go",
+    "words": [
+      {
+        "word": "let",
+        "confidence": 0.95
+      },
+      {
+        "word": "us",
+        "confidence": 0.95
+      },
+      {
+        "word": "go",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "See you tomorrow",
+    "heard": "See you tomorrow.",
+    "words": null,
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Good morning",
+    "heard": "Good morning",
+    "words": [
+      {
+        "word": "good",
+        "confidence": 0.7
+      },
+      {
+        "word": "morning",
+        "confidence": 0.7
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Good morning",
+    "heard": "Good morning",
+    "words": [
+      {
+        "word": "good",
+        "confidence": 0.95
+      },
+      {
+        "word": "morning",
+        "confidence": 0.69
+      }
+    ],
+    "want": {
+      "result": "mostly",
+      "listenAgain": [
+        "morning"
+      ]
+    }
+  },
+  {
+    "expected": "No, no, thank you",
+    "heard": "No thank you",
+    "words": [
+      {
+        "word": "no",
+        "confidence": 0.95
+      },
+      {
+        "word": "thank",
+        "confidence": 0.95
+      },
+      {
+        "word": "you",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "mostly",
+      "listenAgain": [
+        "no"
+      ]
+    }
+  },
+  {
+    "expected": "J'aimerais réserver une table",
+    "heard": "j aimerais reserver une table",
+    "words": [
+      {
+        "word": "j",
+        "confidence": 0.95
+      },
+      {
+        "word": "aimerais",
+        "confidence": 0.95
+      },
+      {
+        "word": "reserver",
+        "confidence": 0.95
+      },
+      {
+        "word": "une",
+        "confidence": 0.95
+      },
+      {
+        "word": "table",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "J'ai rendez-vous à neuf heures",
+    "heard": "jai rendez vous a neuf heures",
+    "words": [
+      {
+        "word": "jai",
+        "confidence": 0.95
+      },
+      {
+        "word": "rendez",
+        "confidence": 0.95
+      },
+      {
+        "word": "vous",
+        "confidence": 0.95
+      },
+      {
+        "word": "a",
+        "confidence": 0.95
+      },
+      {
+        "word": "neuf",
+        "confidence": 0.95
+      },
+      {
+        "word": "heures",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Où est la gare ?",
+    "heard": "Ou est la gare",
+    "words": [
+      {
+        "word": "ou",
+        "confidence": 0.95
+      },
+      {
+        "word": "est",
+        "confidence": 0.95
+      },
+      {
+        "word": "la",
+        "confidence": 0.95
+      },
+      {
+        "word": "gare",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Pouvez-vous répéter s'il vous plaît",
+    "heard": "Pouvez-vous répéter s'il vous plaît",
+    "words": [
+      {
+        "word": "pouvez-vous",
+        "confidence": 0.95
+      },
+      {
+        "word": "répéter",
+        "confidence": 0.5
+      },
+      {
+        "word": "s'il",
+        "confidence": 0.95
+      },
+      {
+        "word": "vous",
+        "confidence": 0.95
+      },
+      {
+        "word": "plaît",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "mostly",
+      "listenAgain": [
+        "répéter"
+      ]
+    }
+  },
+  {
+    "expected": "Je cherche la pharmacie",
+    "heard": "pharmacie",
+    "words": [
+      {
+        "word": "pharmacie",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "not_yet",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Mon cœur bat",
+    "heard": "mon coeur bat",
+    "words": [
+      {
+        "word": "mon",
+        "confidence": 0.95
+      },
+      {
+        "word": "coeur",
+        "confidence": 0.95
+      },
+      {
+        "word": "bat",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "¿Cuánto cuesta esto?",
+    "heard": "cuanto cuesta esto",
+    "words": [
+      {
+        "word": "cuanto",
+        "confidence": 0.95
+      },
+      {
+        "word": "cuesta",
+        "confidence": 0.95
+      },
+      {
+        "word": "esto",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Quisiera una habitación doble",
+    "heard": "quisiera una habitacion doble",
+    "words": [
+      {
+        "word": "quisiera",
+        "confidence": 0.95
+      },
+      {
+        "word": "una",
+        "confidence": 0.95
+      },
+      {
+        "word": "habitacion",
+        "confidence": 0.4
+      },
+      {
+        "word": "doble",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "mostly",
+      "listenAgain": [
+        "habitación"
+      ]
+    }
+  },
+  {
+    "expected": "Mañana por la mañana",
+    "heard": "manana por la manana",
+    "words": [
+      {
+        "word": "manana",
+        "confidence": 0.95
+      },
+      {
+        "word": "por",
+        "confidence": 0.95
+      },
+      {
+        "word": "la",
+        "confidence": 0.95
+      },
+      {
+        "word": "manana",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "clear",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "Necesito un médico",
+    "heard": "necesito un medico",
+    "words": [
+      {
+        "word": "necesito",
+        "confidence": 0.3
+      },
+      {
+        "word": "un",
+        "confidence": 0.3
+      },
+      {
+        "word": "medico",
+        "confidence": 0.3
+      }
+    ],
+    "want": {
+      "result": "not_yet",
+      "listenAgain": []
+    }
+  },
+  {
+    "expected": "¿Dónde está el baño, por favor?",
+    "heard": "donde esta el bano",
+    "words": [
+      {
+        "word": "donde",
+        "confidence": 0.95
+      },
+      {
+        "word": "esta",
+        "confidence": 0.95
+      },
+      {
+        "word": "el",
+        "confidence": 0.95
+      },
+      {
+        "word": "bano",
+        "confidence": 0.95
+      }
+    ],
+    "want": {
+      "result": "mostly",
+      "listenAgain": [
+        "por",
+        "favor"
+      ]
+    }
+  }
+]
