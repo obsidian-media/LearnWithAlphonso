@@ -19,7 +19,7 @@ class RehearsalSourceGuardsTest {
     private fun problems(conversation: String, call: String, header: String, rootScreen: String, screens: String): List<String> {
         val out = mutableListOf<String>()
         if (!conversation.contains("callSource)")) out += "the shared conversation does not pass its call source to the chat request"
-        if (!call.contains("override val callSource: CallSource get() = CallSource.Rehearsal(rehearsalId, stage)")) out += "the rehearsal call does not use the rehearsal source"
+        if (!call.contains("override val callSource: CallSource get() = CallSource.Rehearsal(rehearsalId, stage, partner, hardMode)")) out += "the rehearsal call does not use the rehearsal source"
         if (!call.contains("override fun systemPrompt(): String = \"\"")) out += "the rehearsal call holds prompt text"
         if (!header.contains("RehearsalCopy.AI_LABEL")) out += "the rehearsal call header has no AI label"
         if (!rootScreen.contains("PaywallSource.REHEARSAL_ENTRY")) out += "the Pro screen opened from the rehearsal entry has no rehearsal_entry source"
@@ -80,10 +80,52 @@ class RehearsalSourceGuardsTest {
         val rootScreen = read("RootScreen.kt")
         val screens = read("rehearsal/RehearsalScreens.kt") + call
         assertEquals(1, problems(conv.replace("callSource)", "null)"), call, header, rootScreen, screens).size)
-        assertEquals(1, problems(conv, call.replace("CallSource.Rehearsal(rehearsalId, stage)", "CallSource.Scenario"), header, rootScreen, screens).size)
+        assertEquals(1, problems(conv, call.replace("CallSource.Rehearsal(rehearsalId, stage, partner, hardMode)", "CallSource.Scenario"), header, rootScreen, screens).size)
         assertEquals(1, problems(conv, call.replace("override fun systemPrompt(): String = \"\"", "override fun systemPrompt(): String = \"You are an interviewer\""), header, rootScreen, screens).size)
         assertEquals(1, problems(conv, call, header.replace("RehearsalCopy.AI_LABEL", "\"\""), rootScreen, screens).size)
         assertEquals(1, problems(conv, call, header, rootScreen.replace("PaywallSource.REHEARSAL_ENTRY", "PaywallSource.HECTOR_TAB"), screens).size)
         assertEquals(1, problems(conv, call, header, rootScreen, screens + "\nText(\"3 stars\")").size)
+    }
+
+    // ---- Hector rehearsals and hard mode: the partner sheet gates every start, and a Hector call is Hector all the way down
+
+    private fun hectorProblems(conversation: String, call: String, plan: String, rootScreen: String): List<String> {
+        val out = mutableListOf<String>()
+        // Hector's voice: the character is sent for the opener, every reply and the phrase replay (4 speech calls in the shared base).
+        if (!call.contains("override val speechCharacter: VoiceCharacter? get() = if (partner == RehearsalPartner.HECTOR) VoiceCharacter.Hector else null")) out += "a Hector call does not speak in Hector's voice"
+        if (Regex("character = speechCharacter").findAll(conversation).count() < 3) out += "the shared call does not send the character with every speech request"
+        if (!conversation.contains("chatErrorMessage(e)")) out += "the shared call does not route a refused reply through the rehearsal's own words"
+        if (!call.contains("RehearsalChatRefusal.PRO_REQUIRED") || !call.contains("onOpenPaywall()")) out += "a pro_required reply does not open the Pro screen"
+        if (!call.contains("hectorKit(context)")) out += "a Hector call has no Hector art"
+        if (!call.contains("VoiceCharacter.Hector else VoiceCharacter.Alphonso")) out += "a Hector call does not use Hector's chosen voice"
+        // Every start (a stage row and the Next button) goes through the partner sheet; none starts a call directly.
+        if (plan.contains("onOpenStage(r.id, next)") || !plan.contains("{ choosing = next }") || !plan.contains("{ choosing = stage }")) out += "a plan start skips the partner sheet"
+        if (!plan.contains("StagePartnerRules.Choice.Paywall -> onOpenPaywall()")) out += "Hector without Pro does not open the Pro screen"
+        if (!plan.contains("StagePartnerRules.HARD_MODE_DONE")) out += "the plan does not say Hard mode done"
+        if (!rootScreen.contains("Routes.rehearsalCall(id, stage.wire, partner.wire, hard)")) out += "the call route does not carry the partner and hard mode"
+        return out
+    }
+
+    private fun hectorCurrent() = hectorProblems(read("practice/ConversationViewModels.kt"), read("rehearsal/RehearsalCall.kt"), read("rehearsal/RehearsalScreens.kt"), read("RootScreen.kt"))
+
+    @Test fun `Hector rehearsals keep their properties`() {
+        assertEquals(emptyList<String>(), hectorCurrent())
+    }
+
+    @Test fun `the Hector guard goes red when each property is removed`() {
+        val conv = read("practice/ConversationViewModels.kt")
+        val call = read("rehearsal/RehearsalCall.kt")
+        val plan = read("rehearsal/RehearsalScreens.kt")
+        val rootScreen = read("RootScreen.kt")
+        assertEquals(1, hectorProblems(conv, call.replace("VoiceCharacter.Hector else null", "null else null"), plan, rootScreen).size)
+        assertEquals(1, hectorProblems(conv.replace("character = speechCharacter", "character = null"), call, plan, rootScreen).size)
+        assertEquals(1, hectorProblems(conv.replace("chatErrorMessage(e)", "AiErrorCopy.userMessage(e)"), call, plan, rootScreen).size)
+        assertEquals(1, hectorProblems(conv, call.replace("RehearsalChatRefusal.PRO_REQUIRED", "RehearsalChatRefusal.OTHER"), plan, rootScreen).size)
+        assertEquals(1, hectorProblems(conv, call.replace("hectorKit(context)", "alphonsoKit(context)"), plan, rootScreen).size)
+        assertEquals(1, hectorProblems(conv, call.replace("VoiceCharacter.Hector else VoiceCharacter.Alphonso", "VoiceCharacter.Alphonso else VoiceCharacter.Alphonso"), plan, rootScreen).size)
+        assertEquals(1, hectorProblems(conv, call, plan.replace("{ choosing = next }", "{ onOpenStage(r.id, next) }"), rootScreen).size)
+        assertEquals(1, hectorProblems(conv, call, plan.replace("StagePartnerRules.Choice.Paywall -> onOpenPaywall()", "StagePartnerRules.Choice.Paywall -> Unit"), rootScreen).size)
+        assertEquals(1, hectorProblems(conv, call, plan.replace("StagePartnerRules.HARD_MODE_DONE", "\"\""), rootScreen).size)
+        assertEquals(1, hectorProblems(conv, call, plan, rootScreen.replace("partner.wire, hard)", "\"alphonso\", false)")).size)
     }
 }

@@ -362,14 +362,25 @@ private fun SignedInApp(
                     container, entry.arguments?.getString("mode") ?: "", onBack = { nav.popBackStack() },
                     onOpenStage = { id, stage -> nav.navigate(Routes.rehearsalCall(id, stage.wire)) },
                     onOpenPaywall = { nav.navigate(Routes.REHEARSAL_PRO) },
+                    onOpenPartnerStage = { id, stage, partner, hard -> nav.navigate(Routes.rehearsalCall(id, stage.wire, partner.wire, hard)) },
                 )
             }
-            composable(Routes.REHEARSAL_CALL) { entry ->
+            composable(
+                Routes.REHEARSAL_CALL,
+                arguments = listOf(
+                    androidx.navigation.navArgument("persona") { defaultValue = "alphonso" },
+                    androidx.navigation.navArgument("hard") { type = androidx.navigation.NavType.BoolType; defaultValue = false },
+                ),
+            ) { entry ->
                 com.obsidianmedia.learnwithalphonso.ui.rehearsal.RehearsalCallScreen(
                     container, entry.arguments?.getString("id") ?: "", entry.arguments?.getString("stage") ?: "", onBack = { nav.popBackStack() },
                     // The next stage or a repeat replaces this call, so back from it returns to the plan.
-                    onOpenStage = { id, stage -> nav.navigate(Routes.rehearsalCall(id, stage.wire)) { popUpTo(Routes.REHEARSAL_CALL) { inclusive = true } } },
+                    onOpenStage = { id, stage, partner, hard -> nav.navigate(Routes.rehearsalCall(id, stage.wire, partner.wire, hard)) { popUpTo(Routes.REHEARSAL_CALL) { inclusive = true } } },
                     onOpenMemory = { nav.navigate(Routes.MEMORY) },
+                    partner = com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalPartner.fromWire(entry.arguments?.getString("persona")),
+                    hardMode = entry.arguments?.getBoolean("hard") ?: false,
+                    // Hector refused at the first turn (Pro lapsed or unreadable): the existing Pro screen.
+                    onOpenPaywall = { nav.navigate(Routes.REHEARSAL_PRO) },
                 )
             }
             composable(Routes.REHEARSAL_PRO) {

@@ -53,6 +53,8 @@ import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalApi
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalController
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalCopy
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalEntry
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalPartner
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.StagePartnerRules
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalRules
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalState
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalSummary
@@ -107,6 +109,8 @@ internal fun fromDay(first: LocalDate) = object : SelectableDates {
 fun RehearsalScreen(
     container: AppContainer, mode: String, onBack: () -> Unit,
     onOpenStage: (id: String, stage: Stage) -> Unit, onOpenPaywall: () -> Unit,
+    /** Hector (and hard mode) from a stage's partner sheet; Alphonso's start is [onOpenStage]. */
+    onOpenPartnerStage: (id: String, stage: Stage, partner: RehearsalPartner, hardMode: Boolean) -> Unit = { _, _, _, _ -> },
 ) {
     val course = remember { container.activeCourse.course.value }
     val vm: RehearsalViewModel = viewModel(key = "rehearsal-${course.code}") { RehearsalViewModel(container.rehearsalClient, course.code) }
@@ -132,7 +136,7 @@ fun RehearsalScreen(
                 }
                 state.active != null && screen == "outcome" -> HowDidItGo(state.active!!, ui.busy, ui.error, c, onBack = { screen = "" }, onDone = onBack, onMoved = { screen = "" })
                 state.active != null && screen == "adjust" -> RehearsalIntakeScreen(course.code, state.active, ui.busy, ui.error, c, onBack = { screen = "" }, onSaved = { screen = "" })
-                state.active != null -> RehearsalPlan(state, c, onBack = onBack, onOpenStage = onOpenStage, onAdjust = { screen = "adjust" })
+                state.active != null -> RehearsalPlan(state, c, onBack = onBack, onOpenStage = onOpenStage, onAdjust = { screen = "adjust" }, onOpenPartnerStage = onOpenPartnerStage, onOpenPaywall = onOpenPaywall)
                 // The free rehearsal is used and the learner is not Pro: the Pro sheet is the screen, the picker stays hidden.
                 entryOpensPaywall(state, container.entitlements.isPro) -> DsBackBar("Learn", onBack)
                 screen == "intake" -> RehearsalIntakeScreen(course.code, null, ui.busy, ui.error, c, onBack = { c.clearError(); screen = "" }, onSaved = { screen = "" })
@@ -239,11 +243,16 @@ fun RehearsalIntakeScreen(
 
 /** "Your rehearsal plan": three stages, one primary button (the server's next stage), Adjust and Delete quiet. */
 @Composable
-fun RehearsalPlan(state: RehearsalState, controller: RehearsalController, onBack: () -> Unit, onOpenStage: (String, Stage) -> Unit, onAdjust: () -> Unit) {
+fun RehearsalPlan(
+    state: RehearsalState, controller: RehearsalController, onBack: () -> Unit, onOpenStage: (String, Stage) -> Unit, onAdjust: () -> Unit,
+    onOpenPartnerStage: (String, Stage, RehearsalPartner, Boolean) -> Unit = { _, _, _, _ -> }, onOpenPaywall: () -> Unit = {},
+) {
     val r = state.active ?: return
     val ds = LocalAlphonsoTokens.current
     val scope = rememberCoroutineScope()
     var confirming by remember { mutableStateOf(false) }
+    // The stage whose partner is being chosen: every start asks "Alphonso or Hector?" first (Alphonso is the main button).
+    var choosing by remember { mutableStateOf<Stage?>(null) }
     val next = state.next ?: Stage.WARMUP
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         DsBackBar("Learn", onBack)
@@ -259,7 +268,7 @@ fun RehearsalPlan(state: RehearsalState, controller: RehearsalController, onBack
                 Row(
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(if (done) ds.rightTint else ds.card)
                         .border(2.dp, if (done) ds.right else ds.line, RoundedCornerShape(AlphonsoTokens.Radius.control))
-                        .clickable(role = Role.Button, onClickLabel = "${if (done) "Repeat" else "Start"} ${stage.label}") { onOpenStage(r.id, stage) }
+                        .clickable(role = Role.Button, onClickLabel = "${if (done) "Repeat" else "Start"} ${stage.label}") { choosing = stage }
                         .padding(AlphonsoTokens.Space.s3),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
                 ) {
@@ -267,12 +276,13 @@ fun RehearsalPlan(state: RehearsalState, controller: RehearsalController, onBack
                     Column(Modifier.weight(1f)) {
                         Text(stage.label, style = HeadlineType, color = ds.ink)
                         Text(RehearsalCopy.stageRowSubtitle(stage, done), style = CaptionType, color = ds.inkSoft)
+                        if (stage == Stage.HARD_MOMENTS && state.hardModeDone) Text(StagePartnerRules.HARD_MODE_DONE, style = CaptionType, color = ds.rightInk)
                     }
                     if (!done && stage == next) Text("Next", style = CaptionType, color = ds.choice)
                     Text(if (done) "Repeat" else "Start", style = FootnoteType, color = ds.actionText)
                 }
             }
-            AlphonsoPrimaryButton(RehearsalCopy.nextButton(next), { onOpenStage(r.id, next) })
+            AlphonsoPrimaryButton(RehearsalCopy.nextButton(next), { choosing = next })
             Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
                 TextButton(onClick = onAdjust) { Text("Adjust", color = ds.inkSoft) }
                 TextButton(onClick = { confirming = true }) { Text("Delete this rehearsal", color = ds.inkSoft) }
@@ -282,6 +292,20 @@ fun RehearsalPlan(state: RehearsalState, controller: RehearsalController, onBack
                 Text(RehearsalCopy.PLAN_FOOTER, style = CaptionType, color = ds.inkSoft, modifier = Modifier.weight(1f))
             }
         }
+    }
+    choosing?.let { stage ->
+        StagePartnerSheet(
+            stage, state.hectorAvailable, onDismiss = { choosing = null },
+            onChoose = { choice ->
+                choosing = null
+                when (choice) {
+                    is StagePartnerRules.Choice.Start ->
+                        if (choice.partner == RehearsalPartner.HECTOR) onOpenPartnerStage(r.id, stage, choice.partner, choice.hardMode) else onOpenStage(r.id, stage)
+                    // Hector without Pro: the existing Pro screen, never a refusal after the call has started.
+                    StagePartnerRules.Choice.Paywall -> onOpenPaywall()
+                }
+            },
+        )
     }
     if (confirming) DsConfirmDialog(
         "Delete this rehearsal?", "Its plan and run notes are removed. You can not undo this.", "Delete",

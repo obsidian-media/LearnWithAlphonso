@@ -49,8 +49,9 @@ object Routes {
     /** Rehearsals: the plan or the intake (the screen decides), the stage call, and the Pro screen opened from the entry sheet. */
     const val REHEARSAL = "rehearsal?mode={mode}"
     fun rehearsal(mode: String = "") = "rehearsal?mode=$mode"
-    const val REHEARSAL_CALL = "rehearsal/call/{id}/{stage}"
-    fun rehearsalCall(id: String, stage: String) = "rehearsal/call/$id/$stage"
+    /** The stage call; `persona` is "alphonso" (no query needed) or "hector", and `hard` is hard mode (Hector, last stage). */
+    const val REHEARSAL_CALL = "rehearsal/call/{id}/{stage}?persona={persona}&hard={hard}"
+    fun rehearsalCall(id: String, stage: String, persona: String = "alphonso", hard: Boolean = false) = "rehearsal/call/$id/$stage?persona=$persona&hard=$hard"
     const val REHEARSAL_PRO = "rehearsal/pro"
 
     const val LISTEN_FOLDER = "listen/folder/{id}"
