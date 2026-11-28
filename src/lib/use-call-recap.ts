@@ -41,6 +41,8 @@ export function useCallRecap(args: {
   course: Course;
   cefrLevel?: string;
   scene?: string;
+  /** A rehearsal run: the learner's reply timings, read when the recap is asked for (reply-latency.ts). */
+  replyLatencies?: () => number[] | null;
 }): RecapController {
   const { callId, course } = args;
   const qualifies = callId !== null && callQualifiesForRecap(args.messages);
@@ -68,6 +70,7 @@ export function useCallRecap(args: {
       messages: a.messages,
       cefrLevel: a.cefrLevel,
       scene: a.scene,
+      replyLatenciesMs: a.replyLatencies?.() ?? null,
     }).then(
       (r) => live && setState({ done: true, recap: r.recap, retry: r.retry, speaking: r.speaking }),
     );

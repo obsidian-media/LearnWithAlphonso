@@ -436,3 +436,119 @@ describe("How you spoke: numbers only, from the run just written", () => {
     expect(await (await callWith(L)).json()).not.toHaveProperty("rehearsalSpeaking");
   });
 });
+
+describe("the pause note: reply timings in, two counts out", () => {
+  const callWithLatencies = (replyLatenciesMs: unknown) =>
+    POST({
+      request: new Request("https://x/api/call-recap", {
+        method: "POST",
+        headers: { Authorization: "Bearer t" },
+        body: JSON.stringify({
+          callId: CALL,
+          messages: [
+            { role: "user", content: "hello" },
+            { role: "assistant", content: "b" },
+            { role: "user", content: "I have experience in sales" },
+            { role: "user", content: "yes" },
+            { role: "user", content: "could you repeat that please" },
+            { role: "user", content: "ok" },
+          ],
+          replyLatenciesMs,
+        }),
+      }),
+    });
+  const kindsOf = (body: { rehearsalSpeaking?: { notes: { kind: string }[] } }) =>
+    body.rehearsalSpeaking?.notes.map((n) => n.kind);
+  beforeEach(() => {
+    h.callRow = { ...(h.callRow as object), replies: 5, short_replies: 2, english_replies: 0 };
+    h.brief = {
+      brief: { hardMoments: [], keyPhrases: ["I have experience in"] },
+    };
+  });
+
+  it("passes only the two counts to the database, never a timing", async () => {
+    await callWithLatencies([5321, 4000, 4678, 877, 1234]);
+    expect(finishRpc()!.args).toMatchObject({ _latency_total: 5, _latency_slow: 3 });
+    const sent = JSON.stringify(finishRpc()!.args);
+    for (const ms of ["5321", "4678", "877", "1234"]) expect(sent).not.toContain(ms);
+  });
+
+  it("answers a pauses note when 3 or more replies were slow and at least half", async () => {
+    h.prevRuns = [
+      OWN,
+      {
+        practice_call_id: "p1",
+        speaking_full: 1,
+        speaking_english: 0,
+        key_phrases_used: 0,
+        reply_latency_slow: 2,
+      },
+    ];
+    const body = await (await callWithLatencies([5000, 4000, 4500, 800, 1200])).json();
+    expect(body.rehearsalSpeaking.notes.at(-1)).toEqual({
+      kind: "pauses",
+      count: 3,
+      total: 5,
+      previous: 2,
+    });
+    expect(body.rehearsalSpeaking.notes[0].kind).not.toBe("pauses");
+  });
+
+  it("the previous run without a pause count is no comparison", async () => {
+    h.prevRuns = [
+      OWN,
+      { practice_call_id: "p1", speaking_full: 1, speaking_english: 0, key_phrases_used: 0 },
+    ];
+    const body = await (await callWithLatencies([5000, 4000, 4500, 800, 1200])).json();
+    expect(body.rehearsalSpeaking.notes.at(-1).previous).toBeNull();
+  });
+
+  it("no note when too few or under half were slow, but the counts are still stored", async () => {
+    let body = await (await callWithLatencies([5000, 4000, 100, 100, 100])).json();
+    expect(kindsOf(body)).not.toContain("pauses");
+    expect(finishRpc()!.args).toMatchObject({ _latency_total: 5, _latency_slow: 2 });
+    h.rpcs = [];
+    body = await (await callWithLatencies([5000, 4000, 4000, 1, 1, 1, 1].slice(0, 5))).json();
+    expect(kindsOf(body)).toContain("pauses");
+  });
+
+  it("a wrong shape is ignored: the recap still works, with no pause signal", async () => {
+    for (const bad of [
+      "5000",
+      [],
+      [-1, 5000],
+      [60001],
+      [1.5],
+      ["5000"],
+      Array.from({ length: 61 }, () => 5000),
+      null,
+      { 0: 5000 },
+    ]) {
+      h.rpcs = [];
+      const res = await callWithLatencies(bad);
+      expect(res.status).toBe(200);
+      expect(finishRpc()!.args).not.toHaveProperty("_latency_total");
+      expect(finishRpc()!.args).not.toHaveProperty("_latency_slow");
+      expect(kindsOf(await res.json())).not.toContain("pauses");
+    }
+  });
+
+  it("more timings than the call had replies is ignored", async () => {
+    await callWithLatencies([5000, 5000, 5000, 5000, 5000, 5000]);
+    expect(finishRpc()!.args).not.toHaveProperty("_latency_total");
+  });
+
+  it("omitted timings (an old client) change nothing", async () => {
+    const body = await (await callWithLatencies(undefined)).json();
+    expect(finishRpc()!.args).not.toHaveProperty("_latency_total");
+    expect(kindsOf(body)).not.toContain("pauses");
+  });
+
+  it("the cap holds: three other notes plus a pause note is still three", async () => {
+    h.callRow = { ...(h.callRow as object), english_replies: 2 };
+    const body = await (await callWithLatencies([5000, 4000, 4500, 800, 1200])).json();
+    expect(body.rehearsalSpeaking.notes).toHaveLength(3);
+    expect(kindsOf(body)!.at(-1)).toBe("pauses");
+    expect(kindsOf(body)![0]).toBe("full_replies");
+  });
+});

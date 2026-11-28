@@ -1,7 +1,7 @@
 import { authHeaders } from "./auth-headers";
 import type { Course } from "../data/courses";
 import { RECAP_MIN_LEARNER_TURNS } from "./call-recap";
-import { parseSpeaking, type RehearsalSpeaking } from "./rehearsal-speaking";
+import { parseReplyLatencies, parseSpeaking, type RehearsalSpeaking } from "./rehearsal-speaking";
 import { goalLines } from "./tutor-memory-view";
 
 /** The browser side of /api/call-recap, /api/call-recap-review and /api/tutor-memory. */
@@ -53,6 +53,8 @@ export async function fetchCallRecapAttempt(args: {
   messages: Transcript;
   cefrLevel?: string;
   scene?: string;
+  /** A rehearsal run: how long each learner reply took to start, in ms (see reply-latency.ts). Sent only if valid. */
+  replyLatenciesMs?: number[] | null;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
 }): Promise<RecapAttempt> {
@@ -68,6 +70,9 @@ export async function fetchCallRecapAttempt(args: {
         messages: args.messages,
         cefrLevel: args.cefrLevel,
         scene: args.scene,
+        ...(parseReplyLatencies(args.replyLatenciesMs)
+          ? { replyLatenciesMs: args.replyLatenciesMs }
+          : {}),
       }),
       signal: AbortSignal.timeout(args.timeoutMs ?? RECAP_CLIENT_TIMEOUT_MS),
     });

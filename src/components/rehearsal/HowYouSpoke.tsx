@@ -13,10 +13,12 @@ const ARROW: Record<NonNullable<Trend> | "first", string> = {
   same: "M5 12h14M13 6l6 6-6 6",
   first: "M5 12.5l4.5 4.5L19 7.5",
 };
+/** The pause note has no trend: a small pause sign, in the same neutral colours. */
+const PAUSE = "M9 6v12M15 6v12";
 
 /**
  * "How you spoke" on the rehearsal debrief: up to three plain notes with counts and a small trend arrow. Neutral colours
- * only (a lower number is never red, and there is no score, percentage or grade). The arrow is decoration: the sentence
+ * only (a lower number is never red, and there is no score, percentage or grade). The pause note has no arrow. The arrow is decoration: the sentence
  * beside it says the same thing in words ("up from 4 last time"), so it is hidden from assistive technology.
  */
 export function HowYouSpoke({
@@ -43,7 +45,7 @@ export function HowYouSpoke({
           <li key={n.kind} className="flex items-start gap-3 py-2.5">
             <span
               aria-hidden="true"
-              data-trend={trendOf(n) ?? "first"}
+              data-trend={n.kind === "pauses" ? "none" : (trendOf(n) ?? "first")}
               className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ds-sunk text-ds-ink-soft"
             >
               <svg
@@ -56,7 +58,7 @@ export function HowYouSpoke({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d={ARROW[trendOf(n) ?? "first"]} />
+                <path d={n.kind === "pauses" ? PAUSE : ARROW[trendOf(n) ?? "first"]} />
               </svg>
             </span>
             <div>

@@ -2040,6 +2040,8 @@ export type Database = {
           persona: string;
           practice_call_id: string | null;
           rehearsal_id: string;
+          reply_latency_slow: number | null;
+          reply_latency_total: number | null;
           speaking_english: number | null;
           speaking_full: number | null;
           speaking_replies: number | null;
@@ -2058,6 +2060,8 @@ export type Database = {
           persona?: string;
           practice_call_id?: string | null;
           rehearsal_id: string;
+          reply_latency_slow?: number | null;
+          reply_latency_total?: number | null;
           speaking_english?: number | null;
           speaking_full?: number | null;
           speaking_replies?: number | null;
@@ -2076,6 +2080,8 @@ export type Database = {
           persona?: string;
           practice_call_id?: string | null;
           rehearsal_id?: string;
+          reply_latency_slow?: number | null;
+          reply_latency_total?: number | null;
           speaking_english?: number | null;
           speaking_full?: number | null;
           speaking_replies?: number | null;
@@ -4013,6 +4019,8 @@ export type Database = {
           _course: string;
           _key_phrases_total?: number;
           _key_phrases_used?: number;
+          _latency_slow?: number;
+          _latency_total?: number;
           _min_replies?: number;
           _mistakes: Json;
           _moments: string[];
