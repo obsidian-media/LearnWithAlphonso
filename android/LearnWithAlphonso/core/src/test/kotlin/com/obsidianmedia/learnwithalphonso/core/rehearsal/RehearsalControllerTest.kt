@@ -23,6 +23,7 @@ class RehearsalControllerTest {
         override suspend fun createFromPreset(course: String, presetId: String, eventDate: String?): RehearsalResult<Rehearsal> {
             calls += "preset:$course:$presetId:$eventDate"; return createResult
         }
+        override suspend fun setDate(id: String, eventDate: String?): RehearsalResult<Rehearsal> { calls += "date:$id:$eventDate"; return createResult }
         override suspend fun adjust(id: String, intake: RehearsalIntake): RehearsalResult<Rehearsal> { calls += "adjust"; return createResult }
         override suspend fun cancel(id: String): RehearsalResult<Rehearsal> { calls += "cancel:$id"; return createResult }
         override suspend fun outcome(id: String, choice: OutcomeChoice, newDate: String?): RehearsalResult<Rehearsal> {
@@ -126,6 +127,17 @@ class RehearsalControllerTest {
         assertTrue(c.createFromPreset("doctor_appointment", "2026-12-04"))
         assertEquals("preset:es:doctor_appointment:2026-12-04", api.calls.first { it.startsWith("preset:") })
         assertEquals(rehearsal.id, c.ui.value.state!!.active!!.id)
+    }
+
+    @Test fun `adding a date sends only the id and the day, and reloads the state`() = runTest {
+        val api = Fake(active, RehearsalResult.Ok(rehearsal))
+        val c = RehearsalController(api, "en")
+        c.load()
+        assertTrue(c.setDate(rehearsal.id, "2026-12-04"))
+        assertEquals("date:${rehearsal.id}:2026-12-04", api.calls.last())
+        api.createResult = RehearsalResult.Failed(RehearsalError.INVALID)
+        assertFalse(c.setDate(rehearsal.id, "2026-12-05"))
+        assertEquals(RehearsalError.INVALID, c.ui.value.error)
     }
 
     @Test fun `a quick-start that meets the paywall opens the Pro sheet, and one that is not enabled or invalid shows its error`() = runTest {

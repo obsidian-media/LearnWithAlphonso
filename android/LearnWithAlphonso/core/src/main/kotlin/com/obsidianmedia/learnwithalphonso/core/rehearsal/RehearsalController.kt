@@ -11,6 +11,8 @@ interface RehearsalApi {
     suspend fun create(intake: RehearsalIntake): RehearsalResult<Rehearsal>
     suspend fun createFromPreset(course: String, presetId: String, eventDate: String?): RehearsalResult<Rehearsal>
     suspend fun presets(course: String): RehearsalResult<List<RehearsalPreset>>
+    /** Adds (or clears, with null) the day of an existing rehearsal without touching its other answers. */
+    suspend fun setDate(id: String, eventDate: String?): RehearsalResult<Rehearsal>
     suspend fun adjust(id: String, intake: RehearsalIntake): RehearsalResult<Rehearsal>
     suspend fun cancel(id: String): RehearsalResult<Rehearsal>
     suspend fun outcome(id: String, choice: OutcomeChoice, newDate: String?): RehearsalResult<Rehearsal>
@@ -103,6 +105,9 @@ class RehearsalController(private val api: RehearsalApi, private val course: Str
 
     /** Creates the rehearsal from a quick-start, with no intake; the refusals (a 402 opens the Pro sheet) are [create]'s. */
     suspend fun createFromPreset(presetId: String, eventDate: String?): Boolean = mutate { api.createFromPreset(course, presetId, eventDate) }
+
+    /** "Add a date" on the plan; an invalid day is the server's `invalid_event_date`, shown as the usual check-your-answers line. */
+    suspend fun setDate(id: String, eventDate: String?): Boolean = mutate { api.setDate(id, eventDate) }
 
     suspend fun adjust(id: String, intake: RehearsalIntake): Boolean = mutate { api.adjust(id, intake) }
 

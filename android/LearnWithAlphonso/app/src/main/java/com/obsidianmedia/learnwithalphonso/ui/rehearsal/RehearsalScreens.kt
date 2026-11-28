@@ -47,6 +47,7 @@ import com.obsidianmedia.learnwithalphonso.core.rehearsal.EventKind
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.INTAKE_TEXT_MAX
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.IntakeCheck
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.OutcomeChoice
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.PresetCopy
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.Rehearsal
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalApi
 import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalController
@@ -248,6 +249,17 @@ fun RehearsalPlan(state: RehearsalState, controller: RehearsalController, onBack
                 Text(r.kind.label, style = TitleType, color = ds.onHero, modifier = Modifier.semantics { heading() })
                 Text(RehearsalCopy.whenLine(r.eventDate, LocalDate.now()), style = FootnoteType, color = ds.onHeroSoft)
                 Text(RehearsalCopy.withLine(r), style = FootnoteType, color = ds.onHeroSoft)
+            }
+            if (r.eventDate == null) {
+                var pickingDate by remember { mutableStateOf(false) }
+                val datePicker = rememberDatePickerState(selectableDates = fromDay(LocalDate.now()))
+                if (!pickingDate) {
+                    AlphonsoSecondaryButton(PresetCopy.ADD_DATE, { pickingDate = true })
+                } else {
+                    DatePicker(datePicker, showModeToggle = false, title = null, headline = null)
+                    val day = datePicker.selectedDay()
+                    AlphonsoPrimaryButton("Save the date", { day?.let { d -> scope.launch { if (controller.setDate(r.id, d)) pickingDate = false } } }, enabled = day != null)
+                }
             }
             Stage.entries.forEach { stage ->
                 val done = state.isDone(stage)

@@ -36,6 +36,9 @@ class RehearsalClient(private val http: ApiHttp) : RehearsalApi {
     override suspend fun createFromPreset(course: String, presetId: String, eventDate: String?): RehearsalResult<Rehearsal> =
         post(presetBody(course, presetId, eventDate)) { RehearsalDecoding.rehearsal(it) }
 
+    override suspend fun setDate(id: String, eventDate: String?): RehearsalResult<Rehearsal> =
+        post(dateBody(id, eventDate)) { RehearsalDecoding.rehearsal(it) }
+
     override suspend fun adjust(id: String, intake: RehearsalIntake): RehearsalResult<Rehearsal> =
         post(intakeBody("adjust", id, intake)) { RehearsalDecoding.rehearsal(it) }
 
@@ -78,7 +81,14 @@ class RehearsalClient(private val http: ApiHttp) : RehearsalApi {
             put("action", "create")
             put("course", course)
             put("preset", presetId)
-            if (eventDate != null) put("eventDate", eventDate)
+            put("eventDate", eventDate)
+        }
+
+        /** "Add a date" after creation: an adjust that carries only the id and the day (null clears it). */
+        fun dateBody(id: String, eventDate: String?): JsonObject = buildJsonObject {
+            put("action", "adjust")
+            put("id", id)
+            put("eventDate", eventDate)
         }
 
         /** The create or adjust POST body: the action (and the id for adjust) plus the four intake answers. */

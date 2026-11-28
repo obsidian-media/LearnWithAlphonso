@@ -275,16 +275,32 @@ class RehearsalsTest {
         assertEquals(emptyList<RehearsalPreset>(), RehearsalDecoding.presets("""{"presets":[]}"""))
     }
 
-    @Test fun `the quick-start create body is create, course and preset, with the date only when there is one`() {
+    @Test fun `the shared fixture's preset list decodes to the eight presets in order, each with three stages and phrases`() {
+        val list = RehearsalDecoding.presets(fixture.getValue("presets").jsonObject.getValue("response").toString())!!
+        assertEquals(
+            listOf("job_interview", "talk_to_manager", "doctor_appointment", "apartment_landlord", "bank_account", "parent_teacher", "first_day", "customer_service_call"),
+            list.map { it.id },
+        )
+        for (p in list) {
+            assertEquals(listOf("warmup", "conversation", "hard_moments"), p.stages.map { it.key }, p.id)
+            assertTrue(p.title.isNotBlank() && p.blurb.isNotBlank() && p.counterpart.isNotBlank() && p.keyPhrases.isNotEmpty(), p.id)
+        }
+    }
+
+    @Test fun `the quick-start create body is exactly the shared fixture's, and a date is carried when there is one`() {
+        assertEquals(fixture.getValue("createFromPreset").jsonObject, RehearsalClient.presetBody("en", "doctor_appointment", null))
         val withDate = RehearsalClient.presetBody("fr", "bank_account", "2026-12-04")
         assertEquals("create", withDate.getValue("action").jsonPrimitive.content)
         assertEquals("fr", withDate.getValue("course").jsonPrimitive.content)
         assertEquals("bank_account", withDate.getValue("preset").jsonPrimitive.content)
         assertEquals("2026-12-04", withDate.getValue("eventDate").jsonPrimitive.content)
-        val none = RehearsalClient.presetBody("en", "job_interview", null)
-        assertFalse(none.containsKey("eventDate"))
-        assertFalse(none.containsKey("eventKind"))
-        assertFalse(none.containsKey("counterpart"))
+        assertFalse(withDate.containsKey("eventKind"))
+        assertFalse(withDate.containsKey("counterpart"))
+    }
+
+    @Test fun `adding a date after creation is exactly the shared fixture's adjust body`() {
+        assertEquals(fixture.getValue("addDate").jsonObject, RehearsalClient.dateBody("11111111-1111-4111-8111-111111111111", "2026-12-04"))
+        assertTrue(RehearsalClient.dateBody("x", null).getValue("eventDate") is kotlinx.serialization.json.JsonNull)
     }
 
     @Test fun `the client asks for the presets of the course and posts a preset create over the wire`() = runTest {
@@ -302,7 +318,7 @@ class RehearsalsTest {
         assertEquals("/api/rehearsal", seen2.single().path)
         val body = ContentJson.json.parseToJsonElement(seen2.single().body).jsonObject
         assertEquals("talk_to_manager", body.getValue("preset").jsonPrimitive.content)
-        assertFalse(body.containsKey("eventDate"))
+        assertTrue(body.getValue("eventDate") is kotlinx.serialization.json.JsonNull)
     }
 
     @Test fun `quick-start refusals map like create's, and an unknown preset is its own error`() = runTest {
