@@ -3,6 +3,19 @@
  * the result screen.
  */
 export type PracticeModeSearch = { mode?: "call" | "chat" };
+/** A rehearsal stage's call: `persona=hector` (Pro) and, on the last stage only, `hard=true`. Anything else is dropped. */
+export type RehearsalCallSearch = PracticeModeSearch & { persona?: "hector"; hard?: true };
+
+export function rehearsalCallSearch(search: Record<string, unknown>): RehearsalCallSearch {
+  const hector = search.persona === "hector";
+  const hard = hector && (search.hard === true || search.hard === "true");
+  return {
+    ...practiceModeSearch(search),
+    ...(hector ? { persona: "hector" as const } : {}),
+    ...(hard ? { hard: true as const } : {}),
+  };
+}
+
 export type CampaignSearch = PracticeModeSearch & { scene?: number };
 
 export function practiceModeSearch(search: Record<string, unknown>): PracticeModeSearch {

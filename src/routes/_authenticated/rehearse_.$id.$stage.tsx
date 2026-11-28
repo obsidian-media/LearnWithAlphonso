@@ -15,14 +15,14 @@ import {
   isStage,
   type Stage,
 } from "../../lib/rehearsal-rules";
-import { practiceModeSearch, type PracticeModeSearch } from "../../lib/practice-session";
+import { rehearsalCallSearch, type RehearsalCallSearch } from "../../lib/practice-session";
 import { REHEARSAL_ERROR_TEXT } from "../../lib/rehearsal-copy";
 import { ConverseChatPage } from "../../components/practice/ConverseCall";
 
 export const Route = createFileRoute("/_authenticated/rehearse_/$id/$stage")({
   component: RehearseCallPage,
-  validateSearch: (search: Record<string, unknown>): PracticeModeSearch =>
-    practiceModeSearch(search),
+  validateSearch: (search: Record<string, unknown>): RehearsalCallSearch =>
+    rehearsalCallSearch(search),
   // An id or a stage that cannot exist is a plain 404 before any request is made.
   loader: ({ params }) => {
     if (!isRehearsalId(params.id) || !isStage(params.stage)) throw notFound();
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/rehearse_/$id/$stage")({
  */
 function RehearseCallPage() {
   const { id, stage } = Route.useParams();
-  const { mode } = Route.useSearch();
+  const { mode, persona, hard } = Route.useSearch();
   const course = useProgress((s) => s.course);
   const [attempt, setAttempt] = useState(0);
   const [rehearsal, setRehearsal] = useState<Rehearsal | null | undefined>(undefined);
@@ -91,12 +91,24 @@ function RehearseCallPage() {
     <SaveWordProvider>
       <AiConsentGate backTo="/rehearse">
         <ConverseChatPage
-          key={`${rehearsal.id}:${stageName}:${course}:${attempt}`}
+          key={`${rehearsal.id}:${stageName}:${persona ?? "alphonso"}:${hard ? "hard" : ""}:${course}:${attempt}`}
           scenario={scenario}
           course={course}
-          mode={mode as PracticeModeSearch["mode"]}
+          mode={mode}
           onRetry={() => setAttempt((a) => a + 1)}
-          source={{ kind: "rehearsal", id: rehearsal.id, stage: stageName }}
+          // Hector and hard mode come from the stage's start sheet. The server checks Pro once, as the run starts, and
+          // refuses hard mode anywhere but the last stage; this only keeps the request well formed.
+          source={{
+            kind: "rehearsal",
+            id: rehearsal.id,
+            stage: stageName,
+            ...(persona === "hector"
+              ? {
+                  persona: "hector" as const,
+                  ...(hard === true && stageName === "hard_moments" ? { hardMode: true } : {}),
+                }
+              : {}),
+          }}
           backTo="/rehearse"
           rehearsalTitle={`${EVENT_KIND_LABELS[rehearsal.eventKind]} rehearsal`}
         />

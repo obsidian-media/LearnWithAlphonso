@@ -4,7 +4,7 @@ import type { ReplyVerdict } from "./chat-verdict";
 import { practiceItemForPrompt } from "./practice-catalog";
 import { recordSkillResults } from "./profile-data.server";
 import { STAR_RULE, measureReply, starsForCall } from "./practice-stars";
-import { STAGES, type Stage } from "./rehearsal-rules";
+import { STAGES, type Persona, type Stage } from "./rehearsal-rules";
 
 /**
  * The server half of Practice stars (migration 20261107032021_practice_stars.sql). Both writes run as the service
@@ -69,8 +69,11 @@ export async function recordRehearsalReply(
     course: Course;
     learnerText: string;
     verdict: ReplyVerdict;
+    /** Who plays the partner, and hard mode. Stored with the call's first reply (atomically), then read back every turn. */
+    run?: { persona: Persona; hard: boolean };
   },
 ): Promise<boolean> {
+  const run = params.run;
   return recordReply(client, {
     userId: params.userId,
     callId: params.callId,
@@ -79,6 +82,9 @@ export async function recordRehearsalReply(
     itemKey: rehearsalItemKey(params.rehearsalId, params.stage),
     learnerText: params.learnerText,
     verdict: params.verdict,
+    // The mode is written by the same statement that creates the call (record_practice_reply), never by a second one
+    // that could fail. A later reply of the call never rewrites it. Omitted for Alphonso: the function's defaults.
+    ...(run && run.persona === "hector" ? { mode: { persona: run.persona, hard: run.hard } } : {}),
   });
 }
 
@@ -92,6 +98,7 @@ async function recordReply(
     itemKey: string;
     learnerText: string;
     verdict: ReplyVerdict;
+    mode?: { persona: Persona; hard: boolean };
   },
 ): Promise<boolean> {
   if (!isCallId(params.callId)) return false;
@@ -107,6 +114,7 @@ async function recordReply(
       _right: params.verdict === "correct",
       _short: m.short,
       _english: m.english,
+      ...(params.mode ? { _persona: params.mode.persona, _hard_mode: params.mode.hard } : {}),
     });
     if (!error) {
       // Practice replies are the speaking skill: right when the model judged it correct, wrong when it corrected
