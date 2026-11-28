@@ -95,6 +95,7 @@ export function RehearsePage({ course, today = localToday() }: { course: Course;
           existing={active}
           today={today}
           onCreated={() => void load()}
+          onCancel={() => setAdjusting(false)}
         />
       );
     if (active.eventDate && today > active.eventDate)

@@ -30,6 +30,7 @@ export function RehearsalIntakeForm({
   existing,
   onCreated,
   onPaywall,
+  onCancel,
   today = localToday(),
 }: {
   course: Course;
@@ -37,6 +38,8 @@ export function RehearsalIntakeForm({
   onCreated: (rehearsal: Rehearsal) => void;
   /** The server says the free rehearsal is used: the page shows the Pro sheet. */
   onPaywall?: () => void;
+  /** With `existing`: leave the questions and keep the plan as it is (shown after a refused adjust). */
+  onCancel?: () => void;
   /** The learner's calendar day; the first day that can be picked. */
   today?: string;
 }) {
@@ -232,6 +235,16 @@ export function RehearsalIntakeForm({
         >
           {REHEARSAL_ERROR_TEXT[error]}
         </p>
+      )}
+
+      {error && existing && onCancel && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="min-h-11 self-start rounded-full border border-ds-line px-4 py-2 ds-type-footnote font-semibold text-ds-ink"
+        >
+          Keep my plan
+        </button>
       )}
 
       <div className="flex items-center gap-3">

@@ -680,7 +680,7 @@ const FR: Record<PresetId, PresetCourse> = {
     opener:
       "Bienvenue ! Tu dois être la nouvelle personne. Je suis content que tu sois là. Je te montre les lieux.",
     phrases: [
-      ["Enchanté de faire ta connaissance.", "A polite first hello."],
+      ["Ravi de faire ta connaissance.", "A polite first hello."],
       ["Ça me fait plaisir d'être ici.", "Say you are glad to start."],
       ["Où puis-je poser mes affaires ?", "Ask where to leave your bag."],
       ["À qui puis-je poser mes questions ?", "Ask who can help you."],
@@ -856,7 +856,7 @@ const ES: Record<PresetId, PresetCourse> = {
         "Use una palabra corriente algo más difícil sobre la visita. Si el estudiante pregunta, explíquela con palabras más simples. Ningún consejo médico.",
       ],
       [
-        "La hora está llena",
+        "No queda hueco a esa hora",
         "Diga que la hora pedida no está libre y ofrezca otra. Ningún consejo médico.",
       ],
     ],

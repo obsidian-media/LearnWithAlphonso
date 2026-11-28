@@ -200,7 +200,7 @@ describe("RehearsePage quick-starts", () => {
     expect(screen.getByRole("button", { name: "Start now" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Personalise" })).toBeEnabled();
     expect(api.createRehearsalFromPreset).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Back" }));
+    await user.click(screen.getByRole("button", { name: "Back to rehearsals" }));
     expect(screen.getByRole("region", { name: "Choose a rehearsal" })).toBeInTheDocument();
   });
 
@@ -222,6 +222,49 @@ describe("RehearsePage quick-starts", () => {
     api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
     await user.click(screen.getByRole("button", { name: "Personalise" }));
     expect(await screen.findByRole("form", { name: "Plan a rehearsal" })).toBeInTheDocument();
+  });
+
+  it.each([
+    ["paywall", /used your free rehearsal/],
+    ["retry", /try again in a moment/],
+  ] as const)(
+    "Personalise whose follow-up adjust is refused (%s) shows the message and keeps the preset rehearsal usable",
+    async (error, message) => {
+      const user = await open();
+      api.createRehearsalFromPreset.mockResolvedValue({ ok: true, value: { rehearsal: created } });
+      await user.click(screen.getByRole("button", { name: "Job interview" }));
+      api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
+      await user.click(screen.getByRole("button", { name: "Personalise" }));
+      await screen.findByRole("form", { name: "Plan a rehearsal" });
+      api.adjustRehearsal.mockResolvedValue({ ok: false, error });
+      for (let i = 0; i < 3; i++) await user.click(screen.getByRole("button", { name: "Next" }));
+      await user.click(screen.getByRole("button", { name: "Make my plan" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent(message);
+      // The ready-made rehearsal was already created and is still the active one: leaving the questions shows it.
+      await user.click(screen.getByRole("button", { name: "Keep my plan" }));
+      expect(screen.queryByRole("form")).toBeNull();
+      expect(screen.getByText(/Warm-up/)).toBeInTheDocument();
+      expect(api.createRehearsalFromPreset).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("moves focus to the new heading between the picker and the preview, and back to the date button", async () => {
+    const user = await open();
+    expect(screen.getByRole("heading", { name: "Rehearse a real conversation" })).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "Job interview" }));
+    expect(screen.getByRole("heading", { name: "Job interview" })).toHaveFocus();
+    const toggle = screen.getByRole("button", { name: /Add a date/ });
+    await user.click(toggle);
+    await user.click(screen.getByRole("button", { name: /27/ }));
+    await waitFor(() => expect(toggle).toHaveFocus());
+    await user.click(screen.getByRole("button", { name: "Back to rehearsals" }));
+    expect(screen.getByRole("heading", { name: "Rehearse a real conversation" })).toHaveFocus();
+  });
+
+  it("the date button's name includes 'Add a date'", async () => {
+    const user = await open();
+    await user.click(screen.getByRole("button", { name: "Job interview" }));
+    expect(screen.getByRole("button", { name: /Add a date.*Pick a date/ })).toBeInTheDocument();
   });
 
   it("a refused create (one already active) says so and stays on the preview", async () => {

@@ -22,6 +22,8 @@ const h = vi.hoisted(() => ({
   offReadError: false,
   /** When true the close_stale_rehearsals call really ends the active rehearsal (the database does). */
   clearActiveOnClose: false,
+  /** Set once the stale-close really ended the rehearsal: move_rehearsal then finds nothing active. */
+  endedByClose: false,
   /** When true the close_stale_rehearsals call itself throws (the database is unreachable). */
   closeThrows: false,
   /** The usage counts written (ops_events). */
@@ -113,10 +115,15 @@ vi.mock("@/integrations/supabase/client.server", () => {
         if (fn === "close_stale_rehearsals") {
           h.closes.push(args);
           if (h.closeThrows) throw new Error("down");
-          if (h.clearActiveOnClose) h.active = null;
+          if (h.clearActiveOnClose) {
+            h.active = null;
+            h.endedByClose = true;
+          }
           return { data: 0, error: null };
         }
         h.rpcs.push({ fn, args });
+        if (fn === "move_rehearsal" && h.endedByClose)
+          return { data: null, error: { message: "rehearsal_not_found", code: "P0002" } };
         return h.rpcResult ?? { data: rowFor(args), error: null };
       },
     },
@@ -185,6 +192,7 @@ beforeEach(() => {
   h.off = false;
   h.offReadError = false;
   h.clearActiveOnClose = false;
+  h.endedByClose = false;
   h.closeThrows = false;
   h.usage = [];
   h.rpcResult = null;
@@ -1014,6 +1022,19 @@ describe("Add a date (adjust with only a date)", () => {
   it("someone else's or a closed rehearsal is 404", async () => {
     h.rpcResult = { data: null, error: { message: "rehearsal_not_found", code: "P0002" } };
     expect((await dateOnly("2099-01-05")).status).toBe(404);
+  });
+
+  it("an overdue active rehearsal is closed first, so moving its date is 404 and never brings it back", async () => {
+    h.clearActiveOnClose = true;
+    const res = await dateOnly("2099-01-05");
+    expect(res.status).toBe(404);
+    expect(h.closes).toHaveLength(1);
+    expect(h.closes[0]).toMatchObject({ _user_id: "u1" });
+  });
+
+  it("a rehearsal that is still current has its date moved after the (no-op) close", async () => {
+    expect((await dateOnly("2099-01-05")).status).toBe(200);
+    expect(h.closes).toHaveLength(1);
   });
 
   it("an adjust that carries the intake answers is still the full adjust (new brief, quota)", async () => {

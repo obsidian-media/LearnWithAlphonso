@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { PresetId, PresetSummary } from "@/lib/rehearsal-presets";
 
 /** One small outline icon per preset (the approved mock's set). Decorative: the label is the name. */
@@ -48,10 +49,17 @@ export function QuickStartPicker({
   onPick: (preset: PresetSummary) => void;
   onSomethingElse: () => void;
 }) {
+  // Coming back from a preview moves focus to this heading.
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => heading.current?.focus(), []);
   return (
     <section className="flex flex-col gap-4 px-5 py-6" aria-label="Choose a rehearsal">
       <div>
-        <h1 className="font-display ds-type-title font-semibold text-ds-ink">
+        <h1
+          ref={heading}
+          tabIndex={-1}
+          className="font-display ds-type-title font-semibold text-ds-ink outline-none"
+        >
           Rehearse a real conversation
         </h1>
         <p className="mt-1 ds-type-footnote text-ds-ink-soft">

@@ -149,6 +149,10 @@ async function handlePost(
     const { localDay } = await import("@/lib/local-day");
     const today = localDay(Date.now(), await readLearnerTimeZone(admin, auth.userId));
     if (date !== null && date < today) return bad("invalid_event_date");
+    // An overdue active rehearsal ends first, so moving its date cannot bring it back: move_rehearsal then finds
+    // nothing active and the answer is 404.
+    const { closeStaleRehearsals } = await import("@/lib/rehearsals.server");
+    await closeStaleRehearsals(admin, auth.userId);
     const { data, error } = await admin.rpc("move_rehearsal", {
       _user_id: auth.userId,
       _id: body.id,

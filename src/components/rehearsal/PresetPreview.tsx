@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Course } from "@/data/course-meta";
 import {
   createRehearsalFromPreset,
@@ -37,6 +37,11 @@ export function PresetPreview({
   const [picking, setPicking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<RehearsalError | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const dateToggle = useRef<HTMLButtonElement>(null);
+
+  // Arriving here from the picker moves focus to the new heading, so a screen reader starts at the top of it.
+  useEffect(() => heading.current?.focus(), []);
 
   async function go(personalise: boolean) {
     if (busy) return;
@@ -58,9 +63,15 @@ export function PresetPreview({
           disabled={busy}
           className="min-h-11 min-w-11 rounded-full px-2 ds-type-footnote font-semibold text-ds-ink-soft"
         >
-          Back
+          Back to rehearsals
         </button>
-        <h1 className="font-display ds-type-title font-semibold text-ds-ink">{preset.title}</h1>
+        <h1
+          ref={heading}
+          tabIndex={-1}
+          className="font-display ds-type-title font-semibold text-ds-ink outline-none"
+        >
+          {preset.title}
+        </h1>
       </div>
 
       <div className="flex items-center gap-3 rounded-2xl bg-ds-brand/10 p-4">
@@ -95,16 +106,18 @@ export function PresetPreview({
       </ol>
 
       <div className="flex flex-col gap-2">
-        <p className="ds-type-footnote font-semibold text-ds-ink">
+        <p id="preset-date-label" className="ds-type-footnote font-semibold text-ds-ink">
           Add a date <span className="font-normal text-ds-ink-soft">(optional)</span>
         </p>
         <button
+          ref={dateToggle}
           type="button"
+          aria-labelledby="preset-date-label preset-date-value"
           aria-expanded={picking}
           onClick={() => setPicking((v) => !v)}
           className="flex items-center justify-between rounded-xl border border-ds-line bg-ds-card px-3 py-3 text-left ds-type-footnote text-ds-ink"
         >
-          <span className={date ? "text-ds-ink" : "text-ds-ink-soft"}>
+          <span id="preset-date-value" className={date ? "text-ds-ink" : "text-ds-ink-soft"}>
             {date ? shortDay(date) : "Pick a date"}
           </span>
         </button>
@@ -115,6 +128,8 @@ export function PresetPreview({
             onChange={(d) => {
               setDate(d);
               setPicking(false);
+              // The calendar is gone: focus goes back to the button that opened it.
+              queueMicrotask(() => dateToggle.current?.focus());
             }}
           />
         )}
