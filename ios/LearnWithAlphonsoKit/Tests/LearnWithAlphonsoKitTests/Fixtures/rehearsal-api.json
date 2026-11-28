@@ -1,5 +1,9 @@
 {
-  "appConfig": { "features": { "rehearsals": true } },
+  "appConfig": {
+    "features": {
+      "rehearsals": true
+    }
+  },
   "state": {
     "active": {
       "id": "11111111-1111-4111-8111-111111111111",
@@ -10,7 +14,10 @@
       "worries": "questions about salary",
       "brief": {
         "setting": "A job interview for a logistics coordinator role.",
-        "persona": { "role": "hiring manager", "tone": "friendly but direct" },
+        "persona": {
+          "role": "hiring manager",
+          "tone": "friendly but direct"
+        },
         "keyPhrases": [
           "I have experience in",
           "I am hoping for around",
@@ -50,7 +57,11 @@
       "createdAt": "2026-11-26T10:00:00Z",
       "closedAt": null
     },
-    "progress": { "warmup": "done", "conversation": "todo", "hard_moments": "todo" },
+    "progress": {
+      "warmup": "done",
+      "conversation": "todo",
+      "hard_moments": "todo"
+    },
     "nextStage": "conversation",
     "runs": [
       {
@@ -69,7 +80,9 @@
         "eventDate": "2026-10-01",
         "status": "done",
         "free": false,
-        "outcome": { "choice": "well" },
+        "outcome": {
+          "choice": "well"
+        },
         "createdAt": "2026-09-20T10:00:00Z",
         "closedAt": "2026-10-02T10:00:00Z",
         "runs": 6,
@@ -88,18 +101,543 @@
     "freeAvailable": true
   },
   "errors": [
-    { "status": 402, "body": { "error": "paywall" }, "means": "paywall" },
-    { "status": 503, "body": { "error": "retry" }, "means": "retry" },
-    { "status": 400, "body": { "error": "blocked_text" }, "means": "blocked_text" },
-    { "status": 409, "body": { "error": "active_exists" }, "means": "active_exists" },
-    { "status": 409, "body": { "error": "closed" }, "means": "closed" },
-    { "status": 404, "body": { "error": "not_found" }, "means": "not_found" },
-    { "status": 404, "body": { "error": "not_enabled" }, "means": "not_enabled" },
-    { "status": 400, "body": { "error": "invalid_event_date" }, "means": "invalid" },
-    { "status": 403, "body": { "error": "consent" }, "means": "consent" },
-    { "status": 500, "body": { "error": "failed" }, "means": "failed" }
+    {
+      "status": 402,
+      "body": {
+        "error": "paywall"
+      },
+      "means": "paywall"
+    },
+    {
+      "status": 503,
+      "body": {
+        "error": "retry"
+      },
+      "means": "retry"
+    },
+    {
+      "status": 400,
+      "body": {
+        "error": "blocked_text"
+      },
+      "means": "blocked_text"
+    },
+    {
+      "status": 409,
+      "body": {
+        "error": "active_exists"
+      },
+      "means": "active_exists"
+    },
+    {
+      "status": 409,
+      "body": {
+        "error": "closed"
+      },
+      "means": "closed"
+    },
+    {
+      "status": 404,
+      "body": {
+        "error": "not_found"
+      },
+      "means": "not_found"
+    },
+    {
+      "status": 404,
+      "body": {
+        "error": "not_enabled"
+      },
+      "means": "not_enabled"
+    },
+    {
+      "status": 400,
+      "body": {
+        "error": "invalid_event_date"
+      },
+      "means": "invalid"
+    },
+    {
+      "status": 403,
+      "body": {
+        "error": "consent"
+      },
+      "means": "consent"
+    },
+    {
+      "status": 500,
+      "body": {
+        "error": "failed"
+      },
+      "means": "failed"
+    }
   ],
   "chatBody": {
-    "rehearsal": { "id": "11111111-1111-4111-8111-111111111111", "stage": "conversation" }
+    "rehearsal": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "stage": "conversation"
+    }
+  },
+  "presets": {
+    "course": "en",
+    "response": {
+      "presets": [
+        {
+          "id": "job_interview",
+          "eventKind": "interview",
+          "title": "Job interview",
+          "blurb": "A hiring manager asks about you and the job.",
+          "counterpart": "a hiring manager",
+          "stages": [
+            {
+              "key": "warmup",
+              "goal": "The key phrases for an interview"
+            },
+            {
+              "key": "conversation",
+              "goal": "The interview, from hello to your own questions"
+            },
+            {
+              "key": "hard_moments",
+              "goal": "The salary question, a gap in your CV, a question you missed"
+            }
+          ],
+          "keyPhrases": [
+            {
+              "text": "Thank you for having me.",
+              "meaning": "A polite way to start."
+            },
+            {
+              "text": "I have experience in this area.",
+              "meaning": "You have done this kind of work before."
+            },
+            {
+              "text": "One of my strengths is working in a team.",
+              "meaning": "You are good at working with other people."
+            },
+            {
+              "text": "I am available to start in two weeks.",
+              "meaning": "You can begin work in two weeks."
+            },
+            {
+              "text": "Could you tell me more about the role?",
+              "meaning": "Ask for more details about the job."
+            },
+            {
+              "text": "I am looking for a chance to learn and grow.",
+              "meaning": "You want to build your skills."
+            },
+            {
+              "text": "Could you repeat the question, please?",
+              "meaning": "Ask them to say it again."
+            },
+            {
+              "text": "Thank you for your time.",
+              "meaning": "A polite way to finish."
+            }
+          ]
+        },
+        {
+          "id": "talk_to_manager",
+          "eventKind": "meeting",
+          "title": "Talking to my manager",
+          "blurb": "A short one-to-one: your work, a request, some feedback.",
+          "counterpart": "my manager",
+          "stages": [
+            {
+              "key": "warmup",
+              "goal": "The key phrases for talking to a manager"
+            },
+            {
+              "key": "conversation",
+              "goal": "An update, a request and next steps"
+            },
+            {
+              "key": "hard_moments",
+              "goal": "Tough feedback, a polite no, a fast instruction"
+            }
+          ],
+          "keyPhrases": [
+            {
+              "text": "Do you have a few minutes to talk?",
+              "meaning": "Ask if it is a good time."
+            },
+            {
+              "text": "I wanted to give you an update on my work.",
+              "meaning": "You want to say how things are going."
+            },
+            {
+              "text": "I am finding this task difficult.",
+              "meaning": "Say politely that you need help."
+            },
+            {
+              "text": "Could I ask for a day off next week?",
+              "meaning": "A polite request for time off."
+            },
+            {
+              "text": "Could you explain that again, please?",
+              "meaning": "Ask for a clearer explanation."
+            },
+            {
+              "text": "Can we go through the priorities?",
+              "meaning": "Ask which tasks come first."
+            },
+            {
+              "text": "I understand. I will do that today.",
+              "meaning": "You agree and say when."
+            },
+            {
+              "text": "Thank you for your feedback.",
+              "meaning": "A polite answer to advice."
+            }
+          ]
+        },
+        {
+          "id": "doctor_appointment",
+          "eventKind": "appointment",
+          "title": "Doctor's appointment",
+          "blurb": "A receptionist, then a doctor. Booking and describing how you feel, in simple words.",
+          "counterpart": "a receptionist and a doctor",
+          "stages": [
+            {
+              "key": "warmup",
+              "goal": "The key phrases for booking and saying how you feel"
+            },
+            {
+              "key": "conversation",
+              "goal": "Booking in, then seeing the doctor"
+            },
+            {
+              "key": "hard_moments",
+              "goal": "A question you did not catch, a word you do not know, a time that is full"
+            }
+          ],
+          "keyPhrases": [
+            {
+              "text": "I would like to make an appointment.",
+              "meaning": "You want to book a visit."
+            },
+            {
+              "text": "Do you have anything tomorrow morning?",
+              "meaning": "Ask for a time."
+            },
+            {
+              "text": "I have had a headache since Monday.",
+              "meaning": "Say what hurts and for how long."
+            },
+            {
+              "text": "It hurts here.",
+              "meaning": "Point and say where it hurts."
+            },
+            {
+              "text": "I have had a fever since yesterday.",
+              "meaning": "Say how long you have felt hot and unwell."
+            },
+            {
+              "text": "I feel very tired.",
+              "meaning": "Say how you feel."
+            },
+            {
+              "text": "Could you speak more slowly, please?",
+              "meaning": "Ask them to slow down."
+            },
+            {
+              "text": "Could you say that again, please?",
+              "meaning": "Ask them to repeat."
+            },
+            {
+              "text": "Thank you, I understand.",
+              "meaning": "Say that you understood."
+            }
+          ]
+        },
+        {
+          "id": "apartment_landlord",
+          "eventKind": "housing",
+          "title": "Apartment viewing or landlord",
+          "blurb": "A landlord shows you a place to rent. You ask your questions.",
+          "counterpart": "a landlord",
+          "stages": [
+            {
+              "key": "warmup",
+              "goal": "The key phrases for a viewing"
+            },
+            {
+              "key": "conversation",
+              "goal": "The visit, from hello to your decision"
+            },
+            {
+              "key": "hard_moments",
+              "goal": "A question about you, a small problem, something you do not understand"
+            }
+          ],
+          "keyPhrases": [
+            {
+              "text": "Thank you for showing me the flat.",
+              "meaning": "A polite way to start."
+            },
+            {
+              "text": "How much is the rent per month?",
+              "meaning": "Ask the price."
+            },
+            {
+              "text": "Are the bills included?",
+              "meaning": "Ask if water, power and heating are in the price."
+            },
+            {
+              "text": "Is the flat furnished?",
+              "meaning": "Ask if there is furniture."
+            },
+            {
+              "text": "Could I see the kitchen, please?",
+              "meaning": "Ask to see a room."
+            },
+            {
+              "text": "When could I move in?",
+              "meaning": "Ask about the date."
+            },
+            {
+              "text": "I would like to think about it.",
+              "meaning": "A polite way to say you need time."
+            },
+            {
+              "text": "Could you send me the details by email?",
+              "meaning": "Ask for the information in writing."
+            }
+          ]
+        },
+        {
+          "id": "bank_account",
+          "eventKind": "appointment",
+          "title": "Opening a bank account",
+          "blurb": "A bank clerk helps you open a simple account.",
+          "counterpart": "a bank clerk",
+          "stages": [
+            {
+              "key": "warmup",
+              "goal": "The key phrases for the bank desk"
+            },
+            {
+              "key": "conversation",
+              "goal": "From hello to signing the form"
+            },
+            {
+              "key": "hard_moments",
+              "goal": "Spelling your details, a fee question, a missing document"
+            }
+          ],
+          "keyPhrases": [
+            {
+              "text": "I would like to open a bank account.",
+              "meaning": "You want a new account."
+            },
+            {
+              "text": "What do I need to bring?",
+              "meaning": "Ask which papers you need."
+            },
+            {
+              "text": "Is there a monthly fee?",
+              "meaning": "Ask if the account costs money each month."
+            },
+            {
+              "text": "How does the card work?",
+              "meaning": "Ask for a simple explanation."
+            },
+            {
+              "text": "Where do I sign?",
+              "meaning": "Ask where to put your name."
+            },
+            {
+              "text": "How long will it take?",
+              "meaning": "Ask about the time."
+            },
+            {
+              "text": "Could I have a copy, please?",
+              "meaning": "Ask for a paper copy."
+            },
+            {
+              "text": "Could you speak more slowly, please?",
+              "meaning": "Ask them to slow down."
+            }
+          ]
+        },
+        {
+          "id": "parent_teacher",
+          "eventKind": "meeting",
+          "title": "Parent-teacher meeting",
+          "blurb": "You talk with your child's teacher about how school is going.",
+          "counterpart": "my child's teacher",
+          "stages": [
+            {
+              "key": "warmup",
+              "goal": "The key phrases for a school meeting"
+            },
+            {
+              "key": "conversation",
+              "goal": "How your child is doing, and how you can help"
+            },
+            {
+              "key": "hard_moments",
+              "goal": "A worry about behaviour, a fast explanation, a request for help at home"
+            }
+          ],
+          "keyPhrases": [
+            {
+              "text": "How is my child doing in class?",
+              "meaning": "Ask for a general picture."
+            },
+            {
+              "text": "What is going well?",
+              "meaning": "Ask for the good news."
+            },
+            {
+              "text": "What can we do at home to help?",
+              "meaning": "Ask for ideas for home."
+            },
+            {
+              "text": "My child says the homework is hard.",
+              "meaning": "Share what you heard at home."
+            },
+            {
+              "text": "Could you explain that in simpler words?",
+              "meaning": "Ask for a simpler explanation."
+            },
+            {
+              "text": "Is my child happy at school?",
+              "meaning": "Ask about how your child feels."
+            },
+            {
+              "text": "When is the next meeting?",
+              "meaning": "Ask about the date."
+            },
+            {
+              "text": "Thank you for your time.",
+              "meaning": "A polite way to finish."
+            }
+          ]
+        },
+        {
+          "id": "first_day",
+          "eventKind": "first_day",
+          "title": "First day at work or school",
+          "blurb": "You meet your manager or teacher and the team on day one.",
+          "counterpart": "my new manager and the team",
+          "stages": [
+            {
+              "key": "warmup",
+              "goal": "The key phrases for a first day"
+            },
+            {
+              "key": "conversation",
+              "goal": "Meeting people and finding your way"
+            },
+            {
+              "key": "hard_moments",
+              "goal": "Many names at once, a fast instruction, small talk"
+            }
+          ],
+          "keyPhrases": [
+            {
+              "text": "Nice to meet you.",
+              "meaning": "A polite first hello."
+            },
+            {
+              "text": "I am happy to be here.",
+              "meaning": "Say you are glad to start."
+            },
+            {
+              "text": "Where should I put my things?",
+              "meaning": "Ask where to leave your bag."
+            },
+            {
+              "text": "Who should I ask if I have a question?",
+              "meaning": "Ask who can help you."
+            },
+            {
+              "text": "What time do we have lunch?",
+              "meaning": "Ask about the day."
+            },
+            {
+              "text": "Could you show me how this works?",
+              "meaning": "Ask for a quick demo."
+            },
+            {
+              "text": "Sorry, could you repeat your name?",
+              "meaning": "Ask someone to say their name again."
+            },
+            {
+              "text": "Thank you for your help.",
+              "meaning": "A polite thank you."
+            }
+          ]
+        },
+        {
+          "id": "customer_service_call",
+          "eventKind": "other",
+          "title": "Customer service call",
+          "blurb": "A phone call about a problem with an order or a bill.",
+          "counterpart": "a customer service agent",
+          "stages": [
+            {
+              "key": "warmup",
+              "goal": "The key phrases for a phone call"
+            },
+            {
+              "key": "conversation",
+              "goal": "Explaining the problem and agreeing what happens next"
+            },
+            {
+              "key": "hard_moments",
+              "goal": "Being put on hold, spelling your details, no answer today"
+            }
+          ],
+          "keyPhrases": [
+            {
+              "text": "I am calling about my order.",
+              "meaning": "Say why you are calling."
+            },
+            {
+              "text": "I have a problem with my bill.",
+              "meaning": "Say that something is wrong with a bill."
+            },
+            {
+              "text": "It has not arrived yet.",
+              "meaning": "Say the order is late."
+            },
+            {
+              "text": "Let me give you my order number.",
+              "meaning": "Offer the number the agent needs."
+            },
+            {
+              "text": "Could you spell that, please?",
+              "meaning": "Ask for the letters one by one."
+            },
+            {
+              "text": "Could you check that for me, please?",
+              "meaning": "Ask the agent to look it up."
+            },
+            {
+              "text": "Could you send me a confirmation by email?",
+              "meaning": "Ask for it in writing."
+            },
+            {
+              "text": "Could you speak more slowly, please?",
+              "meaning": "Ask them to slow down."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "createFromPreset": {
+    "action": "create",
+    "course": "en",
+    "preset": "doctor_appointment",
+    "eventDate": null
+  },
+  "addDate": {
+    "action": "adjust",
+    "id": "11111111-1111-4111-8111-111111111111",
+    "eventDate": "2026-12-04"
   }
 }

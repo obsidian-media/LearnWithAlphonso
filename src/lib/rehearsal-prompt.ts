@@ -7,6 +7,13 @@ import type { EventKind, RunMemory, Stage } from "./rehearsal-rules";
 
 export type { RunMemory } from "./rehearsal-rules";
 
+/** Fixed text, per course: begin with the brief's own opener, word for word. */
+const OPENER_RULE: Record<Course, string> = {
+  en: "Begin with the line named opener in the block, word for word, then continue in character.",
+  fr: "Commence par la phrase nommée opener dans le bloc, mot pour mot, puis continue dans ton rôle.",
+  es: "Empieza con la frase llamada opener en el bloque, palabra por palabra, y sigue después en tu papel.",
+};
+
 /**
  * The system prompt of one rehearsal stage, built on the server from a vetted template per course and stage
  * (src/data/rehearsal-templates.ts), the rehearsal's brief and the memory of earlier runs. The app never sends prompt
@@ -50,6 +57,9 @@ export function buildRehearsalPrompt(input: {
     const chosen = pending.length > 0 ? pending : brief.hardMoments;
     chosen.forEach((m, i) => fields.push([`hard_moment_${i + 1}`, `${m.label}: ${m.prompt}`]));
   }
+  // A quick-start brief has a fixed first line for the counterpart (never a model-written or learner-written one).
+  const useOpener = stage === "conversation" && Boolean(brief.opener) && !hasMemory;
+  if (useOpener) fields.push(["opener", brief.opener!]);
   if (input.runs.length > 0) {
     fields.push(["runs_so_far", String(input.runs.length)]);
     if (lastCorrection) fields.push(["last_correction", lastCorrection]);
@@ -63,6 +73,7 @@ export function buildRehearsalPrompt(input: {
     t.dataNote,
     t.stages[stage].behaviour,
     hasMemory ? t.withMemory : t.firstRun,
+    ...(useOpener ? [OPENER_RULE[input.course]] : []),
     ...(input.eventKind === "appointment" || input.eventKind === "housing" ? [t.generalOnly] : []),
     t.aiHonesty,
     t.closing,

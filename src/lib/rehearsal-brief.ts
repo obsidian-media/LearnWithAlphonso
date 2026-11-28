@@ -17,6 +17,14 @@ export type RehearsalBrief = {
   coreExchanges: string[];
   /** 3 to 5 moments the third stage can raise. */
   hardMoments: { id: string; label: string; prompt: string }[];
+  /**
+   * Only on a quick-start brief (rehearsal-presets.ts), which is hand-written: the preset it came from, the other
+   * person's first line and a plain-English meaning per key phrase (same order as keyPhrases). A
+   * model-written brief never has them (parseBrief drops them), and a brief written by Personalise does not either.
+   */
+  preset?: string;
+  opener?: string;
+  keyPhraseMeanings?: string[];
 };
 
 export const BRIEF_LIMITS = {

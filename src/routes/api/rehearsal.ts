@@ -6,11 +6,14 @@ import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.serv
 import {
   applyOutcome,
   canCreateRehearsal,
+  isCalendarDate,
   isRehearsalId,
   validateIntake,
   type Intake,
   type OutcomeChoice,
 } from "@/lib/rehearsal-rules";
+import type { RehearsalBrief } from "@/lib/rehearsal-brief";
+import { isPresetId, presetBrief, presetIntake, type PresetId } from "@/lib/rehearsal-presets";
 import { rehearsalsEnabled, rehearsalsEnabledFor } from "@/lib/rehearsals-flag";
 import { timedRoute } from "@/lib/stage-timer.server";
 
@@ -21,6 +24,12 @@ import { timedRoute } from "@/lib/stage-timer.server";
  * POST /api/rehearsal { action: "create" | "adjust" | "cancel" | "delete" | "outcome", ... } -> { rehearsal } (create,
  *   adjust, cancel, outcome) or { ok: true } (delete). Errors: 400 invalid_* / blocked_text, 402 paywall, 404
  *   not_found, 409 active_exists (or closed, for an outcome on a closed rehearsal), 503 retry.
+ * create { course, preset, eventDate? } is a QUICK-START: one of the eight hand-written presets
+ *   (src/data/rehearsal-presets.ts). No intake text, no model call and no brief quota; the brief is fixed content with
+ *   the preset's id in it. Consent, the per-account switch, the free rule and one active per course apply as for any
+ *   create. GET /api/rehearsal-presets lists them. An unknown preset is 400 invalid_preset.
+ * adjust { id, eventDate } (no eventKind, counterpart or worries) is "Add a date": it moves the date (YYYY-MM-DD, or null
+ *   to clear it) and nothing else: no model call, no quota, the brief stays.
  * outcome { id, choice: "well" | "ok" | "hard" | "moved", newDate? } is "How did it go?": taps only. The first three
  *   close the rehearsal with one fixed memory line; moved needs a date after the learner's local today.
  *
@@ -120,6 +129,41 @@ async function handlePost(
     return noStoreJson({ rehearsal: server.toRehearsal(data as never) });
   }
 
+  // "Add a date" after creation: an adjust that carries only { id, eventDate } (a date or null) moves the date and
+  // nothing else. It is not an AI call (no consent, no quota, no new brief), so a quick-start brief stays as it is.
+  if (
+    action === "adjust" &&
+    "eventDate" in body &&
+    body.eventKind === undefined &&
+    body.counterpart === undefined &&
+    body.worries === undefined
+  ) {
+    const { verifyAuth } = await import("@/lib/ai-quota.server");
+    const auth = await timer.time("auth", () => verifyAuth(request));
+    if (!auth.ok) return noStoreJson({ error: auth.message }, { status: auth.status });
+    if (!(await rehearsalsEnabledFor(admin, auth.userId))) return NOT_ENABLED();
+    if (!isRehearsalId(body.id)) return bad("invalid_id");
+    const date = body.eventDate === "" ? null : body.eventDate;
+    if (date !== null && !isCalendarDate(date)) return bad("invalid_event_date");
+    const { readLearnerTimeZone } = await import("@/lib/learner-time-zone.server");
+    const { localDay } = await import("@/lib/local-day");
+    const today = localDay(Date.now(), await readLearnerTimeZone(admin, auth.userId));
+    if (date !== null && date < today) return bad("invalid_event_date");
+    // An overdue active rehearsal ends first, so moving its date cannot bring it back: move_rehearsal then finds
+    // nothing active and the answer is 404.
+    const { closeStaleRehearsals } = await import("@/lib/rehearsals.server");
+    await closeStaleRehearsals(admin, auth.userId);
+    const { data, error } = await admin.rpc("move_rehearsal", {
+      _user_id: auth.userId,
+      _id: body.id,
+      _event_date: date,
+    });
+    if (isNotFound(error)) return noStoreJson({ error: "not_found" }, { status: 404 });
+    if (error) return noStoreJson({ error: "failed" }, { status: 500 });
+    const { toRehearsal } = await import("@/lib/rehearsals.server");
+    return noStoreJson({ rehearsal: toRehearsal(data as never) });
+  }
+
   // Cancel and delete are not AI calls: a session is enough, no consent or quota.
   if (action === "cancel" || action === "delete") {
     const { verifyAuth } = await import("@/lib/ai-quota.server");
@@ -167,18 +211,38 @@ async function handlePost(
   if (!(await rehearsalsEnabledFor(admin, userId))) return NOT_ENABLED();
 
   if (action === "adjust" && !isRehearsalId(body.id)) return bad("invalid_id");
-  const checked = validateIntake(body);
+  // A quick-start names a preset instead of carrying intake text: its kind, counterpart and brief are all fixed content.
+  const quickStart = action === "create" && body.preset !== undefined && body.preset !== null;
+  let presetId: PresetId | null = null;
+  let checked: ReturnType<typeof validateIntake>;
+  if (quickStart) {
+    if (!isPresetId(body.preset)) return bad("invalid_preset");
+    presetId = body.preset;
+    // The course and the date are the only learner input; the rest of the intake is the preset's.
+    const fixed = presetIntake(presetId, "en", null);
+    checked = validateIntake({
+      course: body.course,
+      eventKind: fixed.eventKind,
+      eventDate: body.eventDate,
+      counterpart: fixed.counterpart,
+    });
+  } else {
+    checked = validateIntake(body);
+  }
   if (!checked.ok) return bad(checked.error);
   const intake: Intake = checked.value;
 
-  // The learner's own words go through the same blocked-term filter as the model's. It fails closed.
-  const texts = [intake.counterpart, ...(intake.worries ? [intake.worries] : [])];
-  const verdicts = await filterModelOutputs(texts, {
-    check: makeBlockedTermCheck(supabaseAdmin),
-    course: intake.course,
-    route: "rehearsal",
-  });
-  if (verdicts.some(Boolean)) return bad("blocked_text");
+  // The learner's own words go through the same blocked-term filter as the model's. It fails closed. A quick-start has
+  // none: its counterpart and brief are our own fixed text.
+  if (!quickStart) {
+    const texts = [intake.counterpart, ...(intake.worries ? [intake.worries] : [])];
+    const verdicts = await filterModelOutputs(texts, {
+      check: makeBlockedTermCheck(supabaseAdmin),
+      course: intake.course,
+      route: "rehearsal",
+    });
+    if (verdicts.some(Boolean)) return bad("blocked_text");
+  }
 
   const server = await import("@/lib/rehearsals.server");
   let decision: ReturnType<typeof canCreateRehearsal> = "ok_pro";
@@ -206,17 +270,23 @@ async function handlePost(
     await server.closeStaleRehearsals(admin, userId);
   }
 
-  const refused = await access.chargeQuota?.();
-  if (refused) return refused;
-  const brief = await timer.time("brief", () =>
-    server.generateBrief(admin, {
-      apiKey: resolveLlmApiKey() ?? null,
-      model: resolveLlmChatModel(),
-      userId,
-      intake,
-      signal: request.signal,
-    }),
-  );
+  // A quick-start writes no brief: no quota is spent and no model is called.
+  let brief: RehearsalBrief;
+  if (presetId) {
+    brief = presetBrief(presetId, intake.course);
+  } else {
+    const refused = await access.chargeQuota?.();
+    if (refused) return refused;
+    brief = await timer.time("brief", () =>
+      server.generateBrief(admin, {
+        apiKey: resolveLlmApiKey() ?? null,
+        model: resolveLlmChatModel(),
+        userId,
+        intake,
+        signal: request.signal,
+      }),
+    );
+  }
 
   const { data, error } =
     action === "create"
@@ -251,7 +321,9 @@ async function handlePost(
   }
   if (action === "create") {
     const { recordRehearsalUsage } = await import("@/lib/rehearsal-usage.server");
-    await recordRehearsalUsage("rehearsal_created", { source: "intake" });
+    await recordRehearsalUsage("rehearsal_created", {
+      source: presetId ? "quick_start" : "intake",
+    });
   }
   return noStoreJson({ rehearsal: server.toRehearsal(data as never) });
 }
