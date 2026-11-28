@@ -13,6 +13,8 @@ const h = vi.hoisted(() => ({
   rpcs: [] as { fn: string; args: Record<string, unknown> }[],
   callRow: null as unknown,
   brief: null as unknown,
+  prevRuns: [] as unknown[],
+  eqs: [] as [string, string, unknown][],
   claim: true,
   finishResult: 1,
   usage: [] as { event: string; detail: unknown; userId: unknown }[],
@@ -40,7 +42,14 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     from: (table: string) => {
       const q: Record<string, unknown> = {};
-      for (const n of ["select", "eq"]) q[n] = () => q;
+      for (const n of ["select", "order", "limit"]) q[n] = () => q;
+      q.eq = (col: string, val: unknown) => {
+        h.eqs.push([table, col, val]);
+        return q;
+      };
+      // The previous-runs read is awaited without maybeSingle.
+      if (table === "rehearsal_runs")
+        q.then = (resolve: (v: unknown) => void) => resolve({ data: h.prevRuns, error: null });
       q.maybeSingle = async () => ({ data: table === "rehearsals" ? h.brief : h.callRow });
       return q;
     },
@@ -105,6 +114,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   h.rpcs = [];
   h.usage = [];
+  h.prevRuns = [];
+  h.eqs = [];
   h.claim = true;
   h.finishResult = 1;
   h.callRow = {
@@ -290,5 +301,122 @@ describe("usage: a finished stage counts once, with its stage and nothing else",
     h.callRow = { ...(h.callRow as object), kind: "scenario", item_key: "coffee" };
     await call();
     expect(h.usage).toEqual([]);
+  });
+});
+
+describe("How you spoke: numbers only, from the run just written", () => {
+  const KEY = ["I have experience in", "Could you repeat that, please?", "Je voudrais un café"];
+  const turns = (...learner: string[]) =>
+    learner.flatMap((t) => [
+      { role: "user", content: t },
+      { role: "assistant", content: "ok" },
+    ]);
+  const callWith = (learner: string[]) =>
+    POST({
+      request: new Request("https://x/api/call-recap", {
+        method: "POST",
+        headers: { Authorization: "Bearer t" },
+        body: JSON.stringify({ callId: CALL, messages: turns(...learner) }),
+      }),
+    });
+  const L = ["hello", "I have experience in sales", "yes", "could you repeat that please", "ok"];
+  beforeEach(() => {
+    h.callRow = { ...(h.callRow as object), replies: 5, short_replies: 2, english_replies: 1 };
+    h.brief = {
+      brief: {
+        hardMoments: LABELS.map((label, i) => ({ id: `m${i}`, label, prompt: "p" })),
+        keyPhrases: KEY,
+      },
+    };
+  });
+
+  it("passes only the key-phrase COUNT to the database, never a phrase", async () => {
+    await callWith(L);
+    expect(finishRpc()!.args).toMatchObject({ _key_phrases_used: 2, _key_phrases_total: 3 });
+    expect(JSON.stringify(finishRpc()!.args)).not.toMatch(/experience|repeat/i);
+  });
+
+  it("matches a key phrase typed without its accent", async () => {
+    await callWith(["je voudrais un cafe", "a", "b", "c", "d"]);
+    expect(finishRpc()!.args._key_phrases_used).toBe(1);
+  });
+
+  it("a brief with no key phrases sends no pair and leaves that note out", async () => {
+    h.brief = { brief: { hardMoments: [] } };
+    const body = await (await callWith(L)).json();
+    expect(finishRpc()!.args).not.toHaveProperty("_key_phrases_total");
+    expect(body.rehearsalSpeaking.notes.map((n: { kind: string }) => n.kind)).toEqual([
+      "full_replies",
+      "english_fallback",
+    ]);
+  });
+
+  it("answers rehearsalSpeaking: counts from the call row, previous = the same stage's last run", async () => {
+    h.prevRuns = [
+      // This call's own run is in the list and is never "previous".
+      { practice_call_id: CALL, speaking_full: 3, speaking_english: 1, key_phrases_used: 2 },
+      { practice_call_id: "p1", speaking_full: 1, speaking_english: 3, key_phrases_used: 0 },
+    ];
+    const body = await (await callWith(L)).json();
+    expect(body.rehearsalSpeaking).toEqual({
+      notes: [
+        { kind: "full_replies", count: 3, total: 5, previous: 1 },
+        { kind: "key_phrases", count: 2, total: 3, previous: 0 },
+        { kind: "english_fallback", count: 1, total: 5, previous: 3 },
+      ],
+    });
+  });
+
+  it("asks for the previous run of THIS rehearsal and THIS stage, for this learner", async () => {
+    await callWith(L);
+    expect(h.eqs.filter((e) => e[0] === "rehearsal_runs")).toEqual([
+      ["rehearsal_runs", "user_id", "u1"],
+      ["rehearsal_runs", "rehearsal_id", REHEARSAL],
+      ["rehearsal_runs", "stage", "conversation"],
+    ]);
+  });
+
+  it("with no earlier run there is no previous", async () => {
+    const body = await (await callWith(L)).json();
+    expect(
+      body.rehearsalSpeaking.notes.every((n: { previous: unknown }) => n.previous === null),
+    ).toBe(true);
+  });
+
+  it("holds at most 3 notes, the first positive", async () => {
+    h.prevRuns = [
+      { practice_call_id: "p1", speaking_full: 0, speaking_english: 0, key_phrases_used: 0 },
+    ];
+    const body = await (await callWith(L)).json();
+    expect(body.rehearsalSpeaking.notes.length).toBeLessThanOrEqual(3);
+    expect(body.rehearsalSpeaking.notes[0].kind).toBe("full_replies");
+  });
+
+  it("is still sent when the recap itself has nothing to show", async () => {
+    h.generate.mockResolvedValue(generated({ corrections: [], phrase: null }));
+    const body = await (await callWith(L)).json();
+    expect(body.recap).toBeNull();
+    expect(body.rehearsalSpeaking.notes.length).toBeGreaterThan(0);
+  });
+
+  it("is ABSENT for a scenario call, a run under the floor, and a run the database refused", async () => {
+    h.callRow = { ...(h.callRow as object), kind: "scenario", item_key: "coffee" };
+    expect(await (await callWith(L)).json()).not.toHaveProperty("rehearsalSpeaking");
+    h.callRow = {
+      ...(h.callRow as object),
+      kind: "rehearsal",
+      item_key: `${REHEARSAL}:conversation`,
+      replies: 3,
+    };
+    expect(await (await callWith(L)).json()).not.toHaveProperty("rehearsalSpeaking");
+    h.callRow = { ...(h.callRow as object), replies: 5 };
+    h.finishResult = -2;
+    expect(await (await callWith(L)).json()).not.toHaveProperty("rehearsalSpeaking");
+  });
+
+  it("a failed read of the previous run only loses the comparison", async () => {
+    h.prevRuns = "not a list" as unknown as unknown[];
+    const body = await (await callWith(L)).json();
+    expect(body.rehearsalSpeaking.notes.length).toBeGreaterThan(0);
   });
 });

@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
 import type { Course } from "@/data/course-meta";
 import { fetchRehearsals, type RehearsalState } from "@/lib/rehearsal-api";
+import { HowYouSpoke } from "@/components/rehearsal/HowYouSpoke";
 import { debriefTitle } from "@/lib/rehearsal-copy";
 import { STAGES, STAGE_LABELS, type Stage } from "@/lib/rehearsal-rules";
+import type { RehearsalSpeaking } from "@/lib/rehearsal-speaking";
 
 type Load = { kind: "loading" } | { kind: "failed" } | { kind: "ready"; state: RehearsalState };
 
@@ -27,6 +29,7 @@ export function RehearsalDebrief({
   turns,
   recapStatus,
   fixCount,
+  speaking = null,
   onRunAgain,
   onDone,
 }: {
@@ -38,6 +41,8 @@ export function RehearsalDebrief({
   recapStatus: "off" | "pending" | "ready" | "failed";
   /** How many items the recap sent to Fix before it sticks (Review). */
   fixCount: number;
+  /** "How you spoke" from the recap answer; hidden when absent. */
+  speaking?: RehearsalSpeaking | null;
   onRunAgain: () => void;
   onDone: () => void;
 }) {
@@ -90,6 +95,7 @@ export function RehearsalDebrief({
 
       {run ? (
         <>
+          <HowYouSpoke speaking={speaking} />
           {run.wentWell.length > 0 && (
             <List title="What went well" items={run.wentWell} tone="good" />
           )}

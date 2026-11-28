@@ -1,6 +1,7 @@
 import { authHeaders } from "./auth-headers";
 import type { Course } from "../data/courses";
 import { RECAP_MIN_LEARNER_TURNS } from "./call-recap";
+import { parseSpeaking, type RehearsalSpeaking } from "./rehearsal-speaking";
 import { goalLines } from "./tutor-memory-view";
 
 /** The browser side of /api/call-recap, /api/call-recap-review and /api/tutor-memory. */
@@ -24,7 +25,12 @@ export const callQualifiesForRecap = (turns: Transcript): boolean =>
 
 /** One attempt's outcome. `retry` is true when a second try may work (offline, timeout, a server error, or the server saying
  * the attempt failed and released the call); a short call, consent off or a quota refusal are not retryable. */
-export type RecapAttempt = { recap: RecapView | null; retry: boolean };
+export type RecapAttempt = {
+  recap: RecapView | null;
+  retry: boolean;
+  /** "How you spoke" for a rehearsal run; null for every other call. Independent of `recap`. */
+  speaking: RehearsalSpeaking | null;
+};
 
 /**
  * Asks for the recap of a finished call. null on anything but a clean answer (short call, offline, timeout, the AI or
@@ -50,7 +56,7 @@ export async function fetchCallRecapAttempt(args: {
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
 }): Promise<RecapAttempt> {
-  const none: RecapAttempt = { recap: null, retry: false };
+  const none: RecapAttempt = { recap: null, retry: false, speaking: null };
   if (!callQualifiesForRecap(args.messages)) return none;
   const doFetch = args.fetchImpl ?? fetch;
   try {
@@ -65,14 +71,20 @@ export async function fetchCallRecapAttempt(args: {
       }),
       signal: AbortSignal.timeout(args.timeoutMs ?? RECAP_CLIENT_TIMEOUT_MS),
     });
-    if (!resp.ok) return { recap: null, retry: resp.status >= 500 && resp.status !== 503 };
-    const body = (await resp.json()) as { recap?: RecapView | null; retry?: boolean };
+    if (!resp.ok) return { ...none, retry: resp.status >= 500 && resp.status !== 503 };
+    const body = (await resp.json()) as {
+      recap?: RecapView | null;
+      retry?: boolean;
+      rehearsalSpeaking?: unknown;
+    };
+    const speaking = parseSpeaking(body.rehearsalSpeaking);
     const r = body.recap;
-    if (!r || !Array.isArray(r.corrections)) return { recap: null, retry: body.retry === true };
-    if (r.corrections.length === 0 && !r.phrase) return none;
-    return { recap: r, retry: false };
+    if (!r || !Array.isArray(r.corrections))
+      return { recap: null, retry: body.retry === true, speaking };
+    if (r.corrections.length === 0 && !r.phrase) return { ...none, speaking };
+    return { recap: r, retry: false, speaking };
   } catch {
-    return { recap: null, retry: true };
+    return { ...none, retry: true };
   }
 }
 
