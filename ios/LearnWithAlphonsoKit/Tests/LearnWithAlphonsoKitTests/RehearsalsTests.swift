@@ -504,4 +504,124 @@ final class RehearsalsTests: XCTestCase {
         XCTAssertEqual(RehearsalLearnEntry.heroTitle(kind: .interview), "Interview today")
         XCTAssertEqual(RehearsalLearnEntry.heroButton, "Start 2 minutes")
     }
+
+    // MARK: - Quick-starts
+
+    private let presetsJSON: [String: Any] = [
+        "presets": [
+            [
+                "id": "job_interview", "eventKind": "interview", "title": "A job interview",
+                "blurb": "Answer the common questions.", "counterpart": "a hiring manager", "futureField": 7,
+                "stages": [["key": "warmup", "goal": "Say hello"], ["key": "conversation", "goal": "Talk it through"],
+                           ["key": "hard_moments", "goal": "Handle a tough one"]],
+                "keyPhrases": [["text": "Nice to meet you", "meaning": "A greeting"]],
+            ],
+            ["id": "bank_account", "title": "Opening a bank account", "stages": [], "keyPhrases": []],
+        ]
+    ]
+
+    private let madeRehearsal: [String: Any] = [
+        "id": "r1", "course": "en", "eventKind": "interview", "eventDate": "2026-12-01", "counterpart": "a hiring manager",
+        "status": "active", "free": true, "createdAt": "2026-11-27T10:00:00Z",
+    ]
+
+    func testThePresetListDecodesInServerOrderAndIgnoresUnknownFields() throws {
+        let list = try XCTUnwrap(RehearsalDecoding.presets(from: try JSONSerialization.data(withJSONObject: presetsJSON)))
+        XCTAssertEqual(list.map(\.id), ["job_interview", "bank_account"])
+        XCTAssertEqual(list[0].title, "A job interview")
+        XCTAssertEqual(list[0].counterpartLine, "Talking to: a hiring manager")
+        XCTAssertEqual(list[0].stages.map(\.stage), [.warmup, .conversation, .hardMoments])
+        XCTAssertEqual(list[0].stages[2].goal, "Handle a tough one")
+        XCTAssertEqual(list[0].keyPhrases.first?.meaning, "A greeting")
+        XCTAssertEqual(list[1].blurb, "", "a missing blurb reads as empty, not a failed list")
+    }
+
+    func testAPresetThatCannotBeReadIsDroppedAndTheRestSurvive() throws {
+        let body: [String: Any] = ["presets": [["title": "No id"], ["id": "first_day", "title": "First day"]]]
+        let list = try XCTUnwrap(RehearsalDecoding.presets(from: try JSONSerialization.data(withJSONObject: body)))
+        XCTAssertEqual(list.map(\.id), ["first_day"])
+    }
+
+    func testAnAnswerWithNoPresetListIsNil() throws {
+        XCTAssertNil(RehearsalDecoding.presets(from: try JSONSerialization.data(withJSONObject: ["error": "x"])))
+        XCTAssertNil(RehearsalDecoding.presets(from: Data("nope".utf8)))
+    }
+
+    func testTheQuickStartCreateBodyCarriesThePresetAndOnlyAnAddedDate() {
+        let none = RehearsalRequests.create(course: "fr", preset: "job_interview", eventDate: nil)
+        XCTAssertEqual(none["action"] as? String, "create")
+        XCTAssertEqual(none["course"] as? String, "fr")
+        XCTAssertEqual(none["preset"] as? String, "job_interview")
+        XCTAssertTrue(none["eventDate"] is NSNull, "no date added is a null eventDate, as the shared fixture has it")
+        XCTAssertEqual(none.count, 4)
+        XCTAssertNil(none["counterpart"], "no intake text travels with a quick-start")
+        let dated = RehearsalRequests.create(course: "en", preset: "first_day", eventDate: "2026-12-01")
+        XCTAssertEqual(dated["eventDate"] as? String, "2026-12-01")
+    }
+
+    func testTheClientFetchesPresetsForTheCourseAndSendsAQuickStartCreate() async throws {
+        let get = TestCapture<URLRequest?>(nil)
+        let result = await client(status: 200, body: presetsJSON, capture: get).presets(course: "es")
+        let list = try result.get()
+        XCTAssertEqual(list.count, 2)
+        XCTAssertEqual(get.value?.httpMethod, "GET")
+        XCTAssertEqual(get.value?.url?.path, "/api/rehearsal-presets")
+        XCTAssertEqual(get.value?.url?.query, "course=es")
+
+        let post = TestCapture<URLRequest?>(nil)
+        let made = await client(status: 200, body: ["rehearsal": madeRehearsal], capture: post)
+            .create(course: "en", preset: "job_interview", eventDate: "2026-12-01")
+        XCTAssertNotNil(try? made.get())
+        let sent = try XCTUnwrap(post.value?.httpBody)
+        let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: sent) as? [String: Any])
+        XCTAssertEqual(payload["preset"] as? String, "job_interview")
+        XCTAssertEqual(payload["eventDate"] as? String, "2026-12-01")
+        XCTAssertEqual(post.value?.url?.path, "/api/rehearsal")
+    }
+
+    func testAnEmptyPresetListIsAFailureSoTheScreenFallsBackToSomethingElse() async {
+        let result = await client(status: 200, body: ["presets": []]).presets(course: "en")
+        XCTAssertEqual(result, .failure(.failed))
+    }
+
+    func testPresetErrorsMapLikeTheCreateEverywhereElse() async throws {
+        XCTAssertEqual(RehearsalError.from(status: 400, code: "invalid_preset"), .invalidPreset)
+        XCTAssertEqual(RehearsalError.from(status: 400, code: "invalid_counterpart"), .invalid)
+        let r1 = await client(status: 404, body: ["error": "not_enabled"]).presets(course: "en")
+        XCTAssertEqual(r1, .failure(.notEnabled))
+        let r2 = await client(status: 402, body: ["error": "paywall"]).create(course: "en", preset: "bank_account", eventDate: nil)
+        XCTAssertEqual(r2, .failure(.paywall))
+        let r3 = await client(status: 409, body: ["error": "active_exists"]).create(course: "en", preset: "bank_account", eventDate: nil)
+        XCTAssertEqual(r3, .failure(.activeExists))
+        let r4 = await client(status: 400, body: ["error": "invalid_preset"]).create(course: "en", preset: "nope", eventDate: nil)
+        XCTAssertEqual(r4, .failure(.invalidPreset))
+        XCTAssertFalse(RehearsalError.invalidPreset.userMessage.isEmpty)
+    }
+
+    // MARK: - Quick-starts against the shared fixture
+
+    func testTheSharedPresetsAnswerDecodesToTheEightCards() throws {
+        let response = try XCTUnwrap(try fixture()["presets"] as? [String: Any])
+        let body = try JSONSerialization.data(withJSONObject: try XCTUnwrap(response["response"]))
+        let list = try XCTUnwrap(RehearsalDecoding.presets(from: body))
+        XCTAssertEqual(list.map(\.id), ["job_interview", "talk_to_manager", "doctor_appointment", "apartment_landlord",
+                                         "bank_account", "parent_teacher", "first_day", "customer_service_call"])
+        for preset in list {
+            XCTAssertEqual(preset.stages.compactMap(\.stage), RehearsalStage.allCases, preset.id)
+            XCTAssertFalse(preset.title.isEmpty)
+            XCTAssertFalse(preset.counterpart.isEmpty)
+            XCTAssertFalse(preset.keyPhrases.isEmpty)
+        }
+    }
+
+    func testTheSharedCreateFromPresetAndAddDateBodiesMatchWhatTheAppSends() throws {
+        let f = try fixture()
+        let create = try XCTUnwrap(f["createFromPreset"] as? [String: Any])
+        let sent = RehearsalRequests.create(course: "en", preset: "doctor_appointment", eventDate: nil)
+        XCTAssertEqual(NSDictionary(dictionary: sent), NSDictionary(dictionary: create))
+        let add = try XCTUnwrap(f["addDate"] as? [String: Any])
+        let id = try XCTUnwrap(add["id"] as? String)
+        let adjust = RehearsalRequests.addDate(id: id, eventDate: "2026-12-04")
+        XCTAssertEqual(NSDictionary(dictionary: adjust), NSDictionary(dictionary: add))
+    }
 }

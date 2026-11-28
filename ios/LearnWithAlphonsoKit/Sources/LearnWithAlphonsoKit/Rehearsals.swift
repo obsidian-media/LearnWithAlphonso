@@ -272,6 +272,14 @@ public enum RehearsalDecoding {
         return (try? JSONDecoder().decode(Wrapper.self, from: data))?.rehearsal
     }
 
+    /// `{ presets: [...] }` from `GET /api/rehearsal-presets`, in server order. A preset that cannot be read (no id or
+    /// no title) is dropped; an answer with no `presets` list is nil, never a half-read list.
+    public static func presets(from data: Data) -> [RehearsalPreset]? {
+        struct Wrapper: Decodable { let presets: [LossyBox<RehearsalPreset>] }
+        guard let wrapper = try? JSONDecoder().decode(Wrapper.self, from: data) else { return nil }
+        return wrapper.presets.compactMap(\.value)
+    }
+
     /// `features.rehearsals` in an `/api/app-config` answer. Missing, malformed or false is off.
     public static func rehearsalsEnabled(inAppConfig data: Data) -> Bool {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -279,6 +287,69 @@ public enum RehearsalDecoding {
               let on = features["rehearsals"] as? Bool else { return false }
         return on
     }
+}
+
+// MARK: - Quick-starts (presets)
+
+/// One stage of a quick-start: the server's key (`warmup`, `conversation`, `hard_moments`) and its goal line.
+public struct RehearsalPresetStage: Decodable, Equatable, Sendable {
+    public let key: String
+    public let goal: String
+
+    public var stage: RehearsalStage? { RehearsalStage(rawValue: key) }
+}
+
+public struct RehearsalKeyPhrase: Decodable, Equatable, Sendable {
+    public let text: String
+    public let meaning: String?
+}
+
+/// One quick-start card as `GET /api/rehearsal-presets` sends it. The app holds none of this text: the server owns the
+/// ids, the titles, the blurbs and the phrases. Unknown fields are ignored.
+public struct RehearsalPreset: Decodable, Equatable, Sendable, Identifiable {
+    public let id: String
+    public let eventKind: String
+    public let title: String
+    public let blurb: String
+    public let counterpart: String
+    public let stages: [RehearsalPresetStage]
+    public let keyPhrases: [RehearsalKeyPhrase]
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: Keys.self)
+        id = try c.decode(String.self, forKey: .id)
+        eventKind = try c.decodeIfPresent(String.self, forKey: .eventKind) ?? "other"
+        title = try c.decode(String.self, forKey: .title)
+        blurb = try c.decodeIfPresent(String.self, forKey: .blurb) ?? ""
+        counterpart = try c.decodeIfPresent(String.self, forKey: .counterpart) ?? ""
+        stages = (try? c.decode([LossyBox<RehearsalPresetStage>].self, forKey: .stages))?.compactMap(\.value) ?? []
+        keyPhrases = (try? c.decode([LossyBox<RehearsalKeyPhrase>].self, forKey: .keyPhrases))?.compactMap(\.value) ?? []
+    }
+
+    private enum Keys: String, CodingKey { case id, eventKind, title, blurb, counterpart, stages, keyPhrases }
+
+    /// "Talking to: a hiring manager".
+    public var counterpartLine: String { "Talking to: \(counterpart)" }
+}
+
+/// One bad element in a list becomes nil instead of failing the whole list.
+private struct LossyBox<T: Decodable>: Decodable {
+    let value: T?
+    init(from decoder: Decoder) throws { value = try? T(from: decoder) }
+}
+
+public enum RehearsalPresetCopy {
+    public static let title = "What is coming up?"
+    public static let subtitle = "Pick one to start right away, or describe your own."
+    public static let somethingElse = "Something else"
+    public static let somethingElseHint = "Tell Alphonso about your own conversation"
+    public static let addDate = "Add a date"
+    public static let removeDate = "Remove the date"
+    public static let startNow = "Start now"
+    public static let personalise = "Personalise"
+    public static let personaliseHint = "Change who you will talk to and what worries you"
+    public static let loadFailed = "We could not load the quick-starts."
+    public static let retry = "Try again"
 }
 
 // MARK: - Errors
@@ -292,6 +363,7 @@ public enum RehearsalError: String, Error, Equatable, Sendable {
     case notFound = "not_found"
     case notEnabled = "not_enabled"
     case invalid, consent, failed
+    case invalidPreset = "invalid_preset"
 
     /// The same mapping the web's errorOf makes, from the status and the body's `error` code.
     public static func from(status: Int, code: String?) -> RehearsalError {
@@ -301,7 +373,9 @@ public enum RehearsalError: String, Error, Equatable, Sendable {
         case 409: return code == "closed" ? .closed : .activeExists
         case 404: return code == "not_enabled" ? .notEnabled : .notFound
         case 403: return .consent
-        case 400: return code == "blocked_text" ? .blockedText : .invalid
+        case 400:
+            if code == "blocked_text" { return .blockedText }
+            return code == "invalid_preset" ? .invalidPreset : .invalid
         default: return .failed
         }
     }
@@ -317,6 +391,7 @@ public enum RehearsalError: String, Error, Equatable, Sendable {
         case .notFound: return "We could not find that rehearsal."
         case .notEnabled: return "Rehearsals are not available yet."
         case .invalid: return "Please check your answers and try again."
+        case .invalidPreset: return "That quick-start is not available any more. Pick another, or choose Something else."
         case .consent: return "Turn on AI features to prepare a rehearsal."
         case .failed: return "Something went wrong. Please try again."
         }
@@ -813,6 +888,25 @@ public final class RehearsalClient: Sendable {
         await rehearsal(RehearsalRequests.create(intake))
     }
 
+    /// The quick-start cards for a course. An empty list is a failure too: the screen falls back to "Something else".
+    public func presets(course: String) async -> Result<[RehearsalPreset], RehearsalError> {
+        var parts = URLComponents(url: baseURL.appendingPathComponent("api/rehearsal-presets"), resolvingAgainstBaseURL: false)!
+        parts.queryItems = [URLQueryItem(name: "course", value: course)]
+        var request = URLRequest(url: parts.url!)
+        request.httpMethod = "GET"
+        switch await send(request) {
+        case .failure(let e): return .failure(e)
+        case .success(let data):
+            guard let list = RehearsalDecoding.presets(from: data), !list.isEmpty else { return .failure(.failed) }
+            return .success(list)
+        }
+    }
+
+    /// Creates the rehearsal from a quick-start. `eventDate` is YYYY-MM-DD or nil.
+    public func create(course: String, preset: String, eventDate: String?) async -> Result<Rehearsal, RehearsalError> {
+        await rehearsal(RehearsalRequests.create(course: course, preset: preset, eventDate: eventDate))
+    }
+
     public func adjust(id: String, _ intake: RehearsalIntake) async -> Result<Rehearsal, RehearsalError> {
         await rehearsal(RehearsalRequests.adjust(id: id, intake))
     }
@@ -877,6 +971,17 @@ public enum RehearsalRequests {
         var body = intake.body
         body["action"] = "create"
         return body
+    }
+
+    /// A quick-start create: the preset id and the date (null when the learner added none, as the shared fixture's
+    /// `createFromPreset` has it). No intake text travels.
+    public static func create(course: String, preset: String, eventDate: String?) -> [String: Any] {
+        ["action": "create", "course": course, "preset": preset, "eventDate": eventDate.map { $0 as Any } ?? NSNull()]
+    }
+
+    /// "Add a date" on an existing rehearsal: `adjust` with only the id and the date (null clears it).
+    public static func addDate(id: String, eventDate: String?) -> [String: Any] {
+        ["action": "adjust", "id": id, "eventDate": eventDate.map { $0 as Any } ?? NSNull()]
     }
 
     public static func adjust(id: String, _ intake: RehearsalIntake) -> [String: Any] {
