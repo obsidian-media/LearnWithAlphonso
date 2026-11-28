@@ -42,8 +42,9 @@ const params: { current: { id: string; stage: string } } = {
 };
 // @ts-expect-error -- no RouterProvider here; the same override the Practice call's own test uses.
 Route.useParams = () => params.current;
+const search: { current: Record<string, unknown> } = { current: {} };
 // @ts-expect-error -- same as useParams above.
-Route.useSearch = () => ({});
+Route.useSearch = () => search.current;
 
 const active = {
   id: ID,
@@ -82,6 +83,7 @@ beforeEach(() => {
   navigate.mockReset();
   track.mockReset();
   params.current = { id: ID, stage: "conversation" };
+  search.current = {};
   fetchProgress.mockReset();
   fetchProgress.mockResolvedValue({ cefrLevel: "B1" });
   rehearsalApi.fetchRehearsals.mockReset();
@@ -237,5 +239,78 @@ describe("a rehearsal stage as a call", () => {
   it("sends no Practice telemetry for a rehearsal call", async () => {
     await renderPage();
     expect(track).not.toHaveBeenCalledWith("practice_call_started", expect.anything());
+  });
+});
+
+describe("a Hector rehearsal stage (Pro)", () => {
+  const ttsBodies = () =>
+    (global.fetch as ReturnType<typeof vi.fn>).mock.calls
+      .filter(([u]) => String(u).includes("/api/tts"))
+      .map(([, init]) => JSON.parse((init as RequestInit).body as string));
+  const sendHi = async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "Good morning{Enter}");
+    await waitFor(() => expect(chatCalls()).toHaveLength(1));
+  };
+
+  it("sends persona hector with the rehearsal, and speaks the reply in Hector's voice", async () => {
+    search.current = { persona: "hector" };
+    await sendHi();
+    expect(JSON.parse(chatCalls()[0]![1].body as string).rehearsal).toEqual({
+      id: ID,
+      stage: "conversation",
+      persona: "hector",
+    });
+    await waitFor(() => expect(ttsBodies().some((b) => b.character === "hector")).toBe(true));
+  });
+
+  it("hard mode is sent on the last stage only", async () => {
+    params.current = { id: ID, stage: "hard_moments" };
+    search.current = { persona: "hector", hard: true };
+    await sendHi();
+    expect(JSON.parse(chatCalls()[0]![1].body as string).rehearsal).toEqual({
+      id: ID,
+      stage: "hard_moments",
+      persona: "hector",
+      hardMode: true,
+    });
+  });
+
+  it("a hard flag on another stage is dropped before it is sent", async () => {
+    search.current = { persona: "hector", hard: true };
+    await sendHi();
+    expect(JSON.parse(chatCalls()[0]![1].body as string).rehearsal).toEqual({
+      id: ID,
+      stage: "conversation",
+      persona: "hector",
+    });
+  });
+
+  it("an Alphonso stage never asks for Hector's voice", async () => {
+    await sendHi();
+    await waitFor(() => expect(ttsBodies().length).toBeGreaterThan(0));
+    expect(ttsBodies().some((b) => "character" in b)).toBe(false);
+  });
+
+  it("a refused start (pro_required) says Hector is part of Pro, not that free runs are used up", async () => {
+    search.current = { persona: "hector" };
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).includes("/api/chat")) return jsonResponse({ error: "pro_required" }, 402);
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderPage();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hi{Enter}");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(/Hector rehearsals are part of Alphonso Pro/);
+    expect(alert).not.toHaveTextContent(/free rehearsal/i);
+  });
+
+  it("the header names Hector, with the stage", async () => {
+    search.current = { persona: "hector" };
+    localStorage.setItem("showAlphonsoWhilePractising", "true");
+    await renderPage();
+    expect(screen.getByText("Hector · Stage 2 of 3: The real conversation")).toBeInTheDocument();
   });
 });

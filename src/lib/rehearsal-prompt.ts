@@ -1,9 +1,10 @@
 import type { Course } from "@/data/course-meta";
 import type { Level } from "@/data/levels";
+import { HECTOR_TEMPLATES } from "@/data/rehearsal-hector-templates";
 import { REHEARSAL_TEMPLATES } from "@/data/rehearsal-templates";
 import type { RehearsalBrief } from "./rehearsal-brief";
 import { fencedData } from "./rehearsal-fence";
-import type { EventKind, RunMemory, Stage } from "./rehearsal-rules";
+import type { EventKind, Persona, RunMemory, Stage } from "./rehearsal-rules";
 
 export type { RunMemory } from "./rehearsal-rules";
 
@@ -32,8 +33,14 @@ export function buildRehearsalPrompt(input: {
   brief: RehearsalBrief;
   runs: RunMemory[];
   eventKind: EventKind;
+  /** Alphonso (default) or Hector. Hector swaps the stage's role and behaviour for the tougher, longer-debrief ones. */
+  persona?: Persona;
+  /** Hard mode: only ever with Hector on the last stage; anything else ignores it, so a stray flag can never leak in. */
+  hard?: boolean;
 }): string {
   const t = REHEARSAL_TEMPLATES[input.course];
+  const hector = input.persona === "hector" ? HECTOR_TEMPLATES[input.course] : null;
+  const hardMode = hector !== null && input.hard === true && input.stage === "hard_moments";
   const { brief, stage } = input;
 
   const lastRun = [...input.runs].sort((a, b) => a.finishedAt.localeCompare(b.finishedAt)).at(-1);
@@ -67,11 +74,12 @@ export function buildRehearsalPrompt(input: {
   }
 
   const parts = [
-    t.stages[stage].role(t.event[input.eventKind]),
+    (hector ?? t).stages[stage].role(t.event[input.eventKind]),
     t.level(input.level),
     fencedData(fields),
     t.dataNote,
-    t.stages[stage].behaviour,
+    (hector ?? t).stages[stage].behaviour,
+    ...(hardMode && hector ? [hector.hardMode] : []),
     hasMemory ? t.withMemory : t.firstRun,
     ...(useOpener ? [OPENER_RULE[input.course]] : []),
     ...(input.eventKind === "appointment" || input.eventKind === "housing" ? [t.generalOnly] : []),

@@ -51,6 +51,10 @@ export type RehearsalState = {
   /** The active rehearsal's finished runs, oldest first: moment labels and corrected forms only. */
   runs: RunMemory[];
   history: RehearsalSummary[];
+  /** The active rehearsal has a finished hard-mode run ("Hard mode done"). An older server omits it: false. */
+  hardModeDone: boolean;
+  /** Hector (Pro): true Pro, false not Pro, null unknown (the run's start decides). An older server omits it: null. */
+  hectorAvailable: boolean | null;
   /** True while the account's one free rehearsal has not been used. */
   freeAvailable: boolean;
 };
@@ -122,6 +126,8 @@ export function parseRehearsalState(v: unknown): RehearsalState | null {
   return {
     ...o,
     runs: Array.isArray(o.runs) ? o.runs : [],
+    hardModeDone: o.hardModeDone === true,
+    hectorAvailable: typeof o.hectorAvailable === "boolean" ? o.hectorAvailable : null,
   } as RehearsalState;
 }
 
