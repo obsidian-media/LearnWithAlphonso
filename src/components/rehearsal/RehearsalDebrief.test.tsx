@@ -150,3 +150,46 @@ describe("RehearsalDebrief (after a run, in place of stars)", () => {
     expect(props.onDone).toHaveBeenCalled();
   });
 });
+
+describe("RehearsalDebrief: How you spoke", () => {
+  const speaking = {
+    notes: [
+      { kind: "full_replies" as const, count: 7, total: 9, previous: 4 },
+      { kind: "key_phrases" as const, count: 3, total: 8, previous: 4 },
+      { kind: "english_fallback" as const, count: 2, total: 9, previous: null },
+    ],
+  };
+  it("shows the card with the sentences, in the server's order", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
+    render(<RehearsalDebrief {...props} speaking={speaking} />);
+    expect(await screen.findByRole("heading", { name: "How you spoke" })).toBeInTheDocument();
+    const items = screen.getAllByRole("listitem").slice(0, 3);
+    expect(items[0]).toHaveTextContent(
+      "You answered in full sentences 7 of 9 times, up from 4 last time.",
+    );
+    expect(items[1]).toHaveTextContent("You used 3 of your 8 key phrases, down from 4 last time.");
+    expect(items[2]).toHaveTextContent("You switched to English twice.");
+  });
+  it("draws up, down and no arrow from count against previous, hidden from assistive technology", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
+    const { container } = render(<RehearsalDebrief {...props} speaking={speaking} />);
+    await screen.findByRole("heading", { name: "How you spoke" });
+    const arrows = [...container.querySelectorAll("[data-trend]")];
+    expect(arrows.map((a) => a.getAttribute("data-trend"))).toEqual(["up", "down", "first"]);
+    for (const a of arrows) expect(a).toHaveAttribute("aria-hidden", "true");
+  });
+  it("is neutral: no red, no percentage, no score", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
+    const { container } = render(<RehearsalDebrief {...props} speaking={speaking} />);
+    await screen.findByRole("heading", { name: "How you spoke" });
+    const card = container.querySelector("#how-you-spoke")!.parentElement!;
+    expect(card.innerHTML).not.toMatch(/ds-(heart|wrong|error|danger|red)/i);
+    expect(card.textContent).not.toMatch(/%|score|grade/i);
+  });
+  it("is hidden when the server sent none", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: withRun });
+    render(<RehearsalDebrief {...props} />);
+    await screen.findByText("That was a full interview");
+    expect(screen.queryByText("How you spoke")).toBeNull();
+  });
+});

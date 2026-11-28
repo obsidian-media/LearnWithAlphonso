@@ -63,27 +63,33 @@ describe("when a recap attempt fails the screen can offer Try again", () => {
   it("the server's retry flag, a server error and being offline are retryable", async () => {
     expect(
       await attempt((async () => Response.json({ recap: null, retry: true })) as never),
-    ).toEqual({ recap: null, retry: true });
-    expect(await attempt((async () => new Response("{}", { status: 502 })) as never)).toEqual({
-      recap: null,
-      retry: true,
-    });
+    ).toMatchObject({ recap: null, retry: true });
+    expect(await attempt((async () => new Response("{}", { status: 502 })) as never)).toMatchObject(
+      {
+        recap: null,
+        retry: true,
+      },
+    );
     expect(
       await attempt((async () => {
         throw new TypeError("offline");
       }) as never),
-    ).toEqual({ recap: null, retry: true });
+    ).toMatchObject({ recap: null, retry: true });
   });
   it("nothing to say, consent off and over the limit are not retryable", async () => {
-    expect(await attempt(ok(null))).toEqual({ recap: null, retry: false });
-    expect(await attempt((async () => new Response("{}", { status: 403 })) as never)).toEqual({
-      recap: null,
-      retry: false,
-    });
-    expect(await attempt((async () => new Response("{}", { status: 429 })) as never)).toEqual({
-      recap: null,
-      retry: false,
-    });
+    expect(await attempt(ok(null))).toMatchObject({ recap: null, retry: false });
+    expect(await attempt((async () => new Response("{}", { status: 403 })) as never)).toMatchObject(
+      {
+        recap: null,
+        retry: false,
+      },
+    );
+    expect(await attempt((async () => new Response("{}", { status: 429 })) as never)).toMatchObject(
+      {
+        recap: null,
+        retry: false,
+      },
+    );
   });
 });
 
@@ -105,5 +111,38 @@ describe("the goals line on the memory page", () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+describe("How you spoke rides along with the recap answer", () => {
+  const notes = { notes: [{ kind: "full_replies", count: 7, total: 9, previous: 4 }] };
+  const attempt = (body: unknown) =>
+    fetchCallRecapAttempt({
+      callId: CALL,
+      messages: call(3),
+      fetchImpl: (async () => Response.json(body)) as never,
+    });
+  it("is carried even when the recap itself is null", async () => {
+    expect(await attempt({ recap: null, rehearsalSpeaking: notes })).toEqual({
+      recap: null,
+      retry: false,
+      speaking: notes,
+    });
+  });
+  it("is carried next to a recap", async () => {
+    const recap = {
+      corrections: [{ said: "a", fixed: "b", why: "c", topic: "t", label: "T" }],
+      phrase: null,
+      reviewToken: null,
+      saved: true,
+      reviewCount: 1,
+    };
+    const r = await attempt({ recap, rehearsalSpeaking: notes });
+    expect(r.speaking).toEqual(notes);
+    expect(r.recap).toEqual(recap);
+  });
+  it("is null when absent or malformed", async () => {
+    expect((await attempt({ recap: null })).speaking).toBeNull();
+    expect((await attempt({ recap: null, rehearsalSpeaking: { notes: "x" } })).speaking).toBeNull();
   });
 });
