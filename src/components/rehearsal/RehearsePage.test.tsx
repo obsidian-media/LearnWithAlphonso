@@ -6,6 +6,8 @@ import fixture from "../../../tests/fixtures/rehearsal-api.json";
 
 const api = vi.hoisted(() => ({
   fetchRehearsals: vi.fn(),
+  fetchPresets: vi.fn(),
+  createRehearsalFromPreset: vi.fn(),
   createRehearsal: vi.fn(),
   adjustRehearsal: vi.fn(),
   deleteRehearsal: vi.fn(),
@@ -40,6 +42,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   };
 });
 
+import { presetSummaries } from "@/lib/rehearsal-presets";
+
 const { RehearsePage } = await import("./RehearsePage");
 
 const ID = "11111111-1111-4111-8111-111111111111";
@@ -49,6 +53,7 @@ const empty = fixture.stateEmpty;
 beforeEach(() => {
   vi.clearAllMocks();
   proState.state = "free";
+  api.fetchPresets.mockResolvedValue({ ok: true, value: [] });
 });
 
 describe("RehearsePage", () => {
@@ -163,5 +168,74 @@ describe("RehearsePage", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Something went wrong");
     await user.click(screen.getByRole("button", { name: "Try again" }));
     await waitFor(() => expect(screen.getByRole("form")).toBeInTheDocument());
+  });
+});
+
+describe("RehearsePage quick-starts", () => {
+  const presets = presetSummaries("en");
+  const created = { ...state.active, id: ID };
+  const open = async () => {
+    api.fetchPresets.mockResolvedValue({ ok: true, value: presets });
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: empty });
+    const user = userEvent.setup();
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    await screen.findByRole("region", { name: "Choose a rehearsal" });
+    return user;
+  };
+
+  it("shows the eight presets first, and 'Something else' for the four questions", async () => {
+    const user = await open();
+    for (const p of presets) expect(screen.getByRole("button", { name: p.title })).toBeVisible();
+    expect(screen.getAllByRole("listitem")).toHaveLength(8);
+    expect(screen.queryByRole("form")).toBeNull();
+    await user.click(screen.getByRole("button", { name: /Something else/ }));
+    expect(screen.getByRole("form", { name: "Plan a rehearsal" })).toBeInTheDocument();
+  });
+
+  it("a preset opens a preview with the three stages, an optional date, Start now and Personalise", async () => {
+    const user = await open();
+    await user.click(screen.getByRole("button", { name: "Doctor's appointment" }));
+    expect(screen.getByRole("list", { name: "The three stages" }).children).toHaveLength(3);
+    expect(screen.getByText("(optional)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start now" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Personalise" })).toBeEnabled();
+    expect(api.createRehearsalFromPreset).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByRole("region", { name: "Choose a rehearsal" })).toBeInTheDocument();
+  });
+
+  it("Start now creates from the preset with no date and reloads the plan", async () => {
+    const user = await open();
+    api.createRehearsalFromPreset.mockResolvedValue({ ok: true, value: { rehearsal: created } });
+    await user.click(screen.getByRole("button", { name: "Job interview" }));
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
+    await user.click(screen.getByRole("button", { name: "Start now" }));
+    expect(api.createRehearsalFromPreset).toHaveBeenCalledWith("en", "job_interview", null);
+    expect(await screen.findByText(/3 stages|Warm-up/)).toBeInTheDocument();
+    expect(screen.queryByRole("form")).toBeNull();
+  });
+
+  it("Personalise creates, then opens the same four questions as Adjust", async () => {
+    const user = await open();
+    api.createRehearsalFromPreset.mockResolvedValue({ ok: true, value: { rehearsal: created } });
+    await user.click(screen.getByRole("button", { name: "Job interview" }));
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: state });
+    await user.click(screen.getByRole("button", { name: "Personalise" }));
+    expect(await screen.findByRole("form", { name: "Plan a rehearsal" })).toBeInTheDocument();
+  });
+
+  it("a refused create (one already active) says so and stays on the preview", async () => {
+    const user = await open();
+    api.createRehearsalFromPreset.mockResolvedValue({ ok: false, error: "active_exists" });
+    await user.click(screen.getByRole("button", { name: "Job interview" }));
+    await user.click(screen.getByRole("button", { name: "Start now" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/already have a rehearsal/);
+    expect(screen.getByRole("button", { name: "Start now" })).toBeEnabled();
+  });
+
+  it("with no presets offered (an older server) the four questions come straight away", async () => {
+    api.fetchRehearsals.mockResolvedValue({ ok: true, value: empty });
+    render(<RehearsePage course="en" today="2026-11-26" />);
+    expect(await screen.findByRole("form", { name: "Plan a rehearsal" })).toBeInTheDocument();
   });
 });

@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { chatRequestBody } from "./call-source";
-import { fetchRehearsals, parseRehearsalState, type RehearsalError } from "./rehearsal-api";
+import {
+  fetchPresets,
+  fetchRehearsals,
+  parseRehearsalState,
+  type RehearsalError,
+} from "./rehearsal-api";
+import { PRESET_IDS, presetSummaries } from "./rehearsal-presets";
 import { toRehearsal, type RehearsalRow } from "./rehearsals.server";
 
 vi.mock("./auth-headers", () => ({ authHeaders: async () => ({}) }));
@@ -104,5 +110,42 @@ describe("the shared rehearsal API fixture", () => {
 
   it("tells the apps the feature is on in /api/app-config", () => {
     expect(fixture.appConfig.features.rehearsals).toBe(true);
+  });
+});
+
+describe("the quick-start part of the shared fixture", () => {
+  const f = fixture as unknown as {
+    presets: { course: "en"; response: { presets: unknown[] } };
+    createFromPreset: Record<string, unknown>;
+    addDate: Record<string, unknown>;
+  };
+
+  it("is exactly what the server returns for the course, so the native decoders read the real thing", () => {
+    expect(f.presets.response).toEqual(
+      JSON.parse(JSON.stringify({ presets: presetSummaries("en") })),
+    );
+  });
+
+  it("decodes through fetchPresets, in picker order", async () => {
+    answer(200, f.presets.response);
+    const r = await fetchPresets("en");
+    expect(r.ok && r.value.map((p) => p.id)).toEqual([...PRESET_IDS]);
+  });
+
+  it("an answer without a presets list, or a not-enabled one, is an error and not an empty picker", async () => {
+    answer(200, { nope: true });
+    expect((await fetchPresets("en")).ok).toBe(false);
+    answer(404, { error: "not_enabled" });
+    expect(await fetchPresets("en")).toEqual({ ok: false, error: "not_enabled" });
+  });
+
+  it("documents the two request bodies the apps send", () => {
+    expect(f.createFromPreset).toEqual({
+      action: "create",
+      course: "en",
+      preset: "doctor_appointment",
+      eventDate: null,
+    });
+    expect(Object.keys(f.addDate).sort()).toEqual(["action", "eventDate", "id"]);
   });
 });

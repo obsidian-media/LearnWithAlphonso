@@ -63,6 +63,7 @@ import { Route as ApiPracticeRouteImport } from './routes/api/practice'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
 import { Route as ApiRehearsalRouteImport } from './routes/api/rehearsal'
+import { Route as ApiRehearsalPresetsRouteImport } from './routes/api/rehearsal-presets'
 import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
@@ -362,6 +363,11 @@ const ApiRehearsalRoute = ApiRehearsalRouteImport.update({
   path: '/api/rehearsal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRehearsalPresetsRoute = ApiRehearsalPresetsRouteImport.update({
+  id: '/api/rehearsal-presets',
+  path: '/api/rehearsal-presets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiReviewDemoCodeRoute = ApiReviewDemoCodeRouteImport.update({
   id: '/api/review-demo-code',
   path: '/api/review-demo-code',
@@ -563,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/rehearsal': typeof ApiRehearsalRoute
+  '/api/rehearsal-presets': typeof ApiRehearsalPresetsRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -645,6 +652,7 @@ export interface FileRoutesByTo {
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/rehearsal': typeof ApiRehearsalRoute
+  '/api/rehearsal-presets': typeof ApiRehearsalPresetsRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -729,6 +737,7 @@ export interface FileRoutesById {
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
   '/api/rehearsal': typeof ApiRehearsalRoute
+  '/api/rehearsal-presets': typeof ApiRehearsalPresetsRoute
   '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
@@ -813,6 +822,7 @@ export interface FileRouteTypes {
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/rehearsal'
+    | '/api/rehearsal-presets'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -895,6 +905,7 @@ export interface FileRouteTypes {
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/rehearsal'
+    | '/api/rehearsal-presets'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -978,6 +989,7 @@ export interface FileRouteTypes {
     | '/api/pro-offering'
     | '/api/pro-status'
     | '/api/rehearsal'
+    | '/api/rehearsal-presets'
     | '/api/review-demo-code'
     | '/api/stt'
     | '/api/subscription-login'
@@ -1045,6 +1057,7 @@ export interface RootRouteChildren {
   ApiProOfferingRoute: typeof ApiProOfferingRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
   ApiRehearsalRoute: typeof ApiRehearsalRoute
+  ApiRehearsalPresetsRoute: typeof ApiRehearsalPresetsRoute
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
@@ -1439,6 +1452,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRehearsalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/rehearsal-presets': {
+      id: '/api/rehearsal-presets'
+      path: '/api/rehearsal-presets'
+      fullPath: '/api/rehearsal-presets'
+      preLoaderRoute: typeof ApiRehearsalPresetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/review-demo-code': {
       id: '/api/review-demo-code'
       path: '/api/review-demo-code'
@@ -1752,6 +1772,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiProOfferingRoute: ApiProOfferingRoute,
   ApiProStatusRoute: ApiProStatusRoute,
   ApiRehearsalRoute: ApiRehearsalRoute,
+  ApiRehearsalPresetsRoute: ApiRehearsalPresetsRoute,
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
   ApiSttRoute: ApiSttRoute,
   ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,

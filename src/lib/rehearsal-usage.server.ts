@@ -7,7 +7,7 @@ import { OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS, recordOpsEvent } from "./ops-events.
  * came from, which stage, which outcome tap, why the paywall showed). It carries NO account id and no text of any kind,
  * so it can only be counted, never traced to a learner.
  *
- *   rehearsal_created         source: intake (quick_start is for the quick-start slice)
+ *   rehearsal_created         source: intake | quick_start (a preset tapped in the picker, no model call)
  *   rehearsal_stage_finished  stage: warmup | conversation | hard_moments (a run that met the finish rule)
  *   rehearsal_outcome         choice: well | ok | hard | moved (a tap on "How did it go?")
  *   rehearsal_paywall         reason: free_used (a second rehearsal) | free_runs (the 13th run)

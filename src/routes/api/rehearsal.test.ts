@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { OUTCOME_MEMORY_LINES } from "@/lib/rehearsal-rules";
 import { fallbackBrief, type RehearsalBrief } from "@/lib/rehearsal-brief";
+import { PRESET_IDS, presetBrief } from "@/lib/rehearsal-presets";
 
 const ID = "00000000-0000-4000-8000-0000000000d1";
 const OTHER_ID = "00000000-0000-4000-8000-0000000000d9";
@@ -863,5 +864,167 @@ describe("usage counts (counts only, never text)", () => {
     h.active = { ...rowFor({}), status: "done" };
     expect((await post({ action: "outcome", id: ID, choice: "well" })).status).toBe(409);
     expect(h.usage).toEqual([]);
+  });
+});
+
+describe("quick-start create (a preset)", () => {
+  const quick = (patch: Record<string, unknown> = {}) =>
+    post({ action: "create", course: "fr", preset: "doctor_appointment", ...patch });
+
+  it("creates from the hand-written brief with NO model call, NO quota and NO text filter", async () => {
+    const res = await quick({ eventDate: "2026-12-04" });
+    expect(res.status).toBe(200);
+    expect(h.llm).not.toHaveBeenCalled();
+    expect(h.charge).not.toHaveBeenCalled();
+    expect(h.blocked).not.toHaveBeenCalled();
+    const body = (await res.json()) as {
+      rehearsal: { brief: RehearsalBrief; eventKind: string; counterpart: string; free: boolean };
+    };
+    expect(body.rehearsal.brief).toEqual(presetBrief("doctor_appointment", "fr"));
+    expect(body.rehearsal.brief.preset).toBe("doctor_appointment");
+    expect(body.rehearsal.eventKind).toBe("appointment");
+    expect(body.rehearsal.counterpart).toBe("a receptionist and a doctor");
+    expect(body.rehearsal.free).toBe(true);
+    expect(h.rpcs.find((r) => r.fn === "create_rehearsal")!.args).toMatchObject({
+      _course: "fr",
+      _event_kind: "appointment",
+      _event_date: "2026-12-04",
+      _worries: null,
+    });
+  });
+
+  it("ignores intake text that rides along: the counterpart is the preset's, never the learner's", async () => {
+    await quick({ counterpart: "my secret boss Maria", worries: "money", eventKind: "interview" });
+    const args = h.rpcs.find((r) => r.fn === "create_rehearsal")!.args;
+    expect(args._counterpart).toBe("a receptionist and a doctor");
+    expect(args._worries).toBeNull();
+    expect(args._event_kind).toBe("appointment");
+    expect(JSON.stringify(h.rpcs)).not.toMatch(/Maria|money/);
+  });
+
+  it("the date is optional", async () => {
+    expect((await quick()).status).toBe(200);
+    expect(h.rpcs[0]!.args._event_date).toBeNull();
+  });
+
+  it("an unknown preset, an old preset id or a bad date is 400 before anything is spent or written", async () => {
+    for (const bad of [{ preset: "nope" }, { preset: "doctor" }, { preset: 7 }]) {
+      const res = await quick(bad);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ error: "invalid_preset" });
+    }
+    expect((await quick({ eventDate: "2026-02-31" })).status).toBe(400);
+    expect((await quick({ course: "xx" })).status).toBe(400);
+    expect(h.rpcs).toEqual([]);
+    expect(h.llm).not.toHaveBeenCalled();
+  });
+
+  it("the free rule holds: a second free create is 402 and writes nothing", async () => {
+    h.freeUsed = true;
+    const res = await quick();
+    expect(res.status).toBe(402);
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("a Pro learner creates one that is not free, whatever the free marker says", async () => {
+    h.pro.mockResolvedValue("active");
+    h.freeUsed = true;
+    expect((await quick()).status).toBe(200);
+    expect(h.rpcs[0]!.args._free).toBe(false);
+  });
+
+  it("Pro state unavailable is 503 retry and never touches the free marker", async () => {
+    h.pro.mockResolvedValue("unavailable");
+    expect((await quick()).status).toBe(503);
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("one active rehearsal per course: 409, and a timed-out one is closed first", async () => {
+    h.active = { id: ID };
+    expect((await quick()).status).toBe(409);
+    expect(h.closes.length).toBeGreaterThan(0);
+  });
+
+  it("an account switched off gets not_enabled", async () => {
+    h.off = true;
+    expect((await quick()).status).toBe(404);
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("consent and the AI switch still gate it", async () => {
+    h.authorize.mockResolvedValue({
+      ok: false,
+      response: new Response(JSON.stringify({ error: "ai-consent-required" }), { status: 403 }),
+    });
+    expect((await quick()).status).toBe(403);
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("counts as created via quick_start, counts only", async () => {
+    await quick();
+    expect(h.usage).toEqual([
+      { event: "rehearsal_created", detail: { source: "quick_start" }, userId: null },
+    ]);
+  });
+
+  it("an intake create is unchanged: it still calls the model, spends quota and counts as intake", async () => {
+    expect((await create()).status).toBe(200);
+    expect(h.charge).toHaveBeenCalledTimes(1);
+    expect(h.llm).toHaveBeenCalled();
+    expect(h.usage[0]!.detail).toEqual({ source: "intake" });
+  });
+
+  it("every preset creates in every course", async () => {
+    for (const course of ["en", "fr", "es"])
+      for (const id of PRESET_IDS) {
+        h.rpcs = [];
+        expect((await quick({ course, preset: id })).status).toBe(200);
+        expect(h.rpcs[0]!.args._brief).toMatchObject({ preset: id });
+      }
+  });
+});
+
+describe("Add a date (adjust with only a date)", () => {
+  const dateOnly = (eventDate: unknown, patch: Record<string, unknown> = {}) =>
+    post({ action: "adjust", id: ID, eventDate, ...patch });
+
+  it("moves the date with no model call, no quota and no new brief", async () => {
+    const res = await dateOnly("2099-01-05");
+    expect(res.status).toBe(200);
+    expect(h.rpcs).toEqual([
+      { fn: "move_rehearsal", args: { _user_id: "u1", _id: ID, _event_date: "2099-01-05" } },
+    ]);
+    expect(h.llm).not.toHaveBeenCalled();
+    expect(h.charge).not.toHaveBeenCalled();
+    expect(h.authorize).not.toHaveBeenCalled();
+  });
+
+  it("null clears the date", async () => {
+    expect((await dateOnly(null)).status).toBe(200);
+    expect(h.rpcs[0]!.args._event_date).toBeNull();
+  });
+
+  it("a past or malformed date is 400, and a bad id is 400", async () => {
+    expect((await dateOnly("2000-01-01")).status).toBe(400);
+    expect((await dateOnly("2099-13-45")).status).toBe(400);
+    expect((await post({ action: "adjust", id: "x", eventDate: "2099-01-05" })).status).toBe(400);
+    expect(h.rpcs).toEqual([]);
+  });
+
+  it("someone else's or a closed rehearsal is 404", async () => {
+    h.rpcResult = { data: null, error: { message: "rehearsal_not_found", code: "P0002" } };
+    expect((await dateOnly("2099-01-05")).status).toBe(404);
+  });
+
+  it("an adjust that carries the intake answers is still the full adjust (new brief, quota)", async () => {
+    h.active = { id: ID, course: "en", free: true };
+    const res = await dateOnly("2099-01-05", {
+      course: "en",
+      eventKind: "meeting",
+      counterpart: "a colleague",
+    });
+    expect(res.status).toBe(200);
+    expect(h.rpcs.map((r) => r.fn)).toEqual(["adjust_rehearsal"]);
+    expect(h.charge).toHaveBeenCalledTimes(1);
   });
 });
