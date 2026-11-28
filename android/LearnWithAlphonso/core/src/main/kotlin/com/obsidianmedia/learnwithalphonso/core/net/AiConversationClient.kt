@@ -8,6 +8,7 @@ import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import com.obsidianmedia.learnwithalphonso.core.logic.CallRecap
+import com.obsidianmedia.learnwithalphonso.core.rehearsal.RehearsalSpeaking
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemory
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryLoad
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
@@ -165,7 +166,9 @@ class AiConversationClient(private val http: ApiHttp) {
 
     /** One attempt's outcome: a recap, nothing to show, or a failure a second try may fix (the screen offers "Try again"). */
     sealed interface RecapAttempt {
-        data class Got(val recap: CallRecap) : RecapAttempt
+        data class Got(val recap: CallRecap, val rehearsalSpeaking: RehearsalSpeaking? = null) : RecapAttempt
+        /** No recap, but a rehearsal run's "How you spoke" counts came back on their own. */
+        data class SpeakingOnly(val rehearsalSpeaking: RehearsalSpeaking) : RecapAttempt
         data object Empty : RecapAttempt
         data object Retry : RecapAttempt
     }
@@ -186,7 +189,9 @@ class AiConversationClient(private val http: ApiHttp) {
                 if (code >= 500 && code != 503) RecapAttempt.Retry else RecapAttempt.Empty
             } else {
                 val text = response.bodyAsText()
-                CallRecap.parse(text)?.let { RecapAttempt.Got(it) }
+                val speaking = RehearsalSpeaking.parse(text)
+                CallRecap.parse(text)?.let { RecapAttempt.Got(it, speaking) }
+                    ?: speaking?.let { RecapAttempt.SpeakingOnly(it) }
                     ?: if (CallRecap.retryRequested(text)) RecapAttempt.Retry else RecapAttempt.Empty
             }
         }.getOrElse { RecapAttempt.Retry }

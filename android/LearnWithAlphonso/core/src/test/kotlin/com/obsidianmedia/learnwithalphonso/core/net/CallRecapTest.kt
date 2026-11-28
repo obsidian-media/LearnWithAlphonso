@@ -135,4 +135,20 @@ class CallRecapTest {
         assertEquals("""{"all":true}""", seen[1].body)
         assertFalse(client(ArrayList(), HttpStatusCode.InternalServerError).forgetEverything())
     }
+    private val speakingJson = """"rehearsalSpeaking":{"notes":[{"kind":"key_phrases","count":3,"total":8,"previous":null}]}"""
+
+    @Test
+    fun `a rehearsal recap carries its how-you-spoke counts, and a plain call carries none`() = runTest {
+        val t = call(3)
+        val withSpeaking = client(ArrayList(), body = recapBody.trimEnd().removeSuffix("}") + ",$speakingJson}").callRecapAttempt("c", t)
+        val got = withSpeaking as AiConversationClient.RecapAttempt.Got
+        assertEquals(1, got.rehearsalSpeaking!!.notes.size)
+        assertNull((client(ArrayList(), body = recapBody).callRecapAttempt("c", t) as AiConversationClient.RecapAttempt.Got).rehearsalSpeaking)
+    }
+
+    @Test
+    fun `the counts still arrive when the recap itself is null`() = runTest {
+        val r = client(ArrayList(), body = """{"recap":null,$speakingJson}""").callRecapAttempt("c", call(3))
+        assertEquals(3, (r as AiConversationClient.RecapAttempt.SpeakingOnly).rehearsalSpeaking.notes.single().count)
+    }
 }
