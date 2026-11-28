@@ -36,7 +36,9 @@ public enum AccountCacheKeys {
     public static let streakDayBasis = "lastKnownStreakDayBasis"
     /// The last time zone sent to the server, as "userID|zone" (TimeZoneReporter).
     public static let timeZoneSent = "lastSentTimeZone"
-    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs, streakDayBasis, timeZoneSent]
+    /// The last rehearsal's key phrases, kept for the offline phrasebook (RehearsalPhraseStore).
+    public static let rehearsalPhrases = RehearsalPhraseStore.key
+    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs, streakDayBasis, timeZoneSent, rehearsalPhrases]
 }
 
 public struct AccountLocalCaches {

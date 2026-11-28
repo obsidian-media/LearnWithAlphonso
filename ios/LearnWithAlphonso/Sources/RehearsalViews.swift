@@ -35,7 +35,10 @@ final class RehearsalModel {
     func refresh() async {
         guard let client = await client() else { error = .failed; return }
         switch await client.state(course: courseCode) {
-        case .success(let value): state = value; error = nil
+        case .success(let value):
+            state = value; error = nil
+            // Kept so the phrasebook still opens with no connection.
+            RehearsalPhraseStore().save(active: value.active)
         case .failure(let e): error = e
         }
     }
@@ -173,12 +176,15 @@ struct RehearsalFlowView: View {
         case preview(RehearsalPreset)
         case intake(adjusting: Bool)
         case plan
+        case phrases
         case run(RehearsalStage)
         case outcome
     }
 
     @State private var screen: Screen = .loading
     @State private var showPaywall = false
+    /// Back from the phrasebook: the plan puts VoiceOver focus on its entry row.
+    @State private var returnedFromPhrases = false
     /// A new value for every run, so "Run this stage again" starts a fresh call instead of reusing the finished one.
     @State private var runToken = UUID()
     @Environment(\.alphonsoDS) private var ds
@@ -193,6 +199,9 @@ struct RehearsalFlowView: View {
                             Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
                                 .multilineTextAlignment(.center)
                             Button("Try again") { Task { await open() } }.buttonStyle(.alphonsoSecondary)
+                            if RehearsalPhraseStore().load(course: course.wireCode) != nil {
+                                Button(RehearsalPhrasebook.entryTitle) { screen = .phrases }.buttonStyle(.alphonsoSecondary)
+                            }
                         } else {
                             ProgressView("Loading\u{2026}").tint(ds.choice)
                         }
@@ -217,7 +226,15 @@ struct RehearsalFlowView: View {
                     if let active = model.state?.active {
                         RehearsalPlanView(model: model, rehearsal: active,
                                           onStart: { runToken = UUID(); screen = .run($0) }, onAdjust: { screen = .intake(adjusting: true) },
+                                          onOpenPhrases: { screen = .phrases }, focusPhrases: returnedFromPhrases,
                                           onDeleted: { Task { await open() } })
+                    } else { Color.clear.task { await open() } }
+                case .phrases:
+                    // Live phrases when the state is loaded, else the copy kept on the device (offline).
+                    if let snapshot = model.state?.active.flatMap(RehearsalPhraseSnapshot.init(rehearsal:))
+                        ?? RehearsalPhraseStore().load(course: course.wireCode) {
+                        RehearsalPhrasebookView(snapshot: snapshot, course: course, session: session,
+                                                onBack: { returnedFromPhrases = true; screen = model.state?.active != nil ? .plan : .loading })
                     } else { Color.clear.task { await open() } }
                 case .run(let stage):
                     if let active = model.state?.active {
@@ -614,7 +631,11 @@ struct RehearsalPlanView: View {
     let onStart: (RehearsalStage) -> Void
     let onAdjust: () -> Void
     let onDeleted: () -> Void
+    var onOpenPhrases: () -> Void = {}
+    /// Back from the phrasebook: VoiceOver focus goes to the entry row.
+    var focusPhrases = false
 
+    @AccessibilityFocusState private var phrasesFocused: Bool
     @State private var confirmingDelete = false
     @State private var error: RehearsalError?
     @Environment(\.alphonsoDS) private var ds
@@ -640,6 +661,12 @@ struct RehearsalPlanView: View {
 
                 ForEach(Array(rows.enumerated()), id: \.offset) { _, item in stageRow(item.stage, item.row) }
 
+                let phraseRows = RehearsalPhrasebook.rows(brief: rehearsal.brief)
+                if RehearsalPhrasebook.isOffered(progress: model.state?.progress, rows: phraseRows) {
+                    RehearsalPhrasebookEntry(count: phraseRows.count, onOpen: onOpenPhrases)
+                        .accessibilityFocused($phrasesFocused)
+                }
+
                 if let next = model.state?.nextStage {
                     Button(RehearsalPlan.nextButton(next)) { onStart(next) }
                         .buttonStyle(.alphonsoPrimary(fullWidth: true))
@@ -659,6 +686,7 @@ struct RehearsalPlanView: View {
             }
             .padding(AlphonsoDS.Space.gutter)
         }
+        .onAppear { if focusPhrases { phrasesFocused = true } }
         .alphonsoChoiceDialog("Delete this rehearsal?", isPresented: $confirmingDelete) {
             Button("Yes, delete it", role: .destructive) {
                 Task {
